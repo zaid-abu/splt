@@ -31,6 +31,16 @@ export default function SettleUpScreen(): JSX.Element {
   const [amount, setAmount] = useState(initialAmount || Math.abs(netBalance).toString());
   const [note, setNote] = useState("");
   const [settleCurrency, setSettleCurrency] = useState(preferredCurrency.code);
+  const sharedGroups = useMemo(() => {
+    return groups.filter(g => 
+      g.members.some(m => m.userId === currentUser.id) &&
+      g.members.some(m => m.userId === id)
+    );
+  }, [groups, currentUser.id, id]);
+
+  const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(
+    groupId || (sharedGroups.length === 1 ? sharedGroups[0].id : undefined)
+  );
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -64,7 +74,7 @@ export default function SettleUpScreen(): JSX.Element {
 
     try {
       addSettlement({
-        groupId,
+        groupId: selectedGroupId,
         fromUserId: direction === "you" ? currentUser.id : friend!.id,
         toUserId: direction === "you" ? friend!.id : currentUser.id,
         amount: parsedAmount,
@@ -99,6 +109,40 @@ export default function SettleUpScreen(): JSX.Element {
           </View>
 
           <Animated.View entering={FadeInDown.duration(300)}>
+            {/* ── Group Selection ──────────────────────────── */}
+            {sharedGroups.length > 0 && (
+              <View className="px-6 mb-8">
+                <Typography type="body-sm" className="font-bold text-muted-foreground tracking-widest mb-3 ml-2">
+                  ASSOCIATE WITH GROUP (OPTIONAL)
+                </Typography>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <PressableFeedback onPress={() => setSelectedGroupId(undefined)}>
+                    <View className={`px-4 py-2 rounded-full border mr-2 ${!selectedGroupId ? 'bg-primary border-primary' : 'bg-white border-border'}`}>
+                      <Typography type="body-sm" className={`font-bold ${!selectedGroupId ? 'text-white' : 'text-foreground'}`}>
+                        No Group
+                      </Typography>
+                    </View>
+                  </PressableFeedback>
+                  {sharedGroups.map(g => {
+                    const isSelected = selectedGroupId === g.id;
+                    return (
+                      <PressableFeedback key={g.id} onPress={() => setSelectedGroupId(g.id)}>
+                        <View className={`px-4 py-2 rounded-full border mr-2 flex-row items-center gap-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-border'}`}>
+                          {(() => {
+                            const IconComp = (icons as any)[g.icon] || icons.HelpCircle;
+                            return <IconComp size={16} color={isSelected ? "white" : "#8A8798"} />;
+                          })()}
+                          <Typography type="body-sm" className={`font-bold ${isSelected ? 'text-white' : 'text-foreground'}`}>
+                            {g.name}
+                          </Typography>
+                        </View>
+                      </PressableFeedback>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+            )}
+
             {/* ── Direction Toggle ───────────────────────── */}
             <View className="px-6 mb-8">
               <View className="bg-white rounded-[24px] p-4 border border-border items-center">
