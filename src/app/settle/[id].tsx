@@ -13,7 +13,7 @@ import { CurrencySelector } from "@/components/CurrencySelector";
 import * as icons from "lucide-react-native";
 
 export default function SettleUpScreen(): JSX.Element {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, groupId, amount: initialAmount, direction: initialDirection } = useLocalSearchParams<{ id: string; groupId?: string; amount?: string; direction?: string }>();
   const router = useRouter();
   const { groups, currentUser, preferredCurrency, getUserBalances, addSettlement, setCurrency } = useApp();
 
@@ -26,9 +26,9 @@ export default function SettleUpScreen(): JSX.Element {
 
   // "you" means you paid them (so they owe you less, or you owe them less)
   // "them" means they paid you
-  const [direction, setDirection] = useState<"you" | "them">(netBalance < 0 ? "you" : "them");
+  const [direction, setDirection] = useState<"you" | "them">((initialDirection as "you" | "them") || (netBalance < 0 ? "you" : "them"));
   
-  const [amount, setAmount] = useState(Math.abs(netBalance).toString());
+  const [amount, setAmount] = useState(initialAmount || Math.abs(netBalance).toString());
   const [note, setNote] = useState("");
   const [settleCurrency, setSettleCurrency] = useState(preferredCurrency.code);
   
@@ -64,6 +64,7 @@ export default function SettleUpScreen(): JSX.Element {
 
     try {
       addSettlement({
+        groupId,
         fromUserId: direction === "you" ? currentUser.id : friend!.id,
         toUserId: direction === "you" ? friend!.id : currentUser.id,
         amount: parsedAmount,

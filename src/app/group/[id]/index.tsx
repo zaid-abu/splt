@@ -27,7 +27,7 @@ import { useApp } from "@/context/AppContext";
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getGroup, getGroupExpenses, currentUser } = useApp();
+  const { getGroup, getGroupExpenses, currentUser, preferredCurrency, getGroupBalances, convertCurrency } = useApp();
 
   const group = getGroup(id ?? "");
   const expenses = getGroupExpenses(id ?? "");
@@ -48,8 +48,12 @@ export default function GroupDetailScreen(): JSX.Element {
     );
   }
 
-  const sym = getCurrencySymbol(group.currency);
-  const me = group.members.find((m) => m.userId === currentUser.id);
+  const sym = getCurrencySymbol(preferredCurrency.code);
+  const balances = getGroupBalances(group.id);
+  const myBalance = balances.get(currentUser.id) ?? 0;
+
+  // Calculate total expenses in preferred currency
+  const totalExpensesInPref = expenses.reduce((sum, exp) => sum + convertCurrency(exp.amount, exp.currency, preferredCurrency.code), 0);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
@@ -88,49 +92,49 @@ export default function GroupDetailScreen(): JSX.Element {
               </View>
             </View>
 
-            <View className="flex-row items-center justify-between bg-background rounded-[20px] p-3 mb-5 border border-border/50">
-              <View className="flex-row items-center gap-2">
-                <AvatarStack users={group.members.map((m) => m.user)} max={5} />
-                <Typography type="body-sm" className="font-bold text-foreground ml-1">
-                  {group.members.length} members
-                </Typography>
+            <PressableFeedback onPress={() => router.push(`/group/${group.id}/settings`)}>
+              <View className="flex-row items-center justify-between bg-background rounded-[20px] p-3 mb-5 border border-border/50">
+                <View className="flex-row items-center gap-2">
+                  <AvatarStack users={group.members.map((m) => m.user)} max={5} />
+                  <Typography type="body-sm" className="font-bold text-foreground ml-1">
+                    {group.members.length} members
+                  </Typography>
+                </View>
+                <icons.Settings size={20} color="#8A8798" />
               </View>
-              <icons.Settings size={20} color="#8A8798" />
-            </View>
+            </PressableFeedback>
 
             {/* My balance highlight */}
-            {me && (
-              <View className={`flex-row items-center justify-between rounded-[20px] p-4 ${me.balance > 0 ? "bg-success/10 border border-success/20"
-                  : me.balance < 0 ? "bg-danger/10 border border-danger/20"
-                    : "bg-surface-secondary border border-border"
-                }`}>
-                <View>
-                  <Typography type="body-xs" className="font-bold tracking-wider mb-0.5 text-muted-foreground uppercase">
-                    Your balance
-                  </Typography>
-                  <Typography
-                    type="h2"
-                    className={`font-black tracking-tight text-[28px] ${me.balance > 0 ? "text-success"
-                        : me.balance < 0 ? "text-danger"
-                          : "text-foreground"
-                      }`}
-                  >
-                    {me.balance > 0 ? "+" : me.balance < 0 ? "-" : ""}{sym}{Math.abs(me.balance).toLocaleString()}
-                  </Typography>
-                </View>
-                <View className={`px-3 py-1.5 rounded-full ${me.balance > 0 ? "bg-success/20"
-                    : me.balance < 0 ? "bg-danger/20"
-                      : "bg-white border border-border"
-                  }`}>
-                  <Typography type="body-sm" className={`font-bold ${me.balance > 0 ? "text-success"
-                      : me.balance < 0 ? "text-danger"
-                        : "text-muted-foreground"
-                    }`}>
-                    {me.balance > 0 ? "Owed to you" : me.balance < 0 ? "You owe" : "Settled up"}
-                  </Typography>
-                </View>
+            <View className={`flex-row items-center justify-between rounded-[20px] p-4 ${myBalance > 0 ? "bg-success/10 border border-success/20"
+                : myBalance < 0 ? "bg-danger/10 border border-danger/20"
+                  : "bg-surface-secondary border border-border"
+              }`}>
+              <View>
+                <Typography type="body-xs" className="font-bold tracking-wider mb-0.5 text-muted-foreground uppercase">
+                  Your balance
+                </Typography>
+                <Typography
+                  type="h2"
+                  className={`font-black tracking-tight text-[28px] ${myBalance > 0 ? "text-success"
+                      : myBalance < 0 ? "text-danger"
+                        : "text-foreground"
+                    }`}
+                >
+                  {myBalance > 0 ? "+" : myBalance < 0 ? "-" : ""}{sym}{Math.abs(myBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </Typography>
               </View>
-            )}
+              <View className={`px-3 py-1.5 rounded-full ${myBalance > 0 ? "bg-success/20"
+                  : myBalance < 0 ? "bg-danger/20"
+                    : "bg-white border border-border"
+                }`}>
+                <Typography type="body-sm" className={`font-bold ${myBalance > 0 ? "text-success"
+                    : myBalance < 0 ? "text-danger"
+                      : "text-muted-foreground"
+                  }`}>
+                  {myBalance > 0 ? "Owed to you" : myBalance < 0 ? "You owe" : "Settled up"}
+                </Typography>
+              </View>
+            </View>
           </View>
         </View>
 
@@ -141,35 +145,37 @@ export default function GroupDetailScreen(): JSX.Element {
           </Typography>
           <View className="rounded-[24px]">
             <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-            {group.members.map((member, idx) => (
+            {group.members.map((member, idx) => {
+              const memBalance = balances.get(member.userId) ?? 0;
+              return (
               <PressableFeedback key={member.userId} onPress={() => { }}>
                 <View className={`flex-row items-center justify-between p-4 ${idx < group.members.length - 1 ? 'border-b border-border/50' : ''}`}>
                   <View className="flex-row items-center gap-3">
-                    <AppUserAvatar user={member.user} size="md" balance={member.balance} />
+                    <AppUserAvatar user={member.user} size="md" balance={memBalance} />
                     <View>
                       <Typography type="body" className="font-bold text-foreground">
                         {member.userId === currentUser.id ? "You" : member.user.name}
                       </Typography>
                       <Typography type="body-sm" className="text-muted-foreground">
-                        {member.balance === 0 ? "Settled up"
-                          : member.balance > 0 ? (member.userId === currentUser.id ? "Owed to you" : "Gets back")
+                        {memBalance === 0 ? "Settled up"
+                          : memBalance > 0 ? (member.userId === currentUser.id ? "Owed to you" : "Gets back")
                             : (member.userId === currentUser.id ? "You owe" : "Owes")}
                       </Typography>
                     </View>
                   </View>
                   <Typography
                     type="body"
-                    className={`font-black ${member.balance > 0 ? "text-success"
-                        : member.balance < 0 ? "text-danger"
+                    className={`font-black ${memBalance > 0 ? "text-success"
+                        : memBalance < 0 ? "text-danger"
                           : "text-muted-foreground"
                       }`}
                   >
-                    {member.balance > 0 ? "+" : member.balance < 0 ? "-" : ""}
-                    {sym}{Math.abs(member.balance).toLocaleString()}
+                    {memBalance > 0 ? "+" : memBalance < 0 ? "-" : ""}
+                    {sym}{Math.abs(memBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </Typography>
                 </View>
               </PressableFeedback>
-            ))}
+            )})}
             </View>
           </View>
         </View>
@@ -180,7 +186,7 @@ export default function GroupDetailScreen(): JSX.Element {
             Expenses ({expenses.length})
           </Typography>
           <Typography type="body-sm" className="font-bold text-foreground mr-2">
-            Total: {sym}{group.totalExpenses.toLocaleString()}
+            Total: {sym}{totalExpensesInPref.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </Typography>
         </View>
 
@@ -213,7 +219,7 @@ export default function GroupDetailScreen(): JSX.Element {
       {/* ── Bottom Action Bar ──────────────────────── */}
       <View className="bg-white border-t border-border/30 px-6 pt-4 pb-8 flex-row gap-4">
         <View className="flex-1">
-          <PressableFeedback onPress={() => { }}>
+          <PressableFeedback onPress={() => router.push(`/group/${group.id}/settle`)}>
             <View className="w-full h-[56px] rounded-full items-center justify-center bg-secondary flex-row gap-2">
               <icons.Handshake size={20} className="text-primary" />
               <Typography type="body" className="font-bold text-primary">

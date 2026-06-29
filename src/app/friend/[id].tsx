@@ -9,26 +9,36 @@ import * as icons from "lucide-react-native";
 
 import { PageAnimator } from "@/components/PageAnimator";
 import { formatAmount } from "@/components/AmountDisplay";
-import { ExpenseItem } from "@/components/ExpenseItem";
+import { ActivityItem } from "@/components/ActivityItem";
 import { useApp } from "@/context/AppContext";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 
 export default function FriendDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { expenses, groups, currentUser, preferredCurrency, getUserBalances } = useApp();
+  const { activities, groups, currentUser, preferredCurrency, getUserBalances } = useApp();
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
   const friend = uniqueFriends.find(f => f.id === id);
 
-  const sharedExpenses = useMemo(() => {
-    return expenses.filter(e => {
-      const friendInvolved = e.paidBy === id || e.splits.some(s => s.userId === id);
-      const currentUserInvolved = e.paidBy === currentUser.id || e.splits.some(s => s.userId === currentUser.id);
-      return friendInvolved && currentUserInvolved;
-    }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [expenses, id, currentUser.id]);
+  const sharedActivities = useMemo(() => {
+    return activities.filter(a => {
+      if (a.type === "expense" && a.expense) {
+        const e = a.expense;
+        const friendInvolved = e.paidBy === id || e.splits.some(s => s.userId === id);
+        const currentUserInvolved = e.paidBy === currentUser.id || e.splits.some(s => s.userId === currentUser.id);
+        return friendInvolved && currentUserInvolved;
+      }
+      if (a.type === "settlement" && a.settlement) {
+        const s = a.settlement;
+        const friendInvolved = s.fromUserId === id || s.toUserId === id;
+        const currentUserInvolved = s.fromUserId === currentUser.id || s.toUserId === currentUser.id;
+        return friendInvolved && currentUserInvolved;
+      }
+      return false;
+    }).sort((a, b) => b.date.getTime() - a.date.getTime());
+  }, [activities, id, currentUser.id]);
 
   const balances = getUserBalances();
   const netBalance = balances.get(id ?? "") || 0;
@@ -96,12 +106,17 @@ export default function FriendDetailScreen(): JSX.Element {
           {/* ── Actions ────────────────────────────────── */}
           <View className="px-6 flex-row gap-3 mb-8">
             <View className="flex-1">
-              <Button onPress={() => router.push(`/settle/${id}`)} className="rounded-full" variant="outline">
-                Settle up
-              </Button>
+              <PressableFeedback onPress={() => router.push(`/settle/${id}`)}>
+                <View className="w-full h-[56px] rounded-full items-center justify-center border-2 border-border flex-row gap-2">
+                  <icons.Send size={20} className="text-foreground" />
+                  <Typography type="body" className="font-bold text-foreground">
+                    Settle up
+                  </Typography>
+                </View>
+              </PressableFeedback>
             </View>
             <View className="flex-1">
-              <PressableFeedback onPress={() => router.push(`/expense/new`)}>
+              <PressableFeedback onPress={() => router.push(`/expense/new?friendId=${id}`)}>
                 <View className="w-full h-[56px] rounded-full items-center justify-center bg-primary flex-row gap-2">
                   <icons.Plus size={20} color="white" />
                   <Typography type="body" className="font-bold text-white">
@@ -112,35 +127,37 @@ export default function FriendDetailScreen(): JSX.Element {
             </View>
           </View>
 
-          {/* ── Expenses ───────────────────────────────── */}
+          {/* ── Activities ───────────────────────────────── */}
           <View className="px-6 mb-4 flex-row items-center justify-between">
             <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest ml-2 uppercase">
-              Shared Expenses ({sharedExpenses.length})
+              Shared Activity ({sharedActivities.length})
             </Typography>
           </View>
 
-          {sharedExpenses.length === 0 ? (
+          {sharedActivities.length === 0 ? (
             <View className="px-6">
               <View className="bg-white rounded-[24px] items-center p-8 border border-border">
                 <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
                   <Text style={{ fontSize: 32 }}>💸</Text>
                 </View>
-                <Typography type="h3" className="font-black text-center mb-1">No shared expenses</Typography>
+                <Typography type="h3" className="font-black text-center mb-1">No shared activity</Typography>
                 <Typography type="body" className="text-muted-foreground text-center">
                   Add an expense to start tracking
                 </Typography>
               </View>
             </View>
           ) : (
-            <View className="px-4">
-              {sharedExpenses.map((expense) => (
-                <ExpenseItem
-                  key={expense.id}
-                  expense={expense}
-                  currentUserId={currentUser.id}
-                  onPress={() => router.push(`/expense/${expense.id}`)}
-                />
-              ))}
+            <View className="px-6">
+              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+                {sharedActivities.map((activity, idx) => (
+                  <ActivityItem
+                    key={activity.id}
+                    activity={activity}
+                    index={idx}
+                    isLast={idx === sharedActivities.length - 1}
+                  />
+                ))}
+              </View>
             </View>
           )}
 

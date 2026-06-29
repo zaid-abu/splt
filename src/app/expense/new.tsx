@@ -43,13 +43,13 @@ const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
 ];
 
 export default function AddExpenseScreen(): JSX.Element {
-  const { groupId: initialGroupId } = useLocalSearchParams<{ groupId?: string }>();
+  const { groupId: initialGroupId, friendId: initialFriendId } = useLocalSearchParams<{ groupId?: string; friendId?: string }>();
   const router = useRouter();
   const { getGroup, addExpense, currentUser, groups, preferredCurrency, setCurrency } = useApp();
 
   const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId ?? "");
-  const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
-  const [selectionConfirmed, setSelectionConfirmed] = useState(false);
+  const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>(initialFriendId ? [initialFriendId] : []);
+  const [selectionConfirmed, setSelectionConfirmed] = useState(!!initialGroupId || !!initialFriendId);
   const [selectionTab, setSelectionTab] = useState<"friends" | "groups">("friends");
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -200,7 +200,7 @@ export default function AddExpenseScreen(): JSX.Element {
           </View>
 
           {/* ── Group/Friend Selection ──────────────── */}
-          {!initialGroupId && !selectionConfirmed && (
+          {!(initialGroupId || initialFriendId) && !selectionConfirmed && (
              <Animated.View entering={FadeInDown.duration(300)} className="mb-8">
                 <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-8 uppercase">
                   WHO IS THIS WITH?
@@ -332,7 +332,7 @@ export default function AddExpenseScreen(): JSX.Element {
           )}
 
           {/* ── Context pill (Selected Group/Friend) ── */}
-          {(selectedGroup || selectedFriends.length > 0) && selectionConfirmed && !initialGroupId && (
+          {(selectedGroup || selectedFriends.length > 0) && selectionConfirmed && !(initialGroupId || initialFriendId) && (
             <Animated.View entering={FadeInUp.duration(300)} className="px-6 mb-8">
               <View className="flex-row items-center justify-between bg-white rounded-[24px] p-4 border border-border">
                 <View className="flex-row items-center gap-4 flex-1 pr-2">
@@ -362,18 +362,28 @@ export default function AddExpenseScreen(): JSX.Element {
             </Animated.View>
           )}
 
-          {initialGroupId && selectedGroup && (
+          {((initialGroupId && selectedGroup) || (initialFriendId && selectedFriends.length > 0)) && (
              <View className="px-6 mb-8">
                 <View className="flex-row items-center gap-4 bg-white rounded-[24px] p-4 border border-border">
-                  <View className="w-12 h-12 rounded-[16px] bg-primary/10 items-center justify-center">
-                    {(() => {
-                      const GroupIcon = (icons as any)[selectedGroup.icon] || icons.Users;
-                      return <GroupIcon size={24} className="text-primary" strokeWidth={2} />;
-                    })()}
-                  </View>
+                  {selectedGroup ? (
+                    <View className="w-12 h-12 rounded-[16px] bg-primary/10 items-center justify-center">
+                      {(() => {
+                        const GroupIcon = (icons as any)[selectedGroup.icon] || icons.Users;
+                        return <GroupIcon size={24} className="text-primary" strokeWidth={2} />;
+                      })()}
+                    </View>
+                  ) : (
+                    <View className="w-12 h-12 rounded-[16px] bg-primary/10 items-center justify-center">
+                      <icons.Users size={24} className="text-primary" strokeWidth={2} />
+                    </View>
+                  )}
                   <View>
-                    <Typography type="h3" className="font-bold text-[18px] text-foreground">{selectedGroup.name}</Typography>
-                    <Typography type="body-sm" className="text-muted-foreground font-medium mt-0.5">Currency: {selectedGroup.currency}</Typography>
+                    <Typography type="h3" className="font-bold text-[18px] text-foreground">
+                      {selectedGroup ? selectedGroup.name : selectedFriends[0].name}
+                    </Typography>
+                    <Typography type="body-sm" className="text-muted-foreground font-medium mt-0.5">
+                      Currency: {selectedGroup ? selectedGroup.currency : preferredCurrency.code}
+                    </Typography>
                   </View>
                 </View>
              </View>

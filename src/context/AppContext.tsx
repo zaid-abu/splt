@@ -39,6 +39,7 @@ interface AppContextValue {
   // Currency
   preferredCurrency: Currency;
   setCurrency: (currency: Currency) => void;
+  convertCurrency: (amount: number, from: string, to: string) => number;
 
   // Groups CRUD
   createGroup: (data: {
@@ -48,6 +49,10 @@ interface AppContextValue {
     currency: string;
     memberEmails: string[];
   }) => Group;
+  updateGroup: (id: string, data: Partial<Group>) => void;
+  addGroupMembers: (groupId: string, users: User[]) => void;
+  removeGroupMember: (groupId: string, userId: string) => void;
+  deleteGroup: (groupId: string) => void;
   getGroup: (id: string) => Group | undefined;
   getGroupExpenses: (groupId: string) => Expense[];
 
@@ -71,6 +76,7 @@ interface AppContextValue {
   getTotalOwedToMe: () => number;
   getTotalIOwe: () => number;
   getUserBalances: () => Map<string, number>;
+  getGroupBalances: (groupId: string) => Map<string, number>;
 
   // Settlements
   addSettlement: (data: {
@@ -220,6 +226,36 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     [currentUser],
   );
 
+  const updateGroup = useCallback((id: string, data: Partial<Group>) => {
+    setGroups(prev => prev.map(g => g.id === id ? { ...g, ...data } : g));
+  }, []);
+
+  const addGroupMembers = useCallback((groupId: string, users: User[]) => {
+    setGroups(prev => prev.map(g => {
+      if (g.id !== groupId) return g;
+      const existingUserIds = new Set(g.members.map(m => m.userId));
+      const newMembers = users.filter(u => !existingUserIds.has(u.id)).map(u => ({
+        userId: u.id,
+        user: u,
+        balance: 0,
+      }));
+      return { ...g, members: [...g.members, ...newMembers] };
+    }));
+  }, []);
+
+  const removeGroupMember = useCallback((groupId: string, userId: string) => {
+    setGroups(prev => prev.map(g => {
+      if (g.id !== groupId) return g;
+      return { ...g, members: g.members.filter(m => m.userId !== userId) };
+    }));
+  }, []);
+
+  const deleteGroup = useCallback((groupId: string) => {
+    setGroups(prev => prev.filter(g => g.id !== groupId));
+    // Optionally clean up expenses/settlements/activities related to this group,
+    // but in a real app this might be handled via a cascade delete on the backend.
+  }, []);
+
   // ── Expenses ──────────────────────────────────────────────────────────────
 
   const getExpense = useCallback(
@@ -345,6 +381,28 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     return total;
   }, [getUserBalances]);
 
+  const getGroupBalances = useCallback((groupId: string) => {
+    const balances = new Map<string, number>();
+    
+    expenses.filter(e => e.groupId === groupId).forEach((exp) => {
+      exp.splits.forEach((s) => {
+        if (s.userId !== exp.paidBy) {
+          const amtInPref = convertCurrency(s.amount, exp.currency, preferredCurrency.code);
+          balances.set(exp.paidBy, (balances.get(exp.paidBy) || 0) + amtInPref);
+          balances.set(s.userId, (balances.get(s.userId) || 0) - amtInPref);
+        }
+      });
+    });
+
+    settlements.filter(s => s.groupId === groupId).forEach((set) => {
+      const amtInPref = convertCurrency(set.amount, set.currency, preferredCurrency.code);
+      balances.set(set.toUserId, (balances.get(set.toUserId) || 0) - amtInPref);
+      balances.set(set.fromUserId, (balances.get(set.fromUserId) || 0) + amtInPref);
+    });
+
+    return balances;
+  }, [expenses, settlements, preferredCurrency.code, convertCurrency]);
+
   const getNetBalance = useCallback(() => {
     return getTotalOwedToMe() - getTotalIOwe();
   }, [getTotalOwedToMe, getTotalIOwe]);
@@ -416,7 +474,12 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         activities,
         preferredCurrency,
         setCurrency,
+        convertCurrency,
         createGroup,
+        updateGroup,
+        addGroupMembers,
+        removeGroupMember,
+        deleteGroup,
         getGroup,
         getGroupExpenses,
         addExpense,
@@ -425,6 +488,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         getTotalOwedToMe,
         getTotalIOwe,
         getUserBalances,
+        getGroupBalances,
         addSettlement,
       }}
     >
