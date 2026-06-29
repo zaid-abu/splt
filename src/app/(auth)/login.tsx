@@ -74,7 +74,7 @@ export default function LoginScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           {/* Main Card */}
-          <Card className="rounded-[24px] shadow-lg bg-surface border-0 mb-6">
+          <Card className="rounded-[24px] bg-surface border-0 mb-6">
             <Card.Header className="pt-8 pb-2 items-center border-b-0">
               <Typography type="h3" className="font-bold text-foreground">
                 Welcome back 👋

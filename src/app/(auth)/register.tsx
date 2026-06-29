@@ -21,6 +21,7 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { CurrencySelector } from "@/components/CurrencySelector";
 
 export default function RegisterScreen(): JSX.Element {
   const router = useRouter();
@@ -31,6 +32,7 @@ export default function RegisterScreen(): JSX.Element {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
+  const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -81,7 +83,7 @@ export default function RegisterScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           {/* Main Card */}
-          <Card className="rounded-[24px] shadow-lg bg-surface border-0 mb-6">
+          <Card className="rounded-[24px] bg-surface border-0 mb-6">
             <Card.Header className="pt-8 pb-2 items-center border-b-0">
               <Typography type="h3" className="font-bold text-foreground">
                 Create account
@@ -127,6 +129,14 @@ export default function RegisterScreen(): JSX.Element {
                   className="bg-surface-secondary border-muted h-14 rounded-xl"
                 />
               </TextField>
+
+              <View className="mb-2 z-10">
+                <Label className="text-foreground font-semibold mb-2">Base Currency</Label>
+                <CurrencySelector 
+                  value={currency} 
+                  onChange={(c) => setCurrency(c.code)} 
+                />
+              </View>
 
               {/* Terms checkbox */}
               <View className="flex-row items-start gap-3 mt-1">

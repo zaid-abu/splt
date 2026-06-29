@@ -13,6 +13,7 @@ import { PageAnimator } from "@/components/PageAnimator";
 import { useApp } from "@/context/AppContext";
 import { formatAmount } from "@/components/AmountDisplay";
 import { AppUserAvatar } from "@/components/MemberAvatar";
+import { ActivityItem } from "@/components/ActivityItem";
 
 export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
@@ -35,7 +36,9 @@ export default function DashboardScreen(): JSX.Element {
     .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance))
     .slice(0, 3);
 
-  const recentActivities = activities.slice(0, 3);
+  const recentActivities = [...activities]
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, 3);
 
   const greeting = new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening";
   const firstName = currentUser.name.split(" ")[0];
@@ -69,12 +72,8 @@ export default function DashboardScreen(): JSX.Element {
           {/* ── Enhanced Hero Card (Financial Overview) ── */}
           <View className="px-6 mb-8">
             <View
-              className="rounded-[32px] shadow-lg"
+              className="rounded-[32px]"
               style={{
-                shadowColor: "#3D2B82",
-                shadowOffset: { width: 0, height: 10 },
-                shadowOpacity: 0.25,
-                shadowRadius: 16,
               }}
             >
               <View className="bg-primary rounded-[32px] p-6 relative overflow-hidden">
@@ -191,7 +190,7 @@ export default function DashboardScreen(): JSX.Element {
                   const isPositive = f.balance > 0;
                   return (
                     <PressableFeedback key={f.user.id} onPress={() => router.push(`/friend/${f.user.id}`)}>
-                      <View className="flex-row items-center justify-between p-4 bg-surface rounded-[20px] shadow-sm border border-border">
+                      <View className="flex-row items-center justify-between p-4 bg-surface rounded-[20px] border border-border">
                         <View className="flex-row items-center gap-4">
                           <AppUserAvatar user={f.user} size="lg" />
                           <View>
@@ -239,36 +238,16 @@ export default function DashboardScreen(): JSX.Element {
                 </PressableFeedback>
               </View>
 
-              <View className="rounded-[24px] shadow-sm">
+              <View className="rounded-[24px]">
                 <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-                  {recentActivities.map((activity, idx) => {
-                    const isPositive = activity.type === "settlement" || Math.random() > 0.5; // Visual mock logic from activity.tsx
-                    return (
-                      <PressableFeedback key={activity.id} onPress={() => router.push("/(tabs)/activity")}>
-                        <View className={`flex-row items-center p-4 ${idx < recentActivities.length - 1 ? 'border-b border-border/50' : ''}`}>
-                          <View className={`w-12 h-12 rounded-[16px] items-center justify-center mr-4 ${isPositive ? 'bg-success/10' : 'bg-primary/10'}`}>
-                            {isPositive ? (
-                              <icons.ArrowDownLeft size={24} className="text-success" strokeWidth={2.5} />
-                            ) : (
-                              <icons.ArrowUpRight size={24} className="text-primary" strokeWidth={2.5} />
-                            )}
-                          </View>
-                          <View className="flex-1 mr-2">
-                            <Typography type="body" className="font-bold text-foreground" numberOfLines={1}>
-                              {activity.description}
-                            </Typography>
-                            <Typography type="body-sm" className="text-muted-foreground font-medium" numberOfLines={1}>
-                              {activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                            </Typography>
-                          </View>
-
-                          <Typography type="body" className={`font-black ${isPositive ? 'text-success' : 'text-foreground'}`}>
-                            {isPositive ? "+" : "-"}${Math.abs(activity.amount || 15).toFixed(2)}
-                          </Typography>
-                        </View>
-                      </PressableFeedback>
-                    );
-                  })}
+                  {recentActivities.map((activity, idx) => (
+                    <ActivityItem 
+                      key={activity.id} 
+                      activity={activity} 
+                      index={idx} 
+                      isLast={idx === recentActivities.length - 1} 
+                    />
+                  ))}
                 </View>
               </View>
             </View>

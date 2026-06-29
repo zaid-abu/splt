@@ -106,7 +106,7 @@ export interface Expense {
 
 export interface Settlement {
   id: string;
-  groupId: string;
+  groupId?: string;
   fromUserId: string;
   toUserId: string;
   fromUser: User;

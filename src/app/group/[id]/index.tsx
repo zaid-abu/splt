@@ -62,7 +62,7 @@ export default function GroupDetailScreen(): JSX.Element {
         {/* ── Back ───────────────────────────────────── */}
         <View className="pt-4 mb-4 px-4">
           <PressableFeedback onPress={() => router.back()}>
-            <View className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm border border-border">
+            <View className="w-10 h-10 rounded-full bg-white items-center justify-center border border-border">
               <icons.ChevronLeft size={24} color="#1E1A34" />
             </View>
           </PressableFeedback>
@@ -70,7 +70,7 @@ export default function GroupDetailScreen(): JSX.Element {
 
         {/* ── Group hero ─────────────────────────────── */}
         <View className="px-6 mb-8">
-          <View className="bg-white rounded-[32px] p-6 shadow-sm border border-border">
+          <View className="bg-white rounded-[32px] p-6 border border-border">
             <View className="flex-row items-center gap-4 mb-5">
               <View className="w-16 h-16 rounded-full bg-primary/10 items-center justify-center">
                 {(() => {
@@ -139,7 +139,7 @@ export default function GroupDetailScreen(): JSX.Element {
           <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase">
             Balances
           </Typography>
-          <View className="rounded-[24px] shadow-sm">
+          <View className="rounded-[24px]">
             <View className="bg-white rounded-[24px] overflow-hidden border border-border">
             {group.members.map((member, idx) => (
               <PressableFeedback key={member.userId} onPress={() => { }}>
@@ -186,7 +186,7 @@ export default function GroupDetailScreen(): JSX.Element {
 
         {expenses.length === 0 ? (
           <View className="px-6">
-            <View className="bg-white rounded-[24px] items-center p-8 shadow-sm border border-border">
+            <View className="bg-white rounded-[24px] items-center p-8 border border-border">
               <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
                 <Text style={{ fontSize: 32 }}>💸</Text>
               </View>
@@ -211,7 +211,7 @@ export default function GroupDetailScreen(): JSX.Element {
       </ScrollView>
 
       {/* ── Bottom Action Bar ──────────────────────── */}
-      <View className="bg-white border-t border-border/30 px-6 pt-4 pb-8 flex-row gap-4 shadow-sm">
+      <View className="bg-white border-t border-border/30 px-6 pt-4 pb-8 flex-row gap-4">
         <View className="flex-1">
           <PressableFeedback onPress={() => { }}>
             <View className="w-full h-[56px] rounded-full items-center justify-center bg-secondary flex-row gap-2">
@@ -225,7 +225,7 @@ export default function GroupDetailScreen(): JSX.Element {
 
         <View className="flex-1">
           <PressableFeedback onPress={() => router.push(`/expense/new?groupId=${group.id}`)}>
-            <View className="w-full h-[56px] rounded-full items-center justify-center bg-primary flex-row gap-2 shadow-sm">
+            <View className="w-full h-[56px] rounded-full items-center justify-center bg-primary flex-row gap-2">
               <icons.Plus size={20} color="white" />
               <Typography type="body" className="font-bold text-white">
                 Add Expense

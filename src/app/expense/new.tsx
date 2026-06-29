@@ -31,6 +31,7 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import { useApp } from "@/context/AppContext";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { formatAmount } from "@/components/AmountDisplay";
+import { CurrencySelector } from "@/components/CurrencySelector";
 import * as icons from "lucide-react-native";
 import type { ExpenseCategory, SplitMethod, User, GroupMember } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/types";
@@ -44,7 +45,7 @@ const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
 export default function AddExpenseScreen(): JSX.Element {
   const { groupId: initialGroupId } = useLocalSearchParams<{ groupId?: string }>();
   const router = useRouter();
-  const { getGroup, addExpense, currentUser, groups, preferredCurrency } = useApp();
+  const { getGroup, addExpense, currentUser, groups, preferredCurrency, setCurrency } = useApp();
 
   const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId ?? "");
   const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>([]);
@@ -85,7 +86,15 @@ export default function AddExpenseScreen(): JSX.Element {
     return [];
   }, [selectedGroup, selectedFriends, currentUser]);
 
-  const currency = selectedGroup?.currency || preferredCurrency.code;
+  const [expenseCurrency, setExpenseCurrency] = useState(preferredCurrency.code);
+
+  useEffect(() => {
+    if (selectedGroup) {
+      setExpenseCurrency(selectedGroup.currency);
+    } else {
+       setExpenseCurrency(preferredCurrency.code);
+    }
+  }, [selectedGroup, preferredCurrency.code]);
 
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
@@ -121,7 +130,7 @@ export default function AddExpenseScreen(): JSX.Element {
     if (includedMembers.length === 0) { setError("Include at least one member"); return; }
 
     if (splitMethod === "custom" && Math.abs(currentCustomSum - parsedAmount) > 0.01) {
-      setError(`Custom amounts must equal exactly ${formatAmount(parsedAmount, currency)}.`);
+      setError(`Custom amounts must equal exactly ${formatAmount(parsedAmount, expenseCurrency)}.`);
       return;
     }
 
@@ -157,7 +166,7 @@ export default function AddExpenseScreen(): JSX.Element {
         groupId: selectedGroup?.id,
         title: title.trim(),
         amount: parsedAmount,
-        currency,
+        currency: expenseCurrency,
         category,
         paidBy,
         splits,
@@ -198,7 +207,7 @@ export default function AddExpenseScreen(): JSX.Element {
                 </Typography>
 
                 <View className="px-6 mb-4">
-                  <View className="bg-white shadow-sm h-[44px] rounded-[16px] px-4 flex-row items-center border border-border">
+                  <View className="bg-white h-[44px] rounded-[16px] px-4 flex-row items-center border border-border">
                     <icons.Search size={18} color="#8A8798" />
                     <TextInput 
                       placeholder="Search friends or groups..."
@@ -210,9 +219,27 @@ export default function AddExpenseScreen(): JSX.Element {
                   </View>
                 </View>
 
+                {selectedFriends.length > 0 && (
+                  <View className="px-6 mb-4">
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                      {selectedFriends.map((f) => (
+                        <View key={f.id} className="flex-row items-center bg-primary/10 pl-1.5 pr-3 py-1.5 rounded-full border border-primary/20 gap-2">
+                          <AppUserAvatar user={f} size="sm" />
+                          <Typography type="body-sm" className="font-bold text-primary">{f.name.split(" ")[0]}</Typography>
+                          <PressableFeedback onPress={() => setSelectedFriendIds(prev => prev.filter(id => id !== f.id))}>
+                            <View className="bg-white/50 rounded-full p-1 ml-1">
+                              <icons.X size={12} className="text-primary" strokeWidth={3} />
+                            </View>
+                          </PressableFeedback>
+                        </View>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+
                 {/* ── Tabs ────────────────────────── */}
                 <Tabs value={selectionTab} onValueChange={setSelectionTab as any} variant="primary" className="px-6 gap-4">
-                  <Tabs.List className="w-full bg-white rounded-[16px] p-1 border border-border shadow-sm">
+                  <Tabs.List className="w-full bg-white rounded-[16px] p-1 border border-border">
                     <Tabs.Indicator className="bg-primary rounded-[12px]" />
                     <Tabs.Trigger value="friends" className="flex-1 h-[40px]">
                       {({ isSelected }) => <Tabs.Label className={`font-bold text-sm ${isSelected ? 'text-white' : 'text-foreground'}`}>Friends</Tabs.Label>}
@@ -223,7 +250,7 @@ export default function AddExpenseScreen(): JSX.Element {
                   </Tabs.List>
 
                   <Tabs.Content value="friends">
-                    <View className="rounded-[24px] shadow-sm">
+                    <View className="rounded-[24px]">
                       <View className="bg-white rounded-[24px] overflow-hidden border border-border">
                       {filteredFriends.length > 0 ? filteredFriends.map((f, idx) => {
                         const isSelected = selectedFriendIds.includes(f.id);
@@ -256,7 +283,7 @@ export default function AddExpenseScreen(): JSX.Element {
                   </Tabs.Content>
 
                   <Tabs.Content value="groups">
-                    <View className="rounded-[24px] shadow-sm">
+                    <View className="rounded-[24px]">
                       <View className="bg-white rounded-[24px] overflow-hidden border border-border">
                       {filteredGroups.length > 0 ? filteredGroups.map((g, idx) => {
                         const GroupIcon = (icons as any)[g.icon] || icons.Users;
@@ -307,7 +334,7 @@ export default function AddExpenseScreen(): JSX.Element {
           {/* ── Context pill (Selected Group/Friend) ── */}
           {(selectedGroup || selectedFriends.length > 0) && selectionConfirmed && !initialGroupId && (
             <Animated.View entering={FadeInUp.duration(300)} className="px-6 mb-8">
-              <View className="flex-row items-center justify-between bg-white rounded-[24px] p-4 shadow-sm border border-border">
+              <View className="flex-row items-center justify-between bg-white rounded-[24px] p-4 border border-border">
                 <View className="flex-row items-center gap-4 flex-1 pr-2">
                   {selectedGroup ? (
                     <View className="w-12 h-12 rounded-[16px] bg-primary/10 items-center justify-center">
@@ -326,7 +353,7 @@ export default function AddExpenseScreen(): JSX.Element {
                       {selectedGroup ? selectedGroup.name : selectedFriends.map(f => f.name.split(" ")[0]).join(", ")}
                     </Typography>
                     <Typography type="body-sm" className="text-muted-foreground font-medium mt-0.5">
-                      Currency: {currency}
+                      Currency: {expenseCurrency}
                     </Typography>
                   </View>
                 </View>
@@ -337,7 +364,7 @@ export default function AddExpenseScreen(): JSX.Element {
 
           {initialGroupId && selectedGroup && (
              <View className="px-6 mb-8">
-                <View className="flex-row items-center gap-4 bg-white rounded-[24px] p-4 shadow-sm border border-border">
+                <View className="flex-row items-center gap-4 bg-white rounded-[24px] p-4 border border-border">
                   <View className="w-12 h-12 rounded-[16px] bg-primary/10 items-center justify-center">
                     {(() => {
                       const GroupIcon = (icons as any)[selectedGroup.icon] || icons.Users;
@@ -354,13 +381,22 @@ export default function AddExpenseScreen(): JSX.Element {
 
           {(selectedGroup || selectedFriends.length > 0) && selectionConfirmed && (
             <Animated.View entering={FadeInUp.duration(300).delay(100)}>
-              {/* ── Title + Amount ─────────────────────── */}
+              {/* ── Title + Amount + Currency ────────────── */}
               <View className="px-6 mb-8 gap-5">
+                <CurrencySelector 
+                  label="Currency" 
+                  value={expenseCurrency} 
+                  onChange={(c) => {
+                    setExpenseCurrency(c.code);
+                    if (!selectedGroup) setCurrency(c);
+                  }} 
+                />
+
                 <View>
                   <Typography type="body-sm" className="font-bold text-muted-foreground tracking-widest mb-2 ml-2 uppercase">
                     What was it for?
                   </Typography>
-                  <View className={`bg-white shadow-sm h-[56px] rounded-[20px] px-4 justify-center border ${error && !title.trim() ? 'border-danger' : 'border-border'}`}>
+                  <View className={`bg-white h-[56px] rounded-[20px] px-4 justify-center border ${error && !title.trim() ? 'border-danger' : 'border-border'}`}>
                     <TextInput 
                       placeholder="e.g. Dinner, Uber, Groceries…"
                       value={title}
@@ -374,9 +410,9 @@ export default function AddExpenseScreen(): JSX.Element {
 
                 <View>
                   <Typography type="body-sm" className="font-bold text-muted-foreground tracking-widest mb-2 ml-2 uppercase">
-                    Amount ({currency})
+                    Amount ({expenseCurrency})
                   </Typography>
-                  <View className={`bg-white shadow-sm h-[56px] rounded-[20px] px-4 justify-center border ${error && (!parsedAmount || parsedAmount <= 0) ? 'border-danger' : 'border-border'}`}>
+                  <View className={`bg-white h-[56px] rounded-[20px] px-4 justify-center border ${error && (!parsedAmount || parsedAmount <= 0) ? 'border-danger' : 'border-border'}`}>
                     <TextInput 
                       placeholder="0.00"
                       value={amount}
@@ -407,7 +443,7 @@ export default function AddExpenseScreen(): JSX.Element {
                 <View className="flex-row gap-3">
                   {[{ key: "today", label: "Today" }, { key: "yesterday", label: "Yesterday" }].map((d) => (
                     <PressableFeedback key={d.key} onPress={() => setExpenseDate(d.key as any)}>
-                      <View className={`px-5 h-[44px] rounded-full items-center justify-center border-2 ${expenseDate === d.key ? 'bg-primary border-primary' : 'bg-white border-transparent shadow-sm'}`}>
+                      <View className={`px-5 h-[44px] rounded-full items-center justify-center border-2 ${expenseDate === d.key ? 'bg-primary border-primary' : 'bg-white border-transparent'}`}>
                         <Typography type="body-sm" className={`font-bold ${expenseDate === d.key ? 'text-white' : 'text-foreground'}`}>
                           {d.label}
                         </Typography>
@@ -432,7 +468,7 @@ export default function AddExpenseScreen(): JSX.Element {
                     const isSelected = category === cat.key;
                     return (
                       <PressableFeedback key={cat.key} onPress={() => setCategory(cat.key)}>
-                        <View className={`flex-row items-center gap-2 px-4 h-[44px] rounded-full border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent shadow-sm'}`}>
+                        <View className={`flex-row items-center gap-2 px-4 h-[44px] rounded-full border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent'}`}>
                           <CatIcon size={18} color={isSelected ? "white" : "#8A8798"} strokeWidth={isSelected ? 2.5 : 2} />
                           <Typography type="body-sm" className={`font-bold ${isSelected ? 'text-white' : 'text-foreground'}`}>
                             {cat.label}
@@ -458,7 +494,7 @@ export default function AddExpenseScreen(): JSX.Element {
                     const isSelected = paidBy === u.id;
                     return (
                       <PressableFeedback key={u.id} onPress={() => setPaidBy(u.id)}>
-                        <View className={`flex-row items-center gap-2 px-2 pr-4 h-[44px] rounded-full border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent shadow-sm'}`}>
+                        <View className={`flex-row items-center gap-2 px-2 pr-4 h-[44px] rounded-full border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent'}`}>
                           <AppUserAvatar user={u} size="sm" />
                           <Typography type="body-sm" className={`font-bold ${isSelected ? 'text-white' : 'text-foreground'}`}>
                             {u.id === currentUser.id ? "You" : u.name.split(" ")[0]}
@@ -481,7 +517,7 @@ export default function AddExpenseScreen(): JSX.Element {
                     return (
                       <View key={method.key} className="flex-1">
                         <PressableFeedback onPress={() => setSplitMethod(method.key)}>
-                          <View className={`h-[48px] rounded-[16px] items-center justify-center border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent shadow-sm'}`}>
+                          <View className={`h-[48px] rounded-[16px] items-center justify-center border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent'}`}>
                             <Typography type="body-sm" className={`font-bold ${isSelected ? 'text-white' : 'text-foreground'}`}>
                               {method.label}
                             </Typography>
@@ -501,7 +537,7 @@ export default function AddExpenseScreen(): JSX.Element {
                   </Typography>
                   {splitMethod === "custom" && parsedAmount > 0 && (
                      <Typography type="body-xs" className={`font-bold ${remainingCustom === 0 ? 'text-success' : 'text-danger'}`}>
-                        Remaining: {formatAmount(remainingCustom, currency)}
+                        Remaining: {formatAmount(remainingCustom, expenseCurrency)}
                      </Typography>
                   )}
                   {splitMethod === "percentage" && parsedAmount > 0 && (
@@ -510,7 +546,7 @@ export default function AddExpenseScreen(): JSX.Element {
                      </Typography>
                   )}
                 </View>
-                <View className="bg-white rounded-[24px] overflow-hidden border border-border shadow-sm">
+                <View className="bg-white rounded-[24px] overflow-hidden border border-border">
                   {participants.map((u, idx) => {
                     const isIncluded = included[u.id] ?? true;
                     return (
@@ -534,13 +570,13 @@ export default function AddExpenseScreen(): JSX.Element {
                           {splitMethod === "equal" && isIncluded && parsedAmount > 0 && (
                             <View className="bg-success/10 px-3 py-1.5 rounded-full border border-success/20">
                               <Typography type="body-sm" className="font-bold text-success">
-                                {formatAmount(equalShare, currency)}
+                                {formatAmount(equalShare, expenseCurrency)}
                               </Typography>
                             </View>
                           )}
 
                           {splitMethod === "custom" && isIncluded && (
-                            <View className="w-[100px] bg-background shadow-sm h-[44px] rounded-[14px] px-3 justify-center border border-border">
+                            <View className="w-[100px] bg-background h-[44px] rounded-[14px] px-3 justify-center border border-border">
                               <TextInput
                                 placeholder="0.00"
                                 value={customAmounts[u.id] ?? ""}
@@ -556,7 +592,7 @@ export default function AddExpenseScreen(): JSX.Element {
 
                           {splitMethod === "percentage" && isIncluded && (
                             <View className="flex-row items-center gap-2">
-                              <View className="w-[80px] bg-background shadow-sm h-[44px] rounded-[14px] px-3 justify-center border border-border">
+                              <View className="w-[80px] bg-background h-[44px] rounded-[14px] px-3 justify-center border border-border">
                                 <TextInput
                                   placeholder="0"
                                   value={customPercentages[u.id] ?? ""}
@@ -603,7 +639,7 @@ export default function AddExpenseScreen(): JSX.Element {
                 }
               }}
             >
-              <View className={`w-full h-[56px] rounded-[20px] items-center justify-center shadow-sm ${(!selectedGroup && selectedFriends.length === 0) ? 'bg-primary/70' : 'bg-primary'}`}>
+              <View className={`w-full h-[56px] rounded-[20px] items-center justify-center ${(!selectedGroup && selectedFriends.length === 0) ? 'bg-primary/70' : 'bg-primary'}`}>
                 <Typography type="body" className="font-bold text-white">
                   Continue
                 </Typography>
@@ -611,7 +647,7 @@ export default function AddExpenseScreen(): JSX.Element {
             </PressableFeedback>
           ) : (
             <PressableFeedback onPress={loading ? undefined : handleSubmit}>
-              <View className={`w-full h-[56px] rounded-[20px] items-center justify-center shadow-sm ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+              <View className={`w-full h-[56px] rounded-[20px] items-center justify-center ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
                 <Typography type="body" className="font-bold text-white">
                   {loading ? "Adding…" : "Add Expense"}
                 </Typography>

@@ -42,7 +42,7 @@ export default function GroupsScreen(): JSX.Element {
             Groups
           </Typography>
           <PressableFeedback 
-            className="w-12 h-12 rounded-full bg-primary items-center justify-center shadow-sm"
+            className="w-12 h-12 rounded-full bg-primary items-center justify-center"
             onPress={() => router.push("/group/new")}
           >
             <icons.Plus size={24} color="white" strokeWidth={3} />
@@ -52,7 +52,7 @@ export default function GroupsScreen(): JSX.Element {
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className="px-6" contentContainerStyle={{ paddingBottom: 100 }}>
           
           {/* Search */}
-          <View className="bg-white shadow-sm h-[52px] rounded-[16px] flex-row items-center px-4 mb-6" style={{ borderWidth: 0 }}>
+          <View className="bg-white h-[52px] rounded-[16px] flex-row items-center px-4 mb-6" style={{ borderWidth: 0 }}>
             <icons.Search size={20} className="text-primary mr-3" />
             <TextInput 
               value={search}

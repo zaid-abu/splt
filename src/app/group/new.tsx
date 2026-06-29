@@ -100,7 +100,7 @@ export default function NewGroupScreen(): JSX.Element {
                 return (
                   <PressableFeedback key={i} onPress={() => setIcon(i)}>
                     <View 
-                      className={`w-14 h-14 rounded-full items-center justify-center border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent shadow-sm'}`}
+                      className={`w-14 h-14 rounded-full items-center justify-center border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent'}`}
                     >
                       <IconComponent 
                         size={24} 
@@ -116,7 +116,7 @@ export default function NewGroupScreen(): JSX.Element {
 
           {/* ── Preview ───────────────────────────────── */}
           <View className="px-6 mb-8">
-            <View className="items-center bg-white rounded-[32px] p-6 shadow-sm border border-border">
+            <View className="items-center bg-white rounded-[32px] p-6 border border-border">
               <View className="w-20 h-20 rounded-full bg-primary/10 items-center justify-center mb-4">
                 {(() => {
                   const PreviewIcon = (icons as any)[icon] || icons.HelpCircle;
@@ -145,7 +145,7 @@ export default function NewGroupScreen(): JSX.Element {
               <Typography type="body-sm" className="font-bold text-muted-foreground tracking-widest mb-2 ml-2">
                 GROUP NAME
               </Typography>
-              <View className={`bg-white shadow-sm h-[56px] rounded-[20px] px-4 justify-center border ${error && !name.trim() ? 'border-danger' : 'border-border'}`}>
+              <View className={`bg-white h-[56px] rounded-[20px] px-4 justify-center border ${error && !name.trim() ? 'border-danger' : 'border-border'}`}>
                 <TextInput 
                   value={name}
                   onChangeText={(t) => { setName(t); setError(""); }}
@@ -161,7 +161,7 @@ export default function NewGroupScreen(): JSX.Element {
               <Typography type="body-sm" className="font-bold text-muted-foreground tracking-widest mb-2 ml-2">
                 DESCRIPTION (OPTIONAL)
               </Typography>
-              <View className="bg-white shadow-sm rounded-[20px] px-4 py-3 border border-border">
+              <View className="bg-white rounded-[20px] px-4 py-3 border border-border">
                 <TextInput 
                   value={description}
                   onChangeText={setDescription}
@@ -180,7 +180,7 @@ export default function NewGroupScreen(): JSX.Element {
             <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-2">
               CURRENCY
             </Typography>
-            <View className="bg-white rounded-[24px] p-5 shadow-sm border border-border">
+            <View className="bg-white rounded-[24px] p-5 border border-border">
               <Typography type="body-sm" className="text-muted-foreground font-medium mb-4">
                 All expenses will use this currency
               </Typography>
@@ -220,7 +220,7 @@ export default function NewGroupScreen(): JSX.Element {
         {/* ── Fixed Submit Button ────────────────────────────────── */}
         <View className="px-6 py-4 bg-background border-t border-border/50">
           <PressableFeedback onPress={loading ? undefined : handleCreate}>
-            <View className={`w-full h-[56px] rounded-[20px] items-center justify-center shadow-sm ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+            <View className={`w-full h-[56px] rounded-[20px] items-center justify-center ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
               <Typography type="body" className="font-bold text-white">
                 {loading ? "Creating…" : "Create Group"}
               </Typography>

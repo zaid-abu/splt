@@ -96,13 +96,13 @@ export default function FriendDetailScreen(): JSX.Element {
           {/* ── Actions ────────────────────────────────── */}
           <View className="px-6 flex-row gap-3 mb-8">
             <View className="flex-1">
-              <Button onPress={() => {}} className="rounded-full shadow-sm" variant="outline">
+              <Button onPress={() => router.push(`/settle/${id}`)} className="rounded-full" variant="outline">
                 Settle up
               </Button>
             </View>
             <View className="flex-1">
               <PressableFeedback onPress={() => router.push(`/expense/new`)}>
-                <View className="w-full h-[56px] rounded-full items-center justify-center bg-primary flex-row gap-2 shadow-sm">
+                <View className="w-full h-[56px] rounded-full items-center justify-center bg-primary flex-row gap-2">
                   <icons.Plus size={20} color="white" />
                   <Typography type="body" className="font-bold text-white">
                     Expense
@@ -121,7 +121,7 @@ export default function FriendDetailScreen(): JSX.Element {
 
           {sharedExpenses.length === 0 ? (
             <View className="px-6">
-              <View className="bg-white rounded-[24px] items-center p-8 shadow-sm border border-border">
+              <View className="bg-white rounded-[24px] items-center p-8 border border-border">
                 <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
                   <Text style={{ fontSize: 32 }}>💸</Text>
                 </View>

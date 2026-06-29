@@ -2,6 +2,7 @@ import { Stack } from "expo-router";
 import { HeroUINativeProvider } from "heroui-native";
 import type { JSX } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 
 import { AppProvider } from "@/context/AppContext";
 import "../global.css";
@@ -10,8 +11,9 @@ export default function RootLayout(): JSX.Element {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider config={{ devInfo: { stylingPrinciples: false } }}>
-        <AppProvider>
-          <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
+        <BottomSheetModalProvider>
+          <AppProvider>
+            <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
             <Stack.Screen name="(auth)" />
             <Stack.Screen name="(tabs)" />
             <Stack.Screen
@@ -32,8 +34,16 @@ export default function RootLayout(): JSX.Element {
                 headerShown: false,
               }}
             />
-          </Stack>
-        </AppProvider>
+            <Stack.Screen
+              name="settle/[id]"
+              options={{
+                presentation: "modal",
+                headerShown: false,
+              }}
+            />
+            </Stack>
+          </AppProvider>
+        </BottomSheetModalProvider>
       </HeroUINativeProvider>
     </GestureHandlerRootView>
   );

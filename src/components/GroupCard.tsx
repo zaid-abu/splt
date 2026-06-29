@@ -25,7 +25,7 @@ export function GroupCard({ group, currentUserId, onPress }: GroupCardProps): JS
 
   return (
     <PressableFeedback onPress={onPress} className="mb-4">
-      <View className="bg-surface rounded-[24px] p-5 shadow-sm border border-border">
+      <View className="bg-surface rounded-[24px] p-5 border border-border">
         <View className="flex-row items-center justify-between mb-4">
           <View className="flex-row items-center gap-3">
             <View className="w-12 h-12 rounded-full bg-primary/10 items-center justify-center">

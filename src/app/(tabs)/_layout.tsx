@@ -66,7 +66,7 @@ export default function TabsLayout(): JSX.Element {
       tabBar={({ state, navigation }) => {
         return (
           <View
-            className="flex-row items-center justify-between shadow-lg"
+            className="flex-row items-center justify-between"
             style={{
               position: 'absolute',
               bottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 16) + 10 : 20,
@@ -78,10 +78,6 @@ export default function TabsLayout(): JSX.Element {
               paddingHorizontal: 12,
               borderWidth: 1,
               borderColor: 'rgba(0,0,0,0.05)',
-              shadowColor: "#000",
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.1,
-              shadowRadius: 16,
               elevation: 10,
             }}
           >
@@ -105,10 +101,6 @@ export default function TabsLayout(): JSX.Element {
             <View className="flex-1 items-center justify-center h-14">
               <View
                 style={{
-                  shadowColor: "#3D2B82",
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.35,
-                  shadowRadius: 8,
                   elevation: 5,
                   borderRadius: 24, // for elevation to know the shape
                 }}

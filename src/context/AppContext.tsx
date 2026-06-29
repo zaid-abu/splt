@@ -6,6 +6,7 @@ import {
   MOCK_EXPENSES,
   MOCK_GROUPS,
   MOCK_ME,
+  MOCK_SETTLEMENTS,
 } from "@/lib/mock-data";
 import type {
   Activity,
@@ -17,6 +18,7 @@ import type {
   GroupMember,
   SplitMethod,
   User,
+  Settlement,
 } from "@/types";
 import { CURRENCIES } from "@/types";
 
@@ -69,6 +71,17 @@ interface AppContextValue {
   getTotalOwedToMe: () => number;
   getTotalIOwe: () => number;
   getUserBalances: () => Map<string, number>;
+
+  // Settlements
+  addSettlement: (data: {
+    groupId?: string;
+    fromUserId: string;
+    toUserId: string;
+    amount: number;
+    currency: string;
+    date: Date;
+    note?: string;
+  }) => Settlement;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -76,6 +89,28 @@ interface AppContextValue {
 const AppContext = createContext<AppContextValue | null>(null);
 
 // ─── Provider ─────────────────────────────────────────────────────────────────
+
+const FALLBACK_RATES: Record<string, number> = {
+  USD: 1,
+  EUR: 0.92,
+  GBP: 0.79,
+  JPY: 151,
+  INR: 83.5,
+  CAD: 1.36,
+  AUD: 1.53,
+  CHF: 0.90,
+  CNY: 7.23,
+  MXN: 16.7,
+  BRL: 5.0,
+  AED: 3.67,
+  SAR: 3.75,
+  SGD: 1.35,
+  HKD: 7.83,
+  KRW: 1350,
+  SEK: 10.7,
+  NOK: 10.9,
+  NZD: 1.67,
+};
 
 let expenseCounter = MOCK_EXPENSES.length + 1;
 let groupCounter = MOCK_GROUPS.length + 1;
@@ -86,9 +121,23 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   const [groups, setGroups] = useState<Group[]>(MOCK_GROUPS);
   const [expenses, setExpenses] = useState<Expense[]>(MOCK_EXPENSES);
   const [activities, setActivities] = useState<Activity[]>(MOCK_ACTIVITIES);
+  const [settlements, setSettlements] = useState<Settlement[]>(MOCK_SETTLEMENTS);
   const [preferredCurrency, setPreferredCurrency] = useState<Currency>(
-    CURRENCIES.find((c) => c.code === "USD") ?? CURRENCIES[0]!,
+    CURRENCIES.find((c) => c.code === "INR") ?? CURRENCIES[0]!,
   );
+  const [exchangeRates, setExchangeRates] = useState<Record<string, number>>(FALLBACK_RATES);
+
+  // Fetch live rates on mount
+  React.useEffect(() => {
+    fetch("https://open.er-api.com/v6/latest/USD")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.result === "success" && data.rates) {
+          setExchangeRates(data.rates);
+        }
+      })
+      .catch((err) => console.warn("Failed to fetch live rates, using fallbacks:", err));
+  }, []);
 
   // ── Auth ──────────────────────────────────────────────────────────────────
 
@@ -107,6 +156,13 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   const setCurrency = useCallback((currency: Currency) => {
     setPreferredCurrency(currency);
   }, []);
+
+  const convertCurrency = useCallback((amount: number, from: string, to: string) => {
+    if (from === to) return amount;
+    const rateFrom = exchangeRates[from] || FALLBACK_RATES[from] || 1;
+    const rateTo = exchangeRates[to] || FALLBACK_RATES[to] || 1;
+    return (amount / rateFrom) * rateTo;
+  }, [exchangeRates]);
 
   // ── Groups ────────────────────────────────────────────────────────────────
 
@@ -213,7 +269,8 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         setGroups((prev) =>
           prev.map((g) => {
             if (g.id !== data.groupId) return g;
-            return { ...g, totalExpenses: g.totalExpenses + data.amount };
+            const amountInGroupCurrency = convertCurrency(data.amount, data.currency, g.currency);
+            return { ...g, totalExpenses: g.totalExpenses + amountInGroupCurrency };
           }),
         );
       }
@@ -246,18 +303,31 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       if (exp.paidBy === currentUser.id) {
         exp.splits.forEach((s) => {
           if (s.userId !== currentUser.id) {
-            balances.set(s.userId, (balances.get(s.userId) || 0) + s.amount);
+            const amtInPref = convertCurrency(s.amount, exp.currency, preferredCurrency.code);
+            balances.set(s.userId, (balances.get(s.userId) || 0) + amtInPref);
           }
         });
       } else {
         const mySplit = exp.splits.find((s) => s.userId === currentUser.id);
         if (mySplit) {
-          balances.set(exp.paidBy, (balances.get(exp.paidBy) || 0) - mySplit.amount);
+          const amtInPref = convertCurrency(mySplit.amount, exp.currency, preferredCurrency.code);
+          balances.set(exp.paidBy, (balances.get(exp.paidBy) || 0) - amtInPref);
         }
       }
     });
+
+    settlements.forEach((set) => {
+      if (set.fromUserId === currentUser.id) {
+        const amtInPref = convertCurrency(set.amount, set.currency, preferredCurrency.code);
+        balances.set(set.toUserId, (balances.get(set.toUserId) || 0) + amtInPref);
+      } else if (set.toUserId === currentUser.id) {
+        const amtInPref = convertCurrency(set.amount, set.currency, preferredCurrency.code);
+        balances.set(set.fromUserId, (balances.get(set.fromUserId) || 0) - amtInPref);
+      }
+    });
+
     return balances;
-  }, [expenses, currentUser.id]);
+  }, [expenses, settlements, currentUser.id, preferredCurrency.code, convertCurrency]);
 
   const getTotalOwedToMe = useCallback(() => {
     let total = 0;
@@ -278,6 +348,59 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   const getNetBalance = useCallback(() => {
     return getTotalOwedToMe() - getTotalIOwe();
   }, [getTotalOwedToMe, getTotalIOwe]);
+
+  // ── Settlements ──────────────────────────────────────────────────────────
+
+  const addSettlement = useCallback(
+    (data: {
+      groupId?: string;
+      fromUserId: string;
+      toUserId: string;
+      amount: number;
+      currency: string;
+      date: Date;
+      note?: string;
+    }) => {
+      const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
+      const uniqueUsers = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
+      const fromUser = uniqueUsers.find(u => u.id === data.fromUserId) || currentUser;
+      const toUser = uniqueUsers.find(u => u.id === data.toUserId) || currentUser;
+
+      const newSettlement: Settlement = {
+        id: `settle-${Date.now()}`,
+        groupId: data.groupId,
+        fromUserId: data.fromUserId,
+        toUserId: data.toUserId,
+        fromUser,
+        toUser,
+        amount: data.amount,
+        currency: data.currency,
+        date: data.date,
+        note: data.note,
+      };
+
+      setSettlements((prev) => [newSettlement, ...prev]);
+
+      const newActivity: Activity = {
+        id: `act-${Date.now()}`,
+        type: "settlement",
+        groupId: data.groupId,
+        settlement: newSettlement,
+        userId: currentUser.id,
+        user: currentUser,
+        description: data.fromUserId === currentUser.id 
+          ? `You paid ${toUser.name.split(" ")[0]}` 
+          : `${fromUser.name.split(" ")[0]} paid you`,
+        amount: data.amount,
+        currency: data.currency,
+        date: new Date(),
+      };
+      setActivities((prev) => [newActivity, ...prev]);
+
+      return newSettlement;
+    },
+    [currentUser, groups],
+  );
 
   // ─────────────────────────────────────────────────────────────────────────
 
@@ -302,6 +425,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         getTotalOwedToMe,
         getTotalIOwe,
         getUserBalances,
+        addSettlement,
       }}
     >
       {children}

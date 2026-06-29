@@ -1,7 +1,7 @@
 import { PressableFeedback, Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,6 +12,8 @@ import { useApp } from "@/context/AppContext";
 import { PageAnimator } from "@/components/PageAnimator";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { formatAmount } from "@/components/AmountDisplay";
+import { ActivityItem } from "@/components/ActivityItem";
+import type { Activity } from "@/types";
 
 export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
@@ -23,18 +25,31 @@ export default function ActivityScreen(): JSX.Element {
   const owedToMe = getTotalOwedToMe();
   const iOwe = Math.abs(getTotalIOwe());
 
-  const chartData = [
-    { label: "Jan", value: 25, opacity: 0.2 },
-    { label: "Feb", value: 40, opacity: 0.2 },
-    { label: "Mar", value: 50, opacity: 0.2 },
-    { label: "Apr", value: 35, opacity: 0.2 },
-    { label: "May", value: 65, opacity: 1, highlight: "$ 7.200" },
-    { label: "Jun", value: 30, opacity: 0.2 },
-  ];
+  // Sort activities by date descending
+  const sortedActivities = useMemo(() => {
+    return [...activities].sort((a, b) => b.date.getTime() - a.date.getTime());
+  }, [activities]);
 
-  const filteredActivities = activities.filter((a) =>
-    a.description.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredActivities = useMemo(() => {
+    if (!searchQuery.trim()) return sortedActivities;
+    return sortedActivities.filter((a) =>
+      a.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [sortedActivities, searchQuery]);
+
+  // Group activities by month-year
+  const groupedActivities = useMemo(() => {
+    const groups: Record<string, Activity[]> = {};
+    filteredActivities.forEach((activity) => {
+      const date = activity.date;
+      const monthYear = date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      if (!groups[monthYear]) {
+        groups[monthYear] = [];
+      }
+      groups[monthYear].push(activity);
+    });
+    return Object.entries(groups).map(([title, data]) => ({ title, data }));
+  }, [filteredActivities]);
 
   return (
     <PageAnimator>
@@ -51,16 +66,16 @@ export default function ActivityScreen(): JSX.Element {
               Activity
             </Typography>
             <PressableFeedback onPress={() => router.push("/profile")}>
-              <View className="border-2 border-transparent rounded-full shadow-sm">
+              <View className="border-2 border-transparent rounded-full">
                 <AppUserAvatar user={currentUser} size="md" />
               </View>
             </PressableFeedback>
           </View>
 
           {/* ── Stats Row ─────────────────────────────── */}
-          <Animated.View entering={FadeInDown.delay(100).springify()} className="px-6 mb-6">
+          <Animated.View entering={FadeInDown.delay(100).springify()} className="px-6 mb-8">
             <View className="flex-row gap-4">
-              <View className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-border">
+              <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
                 <View className="w-10 h-10 rounded-full bg-success/10 items-center justify-center mb-3">
                   <icons.ArrowDownLeft size={20} className="text-success" />
                 </View>
@@ -72,7 +87,7 @@ export default function ActivityScreen(): JSX.Element {
                 </Typography>
               </View>
 
-              <View className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-border">
+              <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
                 <View className="w-10 h-10 rounded-full bg-danger/10 items-center justify-center mb-3">
                   <icons.ArrowUpRight size={20} className="text-danger" />
                 </View>
@@ -86,44 +101,14 @@ export default function ActivityScreen(): JSX.Element {
             </View>
           </Animated.View>
 
-          {/* ── Chart ─────────────────────────────────── */}
-          <Animated.View entering={FadeInDown.delay(300).springify()} className="px-6 mb-10 mt-4">
-            <View className="h-[220px] flex-row justify-between bg-white rounded-[24px] p-5 shadow-sm border border-border">
-              {chartData.map((data, i) => (
-                <View key={i} className="items-center flex-1 h-full">
-                  <View className="flex-1 justify-end items-center w-full relative">
-                    {data.highlight && (
-                      <View 
-                        className="bg-foreground py-1.5 rounded-[8px] absolute z-10 shadow-sm items-center justify-center"
-                        style={{ width: 64, left: '50%', marginLeft: -32, bottom: `${data.value}%`, marginBottom: 8 }}
-                      >
-                        <Typography type="body-xs" className="text-white font-bold" numberOfLines={1}>{data.highlight}</Typography>
-                      </View>
-                    )}
-                    <View 
-                      className="bg-primary w-[32px] rounded-t-[12px] rounded-b-[4px]"
-                      style={{
-                        height: `${data.value}%`,
-                        opacity: data.opacity,
-                      }} 
-                    />
-                  </View>
-                  <Typography type="body-xs" className="mt-3 text-muted-foreground font-bold">
-                    {data.label}
-                  </Typography>
-                </View>
-              ))}
-            </View>
-          </Animated.View>
-
-          {/* ── Transactions ──────────────────────────── */}
-          <Animated.View entering={FadeInDown.delay(400).springify()} className="px-6 mb-4 h-[44px] justify-center">
+          {/* ── Transactions Search ──────────────────────────── */}
+          <Animated.View entering={FadeInDown.delay(200).springify()} className="px-6 mb-6 h-[44px] justify-center">
             {isSearching ? (
               <View className="flex-row items-center bg-white h-full rounded-[16px] px-4 border border-border">
                 <icons.Search size={18} className="text-muted-foreground mr-2" />
                 <TextInput
                   autoFocus
-                  placeholder="Search transactions..."
+                  placeholder="Search activity..."
                   value={searchQuery}
                   onChangeText={setSearchQuery}
                   className="flex-1 font-medium text-foreground text-[14px]"
@@ -136,7 +121,7 @@ export default function ActivityScreen(): JSX.Element {
             ) : (
               <View className="flex-row items-center justify-between">
                 <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest ml-2 uppercase">
-                  Recent Transactions
+                  Timeline
                 </Typography>
                 <PressableFeedback onPress={() => setIsSearching(true)}>
                   <icons.Search size={20} className="text-muted-foreground mr-2" />
@@ -145,50 +130,39 @@ export default function ActivityScreen(): JSX.Element {
             )}
           </Animated.View>
 
-          {/* Transactions List */}
-          <View className="px-6 mb-8">
-            <View className="rounded-[24px] shadow-sm">
-              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-              {filteredActivities.length === 0 ? (
-                <View className="p-8 items-center justify-center">
-                  <Typography type="body" className="text-muted-foreground">
-                    {searchQuery ? "No matching transactions found" : "No recent activity"}
-                  </Typography>
+          {/* ── Timeline List ─────────────────────────────── */}
+          <View className="px-6 mb-8 gap-6">
+            {groupedActivities.length === 0 ? (
+              <View className="p-8 bg-white rounded-[24px] items-center justify-center border border-border border-dashed mt-4">
+                <View className="w-12 h-12 rounded-full bg-secondary items-center justify-center mb-3">
+                  <icons.Activity size={24} className="text-muted-foreground" />
                 </View>
-              ) : (
-                filteredActivities.slice(0, 10).map((activity, idx) => {
-                  const isPositive = activity.type === "settlement" || Math.random() > 0.5; // Mocking visual
-                  return (
-                    <Animated.View key={activity.id} entering={FadeInDown.delay(500 + idx * 50).springify()}>
-                      <PressableFeedback>
-                        <View className={`flex-row items-center p-4 ${idx < filteredActivities.length - 1 ? 'border-b border-border/50' : ''}`}>
-                          <View className={`w-12 h-12 rounded-[16px] items-center justify-center mr-4 ${isPositive ? 'bg-success/10' : 'bg-primary/10'}`}>
-                            {isPositive ? (
-                              <icons.ArrowDownLeft size={24} className="text-success" strokeWidth={2.5} />
-                            ) : (
-                              <icons.ArrowUpRight size={24} className="text-primary" strokeWidth={2.5} />
-                            )}
-                          </View>
-                          <View className="flex-1 mr-2">
-                            <Typography type="body" className="font-bold text-foreground" numberOfLines={1}>
-                              {activity.description}
-                            </Typography>
-                            <Typography type="body-sm" className="text-muted-foreground font-medium" numberOfLines={1}>
-                              {activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-                            </Typography>
-                          </View>
-                          
-                          <Typography type="body" className={`font-black ${isPositive ? 'text-success' : 'text-foreground'}`}>
-                            {isPositive ? "+" : "-"}${Math.abs(activity.amount || 15).toFixed(2)}
-                          </Typography>
-                        </View>
-                      </PressableFeedback>
-                    </Animated.View>
-                  );
-                })
-              )}
-            </View>
-            </View>
+                <Typography type="body" className="font-bold text-foreground">
+                  No activity found
+                </Typography>
+                <Typography type="body-sm" className="text-muted-foreground text-center mt-1">
+                  {searchQuery ? "Try a different search term." : "You have no recent activity."}
+                </Typography>
+              </View>
+            ) : (
+              groupedActivities.map((group, groupIdx) => (
+                <View key={group.title}>
+                  <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest ml-2 uppercase mb-3">
+                    {group.title}
+                  </Typography>
+                  <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+                    {group.data.map((activity, idx) => (
+                      <ActivityItem 
+                        key={activity.id} 
+                        activity={activity} 
+                        index={groupIdx * 5 + idx} 
+                        isLast={idx === group.data.length - 1} 
+                      />
+                    ))}
+                  </View>
+                </View>
+              ))
+            )}
           </View>
         </ScrollView>
       </SafeAreaView>

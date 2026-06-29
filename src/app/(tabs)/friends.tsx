@@ -40,7 +40,7 @@ export default function FriendsScreen(): JSX.Element {
             Friends
           </Typography>
           <PressableFeedback 
-            className="w-12 h-12 rounded-full bg-primary items-center justify-center shadow-sm"
+            className="w-12 h-12 rounded-full bg-primary items-center justify-center"
             onPress={() => router.push("/expense/new")}
           >
             <icons.Plus size={24} color="white" strokeWidth={3} />
@@ -50,7 +50,7 @@ export default function FriendsScreen(): JSX.Element {
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className="px-6" contentContainerStyle={{ paddingBottom: 100 }}>
           
           {/* Search */}
-          <View className="bg-white shadow-sm h-[52px] rounded-[16px] flex-row items-center px-4 mb-6" style={{ borderWidth: 0 }}>
+          <View className="bg-white h-[52px] rounded-[16px] flex-row items-center px-4 mb-6" style={{ borderWidth: 0 }}>
             <icons.Search size={20} className="text-primary mr-3" />
             <TextInput 
               value={search}
@@ -90,7 +90,7 @@ export default function FriendsScreen(): JSX.Element {
                 
                 return (
                   <PressableFeedback key={friend.id} onPress={() => router.push(`/friend/${friend.id}`)}>
-                    <View className="flex-row items-center bg-white rounded-[24px] p-4 mb-2 shadow-sm border border-border">
+                    <View className="flex-row items-center bg-white rounded-[24px] p-4 mb-2 border border-border">
                       <AppUserAvatar user={friend} size="lg" />
                       <View className="flex-1 ml-4">
                         <Typography type="h3" className="font-bold text-[18px] text-foreground mb-1">

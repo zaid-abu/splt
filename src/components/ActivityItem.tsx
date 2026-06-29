@@ -1,0 +1,135 @@
+import React, { useMemo } from "react";
+import { View } from "react-native";
+import { Typography, PressableFeedback } from "heroui-native";
+import * as icons from "lucide-react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { useRouter } from "expo-router";
+
+import type { Activity } from "@/types";
+import { useApp } from "@/context/AppContext";
+import { formatAmount } from "@/components/AmountDisplay";
+
+interface ActivityItemProps {
+  activity: Activity;
+  index: number;
+  isLast?: boolean;
+}
+
+export function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
+  const { currentUser } = useApp();
+  const router = useRouter();
+
+  // Determine financial involvement
+  const involvement = useMemo(() => {
+    if (activity.type === "group_created") {
+      return { type: "neutral", text: "Group created", amount: 0, showAmount: false };
+    }
+    if (activity.type === "member_joined") {
+      return { type: "neutral", text: "Joined group", amount: 0, showAmount: false };
+    }
+
+    if (activity.type === "expense" && activity.expense) {
+      const exp = activity.expense;
+      const mySplit = exp.splits.find((s) => s.userId === currentUser.id);
+      
+      if (!mySplit) {
+        return { type: "neutral", text: "Not involved", amount: 0, showAmount: false };
+      }
+
+      if (exp.paidBy === currentUser.id) {
+        // You paid for it.
+        const owedToYou = exp.amount - mySplit.amount;
+        if (owedToYou > 0) {
+          return { type: "positive", text: "You lent", amount: owedToYou, showAmount: true };
+        } else {
+          return { type: "neutral", text: "You paid your share", amount: 0, showAmount: false };
+        }
+      } else {
+        // Someone else paid
+        return { type: "negative", text: "You owe", amount: mySplit.amount, showAmount: true };
+      }
+    }
+
+    if (activity.type === "settlement" && activity.settlement) {
+      const set = activity.settlement;
+      if (set.fromUserId === currentUser.id) {
+        return { type: "neutral", text: "You paid", amount: set.amount, showAmount: true };
+      }
+      if (set.toUserId === currentUser.id) {
+        return { type: "positive", text: "You received", amount: set.amount, showAmount: true };
+      }
+      return { type: "neutral", text: "Not involved", amount: 0, showAmount: false };
+    }
+
+    return { type: "neutral", text: "", amount: 0, showAmount: false };
+  }, [activity, currentUser.id]);
+
+  const IconComponent = useMemo(() => {
+    if (activity.type === "expense") return icons.Receipt;
+    if (activity.type === "settlement") return icons.Banknote;
+    if (activity.type === "group_created") return icons.Users;
+    return icons.Activity;
+  }, [activity.type]);
+
+  const bgColors: Record<string, string> = {
+    positive: "bg-success/10",
+    negative: "bg-danger/10",
+    neutral: "bg-secondary"
+  };
+
+  const textColors: Record<string, string> = {
+    positive: "text-success",
+    negative: "text-danger",
+    neutral: "text-foreground"
+  };
+
+  const iconColors: Record<string, string> = {
+    positive: "text-success",
+    negative: "text-danger",
+    neutral: "text-muted-foreground"
+  };
+
+  return (
+    <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
+      <PressableFeedback onPress={() => {
+        if (activity.expense) {
+           router.push(`/expense/${activity.expense.id}`);
+        } else if (activity.groupId) {
+           router.push(`/group/${activity.groupId}`);
+        }
+      }}>
+        <View className={`flex-row items-center p-4 ${!isLast ? 'border-b border-border/50' : ''}`}>
+          <View className={`w-12 h-12 rounded-[16px] items-center justify-center mr-4 ${bgColors[involvement.type]}`}>
+            <IconComponent size={24} className={iconColors[involvement.type]} strokeWidth={2.5} />
+          </View>
+          
+          <View className="flex-1 mr-2">
+            <Typography type="body" className="font-bold text-foreground" numberOfLines={1}>
+              {activity.description}
+            </Typography>
+            <Typography type="body-sm" className="text-muted-foreground font-medium mt-0.5" numberOfLines={1}>
+              {activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </Typography>
+          </View>
+          
+          <View className="items-end">
+             {involvement.showAmount ? (
+               <>
+                 <Typography type="body-xs" className="text-muted-foreground font-bold mb-0.5">
+                   {involvement.text}
+                 </Typography>
+                 <Typography type="body" className={`font-black ${textColors[involvement.type]}`}>
+                   {involvement.type === "positive" ? "+" : ""}{formatAmount(involvement.amount, activity.currency || "USD")}
+                 </Typography>
+               </>
+             ) : (
+               <Typography type="body-sm" className="text-muted-foreground font-medium">
+                 {involvement.text}
+               </Typography>
+             )}
+          </View>
+        </View>
+      </PressableFeedback>
+    </Animated.View>
+  );
+}

@@ -22,10 +22,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 
 import { useApp } from "@/context/AppContext";
-import { CurrencySelector } from "@/components/CurrencySelector";
 import type { Currency } from "@/types";
 import { PageAnimator } from "@/components/PageAnimator";
 import { AppUserAvatar } from "@/components/MemberAvatar";
+import { CurrencySelector } from "@/components/CurrencySelector";
 
 function SettingItem({ 
   icon: Icon, 
@@ -97,7 +97,7 @@ export default function ProfileScreen(): JSX.Element {
 
           {/* ── User card ───────────────────────────────── */}
           <View className="px-6 mb-8">
-            <View className="bg-white rounded-[32px] p-6 shadow-sm items-center border border-border">
+            <View className="bg-white rounded-[32px] p-6 items-center border border-border">
               <View className="mb-4">
                 <AppUserAvatar user={currentUser} size="lg" />
               </View>
@@ -133,7 +133,7 @@ export default function ProfileScreen(): JSX.Element {
             <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
               ACCOUNT
             </Typography>
-            <View className="rounded-[24px] shadow-sm">
+            <View className="rounded-[24px]">
               <View className="bg-white rounded-[24px] overflow-hidden border border-border">
               <SettingItem 
                 icon={icons.User} 
@@ -162,24 +162,18 @@ export default function ProfileScreen(): JSX.Element {
           </View>
 
           {/* ── Preferences ────────────────────────────── */}
-          <View className="px-6 mb-6">
+          <View className="px-6 mb-6 z-50">
             <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
               PREFERENCES
             </Typography>
-            <View className="rounded-[24px] shadow-sm">
-              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+            <View className="gap-3">
+              <View className="bg-white rounded-[24px] border border-border">
               <SettingItem 
                 icon={icons.Moon} 
                 title="Dark Mode" 
                 color="#8A8798" 
                 rightElement={<Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />} 
               />
-              <View className="p-4 border-b border-border/50">
-                <Typography type="body" className="font-bold text-foreground mb-3 ml-1">
-                  Preferred Currency
-                </Typography>
-                <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
-              </View>
               <SettingItem 
                 icon={icons.CreditCard} 
                 title="Payment Methods" 
@@ -189,6 +183,11 @@ export default function ProfileScreen(): JSX.Element {
                 isLast
               />
               </View>
+              
+              <CurrencySelector
+                value={preferredCurrency.code}
+                onChange={handleCurrencyChange}
+              />
             </View>
           </View>
 
@@ -197,7 +196,7 @@ export default function ProfileScreen(): JSX.Element {
             <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
               ABOUT
             </Typography>
-            <View className="rounded-[24px] shadow-sm">
+            <View className="rounded-[24px]">
               <View className="bg-white rounded-[24px] overflow-hidden border border-border">
               <SettingItem icon={icons.HelpCircle} title="Help & Support" color="#EC4899" onPress={() => {}} />
               <SettingItem icon={icons.FileText} title="Privacy Policy" color="#6366F1" onPress={() => {}} />
