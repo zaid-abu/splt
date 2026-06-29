@@ -1,0 +1,230 @@
+/**
+ * Profile Screen
+ *
+ * HeroUI components used:
+ * - Avatar, Avatar.Fallback
+ * - Card, Card.Body, Card.Title, Card.Description
+ * - ListGroup + all sub-components
+ * - Button
+ * - Switch
+ * - Separator
+ * - Typography
+ * - Chip
+ */
+import { Switch, Typography, PressableFeedback, Button } from "heroui-native";
+import { useRouter } from "expo-router";
+import { Uniwind } from "uniwind";
+import type { JSX } from "react";
+import { useState } from "react";
+import { StatusBar } from "expo-status-bar";
+import { ScrollView, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import * as icons from "lucide-react-native";
+
+import { useApp } from "@/context/AppContext";
+import { CurrencySelector } from "@/components/CurrencySelector";
+import type { Currency } from "@/types";
+import { PageAnimator } from "@/components/PageAnimator";
+import { AppUserAvatar } from "@/components/MemberAvatar";
+
+function SettingItem({ 
+  icon: Icon, 
+  title, 
+  subtitle, 
+  color, 
+  onPress, 
+  rightElement,
+  isLast 
+}: any) {
+  return (
+    <PressableFeedback onPress={onPress}>
+      <View className={`flex-row items-center justify-between p-4 ${!isLast ? 'border-b border-border/50' : ''}`}>
+        <View className="flex-row items-center gap-4">
+          <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: `${color}15` }}>
+            <Icon size={20} color={color} strokeWidth={2.5} />
+          </View>
+          <View>
+            <Typography type="body" className="font-bold text-foreground">
+              {title}
+            </Typography>
+            {subtitle && (
+              <Typography type="body-sm" className="text-muted-foreground mt-0.5">
+                {subtitle}
+              </Typography>
+            )}
+          </View>
+        </View>
+        {rightElement || (
+          <icons.ChevronRight size={20} className="text-muted-foreground" />
+        )}
+      </View>
+    </PressableFeedback>
+  );
+}
+
+export default function ProfileScreen(): JSX.Element {
+  const { currentUser, groups, getTotalOwedToMe, getTotalIOwe, preferredCurrency, setCurrency } = useApp();
+  const router = useRouter();
+  const [darkMode, setDarkMode] = useState(true);
+  const [notifs, setNotifs] = useState(true);
+
+  const owedToMe = getTotalOwedToMe();
+  const iOwe = getTotalIOwe();
+
+  const handleCurrencyChange = (currency: Currency) => {
+    setCurrency(currency);
+  };
+
+  const handleThemeToggle = (value: boolean) => {
+    setDarkMode(value);
+    Uniwind.setTheme(value ? "dark" : "light");
+  };
+
+  return (
+    <PageAnimator>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
+        <StatusBar style="dark" />
+        <ScrollView
+          style={{ flex: 1 }}
+          className="bg-background"
+          contentContainerStyle={{ paddingBottom: 100 }}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* ── Header ─────────────────────────────────── */}
+          <View className="px-6 pt-4 mb-6">
+            <Typography type="h2" className="font-black tracking-tight text-[28px]">Profile</Typography>
+          </View>
+
+          {/* ── User card ───────────────────────────────── */}
+          <View className="px-6 mb-8">
+            <View className="bg-white rounded-[32px] p-6 shadow-sm items-center border border-border">
+              <View className="mb-4">
+                <AppUserAvatar user={currentUser} size="lg" />
+              </View>
+              <Typography type="h3" className="font-black tracking-tight text-[24px] mb-1">
+                {currentUser.name}
+              </Typography>
+              <Typography type="body" className="text-muted-foreground font-medium mb-6">
+                {currentUser.email}
+              </Typography>
+
+              {/* Stats Row */}
+              <View className="flex-row gap-3 w-full">
+                <View className="flex-1 bg-secondary rounded-[16px] py-3 items-center">
+                  <Typography type="body-sm" className="text-muted-foreground font-semibold mb-0.5">Groups</Typography>
+                  <Typography type="body" className="font-black text-foreground">{groups.length}</Typography>
+                </View>
+                <View className="flex-1 bg-success/10 rounded-[16px] py-3 items-center">
+                  <Typography type="body-sm" className="text-success font-semibold mb-0.5">Owed</Typography>
+                  <Typography type="body" className="font-black text-success">+{preferredCurrency.symbol}{owedToMe.toFixed(0)}</Typography>
+                </View>
+                {iOwe > 0 && (
+                  <View className="flex-1 bg-danger/10 rounded-[16px] py-3 items-center">
+                    <Typography type="body-sm" className="text-danger font-semibold mb-0.5">Owe</Typography>
+                    <Typography type="body" className="font-black text-danger">-{preferredCurrency.symbol}{iOwe.toFixed(0)}</Typography>
+                  </View>
+                )}
+              </View>
+            </View>
+          </View>
+
+          {/* ── Account settings ───────────────────────── */}
+          <View className="px-6 mb-6">
+            <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
+              ACCOUNT
+            </Typography>
+            <View className="rounded-[24px] shadow-sm">
+              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+              <SettingItem 
+                icon={icons.User} 
+                title="Edit Profile" 
+                subtitle="Name, email, photo" 
+                color="#6B4EFF" 
+                onPress={() => {}} 
+              />
+              <SettingItem 
+                icon={icons.Bell} 
+                title="Notifications" 
+                subtitle="Push, email alerts" 
+                color="#F59E0B" 
+                rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />} 
+              />
+              <SettingItem 
+                icon={icons.Shield} 
+                title="Security" 
+                subtitle="Password, biometrics" 
+                color="#10B981" 
+                onPress={() => {}} 
+                isLast 
+              />
+              </View>
+            </View>
+          </View>
+
+          {/* ── Preferences ────────────────────────────── */}
+          <View className="px-6 mb-6">
+            <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
+              PREFERENCES
+            </Typography>
+            <View className="rounded-[24px] shadow-sm">
+              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+              <SettingItem 
+                icon={icons.Moon} 
+                title="Dark Mode" 
+                color="#8A8798" 
+                rightElement={<Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />} 
+              />
+              <View className="p-4 border-b border-border/50">
+                <Typography type="body" className="font-bold text-foreground mb-3 ml-1">
+                  Preferred Currency
+                </Typography>
+                <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
+              </View>
+              <SettingItem 
+                icon={icons.CreditCard} 
+                title="Payment Methods" 
+                subtitle="Link bank account, card" 
+                color="#3B82F6" 
+                onPress={() => {}} 
+                isLast
+              />
+              </View>
+            </View>
+          </View>
+
+          {/* ── About ──────────────────────────────────── */}
+          <View className="px-6 mb-8">
+            <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
+              ABOUT
+            </Typography>
+            <View className="rounded-[24px] shadow-sm">
+              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+              <SettingItem icon={icons.HelpCircle} title="Help & Support" color="#EC4899" onPress={() => {}} />
+              <SettingItem icon={icons.FileText} title="Privacy Policy" color="#6366F1" onPress={() => {}} />
+              <SettingItem 
+                icon={icons.Info} 
+                title="Version" 
+                color="#8B5CF6" 
+                rightElement={
+                  <View className="bg-secondary px-3 py-1 rounded-full">
+                    <Typography type="body-sm" className="font-bold text-muted-foreground">1.0.0</Typography>
+                  </View>
+                }
+                isLast 
+              />
+              </View>
+            </View>
+          </View>
+
+          {/* ── Sign Out ────────────────────────────────── */}
+          <View className="px-6">
+            <Button variant="danger-soft" size="lg" className="rounded-[20px]" onPress={() => router.replace("/(auth)/welcome")}>
+              <Typography type="body" className="font-bold text-danger">Sign Out</Typography>
+            </Button>
+          </View>
+
+        </ScrollView>
+      </SafeAreaView>
+    </PageAnimator>
+  );
+}

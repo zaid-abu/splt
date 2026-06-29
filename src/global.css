@@ -1,8 +1,62 @@
 @import "tailwindcss";
 @import "uniwind";
-
 @import "heroui-native/styles";
 
-/* End-user path: heroui-native lives in the project's node_modules, one
-   level up from this src/global.css file. */
-@source '../node_modules/heroui-native/lib';
+@source "./node_modules/heroui-native/lib";
+
+@theme {
+   --color-background: var(--color-background);
+   --color-foreground: var(--color-foreground);
+   --color-surface: var(--color-surface);
+   --color-surface-secondary: var(--color-surface-secondary);
+   --color-surface-tertiary: var(--color-surface-tertiary);
+   --color-primary: var(--color-primary);
+   --color-primary-foreground: var(--color-primary-foreground);
+   --color-secondary: var(--color-secondary);
+   --color-secondary-foreground: var(--color-secondary-foreground);
+   --color-accent: var(--color-accent);
+   --color-accent-foreground: var(--color-accent-foreground);
+   --color-success: var(--color-success);
+   --color-warning: var(--color-warning);
+   --color-danger: var(--color-danger);
+   --color-muted: var(--color-muted);
+   --color-muted-foreground: var(--color-muted-foreground);
+   --color-border: var(--color-border);
+}
+
+@layer base {
+   :root {
+      /* Base background */
+      --color-background: #F2F2F6; /* background.app */
+      --color-foreground: #1E1A34; /* text.primary */
+
+      /* Surfaces */
+      --color-surface: #FFFFFF; /* background.default */
+      --color-surface-secondary: #F8F9FB; /* background.paper */
+      --color-surface-tertiary: #F0F0F0; /* border.light */
+
+      /* Primary */
+      --color-primary: #3D2B82; /* primary.main */
+      --color-primary-foreground: #FFFFFF; /* primary.contrastText */
+
+      /* Secondary */
+      --color-secondary: #D4E9FA; /* secondary.main */
+      --color-secondary-foreground: #1A1A1A; /* secondary.contrastText */
+
+      /* Accent */
+      --color-accent: #6B4EFF; /* accent.blue */
+      --color-accent-foreground: #FFFFFF;
+
+      /* Success, Warning, Danger */
+      --color-success: #10b981;
+      --color-warning: #f59e0b;
+      --color-danger: #ef4444;
+
+      /* Muted */
+      --color-muted: #E5E5E5; /* border.main */
+      --color-muted-foreground: #8A8798; /* text.secondary */
+
+      /* Border */
+      --color-border: #E5E5E5; /* border.main */
+   }
+}

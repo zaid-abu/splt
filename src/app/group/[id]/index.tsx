@@ -1,0 +1,239 @@
+/**
+ * Group Detail Screen
+ *
+ * HeroUI components used:
+ * - Button
+ * - Card, Card.Body, Card.Title, Card.Description, Card.Header, Card.Footer
+ * - Chip
+ * - ListGroup + all sub-components
+ * - Avatar, Avatar.Fallback
+ * - Separator
+ * - Typography
+ * - Alert, Alert.Indicator, Alert.Content, Alert.Title, Alert.Description
+ */
+import { Alert, Typography, PressableFeedback, Button } from "heroui-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import type { JSX } from "react";
+import { StatusBar } from "expo-status-bar";
+import { ScrollView, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { ExpenseItem } from "@/components/ExpenseItem";
+import { AvatarStack, AppUserAvatar } from "@/components/MemberAvatar";
+import { getCurrencySymbol } from "@/components/AmountDisplay";
+import * as icons from "lucide-react-native";
+import { useApp } from "@/context/AppContext";
+
+export default function GroupDetailScreen(): JSX.Element {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const router = useRouter();
+  const { getGroup, getGroupExpenses, currentUser } = useApp();
+
+  const group = getGroup(id ?? "");
+  const expenses = getGroupExpenses(id ?? "");
+
+  if (!group) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
+        <View className="flex-1 items-center justify-center px-5 gap-4">
+          <Alert status="danger" className="rounded-[20px]">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>Group not found</Alert.Title>
+              <Alert.Description>This group may have been deleted.</Alert.Description>
+            </Alert.Content>
+          </Alert>
+          <Button onPress={() => router.back()} className="rounded-full">Go back</Button>        </View>
+      </SafeAreaView>
+    );
+  }
+
+  const sym = getCurrencySymbol(group.currency);
+  const me = group.members.find((m) => m.userId === currentUser.id);
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
+      <StatusBar style="dark" />
+      <ScrollView
+        className="flex-1 bg-background"
+        contentContainerStyle={{ paddingBottom: 120 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* ── Back ───────────────────────────────────── */}
+        <View className="pt-4 mb-4 px-4">
+          <PressableFeedback onPress={() => router.back()}>
+            <View className="w-10 h-10 rounded-full bg-white items-center justify-center shadow-sm border border-border">
+              <icons.ChevronLeft size={24} color="#1E1A34" />
+            </View>
+          </PressableFeedback>
+        </View>
+
+        {/* ── Group hero ─────────────────────────────── */}
+        <View className="px-6 mb-8">
+          <View className="bg-white rounded-[32px] p-6 shadow-sm border border-border">
+            <View className="flex-row items-center gap-4 mb-5">
+              <View className="w-16 h-16 rounded-full bg-primary/10 items-center justify-center">
+                {(() => {
+                  const GroupIcon = (icons as any)[group.icon] || icons.Users;
+                  return <GroupIcon size={32} className="text-primary" strokeWidth={2} />;
+                })()}
+              </View>
+              <View className="flex-1">
+                <Typography type="h2" className="font-black text-[24px] tracking-tight">{group.name}</Typography>
+                {group.description && (
+                  <Typography type="body-sm" className="text-muted-foreground mt-0.5">
+                    {group.description}
+                  </Typography>
+                )}
+              </View>
+            </View>
+
+            <View className="flex-row items-center justify-between bg-background rounded-[20px] p-3 mb-5 border border-border/50">
+              <View className="flex-row items-center gap-2">
+                <AvatarStack users={group.members.map((m) => m.user)} max={5} />
+                <Typography type="body-sm" className="font-bold text-foreground ml-1">
+                  {group.members.length} members
+                </Typography>
+              </View>
+              <icons.Settings size={20} color="#8A8798" />
+            </View>
+
+            {/* My balance highlight */}
+            {me && (
+              <View className={`flex-row items-center justify-between rounded-[20px] p-4 ${me.balance > 0 ? "bg-success/10 border border-success/20"
+                  : me.balance < 0 ? "bg-danger/10 border border-danger/20"
+                    : "bg-surface-secondary border border-border"
+                }`}>
+                <View>
+                  <Typography type="body-xs" className="font-bold tracking-wider mb-0.5 text-muted-foreground uppercase">
+                    Your balance
+                  </Typography>
+                  <Typography
+                    type="h2"
+                    className={`font-black tracking-tight text-[28px] ${me.balance > 0 ? "text-success"
+                        : me.balance < 0 ? "text-danger"
+                          : "text-foreground"
+                      }`}
+                  >
+                    {me.balance > 0 ? "+" : me.balance < 0 ? "-" : ""}{sym}{Math.abs(me.balance).toLocaleString()}
+                  </Typography>
+                </View>
+                <View className={`px-3 py-1.5 rounded-full ${me.balance > 0 ? "bg-success/20"
+                    : me.balance < 0 ? "bg-danger/20"
+                      : "bg-white border border-border"
+                  }`}>
+                  <Typography type="body-sm" className={`font-bold ${me.balance > 0 ? "text-success"
+                      : me.balance < 0 ? "text-danger"
+                        : "text-muted-foreground"
+                    }`}>
+                    {me.balance > 0 ? "Owed to you" : me.balance < 0 ? "You owe" : "Settled up"}
+                  </Typography>
+                </View>
+              </View>
+            )}
+          </View>
+        </View>
+
+        {/* ── Balances ───────────────────────────────── */}
+        <View className="px-6 mb-8">
+          <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase">
+            Balances
+          </Typography>
+          <View className="rounded-[24px] shadow-sm">
+            <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+            {group.members.map((member, idx) => (
+              <PressableFeedback key={member.userId} onPress={() => { }}>
+                <View className={`flex-row items-center justify-between p-4 ${idx < group.members.length - 1 ? 'border-b border-border/50' : ''}`}>
+                  <View className="flex-row items-center gap-3">
+                    <AppUserAvatar user={member.user} size="md" balance={member.balance} />
+                    <View>
+                      <Typography type="body" className="font-bold text-foreground">
+                        {member.userId === currentUser.id ? "You" : member.user.name}
+                      </Typography>
+                      <Typography type="body-sm" className="text-muted-foreground">
+                        {member.balance === 0 ? "Settled up"
+                          : member.balance > 0 ? (member.userId === currentUser.id ? "Owed to you" : "Gets back")
+                            : (member.userId === currentUser.id ? "You owe" : "Owes")}
+                      </Typography>
+                    </View>
+                  </View>
+                  <Typography
+                    type="body"
+                    className={`font-black ${member.balance > 0 ? "text-success"
+                        : member.balance < 0 ? "text-danger"
+                          : "text-muted-foreground"
+                      }`}
+                  >
+                    {member.balance > 0 ? "+" : member.balance < 0 ? "-" : ""}
+                    {sym}{Math.abs(member.balance).toLocaleString()}
+                  </Typography>
+                </View>
+              </PressableFeedback>
+            ))}
+            </View>
+          </View>
+        </View>
+
+        {/* ── Expenses ───────────────────────────────── */}
+        <View className="px-6 mb-4 flex-row items-center justify-between">
+          <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest ml-2 uppercase">
+            Expenses ({expenses.length})
+          </Typography>
+          <Typography type="body-sm" className="font-bold text-foreground mr-2">
+            Total: {sym}{group.totalExpenses.toLocaleString()}
+          </Typography>
+        </View>
+
+        {expenses.length === 0 ? (
+          <View className="px-6">
+            <View className="bg-white rounded-[24px] items-center p-8 shadow-sm border border-border">
+              <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
+                <Text style={{ fontSize: 32 }}>💸</Text>
+              </View>
+              <Typography type="h3" className="font-black text-center mb-1">No expenses yet</Typography>
+              <Typography type="body" className="text-muted-foreground text-center">
+                Add the first expense for this group
+              </Typography>
+            </View>
+          </View>
+        ) : (
+          <View className="px-4">
+            {expenses.map((expense) => (
+              <ExpenseItem
+                key={expense.id}
+                expense={expense}
+                currentUserId={currentUser.id}
+                onPress={() => router.push(`/expense/${expense.id}`)}
+              />
+            ))}
+          </View>
+        )}
+      </ScrollView>
+
+      {/* ── Bottom Action Bar ──────────────────────── */}
+      <View className="bg-white border-t border-border/30 px-6 pt-4 pb-8 flex-row gap-4 shadow-sm">
+        <View className="flex-1">
+          <PressableFeedback onPress={() => { }}>
+            <View className="w-full h-[56px] rounded-full items-center justify-center bg-secondary flex-row gap-2">
+              <icons.Handshake size={20} className="text-primary" />
+              <Typography type="body" className="font-bold text-primary">
+                Settle Up
+              </Typography>
+            </View>
+          </PressableFeedback>
+        </View>
+
+        <View className="flex-1">
+          <PressableFeedback onPress={() => router.push(`/expense/new?groupId=${group.id}`)}>
+            <View className="w-full h-[56px] rounded-full items-center justify-center bg-primary flex-row gap-2 shadow-sm">
+              <icons.Plus size={20} color="white" />
+              <Typography type="body" className="font-bold text-white">
+                Add Expense
+              </Typography>
+            </View>
+          </PressableFeedback>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
