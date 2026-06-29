@@ -11,15 +11,17 @@ import * as icons from "lucide-react-native";
 import { useApp } from "@/context/AppContext";
 import { PageAnimator } from "@/components/PageAnimator";
 import { AppUserAvatar } from "@/components/MemberAvatar";
+import { formatAmount } from "@/components/AmountDisplay";
 
 export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
-  const { activities, currentUser, getTotalOwedToMe } = useApp();
+  const { activities, currentUser, getTotalOwedToMe, getTotalIOwe, preferredCurrency } = useApp();
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const balance = getTotalOwedToMe();
+  const owedToMe = getTotalOwedToMe();
+  const iOwe = Math.abs(getTotalIOwe());
 
   const chartData = [
     { label: "Jan", value: 25, opacity: 0.2 },
@@ -55,19 +57,31 @@ export default function ActivityScreen(): JSX.Element {
             </PressableFeedback>
           </View>
 
-          {/* ── Balance Card ──────────────────────────── */}
+          {/* ── Stats Row ─────────────────────────────── */}
           <Animated.View entering={FadeInDown.delay(100).springify()} className="px-6 mb-6">
-            <View className="bg-white rounded-[32px] p-6 shadow-sm border border-border">
-              <View className="flex-row justify-between items-center mb-4">
-                <Typography type="body-xs" className="font-bold tracking-widest text-muted-foreground uppercase">
-                  Owed to you
+            <View className="flex-row gap-4">
+              <View className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-border">
+                <View className="w-10 h-10 rounded-full bg-success/10 items-center justify-center mb-3">
+                  <icons.ArrowDownLeft size={20} className="text-success" />
+                </View>
+                <Typography type="body-xs" className="text-muted-foreground font-semibold tracking-wider mb-1">
+                  OWED TO YOU
+                </Typography>
+                <Typography type="h2" className="font-black text-foreground text-[22px]">
+                  {formatAmount(owedToMe, preferredCurrency.code)}
                 </Typography>
               </View>
-              <View className="flex-row items-baseline gap-2 mb-2">
-                <Typography type="h1" className="text-[40px] font-black text-foreground tracking-tight">
-                  ${balance.toFixed(2)}
+
+              <View className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-border">
+                <View className="w-10 h-10 rounded-full bg-danger/10 items-center justify-center mb-3">
+                  <icons.ArrowUpRight size={20} className="text-danger" />
+                </View>
+                <Typography type="body-xs" className="text-muted-foreground font-semibold tracking-wider mb-1">
+                  YOU OWE
                 </Typography>
-                <Typography type="h3" className="font-bold text-muted-foreground">USD</Typography>
+                <Typography type="h2" className="font-black text-foreground text-[22px]">
+                  {formatAmount(iOwe, preferredCurrency.code)}
+                </Typography>
               </View>
             </View>
           </Animated.View>

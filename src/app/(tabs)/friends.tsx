@@ -29,10 +29,6 @@ export default function FriendsScreen(): JSX.Element {
     ? uniqueFriends.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()))
     : uniqueFriends;
 
-  const balancesValues = Array.from(balances.values()) as number[];
-  const owedToMe = balancesValues.reduce((acc: number, bal: number) => (bal > 0 ? acc + bal : acc), 0);
-  const iOwe = Math.abs(balancesValues.reduce((acc: number, bal: number) => (bal < 0 ? acc + bal : acc), 0));
-
   return (
     <PageAnimator>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
@@ -53,33 +49,6 @@ export default function FriendsScreen(): JSX.Element {
 
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className="px-6" contentContainerStyle={{ paddingBottom: 100 }}>
           
-          {/* Stats Row */}
-          <View className="flex-row gap-4 mb-6">
-            <View className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-border">
-              <View className="w-10 h-10 rounded-full bg-success/10 items-center justify-center mb-3">
-                <icons.ArrowDownLeft size={20} className="text-success" />
-              </View>
-              <Typography type="body-xs" className="text-muted-foreground font-semibold tracking-wider mb-1">
-                OWED TO YOU
-              </Typography>
-              <Typography type="h2" className="font-black text-foreground text-[22px]">
-                {formatAmount(owedToMe, preferredCurrency.code)}
-              </Typography>
-            </View>
-
-            <View className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-border">
-              <View className="w-10 h-10 rounded-full bg-danger/10 items-center justify-center mb-3">
-                <icons.ArrowUpRight size={20} className="text-danger" />
-              </View>
-              <Typography type="body-xs" className="text-muted-foreground font-semibold tracking-wider mb-1">
-                YOU OWE
-              </Typography>
-              <Typography type="h2" className="font-black text-foreground text-[22px]">
-                {formatAmount(iOwe, preferredCurrency.code)}
-              </Typography>
-            </View>
-          </View>
-
           {/* Search */}
           <View className="bg-white shadow-sm h-[52px] rounded-[16px] flex-row items-center px-4 mb-6" style={{ borderWidth: 0 }}>
             <icons.Search size={20} className="text-primary mr-3" />

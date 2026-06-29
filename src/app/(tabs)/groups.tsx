@@ -20,21 +20,16 @@ import * as icons from "lucide-react-native";
 
 import { GroupCard } from "@/components/GroupCard";
 import { PageAnimator } from "@/components/PageAnimator";
-import { formatAmount } from "@/components/AmountDisplay";
 import { useApp } from "@/context/AppContext";
 
 export default function GroupsScreen(): JSX.Element {
   const router = useRouter();
-  const { groups, currentUser, getTotalOwedToMe, getTotalIOwe, preferredCurrency } = useApp();
+  const { groups, currentUser } = useApp();
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()
     ? groups.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
     : groups;
-
-  const owedToMe = getTotalOwedToMe();
-  const iOwe = Math.abs(getTotalIOwe());
-  const sym = preferredCurrency.symbol;
 
   return (
     <PageAnimator>
@@ -56,33 +51,6 @@ export default function GroupsScreen(): JSX.Element {
 
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} className="px-6" contentContainerStyle={{ paddingBottom: 100 }}>
           
-          {/* Stats Row */}
-          <View className="flex-row gap-4 mb-6">
-            <View className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-border">
-              <View className="w-10 h-10 rounded-full bg-success/10 items-center justify-center mb-3">
-                <icons.ArrowDownLeft size={20} className="text-success" />
-              </View>
-              <Typography type="body-xs" className="text-muted-foreground font-semibold tracking-wider mb-1">
-                OWED TO YOU
-              </Typography>
-              <Typography type="h2" className="font-black text-foreground text-[22px]">
-                {formatAmount(owedToMe, preferredCurrency.code)}
-              </Typography>
-            </View>
-
-            <View className="flex-1 bg-white rounded-[24px] p-5 shadow-sm border border-border">
-              <View className="w-10 h-10 rounded-full bg-danger/10 items-center justify-center mb-3">
-                <icons.ArrowUpRight size={20} className="text-danger" />
-              </View>
-              <Typography type="body-xs" className="text-muted-foreground font-semibold tracking-wider mb-1">
-                YOU OWE
-              </Typography>
-              <Typography type="h2" className="font-black text-foreground text-[22px]">
-                {formatAmount(iOwe, preferredCurrency.code)}
-              </Typography>
-            </View>
-          </View>
-
           {/* Search */}
           <View className="bg-white shadow-sm h-[52px] rounded-[16px] flex-row items-center px-4 mb-6" style={{ borderWidth: 0 }}>
             <icons.Search size={20} className="text-primary mr-3" />
