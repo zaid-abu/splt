@@ -91,7 +91,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 </View>
                 <Dialog.Title className="text-[22px] font-bold mb-2">Delete Expense?</Dialog.Title>
                 <Dialog.Description className="text-[16px] text-muted-foreground mb-6">
-                  Are you sure you want to delete "{expense.title}"? This cannot be undone.
+                  Are you sure you want to delete &quot;{expense.title}&quot;? This cannot be undone.
                 </Dialog.Description>
                 <View className="flex-row gap-3">
                   <Dialog.Close asChild>

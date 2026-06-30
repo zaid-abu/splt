@@ -6,7 +6,6 @@
  *
  * @see https://heroui.com/docs/native/components/avatar.mdx
  */
-import { Avatar } from "heroui-native";
 import type { AvatarSize } from "heroui-native";
 import type { JSX } from "react";
 import { View, Text } from "react-native";

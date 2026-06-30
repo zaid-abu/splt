@@ -92,9 +92,9 @@ export default function AddExpenseScreen(): JSX.Element {
 
   useEffect(() => {
     if (selectedGroup) {
-      setExpenseCurrency(selectedGroup.currency);
+      setTimeout(() => setExpenseCurrency(selectedGroup.currency), 0);
     } else {
-       setExpenseCurrency(preferredCurrency.code);
+       setTimeout(() => setExpenseCurrency(preferredCurrency.code), 0);
     }
   }, [selectedGroup, preferredCurrency.code]);
 
@@ -120,7 +120,7 @@ export default function AddExpenseScreen(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    setIncluded(Object.fromEntries(participants.map((u) => [u.id, true])));
+    setTimeout(() => setIncluded(Object.fromEntries(participants.map((u) => [u.id, true]))), 0);
   }, [participants]);
 
   const includedMembers = participants.filter((u) => included[u.id]);

@@ -6,7 +6,6 @@ import { StatusBar } from "expo-status-bar";
 import { ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
-import Animated, { FadeInDown } from "react-native-reanimated";
 import { FocusAwareView } from "@/components/PageAnimator";
 import * as icons from "lucide-react-native";
 

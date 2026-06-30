@@ -88,7 +88,7 @@ export default function SettleUpScreen(): JSX.Element {
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
-    } catch (e) {
+    } catch {
       setError("Failed to record settlement.");
       setLoading(false);
     }

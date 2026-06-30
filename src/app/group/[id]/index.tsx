@@ -16,7 +16,7 @@ import { Alert, Typography, PressableFeedback, Button, Skeleton } from "heroui-n
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolation } from "react-native-reanimated";
 
@@ -33,6 +33,26 @@ export default function GroupDetailScreen(): JSX.Element {
 
   const group = getGroup(id ?? "");
   const expenses = getGroupExpenses(id ?? "");
+
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const heroStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: interpolate(scrollY.value, [-100, 0, 100], [50, 0, 0], Extrapolation.CLAMP),
+        },
+        {
+          scale: interpolate(scrollY.value, [-100, 0], [1.1, 1], Extrapolation.CLAMP),
+        }
+      ],
+    };
+  });
 
   if (!group) {
     return (
@@ -57,25 +77,6 @@ export default function GroupDetailScreen(): JSX.Element {
   // Calculate total expenses in group currency
   const totalExpensesInGroupCurrency = expenses.reduce((sum, exp) => sum + convertCurrency(exp.amount, exp.currency, group.currency), 0);
 
-  const scrollY = useSharedValue(0);
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
-    },
-  });
-
-  const heroStyle = useAnimatedStyle(() => {
-    return {
-      transform: [
-        {
-          translateY: interpolate(scrollY.value, [-100, 0, 100], [50, 0, 0], Extrapolation.CLAMP),
-        },
-        {
-          scale: interpolate(scrollY.value, [-100, 0], [1.1, 1], Extrapolation.CLAMP),
-        }
-      ],
-    };
-  });
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>

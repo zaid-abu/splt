@@ -1,4 +1,4 @@
-import { Alert, Button, Typography, PressableFeedback } from "heroui-native";
+import { Button, Typography, PressableFeedback } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useMemo } from "react";
@@ -26,7 +26,7 @@ export default function GroupSettleScreen(): JSX.Element {
   const balances = getGroupBalances(id ?? "");
   const sym = group ? getCurrencySymbol(group.currency) : "$";
 
-  const suggestions = useMemo(() => {
+  const suggestions = (() => {
     if (!group) return [];
 
     if (!group.simplifyDebts) {
@@ -79,7 +79,7 @@ export default function GroupSettleScreen(): JSX.Element {
     return payments.filter(
       p => p.fromUserId === currentUser.id || p.toUserId === currentUser.id
     );
-  }, [balances, group, currentUser.id, getExactPairwiseDebts]);
+  })();
 
   if (!group) {
     return (
@@ -135,7 +135,7 @@ export default function GroupSettleScreen(): JSX.Element {
                 All Settled Up!
               </Typography>
               <Typography type="body" className="text-muted-foreground text-center">
-                You don't have any outstanding balances in this group.
+                You don&apos;t have any outstanding balances in this group.
               </Typography>
             </View>
           ) : (

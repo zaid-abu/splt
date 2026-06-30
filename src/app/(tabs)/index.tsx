@@ -280,7 +280,7 @@ export default function DashboardScreen(): JSX.Element {
                   <icons.CheckCircle2 size={24} className="text-success" />
                 </View>
                 <Typography type="body" className="font-bold text-foreground text-center">
-                  You're all caught up!
+                  You&apos;re all caught up!
                 </Typography>
                 <Typography type="body-sm" className="text-muted-foreground text-center mt-1">
                   No outstanding balances with friends.

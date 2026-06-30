@@ -196,7 +196,7 @@ export default function NewGroupScreen(): JSX.Element {
             <Alert status="default" className="rounded-[20px]">
               <Alert.Indicator />
               <Alert.Content>
-                <Alert.Title>You'll be added automatically</Alert.Title>
+                <Alert.Title>You&apos;ll be added automatically</Alert.Title>
                 <Alert.Description>
                   Invite others after creating the group from the group detail screen.
                 </Alert.Description>

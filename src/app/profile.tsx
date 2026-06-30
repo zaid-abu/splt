@@ -13,7 +13,6 @@
  */
 import { Switch, Typography, PressableFeedback, Button } from "heroui-native";
 import { useRouter } from "expo-router";
-import Animated, { FadeInDown } from "react-native-reanimated";
 import { FocusAwareView } from "@/components/PageAnimator";
 import { Uniwind } from "uniwind";
 import type { JSX } from "react";

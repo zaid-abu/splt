@@ -11,7 +11,6 @@
  */
 import { SearchField, Typography, PressableFeedback, Skeleton } from "heroui-native";
 import { useRouter } from "expo-router";
-import Animated, { FadeInDown } from "react-native-reanimated";
 import { FocusAwareView } from "@/components/PageAnimator";
 import type { JSX } from "react";
 import { useState } from "react";

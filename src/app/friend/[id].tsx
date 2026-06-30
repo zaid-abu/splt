@@ -4,7 +4,7 @@ import Animated, { FadeInDown, useSharedValue, useAnimatedScrollHandler, useAnim
 import type { JSX } from "react";
 import { useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View, Text } from "react-native";
+import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 
@@ -43,26 +43,6 @@ export default function FriendDetailScreen(): JSX.Element {
   const balances = getUserBalances();
   const netBalance = balances.get(id ?? "") || 0;
   const isPositive = netBalance > 0;
-  const isNegative = netBalance < 0;
-  const sym = preferredCurrency.symbol;
-
-  if (!friend) {
-    return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }}>
-        <View className="flex-1 items-center justify-center p-6">
-          <Alert status="danger" className="mb-4 rounded-[20px]">
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>Friend not found</Alert.Title>
-              <Alert.Description>We couldn't find this friend.</Alert.Description>
-            </Alert.Content>
-          </Alert>
-          <Button onPress={() => router.back()} className="rounded-full mt-4">Go back</Button>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
   const scrollY = useSharedValue(0);
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -82,6 +62,24 @@ export default function FriendDetailScreen(): JSX.Element {
       ],
     };
   });
+
+  if (!friend) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }}>
+        <View className="flex-1 items-center justify-center p-6">
+          <Alert status="danger" className="mb-4 rounded-[20px]">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>Friend not found</Alert.Title>
+              <Alert.Description>We couldn&apos;t find this friend.</Alert.Description>
+            </Alert.Content>
+          </Alert>
+          <Button onPress={() => router.back()} className="rounded-full mt-4">Go back</Button>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
 
   return (
     <Animated.View style={{ flex: 1 }} entering={FadeInDown.duration(300).springify()}>
