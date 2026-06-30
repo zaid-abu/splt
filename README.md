@@ -5,6 +5,7 @@ Splt is a modern money splitting application built with Expo and React Native. I
 ## Tech Stack
 
 This project is built with:
+
 - [Expo](https://expo.dev) & React Native
 - [HeroUI Native](https://heroui.com/docs/native) for beautiful UI components
 - [Uniwind](https://docs.uniwind.dev) (Tailwind CSS for React Native) for styling
@@ -68,6 +69,7 @@ src/
 ## Styling & Theming
 
 Splt uses a modern styling stack:
+
 - **HeroUI Native:** Provides accessible, unstyled core components that we've themed to match our brand.
 - **Uniwind (Tailwind CSS):** Enables rapid, utility-first styling directly within React Native components.
 - **Design Tokens:** Colors, typography, and spacing are standardized via a centralized design token system, ensuring a premium, consistent look and feel across the entire application.
