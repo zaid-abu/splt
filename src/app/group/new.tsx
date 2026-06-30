@@ -13,7 +13,7 @@
  * - Alert
  * - Separator
  */
-import { Alert, Button, Typography, PressableFeedback } from "heroui-native";
+import { Alert, Button, Typography, PressableFeedback, Spinner } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -45,13 +45,13 @@ export default function NewGroupScreen(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  function handleCreate(): void {
+  async function handleCreate(): Promise<void> {
     if (!name.trim()) { setError("Group name is required"); return; }
 
     setLoading(true);
     setError("");
     try {
-      const group = createGroup({
+      const group = await createGroup({
         name: name.trim(),
         description: description.trim() || undefined,
         icon,
@@ -220,9 +220,10 @@ export default function NewGroupScreen(): JSX.Element {
         {/* ── Fixed Submit Button ────────────────────────────────── */}
         <View className="px-6 py-4 bg-background border-t border-border/50">
           <PressableFeedback onPress={loading ? undefined : handleCreate}>
-            <View className={`w-full h-[56px] rounded-[20px] items-center justify-center ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+            <View className={`w-full h-[56px] rounded-[20px] flex-row items-center justify-center gap-2 ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+              {loading && <Spinner color="white" size="sm" />}
               <Typography type="body" className="font-bold text-white">
-                {loading ? "Creating…" : "Create Group"}
+                Create Group
               </Typography>
             </View>
           </PressableFeedback>

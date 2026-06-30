@@ -1,4 +1,4 @@
-import { PressableFeedback, Typography } from "heroui-native";
+import { PressableFeedback, Typography, Skeleton } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
@@ -6,10 +6,10 @@ import { StatusBar } from "expo-status-bar";
 import { ScrollView, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { FocusAwareView } from "@/components/PageAnimator";
 import * as icons from "lucide-react-native";
 
 import { useApp } from "@/context/AppContext";
-import { PageAnimator } from "@/components/PageAnimator";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { formatAmount } from "@/components/AmountDisplay";
 import { ActivityItem } from "@/components/ActivityItem";
@@ -17,7 +17,7 @@ import type { Activity } from "@/types";
 
 export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
-  const { activities, currentUser, getTotalOwedToMe, getTotalIOwe, preferredCurrency } = useApp();
+  const { activities, currentUser, getTotalOwedToMe, getTotalIOwe, preferredCurrency, isAppLoading } = useApp();
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -52,7 +52,7 @@ export default function ActivityScreen(): JSX.Element {
   }, [filteredActivities]);
 
   return (
-    <PageAnimator>
+    <FocusAwareView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
         <StatusBar style="dark" />
         <ScrollView
@@ -73,7 +73,7 @@ export default function ActivityScreen(): JSX.Element {
           </View>
 
           {/* ── Stats Row ─────────────────────────────── */}
-          <Animated.View entering={FadeInDown.delay(100).springify()} className="px-6 mb-8">
+          <FocusAwareView delay={100} className="px-6 mb-8">
             <View className="flex-row gap-4">
               <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
                 <View className="w-10 h-10 rounded-full bg-success/10 items-center justify-center mb-3">
@@ -99,10 +99,10 @@ export default function ActivityScreen(): JSX.Element {
                 </Typography>
               </View>
             </View>
-          </Animated.View>
+          </FocusAwareView>
 
           {/* ── Transactions Search ──────────────────────────── */}
-          <Animated.View entering={FadeInDown.delay(200).springify()} className="px-6 mb-6 h-[44px] justify-center">
+          <FocusAwareView delay={200} className="px-6 mb-6 h-[44px] justify-center">
             {isSearching ? (
               <View className="flex-row items-center bg-white h-full rounded-[16px] px-4 border border-border">
                 <icons.Search size={18} className="text-muted-foreground mr-2" />
@@ -128,11 +128,31 @@ export default function ActivityScreen(): JSX.Element {
                 </PressableFeedback>
               </View>
             )}
-          </Animated.View>
+          </FocusAwareView>
 
           {/* ── Timeline List ─────────────────────────────── */}
           <View className="px-6 mb-8 gap-6">
-            {groupedActivities.length === 0 ? (
+            {isAppLoading ? (
+              <View>
+                <Skeleton className="w-24 h-4 rounded-full ml-2 mb-3" />
+                <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+                  <View className="p-4 flex-row items-center gap-4">
+                    <Skeleton className="w-12 h-12 rounded-[16px]" />
+                    <View className="flex-1 gap-2">
+                      <Skeleton className="w-3/4 h-4 rounded-full" />
+                      <Skeleton className="w-1/3 h-3 rounded-full" />
+                    </View>
+                  </View>
+                  <View className="p-4 flex-row items-center gap-4 border-t border-border/50">
+                    <Skeleton className="w-12 h-12 rounded-[16px]" />
+                    <View className="flex-1 gap-2">
+                      <Skeleton className="w-1/2 h-4 rounded-full" />
+                      <Skeleton className="w-1/4 h-3 rounded-full" />
+                    </View>
+                  </View>
+                </View>
+              </View>
+            ) : groupedActivities.length === 0 ? (
               <View className="p-8 bg-white rounded-[24px] items-center justify-center border border-border border-dashed mt-4">
                 <View className="w-12 h-12 rounded-full bg-secondary items-center justify-center mb-3">
                   <icons.Activity size={24} className="text-muted-foreground" />
@@ -166,6 +186,6 @@ export default function ActivityScreen(): JSX.Element {
           </View>
         </ScrollView>
       </SafeAreaView>
-    </PageAnimator>
+    </FocusAwareView>
   );
 }

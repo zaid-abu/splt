@@ -15,6 +15,7 @@ import {
   Typography,
   Surface,
 } from "heroui-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -83,6 +84,7 @@ export default function RegisterScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           {/* Main Card */}
+          <Animated.View entering={FadeInDown.delay(100).springify()}>
           <Card className="rounded-[24px] bg-surface border-0 mb-6">
             <Card.Header className="pt-8 pb-2 items-center border-b-0">
               <Typography type="h3" className="font-bold text-foreground">
@@ -179,16 +181,17 @@ export default function RegisterScreen(): JSX.Element {
               </Button>
             </Card.Body>
           </Card>
+          </Animated.View>
 
           {/* Footer */}
-          <View className="flex-row items-center justify-center gap-2 mt-2">
+          <Animated.View entering={FadeInDown.delay(200).springify()} className="flex-row items-center justify-center gap-2 mt-2">
             <Typography type="body-sm" className="text-muted-foreground">
               Already have an account?
             </Typography>
             <LinkButton onPress={() => router.back()} className="text-primary font-semibold">
               Sign in
             </LinkButton>
-          </View>
+          </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>

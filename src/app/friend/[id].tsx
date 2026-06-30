@@ -1,5 +1,6 @@
-import { Typography, PressableFeedback, Button, Alert } from "heroui-native";
+import { Typography, PressableFeedback, Button, Alert, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import type { JSX } from "react";
 import { useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -7,7 +8,6 @@ import { ScrollView, View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 
-import { PageAnimator } from "@/components/PageAnimator";
 import { formatAmount } from "@/components/AmountDisplay";
 import { ActivityItem } from "@/components/ActivityItem";
 import { useApp } from "@/context/AppContext";
@@ -16,7 +16,7 @@ import { AppUserAvatar } from "@/components/MemberAvatar";
 export default function FriendDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { activities, groups, currentUser, preferredCurrency, getUserBalances } = useApp();
+  const { activities, groups, currentUser, preferredCurrency, getUserBalances, isAppLoading } = useApp();
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
@@ -64,7 +64,7 @@ export default function FriendDetailScreen(): JSX.Element {
   }
 
   return (
-    <PageAnimator>
+    <Animated.View style={{ flex: 1 }} entering={FadeInDown.duration(300).springify()}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top", "bottom"]}>
         <StatusBar style="dark" />
         <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
@@ -134,7 +134,26 @@ export default function FriendDetailScreen(): JSX.Element {
             </Typography>
           </View>
 
-          {sharedActivities.length === 0 ? (
+          {isAppLoading ? (
+            <View className="px-6">
+              <View className="bg-white rounded-[24px] overflow-hidden border border-border p-4 gap-4">
+                <View className="flex-row items-center gap-4">
+                  <Skeleton className="w-12 h-12 rounded-[16px]" />
+                  <View className="flex-1 gap-2">
+                    <Skeleton className="w-3/4 h-4 rounded-full" />
+                    <Skeleton className="w-1/3 h-3 rounded-full" />
+                  </View>
+                </View>
+                <View className="flex-row items-center gap-4">
+                  <Skeleton className="w-12 h-12 rounded-[16px]" />
+                  <View className="flex-1 gap-2">
+                    <Skeleton className="w-1/2 h-4 rounded-full" />
+                    <Skeleton className="w-1/4 h-3 rounded-full" />
+                  </View>
+                </View>
+              </View>
+            </View>
+          ) : sharedActivities.length === 0 ? (
             <View className="px-6">
               <View className="bg-white rounded-[24px] items-center p-8 border border-border">
                 <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
@@ -164,6 +183,6 @@ export default function FriendDetailScreen(): JSX.Element {
           <View className="h-12" />
         </ScrollView>
       </SafeAreaView>
-    </PageAnimator>
+    </Animated.View>
   );
 }

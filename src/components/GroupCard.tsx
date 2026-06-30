@@ -1,6 +1,7 @@
 import { Chip, PressableFeedback, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { View } from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { AmountDisplay } from "@/components/AmountDisplay";
 import * as icons from "lucide-react-native";
@@ -10,10 +11,11 @@ import { useApp } from "@/context/AppContext";
 interface GroupCardProps {
   group: Group;
   currentUserId: string;
+  index?: number;
   onPress?: () => void;
 }
 
-export function GroupCard({ group, currentUserId, onPress }: GroupCardProps): JSX.Element {
+export function GroupCard({ group, currentUserId, index = 0, onPress }: GroupCardProps): JSX.Element {
   const { getGroupBalances, preferredCurrency } = useApp();
   
   const balances = getGroupBalances(group.id);
@@ -25,9 +27,10 @@ export function GroupCard({ group, currentUserId, onPress }: GroupCardProps): JS
   const GroupIcon = (icons as any)[group.icon] || icons.Users;
 
   return (
-    <PressableFeedback onPress={onPress}>
-      <View className="bg-white p-4 border-b border-border/50 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-4 flex-1 pr-4">
+    <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
+      <PressableFeedback onPress={onPress}>
+        <View className="bg-white p-4 border-b border-border/50 flex-row items-center justify-between">
+          <View className="flex-row items-center gap-4 flex-1 pr-4">
           <View className="w-12 h-12 rounded-[16px] bg-primary/10 items-center justify-center">
             <GroupIcon size={24} className="text-primary" strokeWidth={2} />
           </View>
@@ -56,5 +59,6 @@ export function GroupCard({ group, currentUserId, onPress }: GroupCardProps): JS
         </View>
       </View>
     </PressableFeedback>
+    </Animated.View>
   );
 }

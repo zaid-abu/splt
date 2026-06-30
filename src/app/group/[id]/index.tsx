@@ -10,8 +10,9 @@
  * - Separator
  * - Typography
  * - Alert, Alert.Indicator, Alert.Content, Alert.Title, Alert.Description
+ * - Skeleton
  */
-import { Alert, Typography, PressableFeedback, Button } from "heroui-native";
+import { Alert, Typography, PressableFeedback, Button, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -27,7 +28,7 @@ import { useApp } from "@/context/AppContext";
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getGroup, getGroupExpenses, currentUser, preferredCurrency, getGroupBalances, convertCurrency } = useApp();
+  const { getGroup, getGroupExpenses, currentUser, preferredCurrency, getGroupBalances, convertCurrency, isAppLoading } = useApp();
 
   const group = getGroup(id ?? "");
   const expenses = getGroupExpenses(id ?? "");
@@ -143,9 +144,25 @@ export default function GroupDetailScreen(): JSX.Element {
           <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase">
             Balances
           </Typography>
-          <View className="rounded-[24px]">
-            <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-            {group.members.map((member, idx) => {
+          <View className="bg-white rounded-[24px] border border-border overflow-hidden">
+            {isAppLoading ? (
+              <>
+                <View className="p-4 border-b border-border/50 flex-row items-center gap-3">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <View className="flex-1 gap-2">
+                    <Skeleton className="w-24 h-4 rounded-full" />
+                    <Skeleton className="w-16 h-3 rounded-full" />
+                  </View>
+                </View>
+                <View className="p-4 flex-row items-center gap-3">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <View className="flex-1 gap-2">
+                    <Skeleton className="w-32 h-4 rounded-full" />
+                    <Skeleton className="w-20 h-3 rounded-full" />
+                  </View>
+                </View>
+              </>
+            ) : group.members.map((member, idx) => {
               const memBalance = balances.get(member.userId) ?? 0;
               return (
               <PressableFeedback key={member.userId} onPress={() => { }}>
@@ -175,10 +192,10 @@ export default function GroupDetailScreen(): JSX.Element {
                   </Typography>
                 </View>
               </PressableFeedback>
-            )})}
+              )
+            })}
             </View>
           </View>
-        </View>
 
         {/* ── Expenses ───────────────────────────────── */}
         <View className="px-6 mb-4 flex-row items-center justify-between">
@@ -190,7 +207,13 @@ export default function GroupDetailScreen(): JSX.Element {
           </Typography>
         </View>
 
-        {expenses.length === 0 ? (
+        {isAppLoading ? (
+          <View className="px-4 gap-3">
+            <Skeleton className="w-full h-[72px] rounded-[24px]" />
+            <Skeleton className="w-full h-[72px] rounded-[24px]" />
+            <Skeleton className="w-full h-[72px] rounded-[24px]" />
+          </View>
+        ) : expenses.length === 0 ? (
           <View className="px-6">
             <View className="bg-white rounded-[24px] items-center p-8 border border-border">
               <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
@@ -203,7 +226,7 @@ export default function GroupDetailScreen(): JSX.Element {
             </View>
           </View>
         ) : (
-          <View className="px-4">
+          <View className="px-4 gap-2">
             {expenses.map((expense) => (
               <ExpenseItem
                 key={expense.id}

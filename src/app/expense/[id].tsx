@@ -2,6 +2,7 @@ import {
   Button,
   Dialog,
   Typography,
+  Skeleton
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
@@ -18,7 +19,7 @@ import { EXPENSE_CATEGORIES } from "@/types";
 export default function ExpenseDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getExpense, currentUser, getGroup } = useApp();
+  const { getExpense, currentUser, getGroup, isAppLoading } = useApp();
 
   const expense = getExpense(id ?? "");
   const group = getGroup(expense?.groupId ?? "");
@@ -177,7 +178,24 @@ export default function ExpenseDetailScreen(): JSX.Element {
             Split Breakdown
           </Typography>
           <View className="bg-white rounded-[24px] border border-border p-2">
-            {expense.splits.map((split, idx) => {
+            {isAppLoading ? (
+              <View className="p-4 gap-4">
+                <View className="flex-row items-center gap-4">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <View className="flex-1 gap-2">
+                    <Skeleton className="w-24 h-4 rounded-full" />
+                    <Skeleton className="w-16 h-3 rounded-full" />
+                  </View>
+                </View>
+                <View className="flex-row items-center gap-4">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <View className="flex-1 gap-2">
+                    <Skeleton className="w-32 h-4 rounded-full" />
+                    <Skeleton className="w-20 h-3 rounded-full" />
+                  </View>
+                </View>
+              </View>
+            ) : expense.splits.map((split, idx) => {
               const isPaid = split.paid;
               const isMe = split.userId === currentUser.id;
               const isPayer = split.userId === expense.paidBy;

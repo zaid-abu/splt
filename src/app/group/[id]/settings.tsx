@@ -1,4 +1,4 @@
-import { Alert, Button, Typography, PressableFeedback } from "heroui-native";
+import { Alert, Button, Typography, PressableFeedback, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
@@ -62,11 +62,11 @@ export default function GroupSettingsScreen(): JSX.Element {
     );
   }
 
-  function handleSave(): void {
+  async function handleSave(): Promise<void> {
     if (!name.trim()) { setError("Group name is required"); return; }
     setLoading(true);
     try {
-      updateGroup(group!.id, {
+      await updateGroup(group!.id, {
         name: name.trim(),
         description: description.trim() || undefined,
         icon,
@@ -291,9 +291,10 @@ export default function GroupSettingsScreen(): JSX.Element {
         {/* ── Fixed Submit Button ─────────────────────────────── */}
         <View className="px-6 py-4 bg-background border-t border-border/50">
           <PressableFeedback onPress={loading ? undefined : handleSave}>
-            <View className={`w-full h-[56px] rounded-[20px] items-center justify-center ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+            <View className={`w-full h-[56px] rounded-[20px] flex-row items-center justify-center gap-2 ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+              {loading && <Spinner color="white" size="sm" />}
               <Typography type="body" className="font-bold text-white">
-                {loading ? "Saving…" : "Save Changes"}
+                Save Changes
               </Typography>
             </View>
           </PressableFeedback>

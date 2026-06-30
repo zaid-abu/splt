@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import { PressableFeedback } from "heroui-native";
 import Animated, { useAnimatedStyle, withSpring, withTiming } from "react-native-reanimated";
+import * as Haptics from 'expo-haptics';
 
 type TabBarItemProps = {
   isFocused: boolean;
@@ -34,8 +35,15 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
     };
   });
 
+  const handlePress = () => {
+    if (!isFocused) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    onPress();
+  };
+
   return (
-    <Pressable onPress={onPress} className="flex-1 items-center justify-center h-14 relative">
+    <Pressable onPress={handlePress} className="flex-1 items-center justify-center h-14 relative">
       <Animated.View style={iconAnimatedStyle}>
         <Icon size={24} color={isFocused ? "#3D2B82" : "#8A8798"} strokeWidth={isFocused ? 2.5 : 2} />
       </Animated.View>
@@ -107,6 +115,7 @@ export default function TabsLayout(): JSX.Element {
               >
                 <PressableFeedback 
                   onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     router.push("/expense/new");
                   }}
                   className="rounded-full overflow-hidden"

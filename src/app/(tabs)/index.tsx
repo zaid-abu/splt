@@ -3,13 +3,14 @@
  */
 import { PressableFeedback, Typography, Surface, Card, Button } from "heroui-native";
 import { useRouter } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { FocusAwareView } from "@/components/PageAnimator";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 
-import { PageAnimator } from "@/components/PageAnimator";
 import { useApp } from "@/context/AppContext";
 import { formatAmount } from "@/components/AmountDisplay";
 import { AppUserAvatar } from "@/components/MemberAvatar";
@@ -44,7 +45,7 @@ export default function DashboardScreen(): JSX.Element {
   const firstName = currentUser.name.split(" ")[0];
 
   return (
-    <PageAnimator>
+    <FocusAwareView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
         <StatusBar style="dark" />
         <ScrollView
@@ -53,7 +54,7 @@ export default function DashboardScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           {/* ── Header ────────────────────────────────── */}
-          <View className="flex-row items-center justify-between px-6 pt-4 mb-8">
+          <FocusAwareView delay={0} className="flex-row items-center justify-between px-6 pt-4 mb-8">
             <View>
               <Typography type="body-sm" className="text-muted-foreground font-medium mb-1">
                 {greeting},
@@ -67,10 +68,10 @@ export default function DashboardScreen(): JSX.Element {
                 <AppUserAvatar user={currentUser} size="md" />
               </View>
             </PressableFeedback>
-          </View>
+          </FocusAwareView>
 
           {/* ── Enhanced Hero Card (Financial Overview) ── */}
-          <View className="px-6 mb-8">
+          <FocusAwareView delay={100} className="px-6 mb-8">
             <View
               className="rounded-[32px]"
               style={{
@@ -143,10 +144,10 @@ export default function DashboardScreen(): JSX.Element {
                 </View>
               </View>
             </View>
-          </View>
+          </FocusAwareView>
 
           {/* ── Functional Quick Actions Grid ─────────── */}
-          <View className="px-6 mb-10">
+          <FocusAwareView delay={200} className="px-6 mb-10">
             <View className="flex-row justify-between">
               {[
                 { icon: icons.Users, label: "Groups", route: "/(tabs)/groups", color: "#6B4EFF", bg: "#E0DDF2" },
@@ -171,10 +172,10 @@ export default function DashboardScreen(): JSX.Element {
                 </PressableFeedback>
               ))}
             </View>
-          </View>
+          </FocusAwareView>
 
           {/* ── Outstanding Balances ──────────────────── */}
-          <View className="px-6 mb-8">
+          <FocusAwareView delay={300} className="px-6 mb-8">
             <View className="flex-row items-center justify-between mb-4">
               <Typography type="h3" className="text-[20px] font-bold text-foreground tracking-tight">
                 Needs Attention
@@ -224,11 +225,11 @@ export default function DashboardScreen(): JSX.Element {
                 </View>
               )}
             </View>
-          </View>
+          </FocusAwareView>
 
           {/* ── Recent Activity ───────────────────────── */}
           {recentActivities.length > 0 && (
-            <View className="px-6 mb-8">
+            <FocusAwareView delay={400} className="px-6 mb-8">
               <View className="flex-row items-center justify-between mb-4">
                 <Typography type="h3" className="text-[20px] font-bold text-foreground tracking-tight">
                   Recent Activity
@@ -250,10 +251,10 @@ export default function DashboardScreen(): JSX.Element {
                   ))}
                 </View>
               </View>
-            </View>
+            </FocusAwareView>
           )}
         </ScrollView>
       </SafeAreaView>
-    </PageAnimator>
+    </FocusAwareView>
   );
 }

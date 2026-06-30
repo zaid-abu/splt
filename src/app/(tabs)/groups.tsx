@@ -9,8 +9,10 @@
  * - Typography
  * - Chip
  */
-import { SearchField, Typography, PressableFeedback } from "heroui-native";
+import { SearchField, Typography, PressableFeedback, Skeleton } from "heroui-native";
 import { useRouter } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { FocusAwareView } from "@/components/PageAnimator";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -19,12 +21,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 
 import { GroupCard } from "@/components/GroupCard";
-import { PageAnimator } from "@/components/PageAnimator";
 import { useApp } from "@/context/AppContext";
 
 export default function GroupsScreen(): JSX.Element {
   const router = useRouter();
-  const { groups, currentUser } = useApp();
+  const { groups, currentUser, isAppLoading } = useApp();
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()
@@ -32,7 +33,7 @@ export default function GroupsScreen(): JSX.Element {
     : groups;
 
   return (
-    <PageAnimator>
+    <FocusAwareView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
         <StatusBar style="dark" />
         
@@ -93,11 +94,33 @@ export default function GroupsScreen(): JSX.Element {
               )}
             </View>
           ) : (
-            <View className="gap-2">
-              {filtered.map((group) => (
+            <View className="gap-2 bg-white rounded-[24px] border border-border/50 overflow-hidden">
+              {isAppLoading ? (
+                <>
+                  <View className="p-4 border-b border-border/50 flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-4 flex-1">
+                      <Skeleton className="w-12 h-12 rounded-[16px]" />
+                      <View className="flex-1 gap-2">
+                        <Skeleton className="w-3/4 h-5 rounded-full" />
+                        <Skeleton className="w-1/3 h-3 rounded-full" />
+                      </View>
+                    </View>
+                  </View>
+                  <View className="p-4 border-b border-border/50 flex-row items-center justify-between">
+                    <View className="flex-row items-center gap-4 flex-1">
+                      <Skeleton className="w-12 h-12 rounded-[16px]" />
+                      <View className="flex-1 gap-2">
+                        <Skeleton className="w-1/2 h-5 rounded-full" />
+                        <Skeleton className="w-1/4 h-3 rounded-full" />
+                      </View>
+                    </View>
+                  </View>
+                </>
+              ) : filtered.map((group, index) => (
                 <GroupCard
                   key={group.id}
                   group={group}
+                  index={index}
                   currentUserId={currentUser.id}
                   onPress={() => router.push(`/group/${group.id}`)}
                 />
@@ -106,6 +129,6 @@ export default function GroupsScreen(): JSX.Element {
           )}
         </ScrollView>
       </SafeAreaView>
-    </PageAnimator>
+    </FocusAwareView>
   );
 }

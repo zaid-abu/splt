@@ -3,43 +3,42 @@ import { useCallback } from "react";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { useFocusEffect } from "expo-router";
 
-interface PageAnimatorProps extends PropsWithChildren {
+interface FocusAwareViewProps extends PropsWithChildren {
   delay?: number;
+  className?: string;
+  style?: any;
 }
 
-/**
- * Wraps page content in a subtle fade and slide animation that triggers
- * every time the page gains focus (ideal for Tab screens that don't unmount).
- */
-export function PageAnimator({ children, delay = 0 }: PageAnimatorProps): JSX.Element {
+export function FocusAwareView({ children, delay = 0, className, style }: FocusAwareViewProps): JSX.Element {
   const opacity = useSharedValue(0);
-  const translateY = useSharedValue(10);
+  const translateY = useSharedValue(20);
 
   useFocusEffect(
     useCallback(() => {
       // Reset
       opacity.value = 0;
-      translateY.value = 10;
+      translateY.value = 20;
       
-      // Animate in
-      opacity.value = withTiming(1, { duration: 300 });
-      translateY.value = withSpring(0, { damping: 15, stiffness: 150 });
+      const timeout = setTimeout(() => {
+        opacity.value = withTiming(1, { duration: 300 });
+        translateY.value = withSpring(0, { damping: 15, stiffness: 150 });
+      }, delay);
       
       return () => {
-        // Optional: fade out when blurring
-        opacity.value = withTiming(0, { duration: 150 });
+        clearTimeout(timeout);
+        opacity.value = 0;
+        translateY.value = 20;
       };
-    }, [])
+    }, [delay])
   );
 
   const animatedStyle = useAnimatedStyle(() => ({
-    flex: 1,
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
   }));
 
   return (
-    <Animated.View style={animatedStyle}>
+    <Animated.View style={[style, animatedStyle]} className={className}>
       {children}
     </Animated.View>
   );

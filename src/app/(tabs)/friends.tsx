@@ -1,4 +1,4 @@
-import { Typography, PressableFeedback } from "heroui-native";
+import { Typography, PressableFeedback, Skeleton } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
@@ -6,15 +6,16 @@ import { StatusBar } from "expo-status-bar";
 import { ScrollView, View, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { FocusAwareView } from "@/components/PageAnimator";
 
-import { PageAnimator } from "@/components/PageAnimator";
 import { formatAmount } from "@/components/AmountDisplay";
 import { useApp } from "@/context/AppContext";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 
 export default function FriendsScreen(): JSX.Element {
   const router = useRouter();
-  const { groups, currentUser, getUserBalances, preferredCurrency } = useApp();
+  const { groups, currentUser, getUserBalances, preferredCurrency, isAppLoading } = useApp();
   const [search, setSearch] = useState("");
 
   const balances = getUserBalances();
@@ -30,7 +31,7 @@ export default function FriendsScreen(): JSX.Element {
     : uniqueFriends;
 
   return (
-    <PageAnimator>
+    <FocusAwareView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
         <StatusBar style="dark" />
         
@@ -83,37 +84,45 @@ export default function FriendsScreen(): JSX.Element {
             </View>
           ) : (
             <View className="gap-2">
-              {filtered.map((friend) => {
+              {isAppLoading ? (
+                <>
+                  <Skeleton className="w-full h-[88px] rounded-[24px]" />
+                  <Skeleton className="w-full h-[88px] rounded-[24px]" />
+                  <Skeleton className="w-full h-[88px] rounded-[24px]" />
+                </>
+              ) : filtered.map((friend, index) => {
                 const bal = balances.get(friend.id) || 0;
                 const isPositive = bal > 0;
                 const isNegative = bal < 0;
                 
                 return (
-                  <PressableFeedback key={friend.id} onPress={() => router.push(`/friend/${friend.id}`)}>
-                    <View className="flex-row items-center bg-white rounded-[24px] p-4 mb-2 border border-border">
-                      <AppUserAvatar user={friend} size="lg" />
-                      <View className="flex-1 ml-4">
-                        <Typography type="h3" className="font-bold text-[18px] text-foreground mb-1">
-                          {friend.name}
-                        </Typography>
-                        {bal === 0 ? (
-                          <Typography type="body-sm" className="text-muted-foreground font-medium">Settled up</Typography>
-                        ) : (
-                          <Typography type="body-sm" className={`font-bold ${isPositive ? 'text-success' : 'text-danger'}`}>
-                            {isPositive ? 'Owes you ' : 'You owe '}
-                            {formatAmount(Math.abs(bal), preferredCurrency.code)}
+                  <FocusAwareView key={friend.id} delay={100 + index * 50}>
+                    <PressableFeedback onPress={() => router.push(`/friend/${friend.id}`)}>
+                      <View className="flex-row items-center bg-white rounded-[24px] p-4 mb-2 border border-border">
+                        <AppUserAvatar user={friend} size="lg" />
+                        <View className="flex-1 ml-4">
+                          <Typography type="h3" className="font-bold text-[18px] text-foreground mb-1">
+                            {friend.name}
                           </Typography>
-                        )}
+                          {bal === 0 ? (
+                            <Typography type="body-sm" className="text-muted-foreground font-medium">Settled up</Typography>
+                          ) : (
+                            <Typography type="body-sm" className={`font-bold ${isPositive ? 'text-success' : 'text-danger'}`}>
+                              {isPositive ? 'Owes you ' : 'You owe '}
+                              {formatAmount(Math.abs(bal), preferredCurrency.code)}
+                            </Typography>
+                          )}
+                        </View>
+                        <icons.ChevronRight size={20} color="#8A8798" />
                       </View>
-                      <icons.ChevronRight size={20} color="#8A8798" />
-                    </View>
-                  </PressableFeedback>
+                    </PressableFeedback>
+                  </FocusAwareView>
                 );
               })}
             </View>
           )}
         </ScrollView>
       </SafeAreaView>
-    </PageAnimator>
+    </FocusAwareView>
   );
 }

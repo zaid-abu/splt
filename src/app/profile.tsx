@@ -13,6 +13,8 @@
  */
 import { Switch, Typography, PressableFeedback, Button } from "heroui-native";
 import { useRouter } from "expo-router";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { FocusAwareView } from "@/components/PageAnimator";
 import { Uniwind } from "uniwind";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -23,7 +25,6 @@ import * as icons from "lucide-react-native";
 
 import { useApp } from "@/context/AppContext";
 import type { Currency } from "@/types";
-import { PageAnimator } from "@/components/PageAnimator";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { CurrencySelector } from "@/components/CurrencySelector";
 
@@ -81,7 +82,7 @@ export default function ProfileScreen(): JSX.Element {
   };
 
   return (
-    <PageAnimator>
+    <FocusAwareView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
         <StatusBar style="dark" />
         <ScrollView
@@ -91,12 +92,12 @@ export default function ProfileScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           {/* ── Header ─────────────────────────────────── */}
-          <View className="px-6 pt-4 mb-6">
+          <FocusAwareView delay={0} className="px-6 pt-4 mb-6">
             <Typography type="h2" className="font-black tracking-tight text-[28px]">Profile</Typography>
-          </View>
+          </FocusAwareView>
 
           {/* ── User card ───────────────────────────────── */}
-          <View className="px-6 mb-8">
+          <FocusAwareView delay={100} className="px-6 mb-8">
             <View className="bg-white rounded-[32px] p-6 items-center border border-border">
               <View className="mb-4">
                 <AppUserAvatar user={currentUser} size="lg" />
@@ -126,10 +127,10 @@ export default function ProfileScreen(): JSX.Element {
                 )}
               </View>
             </View>
-          </View>
+          </FocusAwareView>
 
           {/* ── Account settings ───────────────────────── */}
-          <View className="px-6 mb-6">
+          <FocusAwareView delay={200} className="px-6 mb-6">
             <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
               ACCOUNT
             </Typography>
@@ -159,10 +160,10 @@ export default function ProfileScreen(): JSX.Element {
               />
               </View>
             </View>
-          </View>
+          </FocusAwareView>
 
           {/* ── Preferences ────────────────────────────── */}
-          <View className="px-6 mb-6 z-50">
+          <FocusAwareView delay={300} className="px-6 mb-6 z-50">
             <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
               PREFERENCES
             </Typography>
@@ -189,10 +190,10 @@ export default function ProfileScreen(): JSX.Element {
                 onChange={handleCurrencyChange}
               />
             </View>
-          </View>
+          </FocusAwareView>
 
           {/* ── About ──────────────────────────────────── */}
-          <View className="px-6 mb-8">
+          <FocusAwareView delay={400} className="px-6 mb-8">
             <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
               ABOUT
             </Typography>
@@ -213,17 +214,17 @@ export default function ProfileScreen(): JSX.Element {
               />
               </View>
             </View>
-          </View>
+          </FocusAwareView>
 
           {/* ── Sign Out ────────────────────────────────── */}
-          <View className="px-6">
+          <FocusAwareView delay={500} className="px-6">
             <Button variant="danger-soft" size="lg" className="rounded-[20px]" onPress={() => router.replace("/(auth)/welcome")}>
               <Typography type="body" className="font-bold text-danger">Sign Out</Typography>
             </Button>
-          </View>
+          </FocusAwareView>
 
         </ScrollView>
       </SafeAreaView>
-    </PageAnimator>
+    </FocusAwareView>
   );
 }

@@ -39,7 +39,7 @@ export default function WelcomeScreen(): JSX.Element {
   const [currentIndex, setCurrentIndex] = useState(0);
 
   return (
-    <View className="flex-1 bg-background">
+    <Animated.View entering={FadeInDown.duration(300).springify()} className="flex-1 bg-background">
       <StatusBar style="light" />
 
       {/* Fixed Top Background with rounded bottom */}
@@ -146,6 +146,6 @@ export default function WelcomeScreen(): JSX.Element {
           </Button>
         </Animated.View>
       </View>
-    </View>
+    </Animated.View>
   );
 }

@@ -1,4 +1,4 @@
-import { Alert, Button, Typography, PressableFeedback, Tabs } from "heroui-native";
+import { Alert, Button, Typography, PressableFeedback, Tabs, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
@@ -11,6 +11,7 @@ import { useApp } from "@/context/AppContext";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import * as icons from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 
 export default function SettleUpScreen(): JSX.Element {
   const { id, groupId, amount: initialAmount, direction: initialDirection } = useLocalSearchParams<{ id: string; groupId?: string; amount?: string; direction?: string }>();
@@ -63,9 +64,9 @@ export default function SettleUpScreen(): JSX.Element {
 
   const parsedAmount = parseFloat(amount.replace(",", ".")) || 0;
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!parsedAmount || parsedAmount <= 0) {
-      setError("Please enter a valid amount to settle.");
+      setError("Please enter a valid amount.");
       return;
     }
 
@@ -73,7 +74,7 @@ export default function SettleUpScreen(): JSX.Element {
     setError("");
 
     try {
-      addSettlement({
+      await addSettlement({
         groupId: selectedGroupId,
         fromUserId: direction === "you" ? currentUser.id : friend!.id,
         toUserId: direction === "you" ? friend!.id : currentUser.id,
@@ -82,6 +83,7 @@ export default function SettleUpScreen(): JSX.Element {
         date: new Date(),
         note: note.trim(),
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (e) {
       setError("Failed to record settlement.");
@@ -116,7 +118,10 @@ export default function SettleUpScreen(): JSX.Element {
                   ASSOCIATE WITH GROUP (OPTIONAL)
                 </Typography>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <PressableFeedback onPress={() => setSelectedGroupId(undefined)}>
+                  <PressableFeedback onPress={() => {
+                    Haptics.selectionAsync();
+                    setSelectedGroupId(undefined);
+                  }}>
                     <View className={`px-4 py-2 rounded-full border mr-2 ${!selectedGroupId ? 'bg-primary border-primary' : 'bg-white border-border'}`}>
                       <Typography type="body-sm" className={`font-bold ${!selectedGroupId ? 'text-white' : 'text-foreground'}`}>
                         No Group
@@ -126,7 +131,10 @@ export default function SettleUpScreen(): JSX.Element {
                   {sharedGroups.map(g => {
                     const isSelected = selectedGroupId === g.id;
                     return (
-                      <PressableFeedback key={g.id} onPress={() => setSelectedGroupId(g.id)}>
+                      <PressableFeedback key={g.id} onPress={() => {
+                        Haptics.selectionAsync();
+                        setSelectedGroupId(g.id);
+                      }}>
                         <View className={`px-4 py-2 rounded-full border mr-2 flex-row items-center gap-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-border'}`}>
                           {(() => {
                             const IconComp = (icons as any)[g.icon] || icons.HelpCircle;
@@ -156,7 +164,10 @@ export default function SettleUpScreen(): JSX.Element {
                     </Typography>
                   </View>
 
-                  <PressableFeedback onPress={() => setDirection(prev => prev === "you" ? "them" : "you")}>
+                  <PressableFeedback onPress={() => {
+                    Haptics.selectionAsync();
+                    setDirection(prev => prev === "you" ? "them" : "you");
+                  }}>
                     <View className="w-12 h-12 rounded-full bg-secondary items-center justify-center">
                       <icons.ArrowRightLeft size={20} className="text-foreground" />
                     </View>
@@ -172,7 +183,7 @@ export default function SettleUpScreen(): JSX.Element {
                   </View>
                 </View>
 
-                <Tabs value={direction} onValueChange={setDirection as any} variant="primary" className="w-full">
+                <Tabs value={direction} onValueChange={(v) => { Haptics.selectionAsync(); setDirection(v as any); }} variant="primary" className="w-full">
                   <Tabs.List className="w-full bg-secondary rounded-[16px] p-1">
                     <Tabs.Indicator className="bg-white rounded-[12px] shadow-sm" />
                     <Tabs.Trigger value="you" className="flex-1 h-[40px]">
@@ -252,9 +263,10 @@ export default function SettleUpScreen(): JSX.Element {
         {/* ── Fixed Submit Button ─────────────────────────────── */}
         <View className="px-6 py-4 bg-background border-t border-border/50">
           <PressableFeedback onPress={loading ? undefined : handleSubmit}>
-            <View className={`w-full h-[56px] rounded-[20px] items-center justify-center ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+            <View className={`w-full h-[56px] rounded-[20px] flex-row items-center justify-center gap-2 ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+              {loading && <Spinner color="white" size="sm" />}
               <Typography type="body" className="font-bold text-white">
-                {loading ? "Recording…" : "Record Payment"}
+                Record Payment
               </Typography>
             </View>
           </PressableFeedback>

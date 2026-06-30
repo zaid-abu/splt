@@ -13,7 +13,7 @@
  * - Separator
  * - Alert
  */
-import { Alert, Checkbox, PressableFeedback, Typography, Button, Tabs } from "heroui-native";
+import { Alert, Checkbox, PressableFeedback, Typography, Button, Tabs, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo, useEffect } from "react";
@@ -27,6 +27,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import * as Haptics from 'expo-haptics';
 
 import { useApp } from "@/context/AppContext";
 import { AppUserAvatar } from "@/components/MemberAvatar";
@@ -123,7 +124,7 @@ export default function AddExpenseScreen(): JSX.Element {
   const currentPercentSum = includedMembers.reduce((sum, u) => sum + (parseFloat(customPercentages[u.id] ?? "0") || 0), 0);
   const remainingPercent = Math.max(0, 100 - currentPercentSum);
 
-  function handleSubmit(): void {
+  async function handleSubmit(): Promise<void> {
     if (!selectedGroup && selectedFriends.length === 0) { setError("Please select a group or friend"); return; }
     if (!title.trim()) { setError("Please enter a title"); return; }
     if (!parsedAmount || parsedAmount <= 0) { setError("Please enter a valid amount"); return; }
@@ -162,7 +163,7 @@ export default function AddExpenseScreen(): JSX.Element {
         dateObj.setDate(dateObj.getDate() - 1);
       }
 
-      addExpense({
+      await addExpense({
         groupId: selectedGroup?.id,
         title: title.trim(),
         amount: parsedAmount,
@@ -173,6 +174,7 @@ export default function AddExpenseScreen(): JSX.Element {
         splitMethod,
         date: dateObj,
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch {
       setError("Something went wrong. Please try again.");
@@ -477,7 +479,10 @@ export default function AddExpenseScreen(): JSX.Element {
                     const CatIcon = (icons as any)[cat.icon] || icons.Package;
                     const isSelected = category === cat.key;
                     return (
-                      <PressableFeedback key={cat.key} onPress={() => setCategory(cat.key)}>
+                      <PressableFeedback key={cat.key} onPress={() => {
+                        Haptics.selectionAsync();
+                        setCategory(cat.key);
+                      }}>
                         <View className={`flex-row items-center gap-2 px-4 h-[44px] rounded-full border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent'}`}>
                           <CatIcon size={18} color={isSelected ? "white" : "#8A8798"} strokeWidth={isSelected ? 2.5 : 2} />
                           <Typography type="body-sm" className={`font-bold ${isSelected ? 'text-white' : 'text-foreground'}`}>
@@ -503,7 +508,10 @@ export default function AddExpenseScreen(): JSX.Element {
                   {participants.map((u) => {
                     const isSelected = paidBy === u.id;
                     return (
-                      <PressableFeedback key={u.id} onPress={() => setPaidBy(u.id)}>
+                      <PressableFeedback key={u.id} onPress={() => {
+                        Haptics.selectionAsync();
+                        setPaidBy(u.id);
+                      }}>
                         <View className={`flex-row items-center gap-2 px-2 pr-4 h-[44px] rounded-full border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent'}`}>
                           <AppUserAvatar user={u} size="sm" />
                           <Typography type="body-sm" className={`font-bold ${isSelected ? 'text-white' : 'text-foreground'}`}>
@@ -526,7 +534,10 @@ export default function AddExpenseScreen(): JSX.Element {
                     const isSelected = splitMethod === method.key;
                     return (
                       <View key={method.key} className="flex-1">
-                        <PressableFeedback onPress={() => setSplitMethod(method.key)}>
+                        <PressableFeedback onPress={() => {
+                          Haptics.selectionAsync();
+                          setSplitMethod(method.key);
+                        }}>
                           <View className={`h-[48px] rounded-[16px] items-center justify-center border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent'}`}>
                             <Typography type="body-sm" className={`font-bold ${isSelected ? 'text-white' : 'text-foreground'}`}>
                               {method.label}
@@ -657,9 +668,10 @@ export default function AddExpenseScreen(): JSX.Element {
             </PressableFeedback>
           ) : (
             <PressableFeedback onPress={loading ? undefined : handleSubmit}>
-              <View className={`w-full h-[56px] rounded-[20px] items-center justify-center ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+              <View className={`w-full h-[56px] rounded-[20px] flex-row items-center justify-center gap-2 ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+                {loading && <Spinner color="white" size="sm" />}
                 <Typography type="body" className="font-bold text-white">
-                  {loading ? "Adding…" : "Add Expense"}
+                  Add Expense
                 </Typography>
               </View>
             </PressableFeedback>

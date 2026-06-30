@@ -24,8 +24,8 @@ import { CURRENCIES } from "@/types";
 
 // ─── Context shape ────────────────────────────────────────────────────────────
 
-interface AppContextValue {
-  // Auth (mock Phase 1)
+export interface AppContextValue {
+  isAppLoading: boolean;
   currentUser: User;
   isAuthenticated: boolean;
   signIn: (email: string, _password: string) => Promise<void>;
@@ -48,8 +48,8 @@ interface AppContextValue {
     description?: string;
     currency: string;
     memberEmails: string[];
-  }) => Group;
-  updateGroup: (id: string, data: Partial<Group>) => void;
+  }) => Promise<Group>;
+  updateGroup: (id: string, group: Partial<Omit<Group, "id" | "members">>) => Promise<Group>;
   addGroupMembers: (groupId: string, users: User[]) => void;
   removeGroupMember: (groupId: string, userId: string) => void;
   deleteGroup: (groupId: string) => void;
@@ -68,14 +68,14 @@ interface AppContextValue {
     splitMethod: SplitMethod;
     date: Date;
     notes?: string;
-  }) => Expense;
+  }) => Promise<Expense>;
   getExpense: (id: string) => Expense | undefined;
 
   // Balances
   getNetBalance: () => number;
   getTotalOwedToMe: () => number;
   getTotalIOwe: () => number;
-  getUserBalances: () => Map<string, number>;
+  getUserBalances: (groupId?: string) => Map<string, number>;
   getGroupBalances: (groupId: string) => Map<string, number>;
 
   // Settlements
@@ -87,7 +87,7 @@ interface AppContextValue {
     currency: string;
     date: Date;
     note?: string;
-  }) => Settlement;
+  }) => Promise<Settlement>;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -132,6 +132,15 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     CURRENCIES.find((c) => c.code === "INR") ?? CURRENCIES[0]!,
   );
   const [exchangeRates, setExchangeRates] = useState<Record<string, number>>(FALLBACK_RATES);
+  const [isAppLoading, setIsAppLoading] = useState(true);
+
+  // Initial load simulation
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAppLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Fetch live rates on mount
   React.useEffect(() => {
@@ -184,13 +193,14 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   );
 
   const createGroup = useCallback(
-    (data: {
+    async (data: {
       name: string;
       icon: string;
       description?: string;
       currency: string;
       memberEmails: string[];
     }) => {
+      await new Promise(resolve => setTimeout(resolve, 500));
       const selfMember: GroupMember = {
         userId: currentUser.id,
         user: currentUser,
@@ -226,9 +236,13 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     [currentUser],
   );
 
-  const updateGroup = useCallback((id: string, data: Partial<Group>) => {
-    setGroups(prev => prev.map(g => g.id === id ? { ...g, ...data } : g));
-  }, []);
+  const updateGroup = async (id: string, updates: Partial<Omit<Group, "id" | "members">>) => {
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setGroups((prev) =>
+      prev.map((g) => (g.id === id ? { ...g, ...updates } : g))
+    );
+    return groups.find((g) => g.id === id)!;
+  };
 
   const addGroupMembers = useCallback((groupId: string, users: User[]) => {
     setGroups(prev => prev.map(g => {
@@ -264,7 +278,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   );
 
   const addExpense = useCallback(
-    (data: {
+    async (data: {
       groupId?: string;
       title: string;
       amount: number;
@@ -276,6 +290,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       date: Date;
       notes?: string;
     }) => {
+      await new Promise(resolve => setTimeout(resolve, 500));
       const paidByUser = data.splits.find((s) => s.userId === data.paidBy)?.user ?? currentUser;
       const splits: ExpenseSplit[] = data.splits.map((s) => ({
         ...s,
@@ -328,14 +343,18 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
 
       return newExpense;
     },
-    [currentUser],
+    [currentUser, convertCurrency],
   );
 
   // ── Balances ──────────────────────────────────────────────────────────────
 
-  const getUserBalances = useCallback(() => {
+  const getUserBalances = useCallback((groupId?: string) => {
     const balances = new Map<string, number>();
-    expenses.forEach((exp) => {
+    
+    const relevantExpenses = groupId ? expenses.filter(e => e.groupId === groupId) : expenses;
+    const relevantSettlements = groupId ? settlements.filter(s => s.groupId === groupId) : settlements;
+    
+    relevantExpenses.forEach((exp) => {
       if (exp.paidBy === currentUser.id) {
         exp.splits.forEach((s) => {
           if (s.userId !== currentUser.id) {
@@ -352,7 +371,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       }
     });
 
-    settlements.forEach((set) => {
+    relevantSettlements.forEach((set) => {
       if (set.fromUserId === currentUser.id) {
         const amtInPref = convertCurrency(set.amount, set.currency, preferredCurrency.code);
         balances.set(set.toUserId, (balances.get(set.toUserId) || 0) + amtInPref);
@@ -410,7 +429,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   // ── Settlements ──────────────────────────────────────────────────────────
 
   const addSettlement = useCallback(
-    (data: {
+    async (data: {
       groupId?: string;
       fromUserId: string;
       toUserId: string;
@@ -419,6 +438,8 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       date: Date;
       note?: string;
     }) => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
       const uniqueUsers = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
       const fromUser = uniqueUsers.find(u => u.id === data.fromUserId) || currentUser;
@@ -465,6 +486,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
   return (
     <AppContext.Provider
       value={{
+        isAppLoading,
         currentUser,
         isAuthenticated,
         signIn,
