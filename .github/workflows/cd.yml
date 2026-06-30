@@ -31,7 +31,9 @@ jobs:
         with:
           distribution: "temurin"
           java-version: "17"
-          cache: "gradle"
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Decode Keystore
         env:
@@ -54,13 +56,15 @@ jobs:
           if [ -f "app/release.keystore" ]; then
             echo "Keystore found. Building signed release APK."
             ./gradlew assembleRelease \
+              --build-cache \
+              --parallel \
               -Pandroid.injected.signing.store.file=$(pwd)/app/release.keystore \
               -Pandroid.injected.signing.store.password=$MYAPP_UPLOAD_STORE_PASSWORD \
               -Pandroid.injected.signing.key.alias=$MYAPP_UPLOAD_KEY_ALIAS \
               -Pandroid.injected.signing.key.password=$MYAPP_UPLOAD_KEY_PASSWORD
           else
             echo "No keystore found. Building unsigned release APK."
-            ./gradlew assembleRelease
+            ./gradlew assembleRelease --build-cache --parallel
           fi
 
       - name: Upload APK Artifact

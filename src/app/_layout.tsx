@@ -43,33 +43,33 @@ export default function RootLayout(): JSX.Element | null {
           <BottomSheetModalProvider>
             <AppProvider>
               <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
-              <Stack.Screen name="(auth)" />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen
-                name="group/new"
-                options={{
-                  presentation: "modal",
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen name="group/[id]" options={{ headerShown: false }} />
-              <Stack.Screen
-                name="expense/[id]"
-                options={{
-                  presentation: "modal",
-                  headerShown: false,
-                }}
-              />
-              <Stack.Screen
-                name="settle/[id]"
-                options={{
-                  presentation: "modal",
-                  headerShown: false,
-                }}
-              />
-            </Stack>
-          </AppProvider>
-        </BottomSheetModalProvider>
+                <Stack.Screen name="(auth)" />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen
+                  name="group/new"
+                  options={{
+                    presentation: "modal",
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen name="group/[id]" options={{ headerShown: false }} />
+                <Stack.Screen
+                  name="expense/[id]"
+                  options={{
+                    presentation: "modal",
+                    headerShown: false,
+                  }}
+                />
+                <Stack.Screen
+                  name="settle/[id]"
+                  options={{
+                    presentation: "modal",
+                    headerShown: false,
+                  }}
+                />
+              </Stack>
+            </AppProvider>
+          </BottomSheetModalProvider>
         </HeroUINativeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

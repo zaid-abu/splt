@@ -5,7 +5,14 @@ import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, TextInput, ActivityIndicator } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 
@@ -23,7 +30,12 @@ export default function LoginScreen(): JSX.Element {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (!email.trim() || !password) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show({ label: "Error", description: "Please fill in all fields", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Please fill in all fields",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
     setLoading(true);
@@ -90,7 +102,9 @@ export default function LoginScreen(): JSX.Element {
                 <Typography type="body-sm" className="font-medium text-foreground">
                   Password
                 </Typography>
-                <PressableFeedback onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}>
+                <PressableFeedback
+                  onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+                >
                   <Typography type="body-sm" className="font-semibold text-primary">
                     Forgot?
                   </Typography>
@@ -107,7 +121,7 @@ export default function LoginScreen(): JSX.Element {
                   className="flex-1 ml-3 font-medium text-foreground text-[16px]"
                   placeholderTextColor="#8A8798"
                 />
-                <PressableFeedback 
+                <PressableFeedback
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setShowPassword(!showPassword);
@@ -135,7 +149,7 @@ export default function LoginScreen(): JSX.Element {
                 {loading ? "Signing in…" : "Sign In"}
               </Typography>
             </Button>
-            
+
             {/* Divider */}
             <View className="flex-row items-center gap-4 my-2">
               <View className="flex-1 h-[1px] bg-border" />
@@ -144,7 +158,7 @@ export default function LoginScreen(): JSX.Element {
               </Typography>
               <View className="flex-1 h-[1px] bg-border" />
             </View>
-            
+
             <View className="flex-row gap-4">
               <Button
                 variant="secondary"
@@ -168,7 +182,7 @@ export default function LoginScreen(): JSX.Element {
               </Button>
             </View>
           </Animated.View>
-          
+
           <View className="flex-1" />
 
           {/* Footer links */}

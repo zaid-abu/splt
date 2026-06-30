@@ -96,7 +96,12 @@ export default function GroupSettingsScreen(): JSX.Element {
 
   async function handleSave(): Promise<void> {
     if (!name.trim()) {
-      toast.show({ label: "Error", description: "Group name is required", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Group name is required",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
     setLoading(true);
@@ -110,7 +115,12 @@ export default function GroupSettingsScreen(): JSX.Element {
       });
       router.back();
     } catch {
-      toast.show({ label: "Error", description: "Failed to update group. Please try again.", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Failed to update group. Please try again.",
+        variant: "danger",
+        placement: "top",
+      });
       setLoading(false);
     }
   }
@@ -118,7 +128,12 @@ export default function GroupSettingsScreen(): JSX.Element {
   function handleRemoveMember(userId: string) {
     const memBalance = balances.get(userId) ?? 0;
     if (Math.abs(memBalance) > 0.01) {
-      toast.show({ label: "Error", description: "Cannot remove member with non-zero balance.", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Cannot remove member with non-zero balance.",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
     removeGroupMember(group!.id, userId);

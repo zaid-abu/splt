@@ -6,8 +6,8 @@ import { StatusBar } from "expo-status-bar";
 import { View, Dimensions, FlatList, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import Animated, { 
-  FadeInDown, 
+import Animated, {
+  FadeInDown,
   FadeIn,
   useAnimatedStyle,
   useSharedValue,
@@ -15,7 +15,7 @@ import Animated, {
   interpolate,
   Extrapolate,
   useAnimatedScrollHandler,
-  interpolateColor
+  interpolateColor,
 } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
@@ -53,15 +53,10 @@ const Dot = ({ index, scrollX, width }: { index: number; scrollX: any; width: nu
     const isActive = Math.round(scrollX.value / width) === index;
     return {
       width: withSpring(isActive ? 24 : 8),
-      backgroundColor: isActive ? "#3D2B82" : "#E5E5EA"
+      backgroundColor: isActive ? "#3D2B82" : "#E5E5EA",
     };
   });
-  return (
-    <Animated.View
-      className="h-2 rounded-full"
-      style={dotStyle}
-    />
-  );
+  return <Animated.View className="h-2 rounded-full" style={dotStyle} />;
 };
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -70,7 +65,7 @@ export default function WelcomeScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const [currentIndex, setCurrentIndex] = useState(0);
-  
+
   const scrollX = useSharedValue(0);
 
   const scrollHandler = useAnimatedScrollHandler({
@@ -83,11 +78,7 @@ export default function WelcomeScreen(): JSX.Element {
   const colorRange = SLIDES.map((s) => s.color);
 
   const backgroundStyle = useAnimatedStyle(() => {
-    const backgroundColor = interpolateColor(
-      scrollX.value,
-      scrollRange,
-      colorRange
-    );
+    const backgroundColor = interpolateColor(scrollX.value, scrollRange, colorRange);
     return { backgroundColor };
   });
 
@@ -134,9 +125,19 @@ export default function WelcomeScreen(): JSX.Element {
           return (
             <View style={{ width, flex: 1, paddingHorizontal: 32 }}>
               {/* Top Illustration Area */}
-              <View style={{ height: height * 0.55, alignItems: "center", justifyContent: "center", paddingTop: insets.top }}>
+              <View
+                style={{
+                  height: height * 0.55,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingTop: insets.top,
+                }}
+              >
                 <Animated.View entering={FadeIn.delay(200).duration(800)}>
-                  <View className="items-center justify-center w-40 h-40 rounded-[48px] bg-white/10 mb-8" style={{ borderWidth: 1, borderColor: "rgba(255,255,255,0.2)" }}>
+                  <View
+                    className="items-center justify-center w-40 h-40 rounded-[48px] bg-white/10 mb-8"
+                    style={{ borderWidth: 1, borderColor: "rgba(255,255,255,0.2)" }}
+                  >
                     <item.icon size={64} color="white" strokeWidth={1.5} />
                   </View>
                 </Animated.View>
@@ -172,7 +173,7 @@ export default function WelcomeScreen(): JSX.Element {
       />
 
       {/* Bottom Controls inside a white card */}
-      <Animated.View 
+      <Animated.View
         entering={FadeInDown.delay(600).springify().damping(18)}
         className="bg-white rounded-t-[40px] px-8 pt-8 pb-10"
         style={{ paddingBottom: Math.max(insets.bottom + 16, 40) }}

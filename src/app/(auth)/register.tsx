@@ -1,11 +1,23 @@
 import { Button, Checkbox, Typography, PressableFeedback, useToast } from "heroui-native";
-import Animated, { FadeInDown, FadeIn, useAnimatedStyle, withTiming } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  FadeIn,
+  useAnimatedStyle,
+  withTiming,
+} from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, TextInput, ActivityIndicator } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import * as icons from "lucide-react-native";
@@ -27,7 +39,8 @@ export default function RegisterScreen(): JSX.Element {
   const passwordStrength = useMemo(() => {
     if (!password) return { label: "", color: "transparent", progress: 0 };
     if (password.length < 6) return { label: "Weak", color: "#EF4444", progress: 33 };
-    if (password.length < 10 || !/\d/.test(password)) return { label: "Good", color: "#F5A524", progress: 66 };
+    if (password.length < 10 || !/\d/.test(password))
+      return { label: "Good", color: "#F5A524", progress: 66 };
     return { label: "Strong", color: "#17C964", progress: 100 };
   }, [password]);
 
@@ -42,12 +55,22 @@ export default function RegisterScreen(): JSX.Element {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (!name.trim() || !email.trim() || !password) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show({ label: "Error", description: "Please fill in all fields", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Please fill in all fields",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
     if (!agreed) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show({ label: "Error", description: "Please accept the Terms of Service", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Please accept the Terms of Service",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
     setLoading(true);
@@ -141,7 +164,7 @@ export default function RegisterScreen(): JSX.Element {
                   className="flex-1 ml-3 font-medium text-foreground text-[16px]"
                   placeholderTextColor="#8A8798"
                 />
-                <PressableFeedback 
+                <PressableFeedback
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     setShowPassword(!showPassword);
@@ -155,14 +178,18 @@ export default function RegisterScreen(): JSX.Element {
                   )}
                 </PressableFeedback>
               </View>
-              
+
               {/* Password Strength Indicator */}
               {password.length > 0 && (
                 <Animated.View entering={FadeIn.duration(200)} className="mt-2">
                   <View className="h-1.5 w-full bg-surface-secondary rounded-full overflow-hidden flex-row">
                     <Animated.View style={strengthStyle} className="h-full rounded-full" />
                   </View>
-                  <Typography type="body-xs" className="mt-1 font-medium" style={{ color: passwordStrength.color }}>
+                  <Typography
+                    type="body-xs"
+                    className="mt-1 font-medium"
+                    style={{ color: passwordStrength.color }}
+                  >
                     {passwordStrength.label}
                   </Typography>
                 </Animated.View>
@@ -184,7 +211,7 @@ export default function RegisterScreen(): JSX.Element {
               }}
             >
               <View className="flex-row items-center gap-3 w-full mt-1">
-                <View 
+                <View
                   className={`w-6 h-6 rounded-md border items-center justify-center ${
                     agreed ? "bg-primary border-primary" : "bg-white border-border"
                   }`}
@@ -199,7 +226,8 @@ export default function RegisterScreen(): JSX.Element {
                     Terms of Service
                   </Typography>
                   <Typography type="body-sm" className="text-muted-foreground">
-                    {" "}and{" "}
+                    {" "}
+                    and{" "}
                   </Typography>
                   <Typography type="body-sm" className="text-primary font-semibold">
                     Privacy Policy
@@ -221,7 +249,7 @@ export default function RegisterScreen(): JSX.Element {
               </Typography>
             </Button>
           </Animated.View>
-          
+
           <View className="flex-1" />
 
           {/* Footer */}

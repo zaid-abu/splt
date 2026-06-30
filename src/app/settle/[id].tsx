@@ -84,7 +84,12 @@ export default function SettleUpScreen(): JSX.Element {
 
   async function handleSubmit() {
     if (!parsedAmount || parsedAmount <= 0) {
-      toast.show({ label: "Error", description: "Please enter a valid amount.", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Please enter a valid amount.",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
 
@@ -103,7 +108,12 @@ export default function SettleUpScreen(): JSX.Element {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (e: any) {
-      toast.show({ label: "Error", description: e.message || "Failed to record settlement.", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: e.message || "Failed to record settlement.",
+        variant: "danger",
+        placement: "top",
+      });
     } finally {
       setLoading(false);
     }

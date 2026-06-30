@@ -71,7 +71,12 @@ export default function NewGroupScreen(): JSX.Element {
 
   async function handleCreate(): Promise<void> {
     if (!name.trim()) {
-      toast.show({ label: "Error", description: "Group name is required", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Group name is required",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
 
@@ -86,7 +91,12 @@ export default function NewGroupScreen(): JSX.Element {
       });
       router.replace(`/group/${group.id}`);
     } catch {
-      toast.show({ label: "Error", description: "Failed to create group. Please try again.", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Failed to create group. Please try again.",
+        variant: "danger",
+        placement: "top",
+      });
       setLoading(false);
     }
   }

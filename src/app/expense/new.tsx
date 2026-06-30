@@ -156,29 +156,59 @@ export default function AddExpenseScreen(): JSX.Element {
 
   async function handleSubmit(): Promise<void> {
     if (!selectedGroup && selectedFriends.length === 0) {
-      toast.show({ label: "Error", description: "Please select a group or friend", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Please select a group or friend",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
     if (!title.trim()) {
-      toast.show({ label: "Error", description: "Please enter a title", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Please enter a title",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
     if (!parsedAmount || parsedAmount <= 0) {
-      toast.show({ label: "Error", description: "Please enter a valid amount", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Please enter a valid amount",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
     if (includedMembers.length === 0) {
-      toast.show({ label: "Error", description: "Include at least one member", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Include at least one member",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
 
     if (splitMethod === "custom" && Math.abs(currentCustomSum - parsedAmount) > 0.01) {
-      toast.show({ label: "Error", description: `Custom amounts must equal exactly ${formatAmount(parsedAmount, expenseCurrency)}.`, variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: `Custom amounts must equal exactly ${formatAmount(parsedAmount, expenseCurrency)}.`,
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
 
     if (splitMethod === "percentage" && Math.abs(currentPercentSum - 100) > 0.01) {
-      toast.show({ label: "Error", description: "Percentages must add up to exactly 100%.", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: "Percentages must add up to exactly 100%.",
+        variant: "danger",
+        placement: "top",
+      });
       return;
     }
 
@@ -219,7 +249,12 @@ export default function AddExpenseScreen(): JSX.Element {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (e: any) {
-      toast.show({ label: "Error", description: e.message || "Something went wrong. Please try again.", variant: "danger", placement: "top" });
+      toast.show({
+        label: "Error",
+        description: e.message || "Something went wrong. Please try again.",
+        variant: "danger",
+        placement: "top",
+      });
       setLoading(false);
     }
   }
