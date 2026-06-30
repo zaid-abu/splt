@@ -3,6 +3,9 @@ name: CD
 on:
   workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
 
+permissions:
+  contents: write
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
@@ -60,8 +63,20 @@ jobs:
             ./gradlew assembleRelease
           fi
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release.apk
           path: android/app/build/outputs/apk/release/app-release.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          files: android/app/build/outputs/apk/release/app-release.apk
+          tag_name: ${{ github.ref_name }}
+          # Generate a tag name if it's not a tag push
+          name: Release ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
