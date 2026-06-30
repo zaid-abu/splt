@@ -31,7 +31,6 @@ export default function SettleUpScreen(): JSX.Element {
   
   const [amount, setAmount] = useState(initialAmount || Math.abs(netBalance).toString());
   const [note, setNote] = useState("");
-  const [settleCurrency, setSettleCurrency] = useState(preferredCurrency.code);
   const sharedGroups = useMemo(() => {
     return groups.filter(g => 
       g.members.some(m => m.userId === currentUser.id) &&
@@ -42,6 +41,10 @@ export default function SettleUpScreen(): JSX.Element {
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(
     groupId || (sharedGroups.length === 1 ? sharedGroups[0].id : undefined)
   );
+
+  const selectedGroup = groups.find(g => g.id === selectedGroupId);
+  const initialCurrency = selectedGroup ? selectedGroup.currency : preferredCurrency.code;
+  const [settleCurrency, setSettleCurrency] = useState(initialCurrency);
   
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");

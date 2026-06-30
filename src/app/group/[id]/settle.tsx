@@ -20,11 +20,11 @@ interface SettlementSuggestion {
 export default function GroupSettleScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getGroup, getGroupBalances, currentUser, preferredCurrency } = useApp();
+  const { getGroup, getGroupBalances, currentUser } = useApp();
 
   const group = getGroup(id ?? "");
   const balances = getGroupBalances(id ?? "");
-  const sym = getCurrencySymbol(preferredCurrency.code);
+  const sym = group ? getCurrencySymbol(group.currency) : "$";
 
   const suggestions = useMemo(() => {
     if (!group) return [];

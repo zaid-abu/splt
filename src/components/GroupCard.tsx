@@ -18,7 +18,7 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group, currentUserId, index = 0, onPress }: GroupCardProps): JSX.Element {
-  const { getGroupBalances, preferredCurrency } = useApp();
+  const { getGroupBalances } = useApp();
   
   const balances = getGroupBalances(group.id);
   const balance = balances.get(currentUserId) ?? 0;
@@ -56,7 +56,7 @@ export function GroupCard({ group, currentUserId, index = 0, onPress }: GroupCar
             {balance !== 0 && (
               <AmountDisplay
                 amount={Math.abs(balance)}
-                currency={preferredCurrency.code}
+                currency={group.currency}
                 size="md"
                 colored={true}
               />

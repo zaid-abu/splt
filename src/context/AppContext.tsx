@@ -402,11 +402,13 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
 
   const getGroupBalances = useCallback((groupId: string) => {
     const balances = new Map<string, number>();
+    const group = groups.find(g => g.id === groupId);
+    const targetCurrency = group ? group.currency : preferredCurrency.code;
     
     expenses.filter(e => e.groupId === groupId).forEach((exp) => {
       exp.splits.forEach((s) => {
         if (s.userId !== exp.paidBy) {
-          const amtInPref = convertCurrency(s.amount, exp.currency, preferredCurrency.code);
+          const amtInPref = convertCurrency(s.amount, exp.currency, targetCurrency);
           balances.set(exp.paidBy, (balances.get(exp.paidBy) || 0) + amtInPref);
           balances.set(s.userId, (balances.get(s.userId) || 0) - amtInPref);
         }
@@ -414,13 +416,13 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     });
 
     settlements.filter(s => s.groupId === groupId).forEach((set) => {
-      const amtInPref = convertCurrency(set.amount, set.currency, preferredCurrency.code);
+      const amtInPref = convertCurrency(set.amount, set.currency, targetCurrency);
       balances.set(set.toUserId, (balances.get(set.toUserId) || 0) - amtInPref);
       balances.set(set.fromUserId, (balances.get(set.fromUserId) || 0) + amtInPref);
     });
 
     return balances;
-  }, [expenses, settlements, preferredCurrency.code, convertCurrency]);
+  }, [expenses, settlements, groups, preferredCurrency.code, convertCurrency]);
 
   const getNetBalance = useCallback(() => {
     return getTotalOwedToMe() - getTotalIOwe();
