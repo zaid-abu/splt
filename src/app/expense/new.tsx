@@ -25,6 +25,8 @@ import {
   Label,
   Input,
   SearchField,
+  Chip,
+  useToast,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
@@ -56,6 +58,7 @@ export default function AddExpenseScreen(): JSX.Element {
   }>();
   const router = useRouter();
   const { getGroup, addExpense, currentUser, groups, preferredCurrency, setCurrency } = useApp();
+  const { toast } = useToast();
 
   const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId ?? "");
   const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>(
@@ -117,7 +120,6 @@ export default function AddExpenseScreen(): JSX.Element {
   const [splitMethod, setSplitMethod] = useState<SplitMethod>("equal");
   const [paidBy, setPaidBy] = useState(currentUser.id);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [expenseDate, setExpenseDate] = useState<"today" | "yesterday">("today");
 
   const [included, setIncluded] = useState<Record<string, boolean>>({});
@@ -154,34 +156,34 @@ export default function AddExpenseScreen(): JSX.Element {
 
   async function handleSubmit(): Promise<void> {
     if (!selectedGroup && selectedFriends.length === 0) {
-      setError("Please select a group or friend");
+      toast.show({ label: "Error", description: "Please select a group or friend", variant: "danger", placement: "top" });
       return;
     }
     if (!title.trim()) {
-      setError("Please enter a title");
+      toast.show({ label: "Error", description: "Please enter a title", variant: "danger", placement: "top" });
       return;
     }
     if (!parsedAmount || parsedAmount <= 0) {
-      setError("Please enter a valid amount");
+      toast.show({ label: "Error", description: "Please enter a valid amount", variant: "danger", placement: "top" });
       return;
     }
     if (includedMembers.length === 0) {
-      setError("Include at least one member");
+      toast.show({ label: "Error", description: "Include at least one member", variant: "danger", placement: "top" });
       return;
     }
 
     if (splitMethod === "custom" && Math.abs(currentCustomSum - parsedAmount) > 0.01) {
-      setError(`Custom amounts must equal exactly ${formatAmount(parsedAmount, expenseCurrency)}.`);
+      toast.show({ label: "Error", description: `Custom amounts must equal exactly ${formatAmount(parsedAmount, expenseCurrency)}.`, variant: "danger", placement: "top" });
       return;
     }
 
     if (splitMethod === "percentage" && Math.abs(currentPercentSum - 100) > 0.01) {
-      setError("Percentages must add up to exactly 100%.");
+      toast.show({ label: "Error", description: "Percentages must add up to exactly 100%.", variant: "danger", placement: "top" });
       return;
     }
 
     setLoading(true);
-    setError("");
+    toast.show({ label: "Error", description: "", variant: "danger", placement: "top" });
     try {
       const splits = includedMembers.map((u) => {
         let splitAmt = equalShare;
@@ -216,8 +218,8 @@ export default function AddExpenseScreen(): JSX.Element {
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
-    } catch {
-      setError("Something went wrong. Please try again.");
+    } catch (e: any) {
+      toast.show({ label: "Error", description: e.message || "Something went wrong. Please try again.", variant: "danger", placement: "top" });
       setLoading(false);
     }
   }
@@ -549,33 +551,27 @@ export default function AddExpenseScreen(): JSX.Element {
                       }}
                     />
 
-                    <TextField isInvalid={!!error && !title.trim()}>
+                    <TextField>
                       <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                         What was it for?
                       </Label>
                       <Input
                         placeholder="e.g. Dinner, Uber, Groceries…"
                         value={title}
-                        onChangeText={(t) => {
-                          setTitle(t);
-                          setError("");
-                        }}
+                        onChangeText={(t) => setTitle(t)}
                         autoCapitalize="sentences"
                         className="bg-white h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
                       />
                     </TextField>
 
-                    <TextField isInvalid={!!error && (!parsedAmount || parsedAmount <= 0)}>
+                    <TextField>
                       <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                         Amount ({expenseCurrency})
                       </Label>
                       <Input
                         placeholder="0.00"
                         value={amount}
-                        onChangeText={(t) => {
-                          setAmount(t);
-                          setError("");
-                        }}
+                        onChangeText={(t) => setAmount(t)}
                         keyboardType="decimal-pad"
                         className="bg-white h-[56px] rounded-[20px] px-4 border border-border font-black text-[20px]"
                       />
@@ -846,18 +842,6 @@ export default function AddExpenseScreen(): JSX.Element {
               )}
             </View>
           )}
-
-          {/* ── Error ──────────────────────────────── */}
-          {error ? (
-            <View className="px-6 mb-4">
-              <Alert status="danger" className="rounded-[20px]">
-                <Alert.Indicator />
-                <Alert.Content>
-                  <Alert.Title>{error}</Alert.Title>
-                </Alert.Content>
-              </Alert>
-            </View>
-          ) : null}
         </ScrollView>
 
         {/* ── Fixed Submit Button ─────────────────────────────── */}

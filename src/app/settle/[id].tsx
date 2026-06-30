@@ -1,5 +1,4 @@
 import {
-  Alert,
   Button,
   Typography,
   PressableFeedback,
@@ -8,6 +7,7 @@ import {
   TextField,
   Label,
   Input,
+  useToast,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
@@ -31,6 +31,7 @@ export default function SettleUpScreen(): JSX.Element {
     direction: initialDirection,
   } = useLocalSearchParams<{ id: string; groupId?: string; amount?: string; direction?: string }>();
   const router = useRouter();
+  const { toast } = useToast();
   const { groups, currentUser, preferredCurrency, getUserBalances, addSettlement, setCurrency } =
     useApp();
 
@@ -65,18 +66,12 @@ export default function SettleUpScreen(): JSX.Element {
   const [settleCurrency, setSettleCurrency] = useState(initialCurrency);
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   if (!friend) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
         <View className="flex-1 items-center justify-center p-6">
-          <Alert status="danger" className="mb-4 rounded-[20px]">
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>Friend not found</Alert.Title>
-            </Alert.Content>
-          </Alert>
+          <Typography className="text-muted-foreground">Friend not found</Typography>
           <Button onPress={() => router.back()} className="rounded-full mt-4">
             Go back
           </Button>
@@ -89,12 +84,11 @@ export default function SettleUpScreen(): JSX.Element {
 
   async function handleSubmit() {
     if (!parsedAmount || parsedAmount <= 0) {
-      setError("Please enter a valid amount.");
+      toast.show({ label: "Error", description: "Please enter a valid amount.", variant: "danger", placement: "top" });
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
       await addSettlement({
@@ -108,8 +102,9 @@ export default function SettleUpScreen(): JSX.Element {
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
-    } catch {
-      setError("Failed to record settlement.");
+    } catch (e: any) {
+      toast.show({ label: "Error", description: e.message || "Failed to record settlement.", variant: "danger", placement: "top" });
+    } finally {
       setLoading(false);
     }
   }
@@ -294,17 +289,14 @@ export default function SettleUpScreen(): JSX.Element {
               />
 
               <View>
-                <TextField isInvalid={!!error && (!parsedAmount || parsedAmount <= 0)}>
+                <TextField>
                   <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                     Amount ({settleCurrency})
                   </Label>
                   <Input
                     placeholder="0.00"
                     value={amount}
-                    onChangeText={(t) => {
-                      setAmount(t);
-                      setError("");
-                    }}
+                    onChangeText={(t) => setAmount(t)}
                     keyboardType="decimal-pad"
                     className="bg-white h-[56px] rounded-[20px] px-4 border border-border font-black text-[20px]"
                   />
@@ -332,18 +324,6 @@ export default function SettleUpScreen(): JSX.Element {
                 />
               </TextField>
             </View>
-
-            {/* ── Error ──────────────────────────────── */}
-            {error ? (
-              <View className="px-6 mb-4">
-                <Alert status="danger" className="rounded-[20px]">
-                  <Alert.Indicator />
-                  <Alert.Content>
-                    <Alert.Title>{error}</Alert.Title>
-                  </Alert.Content>
-                </Alert>
-              </View>
-            ) : null}
           </Animated.View>
         </ScrollView>
 

@@ -22,6 +22,7 @@ import {
   TextField,
   Label,
   Input,
+  useToast,
 } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
@@ -56,6 +57,7 @@ const GROUP_ICONS = [
 export default function NewGroupScreen(): JSX.Element {
   const router = useRouter();
   const { createGroup } = useApp();
+  const { toast } = useToast();
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -66,16 +68,14 @@ export default function NewGroupScreen(): JSX.Element {
     symbol: "$",
   });
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   async function handleCreate(): Promise<void> {
     if (!name.trim()) {
-      setError("Group name is required");
+      toast.show({ label: "Error", description: "Group name is required", variant: "danger", placement: "top" });
       return;
     }
 
     setLoading(true);
-    setError("");
     try {
       const group = await createGroup({
         name: name.trim(),
@@ -86,7 +86,7 @@ export default function NewGroupScreen(): JSX.Element {
       });
       router.replace(`/group/${group.id}`);
     } catch {
-      setError("Failed to create group. Please try again.");
+      toast.show({ label: "Error", description: "Failed to create group. Please try again.", variant: "danger", placement: "top" });
       setLoading(false);
     }
   }
@@ -179,16 +179,13 @@ export default function NewGroupScreen(): JSX.Element {
 
           {/* ── Form fields ───────────────────────────── */}
           <View className="px-6 mb-8 gap-5">
-            <TextField isInvalid={!!error && !name.trim()}>
+            <TextField>
               <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                 GROUP NAME
               </Label>
               <Input
                 value={name}
-                onChangeText={(t) => {
-                  setName(t);
-                  setError("");
-                }}
+                onChangeText={(t) => setName(t)}
                 placeholder="e.g. Weekend Trip, Housemates…"
                 autoCapitalize="words"
                 className="bg-white h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
@@ -238,18 +235,6 @@ export default function NewGroupScreen(): JSX.Element {
               </Alert.Content>
             </Alert>
           </View>
-
-          {/* ── Error ─────────────────────────────────── */}
-          {error ? (
-            <View className="px-6 mb-4">
-              <Alert status="danger" className="rounded-[20px]">
-                <Alert.Indicator />
-                <Alert.Content>
-                  <Alert.Title>{error}</Alert.Title>
-                </Alert.Content>
-              </Alert>
-            </View>
-          ) : null}
         </ScrollView>
 
         {/* ── Fixed Submit Button ────────────────────────────────── */}

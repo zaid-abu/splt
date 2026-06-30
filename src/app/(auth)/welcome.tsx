@@ -1,13 +1,25 @@
 import { Button, Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, Dimensions, FlatList } from "react-native";
+import { View, Dimensions, FlatList, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
+import Animated, { 
+  FadeInDown, 
+  FadeIn,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  interpolate,
+  Extrapolate,
+  useAnimatedScrollHandler,
+  interpolateColor
+} from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+
+const { width, height } = Dimensions.get("window");
 
 const SLIDES = [
   {
@@ -16,6 +28,7 @@ const SLIDES = [
     description: "Enjoy together, happy to share and save your\ntime with transactions at home.",
     icon: icons.Wallet,
     logoText: "splt",
+    color: "#3D2B82", // primary
   },
   {
     id: "2",
@@ -23,6 +36,7 @@ const SLIDES = [
     description: "No more awkward math. We handle the\ncalculations so you can enjoy the moment.",
     icon: icons.Users,
     logoText: "together",
+    color: "#5B44B3",
   },
   {
     id: "3",
@@ -30,58 +44,85 @@ const SLIDES = [
     description: "Get insights into your spending habits\nand stay on top of your budget.",
     icon: icons.PieChart,
     logoText: "insights",
+    color: "#271B54",
   },
 ];
+
+const Dot = ({ index, scrollX, width }: { index: number; scrollX: any; width: number }) => {
+  const dotStyle = useAnimatedStyle(() => {
+    const isActive = Math.round(scrollX.value / width) === index;
+    return {
+      width: withSpring(isActive ? 24 : 8),
+      backgroundColor: isActive ? "#3D2B82" : "#E5E5EA"
+    };
+  });
+  return (
+    <Animated.View
+      className="h-2 rounded-full"
+      style={dotStyle}
+    />
+  );
+};
+
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 export default function WelcomeScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width, height } = Dimensions.get("window");
   const [currentIndex, setCurrentIndex] = useState(0);
+  
+  const scrollX = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollX.value = event.contentOffset.x;
+    },
+  });
+
+  const scrollRange = SLIDES.map((_, i) => i * width);
+  const colorRange = SLIDES.map((s) => s.color);
+
+  const backgroundStyle = useAnimatedStyle(() => {
+    const backgroundColor = interpolateColor(
+      scrollX.value,
+      scrollRange,
+      colorRange
+    );
+    return { backgroundColor };
+  });
 
   return (
-    <Animated.View entering={FadeInDown.duration(300).springify()} className="flex-1 bg-background">
+    <Animated.View style={[{ flex: 1, backgroundColor: "#3D2B82" }, backgroundStyle]}>
       <StatusBar style="light" />
 
-      {/* Fixed Top Background with rounded bottom */}
-      <View
-        className="bg-primary overflow-hidden rounded-b-[40px]"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: height * 0.6,
-        }}
+      {/* Dynamic Decor Background Elements */}
+      <Animated.View
+        entering={FadeInDown.delay(500)}
+        style={{ position: "absolute", top: "15%", left: "10%" }}
       >
-        {/* Floating decor elements */}
-        <Animated.View
-          entering={FadeInDown.delay(500)}
-          style={{ position: "absolute", top: "20%", left: "15%" }}
-        >
-          <View className="bg-white p-3 rounded-xl" style={{ transform: [{ rotate: "-15deg" }] }}>
-            <Typography className="font-bold text-primary">$</Typography>
-          </View>
-        </Animated.View>
-        <Animated.View
-          entering={FadeInDown.delay(700)}
-          style={{ position: "absolute", bottom: "25%", right: "20%" }}
-        >
-          <View className="bg-white p-3 rounded-xl" style={{ transform: [{ rotate: "15deg" }] }}>
-            <Typography className="font-bold text-primary">$</Typography>
-          </View>
-        </Animated.View>
-      </View>
+        <View className="bg-white/20 p-3 rounded-2xl" style={{ transform: [{ rotate: "-15deg" }] }}>
+          <Typography className="font-bold text-white text-[24px]">$</Typography>
+        </View>
+      </Animated.View>
+      <Animated.View
+        entering={FadeInDown.delay(700)}
+        style={{ position: "absolute", top: "25%", right: "12%" }}
+      >
+        <View className="bg-white/20 p-4 rounded-3xl" style={{ transform: [{ rotate: "15deg" }] }}>
+          <Typography className="font-bold text-white text-[28px]">%</Typography>
+        </View>
+      </Animated.View>
 
-      {/* Swipeable Content */}
-      <FlatList
+      <AnimatedFlatList
         data={SLIDES}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         bounces={false}
-        onScroll={(e) => {
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        onMomentumScrollEnd={(e) => {
           const x = e.nativeEvent.contentOffset.x;
           const newIndex = Math.round(x / width);
           if (newIndex !== currentIndex) {
@@ -89,84 +130,89 @@ export default function WelcomeScreen(): JSX.Element {
             setCurrentIndex(newIndex);
           }
         }}
-        scrollEventThrottle={16}
-        renderItem={({ item }) => (
-          <View style={{ width, flex: 1 }}>
-            {/* Top Illustration Area */}
-            <View style={{ height: height * 0.6, alignItems: "center", justifyContent: "center" }}>
-              <Animated.View entering={FadeIn.delay(300).duration(800)}>
-                <View className="items-center gap-6">
-                  <item.icon size={80} color="white" strokeWidth={1} />
+        renderItem={({ item, index }: any) => {
+          return (
+            <View style={{ width, flex: 1, paddingHorizontal: 32 }}>
+              {/* Top Illustration Area */}
+              <View style={{ height: height * 0.55, alignItems: "center", justifyContent: "center", paddingTop: insets.top }}>
+                <Animated.View entering={FadeIn.delay(200).duration(800)}>
+                  <View className="items-center justify-center w-40 h-40 rounded-[48px] bg-white/10 mb-8" style={{ borderWidth: 1, borderColor: "rgba(255,255,255,0.2)" }}>
+                    <item.icon size={64} color="white" strokeWidth={1.5} />
+                  </View>
+                </Animated.View>
+                <Animated.View entering={FadeInDown.delay(300)}>
                   <Typography
-                    style={{ fontSize: 32, fontWeight: "900", color: "white", letterSpacing: -1 }}
+                    style={{ fontSize: 36, fontWeight: "900", color: "white", letterSpacing: -1.5 }}
                   >
                     {item.logoText}
                   </Typography>
-                </View>
-              </Animated.View>
-            </View>
+                </Animated.View>
+              </View>
 
-            {/* Bottom Content Area */}
-            <View style={{ flex: 1, paddingHorizontal: 32, paddingTop: 40, alignItems: "center" }}>
-              <View style={{ alignItems: "center", gap: 16 }}>
+              {/* Bottom Content Area */}
+              <View style={{ flex: 1, alignItems: "center", marginTop: 20 }}>
                 <Animated.Text
-                  entering={FadeInDown.delay(200).springify()}
-                  className="text-foreground text-[34px] font-[800] text-center"
+                  entering={FadeInDown.delay(400).springify()}
+                  className="text-white text-[34px] font-[800] text-center mb-4"
                   style={{ lineHeight: 40 }}
                 >
                   {item.title}
                 </Animated.Text>
-
                 <Animated.Text
-                  entering={FadeInDown.delay(300).springify()}
-                  className="text-muted-foreground text-base text-center"
+                  entering={FadeInDown.delay(500).springify()}
+                  className="text-white/70 text-[16px] text-center"
                   style={{ lineHeight: 24 }}
                 >
                   {item.description}
                 </Animated.Text>
               </View>
             </View>
-          </View>
-        )}
+          );
+        }}
       />
 
-      {/* Bottom Controls */}
-      <View style={{ paddingBottom: insets.bottom + 24, alignItems: "center" }}>
-        {/* Navigation dots */}
-        <View style={{ flexDirection: "row", gap: 8, marginBottom: 24 }}>
+      {/* Bottom Controls inside a white card */}
+      <Animated.View 
+        entering={FadeInDown.delay(600).springify().damping(18)}
+        className="bg-white rounded-t-[40px] px-8 pt-8 pb-10"
+        style={{ paddingBottom: Math.max(insets.bottom + 16, 40) }}
+      >
+        <View className="flex-row justify-center gap-2 mb-8">
           {SLIDES.map((_, i) => (
-            <View
-              key={i}
-              className={`w-2 h-2 rounded-full ${currentIndex === i ? "bg-primary" : "bg-muted-foreground opacity-30"}`}
-            />
+            <Dot key={i} index={i} scrollX={scrollX} width={width} />
           ))}
         </View>
 
-        {/* Get Started Button */}
-        <Animated.View
-          entering={FadeInDown.delay(400).springify()}
-          style={{ width: "100%", alignItems: "center" }}
-        >
+        <View className="gap-3">
           <Button
             size="lg"
             variant="primary"
-            className="bg-foreground"
-            style={{
-              width: "70%",
-              borderRadius: 24,
-              height: 56,
-            }}
+            className="w-full h-14 rounded-[16px] bg-[#3D2B82]"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push("/(auth)/register");
+            }}
+          >
+            <Typography type="body" weight="semibold" className="text-white">
+              Create an account
+            </Typography>
+          </Button>
+
+          <Button
+            size="lg"
+            variant="secondary"
+            className="w-full h-14 rounded-[16px] bg-[#F2F2F6]"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.push("/(auth)/login");
             }}
           >
-            <Button.Label className="text-background font-[600] text-[16px]">
-              Get Started
-            </Button.Label>
+            <Typography type="body" weight="semibold" className="text-foreground">
+              Log in
+            </Typography>
           </Button>
-        </Animated.View>
-      </View>
+        </View>
+      </Animated.View>
     </Animated.View>
   );
 }

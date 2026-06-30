@@ -10,6 +10,7 @@ import {
   Label,
   Input,
   ListGroup,
+  useToast,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
@@ -56,6 +57,7 @@ export default function GroupSettingsScreen(): JSX.Element {
     currentUser,
     getGroupBalances,
   } = useApp();
+  const { toast } = useToast();
 
   const group = getGroup(id ?? "");
 
@@ -67,7 +69,6 @@ export default function GroupSettingsScreen(): JSX.Element {
   const currency = CURRENCIES.find((c) => c.code === currencyCode) ?? CURRENCIES[0];
 
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
 
   const balances = getGroupBalances(id ?? "");
 
@@ -95,7 +96,7 @@ export default function GroupSettingsScreen(): JSX.Element {
 
   async function handleSave(): Promise<void> {
     if (!name.trim()) {
-      setError("Group name is required");
+      toast.show({ label: "Error", description: "Group name is required", variant: "danger", placement: "top" });
       return;
     }
     setLoading(true);
@@ -109,7 +110,7 @@ export default function GroupSettingsScreen(): JSX.Element {
       });
       router.back();
     } catch {
-      setError("Failed to update group. Please try again.");
+      toast.show({ label: "Error", description: "Failed to update group. Please try again.", variant: "danger", placement: "top" });
       setLoading(false);
     }
   }
@@ -117,18 +118,14 @@ export default function GroupSettingsScreen(): JSX.Element {
   function handleRemoveMember(userId: string) {
     const memBalance = balances.get(userId) ?? 0;
     if (Math.abs(memBalance) > 0.01) {
-      // Wait, we can't show alerts natively without the React Native Alert,
-      // but we can just set an error state here.
-      setError("Cannot remove member with non-zero balance.");
+      toast.show({ label: "Error", description: "Cannot remove member with non-zero balance.", variant: "danger", placement: "top" });
       return;
     }
     removeGroupMember(group!.id, userId);
-    setError(""); // Clear any previous error
   }
 
   function handleAddFriend(friend: any) {
     addGroupMembers(group!.id, [friend]);
-    setError("");
   }
 
   function handleDeleteGroup() {
@@ -194,16 +191,13 @@ export default function GroupSettingsScreen(): JSX.Element {
 
           {/* ── Form fields ───────────────────────────── */}
           <View className="px-6 mb-8 gap-5">
-            <TextField isInvalid={!!error && !name.trim()}>
+            <TextField>
               <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                 GROUP NAME
               </Label>
               <Input
                 value={name}
-                onChangeText={(t) => {
-                  setName(t);
-                  setError("");
-                }}
+                onChangeText={(t) => setName(t)}
                 placeholder="e.g. Weekend Trip, Housemates…"
                 autoCapitalize="words"
                 className="bg-white h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
@@ -336,18 +330,6 @@ export default function GroupSettingsScreen(): JSX.Element {
               </ListGroup>
             </View>
           )}
-
-          {/* ── Error ──────────────────────────────── */}
-          {error ? (
-            <View className="px-6 mb-4">
-              <Alert status="danger" className="rounded-[20px]">
-                <Alert.Indicator />
-                <Alert.Content>
-                  <Alert.Title>{error}</Alert.Title>
-                </Alert.Content>
-              </Alert>
-            </View>
-          ) : null}
 
           {/* ── Danger Zone ───────────────────────────── */}
           <View className="px-6 mb-8 mt-4">
