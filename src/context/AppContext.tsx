@@ -71,6 +71,10 @@ export interface AppContextValue {
     notes?: string;
   }) => Promise<Expense>;
   getExpense: (id: string) => Expense | undefined;
+  deleteExpense: (id: string) => Promise<void>;
+
+  // Activities CRUD
+  deleteActivity: (id: string) => Promise<void>;
 
   // Balances
   getNetBalance: () => number;
@@ -355,6 +359,46 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     [currentUser, convertCurrency]
   );
 
+  const deleteExpense = useCallback(
+    async (id: string) => {
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      const expense = expenses.find((e) => e.id === id);
+      if (!expense) return;
+
+      if (expense.groupId) {
+        setGroups((prev) =>
+          prev.map((g) => {
+            if (g.id !== expense.groupId) return g;
+            const amountInGroupCurrency = convertCurrency(
+              expense.amount,
+              expense.currency,
+              g.currency
+            );
+            return { ...g, totalExpenses: Math.max(0, g.totalExpenses - amountInGroupCurrency) };
+          })
+        );
+      }
+
+      setExpenses((prev) => prev.filter((e) => e.id !== id));
+      setActivities((prev) => prev.filter((a) => a.type !== "expense" || a.expense?.id !== id));
+    },
+    [expenses, convertCurrency]
+  );
+
+  const deleteActivity = useCallback(
+    async (id: string) => {
+      const activity = activities.find((a) => a.id === id);
+      if (!activity) return;
+
+      if (activity.expense) {
+        await deleteExpense(activity.expense.id);
+      } else {
+        setActivities((prev) => prev.filter((a) => a.id !== id));
+      }
+    },
+    [activities, deleteExpense]
+  );
+
   // ── Balances ──────────────────────────────────────────────────────────────
 
   const getUserBalances = useCallback(
@@ -591,6 +635,8 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         getGroupExpenses,
         addExpense,
         getExpense,
+        deleteExpense,
+        deleteActivity,
         getNetBalance,
         getTotalOwedToMe,
         getTotalIOwe,

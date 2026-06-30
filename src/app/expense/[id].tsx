@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, Text, View, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useState } from "react";
 import * as icons from "lucide-react-native";
 
 import { AppUserAvatar } from "@/components/MemberAvatar";
@@ -14,7 +15,8 @@ import { EXPENSE_CATEGORIES } from "@/types";
 export default function ExpenseDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getExpense, currentUser, getGroup, isAppLoading } = useApp();
+  const { getExpense, deleteExpense, currentUser, getGroup, isAppLoading } = useApp();
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const expense = getExpense(id ?? "");
   const group = getGroup(expense?.groupId ?? "");
@@ -81,16 +83,20 @@ export default function ExpenseDetailScreen(): JSX.Element {
             <icons.ChevronLeft size={24} className="text-foreground" strokeWidth={2.5} />
           </Pressable>
 
-          <Dialog>
+          <Dialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Dialog.Trigger asChild>
               <Pressable className="w-12 h-12 rounded-full bg-white items-center justify-center border border-border">
                 <icons.Trash2 size={20} className="text-danger" strokeWidth={2.5} />
               </Pressable>
             </Dialog.Trigger>
-            <Dialog.Portal>
-              <Dialog.Overlay />
-              <Dialog.Content className="rounded-[32px] p-6">
-                <Dialog.Close />
+            <Dialog.Portal className="absolute inset-0 justify-center p-5 z-50">
+              <Dialog.Overlay className="absolute inset-0 bg-black/40" />
+              <Dialog.Content className="bg-white p-6 rounded-[32px] shadow-lg self-center w-full max-w-[400px]">
+                <View className="absolute top-4 right-4 z-10">
+                  <Pressable onPress={() => setIsDialogOpen(false)} className="p-2">
+                    <icons.X size={20} className="text-muted-foreground" />
+                  </Pressable>
+                </View>
                 <View className="w-12 h-12 rounded-full bg-danger/10 items-center justify-center mb-4">
                   <icons.AlertTriangle size={24} className="text-danger" />
                 </View>
@@ -100,19 +106,24 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   undone.
                 </Dialog.Description>
                 <View className="flex-row gap-3">
-                  <Dialog.Close asChild>
-                    <Button
-                      variant="secondary"
-                      className="flex-1 rounded-full h-[56px] border border-border"
-                    >
-                      Cancel
-                    </Button>
-                  </Dialog.Close>
+                  <Button
+                    variant="secondary"
+                    className="flex-1 rounded-full h-[56px] border border-border"
+                    onPress={() => setIsDialogOpen(false)}
+                  >
+                    Cancel
+                  </Button>
                   <Button
                     variant="danger"
                     className="flex-1 rounded-full h-[56px]"
                     onPress={() => {
-                      router.back();
+                      setIsDialogOpen(false);
+                      setTimeout(() => {
+                        router.back();
+                        setTimeout(() => {
+                          deleteExpense(expense.id);
+                        }, 400); // Wait for the screen transition to finish
+                      }, 300); // Wait for the dialog animation to finish
                     }}
                   >
                     Delete

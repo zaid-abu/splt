@@ -1,9 +1,10 @@
-import { Alert, Button, Typography, PressableFeedback, Spinner } from "heroui-native";
+// heroui-native switch classes for uniwind: w-[48px] h-[24px] w-[28px] h-[20px] left-[2px] right-[2px] shadow-field rounded-full justify-center overflow-hidden absolute items-center disabled:opacity-disabled disabled:pointer-events-none
+import { Alert, Button, Typography, PressableFeedback, Spinner, Switch } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, TextInput, Switch } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CurrencySelector } from "@/components/CurrencySelector";
@@ -251,10 +252,9 @@ export default function GroupSettingsScreen(): JSX.Element {
                   </Typography>
                 </View>
                 <Switch
-                  value={simplifyDebts}
-                  onValueChange={setSimplifyDebts}
-                  trackColor={{ false: "#E5E5EA", true: "#000000" }}
-                  thumbColor="#FFFFFF"
+                  isSelected={simplifyDebts}
+                  onSelectedChange={setSimplifyDebts}
+                  className="accent-zinc-900"
                 />
               </View>
             </View>

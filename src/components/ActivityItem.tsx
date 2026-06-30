@@ -17,7 +17,7 @@ interface ActivityItemProps {
 }
 
 export function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
-  const { currentUser } = useApp();
+  const { currentUser, deleteActivity } = useApp();
   const router = useRouter();
 
   // Determine financial involvement
@@ -92,7 +92,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
 
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
-      <SwipeableRow onDelete={() => console.log("Delete activity", activity.id)}>
+      <SwipeableRow onDelete={() => deleteActivity(activity.id)}>
         <PressableFeedback
           onPress={() => {
             if (activity.expense) {

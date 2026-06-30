@@ -23,7 +23,7 @@ export function GroupCard({
   index = 0,
   onPress,
 }: GroupCardProps): JSX.Element {
-  const { getGroupBalances } = useApp();
+  const { getGroupBalances, deleteGroup } = useApp();
 
   const balances = getGroupBalances(group.id);
   const balance = balances.get(currentUserId) ?? 0;
@@ -38,7 +38,7 @@ export function GroupCard({
 
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
-      <SwipeableRow onDelete={() => console.log("Delete group", group.id)}>
+      <SwipeableRow onDelete={() => deleteGroup(group.id)}>
         <PressableFeedback onPress={onPress}>
           <View className="bg-white p-4 border-b border-border/50 flex-row items-center justify-between">
             <View className="flex-row items-center gap-4 flex-1 pr-4">
