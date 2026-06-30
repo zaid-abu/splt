@@ -1,34 +1,19 @@
-/**
- * Register Screen
- *
- * Built with HeroUI components to match the design tokens.
- */
-import {
-  Alert,
-  Button,
-  Card,
-  Checkbox,
-  Input,
-  Label,
-  LinkButton,
-  TextField,
-  Typography,
-  Surface,
-} from "heroui-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { Button, Checkbox, Typography, PressableFeedback, useToast } from "heroui-native";
+import Animated, { FadeInDown, FadeIn, useAnimatedStyle, withTiming } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, Dimensions } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, TextInput, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CurrencySelector } from "@/components/CurrencySelector";
+import * as icons from "lucide-react-native";
 
 export default function RegisterScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { height } = Dimensions.get("window");
+  const { toast } = useToast();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,46 +22,43 @@ export default function RegisterScreen(): JSX.Element {
   const [currency, setCurrency] = useState("USD");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const passwordStrength = useMemo(() => {
+    if (!password) return { label: "", color: "transparent", progress: 0 };
+    if (password.length < 6) return { label: "Weak", color: "#EF4444", progress: 33 };
+    if (password.length < 10 || !/\d/.test(password)) return { label: "Good", color: "#F5A524", progress: 66 };
+    return { label: "Strong", color: "#17C964", progress: 100 };
+  }, [password]);
+
+  const strengthStyle = useAnimatedStyle(() => {
+    return {
+      width: withTiming(`${passwordStrength.progress}%`, { duration: 300 }),
+      backgroundColor: withTiming(passwordStrength.color, { duration: 300 }),
+    };
+  });
 
   async function handleRegister(): Promise<void> {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (!name.trim() || !email.trim() || !password) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError("Please fill in all fields");
+      toast.show({ label: "Error", description: "Please fill in all fields", variant: "danger", placement: "top" });
       return;
     }
     if (!agreed) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      setError("Please accept the Terms of Service");
+      toast.show({ label: "Error", description: "Please accept the Terms of Service", variant: "danger", placement: "top" });
       return;
     }
     setLoading(true);
-    setError("");
     await new Promise((r) => setTimeout(r, 1000));
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.replace("/(tabs)");
   }
 
   return (
-    <View className="flex-1 bg-background">
-      <StatusBar style="light" />
-
-      {/* Top Decorative Header matching the brand identity */}
-      <Surface
-        className="bg-primary absolute w-full rounded-b-[40px] items-center justify-center"
-        style={{ height: height * 0.35 }}
-      >
-        <Typography
-          type="h1"
-          className="font-black text-primary-foreground tracking-tighter"
-          style={{ fontSize: 40 }}
-        >
-          splt
-        </Typography>
-        <Typography type="body-sm" className="text-secondary opacity-80 mt-2">
-          Create your account ✨
-        </Typography>
-      </Surface>
+    <View className="flex-1 bg-white">
+      <StatusBar style="dark" />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -86,144 +68,180 @@ export default function RegisterScreen(): JSX.Element {
           contentContainerStyle={{
             flexGrow: 1,
             paddingHorizontal: 24,
-            paddingTop: height * 0.23,
+            paddingTop: insets.top + 60,
             paddingBottom: insets.bottom + 24,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Main Card */}
-          <Animated.View entering={FadeInDown.delay(100).springify()}>
-            <Card className="rounded-[24px] bg-surface border-0 mb-6">
-              <Card.Header className="pt-8 pb-2 items-center border-b-0">
-                <Typography type="h3" className="font-bold text-foreground">
-                  Create account
-                </Typography>
-                <Typography type="body-sm" className="text-muted-foreground mt-1 text-center">
-                  Start splitting expenses with friends
-                </Typography>
-              </Card.Header>
-              <Card.Body className="gap-5 px-6 pb-8">
-                <TextField isRequired>
-                  <Label className="text-foreground font-medium mb-1">Full Name</Label>
-                  <Input
-                    placeholder="John Doe"
-                    value={name}
-                    onChangeText={setName}
-                    autoCapitalize="words"
-                    autoComplete="name"
-                    className="bg-surface-secondary border-muted h-14 rounded-xl"
-                  />
-                </TextField>
-
-                <TextField isRequired>
-                  <Label className="text-foreground font-medium mb-1">Email</Label>
-                  <Input
-                    placeholder="hello@splt.app"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    className="bg-surface-secondary border-muted h-14 rounded-xl"
-                  />
-                </TextField>
-
-                <TextField isRequired>
-                  <Label className="text-foreground font-medium mb-1">Password</Label>
-                  <Input
-                    placeholder="••••••••"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                    autoComplete="new-password"
-                    className="bg-surface-secondary border-muted h-14 rounded-xl"
-                  />
-                </TextField>
-
-                <View className="mb-2 z-10">
-                  <Label className="text-foreground font-medium mb-2">Base Currency</Label>
-                  <CurrencySelector value={currency} onChange={(c) => setCurrency(c.code)} />
-                </View>
-
-                {/* Terms checkbox */}
-                <View className="flex-row items-start gap-3 mt-1">
-                  <Checkbox
-                    isSelected={agreed}
-                    onSelectedChange={(val) => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setAgreed(val);
-                    }}
-                    className="mt-1"
-                  >
-                    <Checkbox.Indicator />
-                  </Checkbox>
-                  <View className="flex-1">
-                    <View className="flex-row items-center flex-wrap">
-                      <Typography type="body-sm" className="text-muted-foreground">
-                        I agree to the{" "}
-                      </Typography>
-                      <LinkButton
-                        onPress={() => {}}
-                        className="text-primary font-medium py-0 px-0 h-auto"
-                      >
-                        Terms of Service
-                      </LinkButton>
-                      <Typography type="body-sm" className="text-muted-foreground">
-                        {" "}
-                        and{" "}
-                      </Typography>
-                      <LinkButton
-                        onPress={() => {}}
-                        className="text-primary font-medium py-0 px-0 h-auto"
-                      >
-                        Privacy Policy
-                      </LinkButton>
-                    </View>
-                  </View>
-                </View>
-
-                {error ? (
-                  <Alert status="danger" className="rounded-xl mt-2">
-                    <Alert.Indicator />
-                    <Alert.Content>
-                      <Alert.Title>{error}</Alert.Title>
-                    </Alert.Content>
-                  </Alert>
-                ) : null}
-
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-full mt-4 h-14 rounded-[16px] bg-primary"
-                  onPress={handleRegister}
-                  isDisabled={loading}
-                >
-                  <Typography type="body" weight="semibold" className="text-primary-foreground">
-                    {loading ? "Creating account…" : "Create Account"}
-                  </Typography>
-                </Button>
-              </Card.Body>
-            </Card>
+          {/* Header */}
+          <Animated.View entering={FadeInDown.delay(100).springify()} className="mb-10">
+            <View className="w-12 h-12 bg-primary rounded-[16px] items-center justify-center mb-6">
+              <icons.UserPlus size={24} color="white" />
+            </View>
+            <Typography type="h1" className="font-bold text-[32px] text-foreground mb-2">
+              Create account
+            </Typography>
+            <Typography type="body" className="text-muted-foreground text-[16px]">
+              Start splitting expenses with friends.
+            </Typography>
           </Animated.View>
+
+          {/* Form */}
+          <Animated.View entering={FadeInDown.delay(200).springify()} className="gap-5">
+            <View>
+              <Typography type="body-sm" className="font-medium text-foreground mb-2">
+                Full Name
+              </Typography>
+              <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
+                <icons.User size={20} color="#8A8798" />
+                <TextInput
+                  placeholder="John Doe"
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                  autoComplete="name"
+                  className="flex-1 ml-3 font-medium text-foreground text-[16px]"
+                  placeholderTextColor="#8A8798"
+                />
+              </View>
+            </View>
+
+            <View>
+              <Typography type="body-sm" className="font-medium text-foreground mb-2">
+                Email Address
+              </Typography>
+              <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
+                <icons.Mail size={20} color="#8A8798" />
+                <TextInput
+                  placeholder="hello@splt.app"
+                  value={email}
+                  onChangeText={setEmail}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoComplete="email"
+                  className="flex-1 ml-3 font-medium text-foreground text-[16px]"
+                  placeholderTextColor="#8A8798"
+                />
+              </View>
+            </View>
+
+            <View>
+              <Typography type="body-sm" className="font-medium text-foreground mb-2">
+                Password
+              </Typography>
+              <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
+                <icons.Lock size={20} color="#8A8798" />
+                <TextInput
+                  placeholder="••••••••"
+                  value={password}
+                  onChangeText={setPassword}
+                  secureTextEntry={!showPassword}
+                  autoComplete="new-password"
+                  className="flex-1 ml-3 font-medium text-foreground text-[16px]"
+                  placeholderTextColor="#8A8798"
+                />
+                <PressableFeedback 
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setShowPassword(!showPassword);
+                  }}
+                  hitSlop={8}
+                >
+                  {showPassword ? (
+                    <icons.EyeOff size={20} color="#8A8798" />
+                  ) : (
+                    <icons.Eye size={20} color="#8A8798" />
+                  )}
+                </PressableFeedback>
+              </View>
+              
+              {/* Password Strength Indicator */}
+              {password.length > 0 && (
+                <Animated.View entering={FadeIn.duration(200)} className="mt-2">
+                  <View className="h-1.5 w-full bg-surface-secondary rounded-full overflow-hidden flex-row">
+                    <Animated.View style={strengthStyle} className="h-full rounded-full" />
+                  </View>
+                  <Typography type="body-xs" className="mt-1 font-medium" style={{ color: passwordStrength.color }}>
+                    {passwordStrength.label}
+                  </Typography>
+                </Animated.View>
+              )}
+            </View>
+
+            <View className="mb-2 z-10">
+              <Typography type="body-sm" className="font-medium text-foreground mb-2">
+                Base Currency
+              </Typography>
+              <CurrencySelector value={currency} onChange={(c) => setCurrency(c.code)} />
+            </View>
+
+            {/* Terms checkbox */}
+            <PressableFeedback
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setAgreed(!agreed);
+              }}
+            >
+              <View className="flex-row items-center gap-3 w-full mt-1">
+                <View 
+                  className={`w-6 h-6 rounded-md border items-center justify-center ${
+                    agreed ? "bg-primary border-primary" : "bg-white border-border"
+                  }`}
+                >
+                  {agreed && <icons.Check size={14} color="white" strokeWidth={3} />}
+                </View>
+                <View className="flex-1 flex-row items-center flex-wrap">
+                  <Typography type="body-sm" className="text-muted-foreground">
+                    I agree to the{" "}
+                  </Typography>
+                  <Typography type="body-sm" className="text-primary font-semibold">
+                    Terms of Service
+                  </Typography>
+                  <Typography type="body-sm" className="text-muted-foreground">
+                    {" "}and{" "}
+                  </Typography>
+                  <Typography type="body-sm" className="text-primary font-semibold">
+                    Privacy Policy
+                  </Typography>
+                </View>
+              </View>
+            </PressableFeedback>
+
+            <Button
+              variant="primary"
+              size="lg"
+              className="w-full h-14 rounded-2xl bg-primary mt-4 flex-row items-center justify-center gap-2"
+              onPress={handleRegister}
+              isDisabled={loading}
+            >
+              {loading && <ActivityIndicator color="white" />}
+              <Typography type="body" weight="semibold" className="text-white">
+                {loading ? "Creating account…" : "Create Account"}
+              </Typography>
+            </Button>
+          </Animated.View>
+          
+          <View className="flex-1" />
 
           {/* Footer */}
           <Animated.View
-            entering={FadeInDown.delay(200).springify()}
-            className="flex-row items-center justify-center gap-2 mt-2"
+            entering={FadeInDown.delay(300).springify()}
+            className="flex-row items-center justify-center gap-2 pb-6 mt-6"
           >
             <Typography type="body-sm" className="text-muted-foreground">
               Already have an account?
             </Typography>
-            <LinkButton
+            <PressableFeedback
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.back();
+                router.push("/(auth)/login");
               }}
-              className="text-primary font-medium"
             >
-              Sign in
-            </LinkButton>
+              <Typography type="body-sm" className="font-semibold text-primary">
+                Sign in
+              </Typography>
+            </PressableFeedback>
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>

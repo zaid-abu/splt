@@ -4,6 +4,7 @@ import type { JSX } from "react";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import {
   useFonts,
   PlusJakartaSans_400Regular,
@@ -37,10 +38,11 @@ export default function RootLayout(): JSX.Element | null {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <HeroUINativeProvider config={{ devInfo: { stylingPrinciples: false } }}>
-        <BottomSheetModalProvider>
-          <AppProvider>
-            <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
+      <SafeAreaProvider>
+        <HeroUINativeProvider config={{ devInfo: { stylingPrinciples: false } }}>
+          <BottomSheetModalProvider>
+            <AppProvider>
+              <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
               <Stack.Screen name="(auth)" />
               <Stack.Screen name="(tabs)" />
               <Stack.Screen
@@ -68,7 +70,8 @@ export default function RootLayout(): JSX.Element | null {
             </Stack>
           </AppProvider>
         </BottomSheetModalProvider>
-      </HeroUINativeProvider>
+        </HeroUINativeProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

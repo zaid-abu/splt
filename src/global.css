@@ -2,25 +2,29 @@
 @import "uniwind";
 @import "heroui-native/styles";
 
-@source "./node_modules/heroui-native/lib";
-@source "./node_modules/heroui-native/src";
+@source "../node_modules/heroui-native/lib";
+@source "../node_modules/heroui-native/src";
 
 @utility font-normal {
   font-family: "PlusJakartaSans_400Regular";
   font-weight: normal;
 }
+
 @utility font-medium {
   font-family: "PlusJakartaSans_500Medium";
   font-weight: 500;
 }
+
 @utility font-semibold {
   font-family: "PlusJakartaSans_600SemiBold";
   font-weight: 600;
 }
+
 @utility font-bold {
   font-family: "PlusJakartaSans_700Bold";
   font-weight: 700;
 }
+
 @utility font-black {
   font-family: "PlusJakartaSans_800ExtraBold";
   font-weight: 800;
@@ -49,24 +53,34 @@
 @layer base {
   :root {
     /* Base background */
-    --color-background: #f2f2f6; /* background.app */
-    --color-foreground: #1e1a34; /* text.primary */
+    --color-background: #f2f2f6;
+    /* background.app */
+    --color-foreground: #1e1a34;
+    /* text.primary */
 
     /* Surfaces */
-    --color-surface: #ffffff; /* background.default */
-    --color-surface-secondary: #f8f9fb; /* background.paper */
-    --color-surface-tertiary: #f0f0f0; /* border.light */
+    --color-surface: #ffffff;
+    /* background.default */
+    --color-surface-secondary: #f8f9fb;
+    /* background.paper */
+    --color-surface-tertiary: #f0f0f0;
+    /* border.light */
 
     /* Primary */
-    --color-primary: #3d2b82; /* primary.main */
-    --color-primary-foreground: #ffffff; /* primary.contrastText */
+    --color-primary: #3d2b82;
+    /* primary.main */
+    --color-primary-foreground: #ffffff;
+    /* primary.contrastText */
 
     /* Secondary */
-    --color-secondary: #d4e9fa; /* secondary.main */
-    --color-secondary-foreground: #1a1a1a; /* secondary.contrastText */
+    --color-secondary: #c8e6ff;
+    /* secondary.main */
+    --color-secondary-foreground: #1a1a1a;
+    /* secondary.contrastText */
 
     /* Accent */
-    --color-accent: #6b4eff; /* accent.blue */
+    --color-accent: #6b4eff;
+    /* accent.blue */
     --color-accent-foreground: #ffffff;
 
     /* Success, Warning, Danger */
@@ -75,10 +89,13 @@
     --color-danger: #ef4444;
 
     /* Muted */
-    --color-muted: #e5e5e5; /* border.main */
-    --color-muted-foreground: #8a8798; /* text.secondary */
+    --color-muted: #c2c2c2;
+    /* border.main */
+    --color-muted-foreground: #8a8798;
+    /* text.secondary */
 
     /* Border */
-    --color-border: #e5e5e5; /* border.main */
+    --color-border: #e5e5e5;
+    /* border.main */
   }
 }
