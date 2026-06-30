@@ -105,7 +105,7 @@ export default function RegisterScreen(): JSX.Element {
               </Card.Header>
               <Card.Body className="gap-5 px-6 pb-8">
                 <TextField isRequired>
-                  <Label className="text-foreground font-semibold mb-1">Full Name</Label>
+                  <Label className="text-foreground font-medium mb-1">Full Name</Label>
                   <Input
                     placeholder="John Doe"
                     value={name}
@@ -117,7 +117,7 @@ export default function RegisterScreen(): JSX.Element {
                 </TextField>
 
                 <TextField isRequired>
-                  <Label className="text-foreground font-semibold mb-1">Email</Label>
+                  <Label className="text-foreground font-medium mb-1">Email</Label>
                   <Input
                     placeholder="hello@splt.app"
                     value={email}
@@ -130,7 +130,7 @@ export default function RegisterScreen(): JSX.Element {
                 </TextField>
 
                 <TextField isRequired>
-                  <Label className="text-foreground font-semibold mb-1">Password</Label>
+                  <Label className="text-foreground font-medium mb-1">Password</Label>
                   <Input
                     placeholder="••••••••"
                     value={password}
@@ -142,7 +142,7 @@ export default function RegisterScreen(): JSX.Element {
                 </TextField>
 
                 <View className="mb-2 z-10">
-                  <Label className="text-foreground font-semibold mb-2">Base Currency</Label>
+                  <Label className="text-foreground font-medium mb-2">Base Currency</Label>
                   <CurrencySelector value={currency} onChange={(c) => setCurrency(c.code)} />
                 </View>
 
@@ -165,7 +165,7 @@ export default function RegisterScreen(): JSX.Element {
                       </Typography>
                       <LinkButton
                         onPress={() => {}}
-                        className="text-primary font-semibold py-0 px-0 h-auto"
+                        className="text-primary font-medium py-0 px-0 h-auto"
                       >
                         Terms of Service
                       </LinkButton>
@@ -175,7 +175,7 @@ export default function RegisterScreen(): JSX.Element {
                       </Typography>
                       <LinkButton
                         onPress={() => {}}
-                        className="text-primary font-semibold py-0 px-0 h-auto"
+                        className="text-primary font-medium py-0 px-0 h-auto"
                       >
                         Privacy Policy
                       </LinkButton>
@@ -220,7 +220,7 @@ export default function RegisterScreen(): JSX.Element {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.back();
               }}
-              className="text-primary font-semibold"
+              className="text-primary font-medium"
             >
               Sign in
             </LinkButton>

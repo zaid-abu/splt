@@ -2,7 +2,7 @@ import { Button, Dialog, Typography, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, Text, View, Pressable } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import * as icons from "lucide-react-native";
@@ -76,26 +76,38 @@ export default function ExpenseDetailScreen(): JSX.Element {
       >
         {/* ── Header row ─────────────────────────────── */}
         <View className="flex-row items-center justify-between px-6 pt-4 mb-8">
-          <Pressable
-            className="w-12 h-12 rounded-full bg-white items-center justify-center border border-border"
+          <Button
+            variant="outline"
+            isIconOnly
+            className="w-12 h-12 rounded-full bg-white border border-border"
             onPress={() => router.back()}
           >
             <icons.ChevronLeft size={24} className="text-foreground" strokeWidth={2.5} />
-          </Pressable>
+          </Button>
 
           <Dialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <Dialog.Trigger asChild>
-              <Pressable className="w-12 h-12 rounded-full bg-white items-center justify-center border border-border">
+              <Button
+                variant="outline"
+                isIconOnly
+                className="w-12 h-12 rounded-full bg-white border border-border"
+              >
                 <icons.Trash2 size={20} className="text-danger" strokeWidth={2.5} />
-              </Pressable>
+              </Button>
             </Dialog.Trigger>
             <Dialog.Portal className="absolute inset-0 justify-center p-5 z-50">
               <Dialog.Overlay className="absolute inset-0 bg-black/40" />
               <Dialog.Content className="bg-white p-6 rounded-[32px] shadow-lg self-center w-full max-w-[400px]">
                 <View className="absolute top-4 right-4 z-10">
-                  <Pressable onPress={() => setIsDialogOpen(false)} className="p-2">
+                  <Button
+                    variant="ghost"
+                    isIconOnly
+                    size="sm"
+                    onPress={() => setIsDialogOpen(false)}
+                    className="p-2"
+                  >
                     <icons.X size={20} className="text-muted-foreground" />
-                  </Pressable>
+                  </Button>
                 </View>
                 <View className="w-12 h-12 rounded-full bg-danger/10 items-center justify-center mb-4">
                   <icons.AlertTriangle size={24} className="text-danger" />

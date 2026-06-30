@@ -21,19 +21,16 @@ import {
   Button,
   Tabs,
   Spinner,
+  TextField,
+  Label,
+  Input,
+  SearchField,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  TextInput,
-  View,
-  InteractionManager,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, InteractionManager } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -265,16 +262,17 @@ export default function AddExpenseScreen(): JSX.Element {
                   </Typography>
 
                   <View className="px-6 mb-4">
-                    <View className="bg-white h-[44px] rounded-[16px] px-4 flex-row items-center border border-border">
-                      <icons.Search size={18} color="#8A8798" />
-                      <TextInput
-                        placeholder="Search friends or groups..."
-                        value={searchQuery}
-                        onChangeText={setSearchQuery}
-                        className="flex-1 font-medium text-[15px] text-foreground h-full ml-2"
-                        placeholderTextColor="#8A8798"
-                      />
-                    </View>
+                    <SearchField value={searchQuery} onChange={setSearchQuery}>
+                      <SearchField.Group className="bg-white h-[44px] rounded-[16px] border border-border px-4">
+                        <SearchField.SearchIcon />
+                        <SearchField.Input
+                          placeholder="Search friends or groups..."
+                          className="flex-1 font-medium text-[15px] text-foreground h-full"
+                          placeholderTextColor="#8A8798"
+                        />
+                        <SearchField.ClearButton />
+                      </SearchField.Group>
+                    </SearchField>
                   </View>
 
                   {selectedFriends.length > 0 && (
@@ -551,53 +549,37 @@ export default function AddExpenseScreen(): JSX.Element {
                       }}
                     />
 
-                    <View>
-                      <Typography
-                        type="body-sm"
-                        className="font-bold text-muted-foreground tracking-widest mb-2 ml-2 uppercase"
-                      >
+                    <TextField isInvalid={!!error && !title.trim()}>
+                      <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                         What was it for?
-                      </Typography>
-                      <View
-                        className={`bg-white h-[56px] rounded-[20px] px-4 justify-center border ${error && !title.trim() ? "border-danger" : "border-border"}`}
-                      >
-                        <TextInput
-                          placeholder="e.g. Dinner, Uber, Groceries…"
-                          value={title}
-                          onChangeText={(t) => {
-                            setTitle(t);
-                            setError("");
-                          }}
-                          autoCapitalize="sentences"
-                          className="font-medium text-[16px] text-foreground h-full"
-                          placeholderTextColor="#8A8798"
-                        />
-                      </View>
-                    </View>
+                      </Label>
+                      <Input
+                        placeholder="e.g. Dinner, Uber, Groceries…"
+                        value={title}
+                        onChangeText={(t) => {
+                          setTitle(t);
+                          setError("");
+                        }}
+                        autoCapitalize="sentences"
+                        className="bg-white h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
+                      />
+                    </TextField>
 
-                    <View>
-                      <Typography
-                        type="body-sm"
-                        className="font-bold text-muted-foreground tracking-widest mb-2 ml-2 uppercase"
-                      >
+                    <TextField isInvalid={!!error && (!parsedAmount || parsedAmount <= 0)}>
+                      <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                         Amount ({expenseCurrency})
-                      </Typography>
-                      <View
-                        className={`bg-white h-[56px] rounded-[20px] px-4 justify-center border ${error && (!parsedAmount || parsedAmount <= 0) ? "border-danger" : "border-border"}`}
-                      >
-                        <TextInput
-                          placeholder="0.00"
-                          value={amount}
-                          onChangeText={(t) => {
-                            setAmount(t);
-                            setError("");
-                          }}
-                          keyboardType="decimal-pad"
-                          className="font-black text-[20px] text-foreground h-full"
-                          placeholderTextColor="#8A8798"
-                        />
-                      </View>
-                    </View>
+                      </Label>
+                      <Input
+                        placeholder="0.00"
+                        value={amount}
+                        onChangeText={(t) => {
+                          setAmount(t);
+                          setError("");
+                        }}
+                        keyboardType="decimal-pad"
+                        className="bg-white h-[56px] rounded-[20px] px-4 border border-border font-black text-[20px]"
+                      />
+                    </TextField>
 
                     {/* ── Attach Receipt ───────────────────────── */}
                     <View className="flex-row items-center gap-3 mt-2">
@@ -820,32 +802,30 @@ export default function AddExpenseScreen(): JSX.Element {
                               )}
 
                               {splitMethod === "custom" && isIncluded && (
-                                <View className="w-[100px] bg-background h-[44px] rounded-[14px] px-3 justify-center border border-border">
-                                  <TextInput
+                                <View className="w-[100px]">
+                                  <Input
                                     placeholder="0.00"
                                     value={customAmounts[u.id] ?? ""}
                                     onChangeText={(v) =>
                                       setCustomAmounts((prev) => ({ ...prev, [u.id]: v }))
                                     }
                                     keyboardType="decimal-pad"
-                                    className="font-bold text-[16px] text-foreground text-right w-full h-full"
-                                    placeholderTextColor="#8A8798"
+                                    className="bg-background h-[44px] rounded-[14px] px-3 border border-border font-bold text-[16px] text-right"
                                   />
                                 </View>
                               )}
 
                               {splitMethod === "percentage" && isIncluded && (
                                 <View className="flex-row items-center gap-2">
-                                  <View className="w-[80px] bg-background h-[44px] rounded-[14px] px-3 justify-center border border-border">
-                                    <TextInput
+                                  <View className="w-[80px]">
+                                    <Input
                                       placeholder="0"
                                       value={customPercentages[u.id] ?? ""}
                                       onChangeText={(v) =>
                                         setCustomPercentages((prev) => ({ ...prev, [u.id]: v }))
                                       }
                                       keyboardType="decimal-pad"
-                                      className="font-bold text-[16px] text-foreground text-right w-full h-full"
-                                      placeholderTextColor="#8A8798"
+                                      className="bg-background h-[44px] rounded-[14px] px-3 border border-border font-bold text-[16px] text-right"
                                     />
                                   </View>
                                   <Typography
@@ -883,32 +863,28 @@ export default function AddExpenseScreen(): JSX.Element {
         {/* ── Fixed Submit Button ─────────────────────────────── */}
         <View className="px-6 py-4 bg-background border-t border-border/50">
           {!selectionConfirmed ? (
-            <PressableFeedback
+            <Button
+              variant="primary"
+              className="w-full h-[56px] rounded-[20px]"
+              isDisabled={!selectedGroup && selectedFriends.length === 0}
               onPress={() => {
                 if (selectedGroupId || selectedFriendIds.length > 0) {
                   setSelectionConfirmed(true);
                 }
               }}
             >
-              <View
-                className={`w-full h-[56px] rounded-[20px] items-center justify-center ${!selectedGroup && selectedFriends.length === 0 ? "bg-primary/70" : "bg-primary"}`}
-              >
-                <Typography type="body" className="font-bold text-white">
-                  Continue
-                </Typography>
-              </View>
-            </PressableFeedback>
+              <Button.Label className="font-bold">Continue</Button.Label>
+            </Button>
           ) : (
-            <PressableFeedback onPress={loading ? undefined : handleSubmit}>
-              <View
-                className={`w-full h-[56px] rounded-[20px] flex-row items-center justify-center gap-2 ${loading ? "bg-primary/70" : "bg-primary"}`}
-              >
-                {loading && <Spinner color="white" size="sm" />}
-                <Typography type="body" className="font-bold text-white">
-                  Add Expense
-                </Typography>
-              </View>
-            </PressableFeedback>
+            <Button
+              variant="primary"
+              className="w-full h-[56px] rounded-[20px]"
+              onPress={handleSubmit}
+              isDisabled={loading}
+            >
+              {loading && <Spinner color="white" size="sm" className="mr-2" />}
+              <Button.Label className="font-bold">Add Expense</Button.Label>
+            </Button>
           )}
         </View>
       </KeyboardAvoidingView>

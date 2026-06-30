@@ -65,7 +65,7 @@ export function GroupCard({
             <View className="items-end">
               <Typography
                 type="body-xs"
-                className={`font-bold mb-1 tracking-wider uppercase ${labelColor}`}
+                className={`font-medium tracking-wider mb-1 ${labelColor}`}
               >
                 {balanceLabel}
               </Typography>

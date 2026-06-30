@@ -1,10 +1,21 @@
 // heroui-native switch classes for uniwind: w-[48px] h-[24px] w-[28px] h-[20px] left-[2px] right-[2px] shadow-field rounded-full justify-center overflow-hidden absolute items-center disabled:opacity-disabled disabled:pointer-events-none
-import { Alert, Button, Typography, PressableFeedback, Spinner, Switch } from "heroui-native";
+import {
+  Alert,
+  Button,
+  Typography,
+  PressableFeedback,
+  Spinner,
+  Switch,
+  TextField,
+  Label,
+  Input,
+  ListGroup,
+} from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, TextInput } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CurrencySelector } from "@/components/CurrencySelector";
@@ -183,50 +194,36 @@ export default function GroupSettingsScreen(): JSX.Element {
 
           {/* ── Form fields ───────────────────────────── */}
           <View className="px-6 mb-8 gap-5">
-            <View>
-              <Typography
-                type="body-sm"
-                className="font-bold text-muted-foreground tracking-widest mb-2 ml-2"
-              >
+            <TextField isInvalid={!!error && !name.trim()}>
+              <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                 GROUP NAME
-              </Typography>
-              <View
-                className={`bg-white h-[56px] rounded-[20px] px-4 justify-center border ${error && !name.trim() ? "border-danger" : "border-border"}`}
-              >
-                <TextInput
-                  value={name}
-                  onChangeText={(t) => {
-                    setName(t);
-                    setError("");
-                  }}
-                  placeholder="e.g. Weekend Trip, Housemates…"
-                  className="font-medium text-[16px] text-foreground h-full"
-                  placeholderTextColor="#8A8798"
-                  autoCapitalize="words"
-                />
-              </View>
-            </View>
+              </Label>
+              <Input
+                value={name}
+                onChangeText={(t) => {
+                  setName(t);
+                  setError("");
+                }}
+                placeholder="e.g. Weekend Trip, Housemates…"
+                autoCapitalize="words"
+                className="bg-white h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
+              />
+            </TextField>
 
-            <View>
-              <Typography
-                type="body-sm"
-                className="font-bold text-muted-foreground tracking-widest mb-2 ml-2"
-              >
+            <TextField>
+              <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                 DESCRIPTION (OPTIONAL)
-              </Typography>
-              <View className="bg-white rounded-[20px] px-4 py-3 border border-border">
-                <TextInput
-                  value={description}
-                  onChangeText={setDescription}
-                  placeholder="What is this group for?"
-                  className="font-medium text-[16px] text-foreground"
-                  placeholderTextColor="#8A8798"
-                  multiline
-                  numberOfLines={3}
-                  style={{ minHeight: 80, textAlignVertical: "top" }}
-                />
-              </View>
-            </View>
+              </Label>
+              <Input
+                value={description}
+                onChangeText={setDescription}
+                placeholder="What is this group for?"
+                multiline
+                numberOfLines={3}
+                style={{ minHeight: 80, textAlignVertical: "top" }}
+                className="bg-white rounded-[20px] px-4 py-3 border border-border text-[16px]"
+              />
+            </TextField>
 
             <CurrencySelector
               label="Group Base Currency"
@@ -268,40 +265,42 @@ export default function GroupSettingsScreen(): JSX.Element {
             >
               MEMBERS
             </Typography>
-            <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+            <ListGroup className="bg-white rounded-[24px] overflow-hidden border border-border">
               {group.members.map((member, idx) => {
                 const memBalance = balances.get(member.userId) ?? 0;
                 return (
-                  <View
+                  <ListGroup.Item
                     key={member.userId}
-                    className={`flex-row items-center justify-between p-4 ${idx < group.members.length - 1 ? "border-b border-border/50" : ""}`}
+                    className={`p-4 ${idx < group.members.length - 1 ? "border-b border-border/50" : ""}`}
                   >
-                    <View className="flex-row items-center gap-3">
+                    <ListGroup.ItemPrefix className="mr-3">
                       <AppUserAvatar user={member.user} size="md" />
-                      <View>
-                        <Typography type="body" className="font-bold text-foreground">
-                          {member.userId === currentUser.id ? "You" : member.user.name}
-                        </Typography>
-                        <Typography type="body-sm" className="text-muted-foreground">
-                          Balance: {getCurrencySymbol(currencyCode)}
-                          {Math.abs(memBalance).toLocaleString()}
-                        </Typography>
-                      </View>
-                    </View>
+                    </ListGroup.ItemPrefix>
+                    <ListGroup.ItemContent>
+                      <ListGroup.ItemTitle className="font-bold text-foreground">
+                        {member.userId === currentUser.id ? "You" : member.user.name}
+                      </ListGroup.ItemTitle>
+                      <ListGroup.ItemDescription className="text-muted-foreground mt-0.5">
+                        Balance: {getCurrencySymbol(currencyCode)}
+                        {Math.abs(memBalance).toLocaleString()}
+                      </ListGroup.ItemDescription>
+                    </ListGroup.ItemContent>
                     {member.userId !== currentUser.id && (
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onPress={() => handleRemoveMember(member.userId)}
-                        className="opacity-70"
-                      >
-                        Remove
-                      </Button>
+                      <ListGroup.ItemSuffix>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onPress={() => handleRemoveMember(member.userId)}
+                          className="opacity-70"
+                        >
+                          Remove
+                        </Button>
+                      </ListGroup.ItemSuffix>
                     )}
-                  </View>
+                  </ListGroup.Item>
                 );
               })}
-            </View>
+            </ListGroup>
           </View>
 
           {/* ── Add Friends ─────────────────────────────── */}
@@ -313,24 +312,28 @@ export default function GroupSettingsScreen(): JSX.Element {
               >
                 ADD FRIENDS
               </Typography>
-              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+              <ListGroup className="bg-white rounded-[24px] overflow-hidden border border-border">
                 {availableFriends.map((friend, idx) => (
-                  <View
+                  <ListGroup.Item
                     key={friend.id}
-                    className={`flex-row items-center justify-between p-4 ${idx < availableFriends.length - 1 ? "border-b border-border/50" : ""}`}
+                    className={`p-4 ${idx < availableFriends.length - 1 ? "border-b border-border/50" : ""}`}
                   >
-                    <View className="flex-row items-center gap-3">
+                    <ListGroup.ItemPrefix className="mr-3">
                       <AppUserAvatar user={friend} size="md" />
-                      <Typography type="body" className="font-bold text-foreground">
+                    </ListGroup.ItemPrefix>
+                    <ListGroup.ItemContent>
+                      <ListGroup.ItemTitle className="font-bold text-foreground">
                         {friend.name}
-                      </Typography>
-                    </View>
-                    <Button size="sm" onPress={() => handleAddFriend(friend)}>
-                      Add
-                    </Button>
-                  </View>
+                      </ListGroup.ItemTitle>
+                    </ListGroup.ItemContent>
+                    <ListGroup.ItemSuffix>
+                      <Button size="sm" onPress={() => handleAddFriend(friend)}>
+                        Add
+                      </Button>
+                    </ListGroup.ItemSuffix>
+                  </ListGroup.Item>
                 ))}
-              </View>
+              </ListGroup>
             </View>
           )}
 
@@ -364,16 +367,15 @@ export default function GroupSettingsScreen(): JSX.Element {
 
         {/* ── Fixed Submit Button ─────────────────────────────── */}
         <View className="px-6 py-4 bg-background border-t border-border/50">
-          <PressableFeedback onPress={loading ? undefined : handleSave}>
-            <View
-              className={`w-full h-[56px] rounded-[20px] flex-row items-center justify-center gap-2 ${loading ? "bg-primary/70" : "bg-primary"}`}
-            >
-              {loading && <Spinner color="white" size="sm" />}
-              <Typography type="body" className="font-bold text-white">
-                Save Changes
-              </Typography>
-            </View>
-          </PressableFeedback>
+          <Button
+            variant="primary"
+            className="w-full h-[56px] rounded-[20px]"
+            onPress={handleSave}
+            isDisabled={loading}
+          >
+            {loading && <Spinner color="white" size="sm" className="mr-2" />}
+            <Button.Label className="font-bold">Save Changes</Button.Label>
+          </Button>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

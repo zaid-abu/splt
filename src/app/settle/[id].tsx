@@ -1,9 +1,19 @@
-import { Alert, Button, Typography, PressableFeedback, Tabs, Spinner } from "heroui-native";
+import {
+  Alert,
+  Button,
+  Typography,
+  PressableFeedback,
+  Tabs,
+  Spinner,
+  TextField,
+  Label,
+  Input,
+} from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
@@ -284,16 +294,11 @@ export default function SettleUpScreen(): JSX.Element {
               />
 
               <View>
-                <Typography
-                  type="body-sm"
-                  className="font-bold text-muted-foreground tracking-widest mb-2 ml-2 uppercase"
-                >
-                  Amount ({settleCurrency})
-                </Typography>
-                <View
-                  className={`bg-white h-[56px] rounded-[20px] px-4 justify-center border ${error && (!parsedAmount || parsedAmount <= 0) ? "border-danger" : "border-border"}`}
-                >
-                  <TextInput
+                <TextField isInvalid={!!error && (!parsedAmount || parsedAmount <= 0)}>
+                  <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
+                    Amount ({settleCurrency})
+                  </Label>
+                  <Input
                     placeholder="0.00"
                     value={amount}
                     onChangeText={(t) => {
@@ -301,10 +306,9 @@ export default function SettleUpScreen(): JSX.Element {
                       setError("");
                     }}
                     keyboardType="decimal-pad"
-                    className="font-black text-[20px] text-foreground h-full"
-                    placeholderTextColor="#8A8798"
+                    className="bg-white h-[56px] rounded-[20px] px-4 border border-border font-black text-[20px]"
                   />
-                </View>
+                </TextField>
                 {netBalance !== 0 && (
                   <Typography
                     type="body-xs"
@@ -315,24 +319,18 @@ export default function SettleUpScreen(): JSX.Element {
                 )}
               </View>
 
-              <View>
-                <Typography
-                  type="body-sm"
-                  className="font-bold text-muted-foreground tracking-widest mb-2 ml-2 uppercase"
-                >
+              <TextField>
+                <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
                   Note (Optional)
-                </Typography>
-                <View className="bg-white h-[56px] rounded-[20px] px-4 justify-center border border-border">
-                  <TextInput
-                    placeholder="e.g. Venmo, Cash..."
-                    value={note}
-                    onChangeText={setNote}
-                    autoCapitalize="sentences"
-                    className="font-medium text-[16px] text-foreground h-full"
-                    placeholderTextColor="#8A8798"
-                  />
-                </View>
-              </View>
+                </Label>
+                <Input
+                  placeholder="e.g. Venmo, Cash..."
+                  value={note}
+                  onChangeText={setNote}
+                  autoCapitalize="sentences"
+                  className="bg-white h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
+                />
+              </TextField>
             </View>
 
             {/* ── Error ──────────────────────────────── */}
@@ -351,16 +349,15 @@ export default function SettleUpScreen(): JSX.Element {
 
         {/* ── Fixed Submit Button ─────────────────────────────── */}
         <View className="px-6 py-4 bg-background border-t border-border/50">
-          <PressableFeedback onPress={loading ? undefined : handleSubmit}>
-            <View
-              className={`w-full h-[56px] rounded-[20px] flex-row items-center justify-center gap-2 ${loading ? "bg-primary/70" : "bg-primary"}`}
-            >
-              {loading && <Spinner color="white" size="sm" />}
-              <Typography type="body" className="font-bold text-white">
-                Record Payment
-              </Typography>
-            </View>
-          </PressableFeedback>
+          <Button
+            variant="primary"
+            className="w-full h-[56px] rounded-[20px]"
+            onPress={handleSubmit}
+            isDisabled={loading}
+          >
+            {loading && <Spinner color="white" size="sm" className="mr-2" />}
+            <Button.Label className="font-bold">Record Payment</Button.Label>
+          </Button>
         </View>
       </KeyboardAvoidingView>
     </SafeAreaView>

@@ -1,6 +1,6 @@
 import React, { useMemo } from "react";
 import { View } from "react-native";
-import { Typography, PressableFeedback } from "heroui-native";
+import { Typography, ListGroup } from "heroui-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
@@ -93,7 +93,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
       <SwipeableRow onDelete={() => deleteActivity(activity.id)}>
-        <PressableFeedback
+        <ListGroup.Item
           onPress={() => {
             if (activity.expense) {
               router.push(`/expense/${activity.expense.id}`);
@@ -101,48 +101,46 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
               router.push(`/group/${activity.groupId}`);
             }
           }}
+          className={`p-4 ${!isLast ? "border-b border-border/50" : ""}`}
         >
-          <View
-            className={`flex-row items-center p-4 ${!isLast ? "border-b border-border/50" : ""}`}
-          >
+          <ListGroup.ItemPrefix>
             <View
               className={`w-12 h-12 rounded-[16px] items-center justify-center mr-4 ${bgColors[involvement.type]}`}
             >
               <IconComponent size={24} className={iconColors[involvement.type]} strokeWidth={2.5} />
             </View>
+          </ListGroup.ItemPrefix>
 
-            <View className="flex-1 mr-2">
-              <Typography type="body" className="font-bold text-foreground" numberOfLines={1}>
-                {activity.description}
-              </Typography>
-              <Typography
-                type="body-sm"
-                className="text-muted-foreground font-medium mt-0.5"
-                numberOfLines={1}
-              >
-                {activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-              </Typography>
-            </View>
+          <ListGroup.ItemContent>
+            <ListGroup.ItemTitle className="font-bold text-foreground" numberOfLines={1}>
+              {activity.description}
+            </ListGroup.ItemTitle>
+            <ListGroup.ItemDescription
+              className="text-muted-foreground font-medium mt-0.5"
+              numberOfLines={1}
+            >
+              {activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </ListGroup.ItemDescription>
+          </ListGroup.ItemContent>
 
-            <View className="items-end">
-              {involvement.showAmount ? (
-                <>
-                  <Typography type="body-xs" className="text-muted-foreground font-bold mb-0.5">
-                    {involvement.text}
-                  </Typography>
-                  <Typography type="body" className={`font-black ${textColors[involvement.type]}`}>
-                    {involvement.type === "positive" ? "+" : ""}
-                    {formatAmount(involvement.amount, activity.currency || "USD")}
-                  </Typography>
-                </>
-              ) : (
-                <Typography type="body-sm" className="text-muted-foreground font-medium">
+          <ListGroup.ItemSuffix className="items-end ml-4">
+            {involvement.showAmount ? (
+              <>
+                <Typography type="body-xs" className="text-muted-foreground font-bold mb-0.5">
                   {involvement.text}
                 </Typography>
-              )}
-            </View>
-          </View>
-        </PressableFeedback>
+                <Typography type="body" className={`font-black ${textColors[involvement.type]}`}>
+                  {involvement.type === "positive" ? "+" : ""}
+                  {formatAmount(involvement.amount, activity.currency || "USD")}
+                </Typography>
+              </>
+            ) : (
+              <Typography type="body-sm" className="text-muted-foreground font-medium">
+                {involvement.text}
+              </Typography>
+            )}
+          </ListGroup.ItemSuffix>
+        </ListGroup.Item>
       </SwipeableRow>
     </Animated.View>
   );

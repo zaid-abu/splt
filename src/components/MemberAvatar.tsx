@@ -8,7 +8,8 @@
  */
 import type { AvatarSize } from "heroui-native";
 import type { JSX } from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
+import { Avatar, Typography } from "heroui-native";
 
 import type { User } from "@/types";
 import { getStringColor, hexToRgba } from "@/utils/theme";
@@ -47,20 +48,21 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
   const dims = sizeMap[size as keyof typeof sizeMap] || sizeMap.md;
 
   return (
-    <View
+    <Avatar
+      size={size}
       style={{
+        backgroundColor: bg,
         width: dims.size,
         height: dims.size,
         borderRadius: dims.size / 2,
-        backgroundColor: bg,
-        alignItems: "center",
-        justifyContent: "center",
       }}
     >
-      <Text style={{ fontSize: dims.font, fontWeight: "bold", color: textColor }}>
-        {user.initials}
-      </Text>
-    </View>
+      <Avatar.Fallback>
+        <Typography style={{ color: textColor, fontWeight: "bold", fontSize: dims.font }}>
+          {user.initials}
+        </Typography>
+      </Avatar.Fallback>
+    </Avatar>
   );
 }
 
@@ -80,44 +82,48 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
         const bg = hexToRgba(textColor, 0.15);
 
         return (
-          <View
+          <Avatar
             key={user.id}
+            size="sm"
             style={{
+              backgroundColor: bg,
               marginLeft: idx === 0 ? 0 : -8,
               zIndex: visible.length - idx,
+              borderWidth: 2,
+              borderColor: "white",
               width: 28,
               height: 28,
               borderRadius: 14,
-              backgroundColor: bg,
-              alignItems: "center",
-              justifyContent: "center",
-              borderWidth: 2,
-              borderColor: "white",
             }}
           >
-            <Text style={{ fontSize: 10, fontWeight: "bold", color: textColor }}>
-              {user.initials}
-            </Text>
-          </View>
+            <Avatar.Fallback>
+              <Typography style={{ color: textColor, fontSize: 10, fontWeight: "bold" }}>
+                {user.initials}
+              </Typography>
+            </Avatar.Fallback>
+          </Avatar>
         );
       })}
       {overflow > 0 && (
-        <View
+        <Avatar
+          size="sm"
           style={{
+            backgroundColor: "#E5E7EB",
             marginLeft: -8,
             zIndex: 0,
+            borderWidth: 2,
+            borderColor: "white",
             width: 28,
             height: 28,
             borderRadius: 14,
-            backgroundColor: "#E5E7EB",
-            alignItems: "center",
-            justifyContent: "center",
-            borderWidth: 2,
-            borderColor: "white",
           }}
         >
-          <Text style={{ fontSize: 10, fontWeight: "bold", color: "#4B5563" }}>+{overflow}</Text>
-        </View>
+          <Avatar.Fallback>
+            <Typography style={{ color: "#4B5563", fontSize: 10, fontWeight: "bold" }}>
+              +{overflow}
+            </Typography>
+          </Avatar.Fallback>
+        </Avatar>
       )}
     </View>
   );

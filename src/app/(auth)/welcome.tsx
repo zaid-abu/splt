@@ -1,9 +1,9 @@
-import { Button } from "heroui-native";
+import { Button, Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { Text, View, Dimensions, FlatList } from "react-native";
+import { View, Dimensions, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
@@ -60,7 +60,7 @@ export default function WelcomeScreen(): JSX.Element {
           style={{ position: "absolute", top: "20%", left: "15%" }}
         >
           <View className="bg-white p-3 rounded-xl" style={{ transform: [{ rotate: "-15deg" }] }}>
-            <Text className="font-bold text-primary">$</Text>
+            <Typography className="font-bold text-primary">$</Typography>
           </View>
         </Animated.View>
         <Animated.View
@@ -68,7 +68,7 @@ export default function WelcomeScreen(): JSX.Element {
           style={{ position: "absolute", bottom: "25%", right: "20%" }}
         >
           <View className="bg-white p-3 rounded-xl" style={{ transform: [{ rotate: "15deg" }] }}>
-            <Text className="font-bold text-primary">$</Text>
+            <Typography className="font-bold text-primary">$</Typography>
           </View>
         </Animated.View>
       </View>
@@ -97,11 +97,11 @@ export default function WelcomeScreen(): JSX.Element {
               <Animated.View entering={FadeIn.delay(300).duration(800)}>
                 <View className="items-center gap-6">
                   <item.icon size={80} color="white" strokeWidth={1} />
-                  <Text
+                  <Typography
                     style={{ fontSize: 32, fontWeight: "900", color: "white", letterSpacing: -1 }}
                   >
                     {item.logoText}
-                  </Text>
+                  </Typography>
                 </View>
               </Animated.View>
             </View>
@@ -161,7 +161,9 @@ export default function WelcomeScreen(): JSX.Element {
               router.push("/(auth)/login");
             }}
           >
-            <Text className="text-background font-[600] text-[16px]">Get Started</Text>
+            <Button.Label className="text-background font-[600] text-[16px]">
+              Get Started
+            </Button.Label>
           </Button>
         </Animated.View>
       </View>

@@ -1,9 +1,9 @@
-import { Typography, PressableFeedback, Skeleton } from "heroui-native";
+import { Typography, PressableFeedback, Skeleton, Button, SearchField } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View, TextInput, RefreshControl } from "react-native";
+import { ScrollView, View, RefreshControl, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import { BlurView } from "expo-blur";
@@ -72,15 +72,17 @@ export default function FriendsScreen(): JSX.Element {
         <Typography type="h1" className="font-black tracking-tight text-foreground text-[32px]">
           Friends
         </Typography>
-        <PressableFeedback
-          className="w-12 h-12 rounded-full bg-primary items-center justify-center"
+        <Button
+          variant="primary"
+          isIconOnly
+          className="w-12 h-12 rounded-full"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             router.push("/expense/new");
           }}
         >
           <icons.Plus size={24} color="white" strokeWidth={3} />
-        </PressableFeedback>
+        </Button>
       </BlurView>
 
       <ScrollView
@@ -98,31 +100,22 @@ export default function FriendsScreen(): JSX.Element {
       >
         <View className="px-6 mt-2">
           {/* Search */}
-          <View
-            className="bg-white h-[52px] rounded-[16px] flex-row items-center px-4 mb-6"
-            style={{ borderWidth: 0 }}
-          >
-            <icons.Search size={20} className="text-primary mr-3" />
-            <TextInput
-              value={search}
-              onChangeText={setSearch}
-              placeholder="Search friends…"
-              className="flex-1 font-medium text-[16px] text-foreground h-full"
-              placeholderTextColor="#8A8798"
-            />
-            {search.length > 0 && (
-              <PressableFeedback
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  setSearch("");
-                }}
-                className="p-1 ml-2"
-              >
-                <View className="w-5 h-5 rounded-full bg-secondary items-center justify-center">
-                  <icons.X size={12} className="text-muted-foreground" strokeWidth={3} />
-                </View>
-              </PressableFeedback>
-            )}
+          <View className="mb-6">
+            <View className="flex-row items-center bg-white rounded-[16px] border border-border/50 h-[48px] px-4">
+              <icons.Search size={20} color="#8A8798" />
+              <TextInput
+                value={search}
+                onChangeText={setSearch}
+                placeholder="Search friends..."
+                placeholderTextColor="#8A8798"
+                className="flex-1 ml-2 font-medium text-foreground text-[16px]"
+              />
+              {search.length > 0 && (
+                <PressableFeedback onPress={() => setSearch("")} hitSlop={8}>
+                  <icons.XCircle size={18} color="#8A8798" />
+                </PressableFeedback>
+              )}
+            </View>
           </View>
 
           {/* List */}
@@ -145,18 +138,17 @@ export default function FriendsScreen(): JSX.Element {
                   : "Add an expense with someone to see them here."}
               </Typography>
               {!search && (
-                <PressableFeedback
-                  className="bg-primary px-6 h-12 rounded-[16px] items-center justify-center flex-row gap-2"
+                <Button
+                  variant="primary"
+                  className="px-6 h-12 rounded-[16px]"
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     router.push("/expense/new");
                   }}
                 >
                   <icons.Plus size={20} color="white" />
-                  <Typography type="body-sm" className="text-white font-bold">
-                    Add a friend
-                  </Typography>
-                </PressableFeedback>
+                  <Button.Label className="font-bold">Add a friend</Button.Label>
+                </Button>
               )}
             </View>
           ) : (

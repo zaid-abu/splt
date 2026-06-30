@@ -205,9 +205,9 @@ export default function DashboardScreen(): JSX.Element {
                 <View className="flex-row items-center gap-1 mb-1">
                   <Typography
                     type="body-xs"
-                    className="text-primary-foreground opacity-70 font-semibold tracking-wider"
+                    className="text-primary-foreground opacity-70 font-medium tracking-wider"
                   >
-                    OWED TO YOU
+                    Owed To You
                   </Typography>
                 </View>
                 <Typography type="h3" className="text-primary-foreground font-bold">
@@ -219,9 +219,9 @@ export default function DashboardScreen(): JSX.Element {
                 <View className="flex-row items-center gap-1 mb-1">
                   <Typography
                     type="body-xs"
-                    className="text-primary-foreground opacity-70 font-semibold tracking-wider"
+                    className="text-primary-foreground opacity-70 font-medium tracking-wider"
                   >
-                    YOU OWE
+                    You Owe
                   </Typography>
                 </View>
                 <Typography type="h3" className="text-primary-foreground font-bold">
@@ -308,7 +308,7 @@ export default function DashboardScreen(): JSX.Element {
                 >
                   <action.icon size={24} color={action.color} strokeWidth={2.5} />
                 </View>
-                <Typography type="body-sm" className="text-foreground font-semibold text-[12px]">
+                <Typography type="body-sm" className="text-foreground font-medium text-[12px]">
                   {action.label}
                 </Typography>
               </PressableFeedback>

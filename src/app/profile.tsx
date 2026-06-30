@@ -11,7 +11,7 @@
  * - Typography
  * - Chip
  */
-import { Switch, Typography, PressableFeedback, Button } from "heroui-native";
+import { Switch, Typography, Button, ListGroup } from "heroui-native";
 import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/PageAnimator";
 import { Uniwind } from "uniwind";
@@ -29,31 +29,30 @@ import { CurrencySelector } from "@/components/CurrencySelector";
 
 function SettingItem({ icon: Icon, title, subtitle, color, onPress, rightElement, isLast }: any) {
   return (
-    <PressableFeedback onPress={onPress}>
-      <View
-        className={`flex-row items-center justify-between p-4 ${!isLast ? "border-b border-border/50" : ""}`}
-      >
-        <View className="flex-row items-center gap-4">
-          <View
-            className="w-10 h-10 rounded-full items-center justify-center"
-            style={{ backgroundColor: `${color}15` }}
-          >
-            <Icon size={20} color={color} strokeWidth={2.5} />
-          </View>
-          <View>
-            <Typography type="body" className="font-bold text-foreground">
-              {title}
-            </Typography>
-            {subtitle && (
-              <Typography type="body-sm" className="text-muted-foreground mt-0.5">
-                {subtitle}
-              </Typography>
-            )}
-          </View>
+    <ListGroup.Item
+      onPress={onPress}
+      className={`p-4 ${!isLast ? "border-b border-border/50" : ""}`}
+    >
+      <ListGroup.ItemPrefix>
+        <View
+          className="w-10 h-10 rounded-full items-center justify-center mr-4"
+          style={{ backgroundColor: `${color}15` }}
+        >
+          <Icon size={20} color={color} strokeWidth={2.5} />
         </View>
+      </ListGroup.ItemPrefix>
+      <ListGroup.ItemContent>
+        <ListGroup.ItemTitle className="font-bold text-foreground">{title}</ListGroup.ItemTitle>
+        {subtitle && (
+          <ListGroup.ItemDescription className="text-muted-foreground mt-0.5">
+            {subtitle}
+          </ListGroup.ItemDescription>
+        )}
+      </ListGroup.ItemContent>
+      <ListGroup.ItemSuffix>
         {rightElement || <icons.ChevronRight size={20} className="text-muted-foreground" />}
-      </View>
-    </PressableFeedback>
+      </ListGroup.ItemSuffix>
+    </ListGroup.Item>
   );
 }
 
@@ -109,7 +108,7 @@ export default function ProfileScreen(): JSX.Element {
               {/* Stats Row */}
               <View className="flex-row gap-3 w-full">
                 <View className="flex-1 bg-secondary rounded-[16px] py-3 items-center">
-                  <Typography type="body-sm" className="text-muted-foreground font-semibold mb-0.5">
+                  <Typography type="body-sm" className="text-muted-foreground font-medium mb-0.5">
                     Groups
                   </Typography>
                   <Typography type="body" className="font-black text-foreground">
@@ -117,7 +116,7 @@ export default function ProfileScreen(): JSX.Element {
                   </Typography>
                 </View>
                 <View className="flex-1 bg-success/10 rounded-[16px] py-3 items-center">
-                  <Typography type="body-sm" className="text-success font-semibold mb-0.5">
+                  <Typography type="body-sm" className="text-success font-medium mb-0.5">
                     Owed
                   </Typography>
                   <Typography type="body" className="font-black text-success">
@@ -127,7 +126,7 @@ export default function ProfileScreen(): JSX.Element {
                 </View>
                 {iOwe > 0 && (
                   <View className="flex-1 bg-danger/10 rounded-[16px] py-3 items-center">
-                    <Typography type="body-sm" className="text-danger font-semibold mb-0.5">
+                    <Typography type="body-sm" className="text-danger font-medium mb-0.5">
                       Owe
                     </Typography>
                     <Typography type="body" className="font-black text-danger">
@@ -146,7 +145,7 @@ export default function ProfileScreen(): JSX.Element {
               ACCOUNT
             </Typography>
             <View className="rounded-[24px]">
-              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+              <ListGroup className="bg-white rounded-[24px] overflow-hidden border border-border">
                 <SettingItem
                   icon={icons.User}
                   title="Edit Profile"
@@ -169,7 +168,7 @@ export default function ProfileScreen(): JSX.Element {
                   onPress={() => {}}
                   isLast
                 />
-              </View>
+              </ListGroup>
             </View>
           </FocusAwareView>
 
@@ -179,7 +178,7 @@ export default function ProfileScreen(): JSX.Element {
               PREFERENCES
             </Typography>
             <View className="gap-3">
-              <View className="bg-white rounded-[24px] border border-border">
+              <ListGroup className="bg-white rounded-[24px] border border-border overflow-hidden">
                 <SettingItem
                   icon={icons.Moon}
                   title="Dark Mode"
@@ -196,7 +195,7 @@ export default function ProfileScreen(): JSX.Element {
                   onPress={() => {}}
                   isLast
                 />
-              </View>
+              </ListGroup>
 
               <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
             </View>
@@ -208,7 +207,7 @@ export default function ProfileScreen(): JSX.Element {
               ABOUT
             </Typography>
             <View className="rounded-[24px]">
-              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+              <ListGroup className="bg-white rounded-[24px] overflow-hidden border border-border">
                 <SettingItem
                   icon={icons.HelpCircle}
                   title="Help & Support"
@@ -234,7 +233,7 @@ export default function ProfileScreen(): JSX.Element {
                   }
                   isLast
                 />
-              </View>
+              </ListGroup>
             </View>
           </FocusAwareView>
 
@@ -246,9 +245,7 @@ export default function ProfileScreen(): JSX.Element {
               className="rounded-[20px]"
               onPress={() => router.replace("/(auth)/welcome")}
             >
-              <Typography type="body" className="font-bold text-danger">
-                Sign Out
-              </Typography>
+              <Button.Label className="font-bold text-danger">Sign Out</Button.Label>
             </Button>
           </FocusAwareView>
         </ScrollView>

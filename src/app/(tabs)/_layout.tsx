@@ -1,9 +1,9 @@
 import { Tabs, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { View, Platform, Pressable, Text } from "react-native";
+import { View, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import { PressableFeedback } from "heroui-native";
+import { PressableFeedback, Typography } from "heroui-native";
 import Animated, { useAnimatedStyle, withSpring, withTiming } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { BlurView } from "expo-blur";
@@ -42,18 +42,22 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
   };
 
   return (
-    <Pressable onPress={handlePress} className="flex-1 items-center justify-center h-14 relative">
-      <Animated.View style={iconAnimatedStyle}>
-        <Icon
-          size={24}
-          color={isFocused ? "#3D2B82" : "#8A8798"}
-          strokeWidth={isFocused ? 2.5 : 2}
-        />
-      </Animated.View>
-      <Animated.View style={[textAnimatedStyle, { position: "absolute", bottom: 2 }]}>
-        <Text style={{ color: "#3D2B82", fontSize: 11, fontWeight: "700" }}>{label}</Text>
-      </Animated.View>
-    </Pressable>
+    <PressableFeedback onPress={handlePress}>
+      <View className="flex-1 items-center justify-center h-14 w-16 relative">
+        <Animated.View style={iconAnimatedStyle}>
+          <Icon
+            size={24}
+            color={isFocused ? "#3D2B82" : "#8A8798"}
+            strokeWidth={isFocused ? 2.5 : 2}
+          />
+        </Animated.View>
+        <Animated.View style={[textAnimatedStyle, { position: "absolute", bottom: 2 }]}>
+          <Typography style={{ color: "#3D2B82", fontSize: 11, fontWeight: "700" }}>
+            {label}
+          </Typography>
+        </Animated.View>
+      </View>
+    </PressableFeedback>
   );
 }
 

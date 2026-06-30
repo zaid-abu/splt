@@ -95,7 +95,7 @@ export default function LoginScreen(): JSX.Element {
               </Card.Header>
               <Card.Body className="gap-5 px-6 pb-8">
                 <TextField isRequired>
-                  <Label className="text-foreground font-semibold mb-1">Email</Label>
+                  <Label className="text-foreground font-medium mb-1">Email</Label>
                   <Input
                     placeholder="hello@splt.app"
                     value={email}
@@ -109,7 +109,7 @@ export default function LoginScreen(): JSX.Element {
 
                 <TextField isRequired>
                   <View className="flex-row justify-between items-center w-full mb-1">
-                    <Label className="text-foreground font-semibold">Password</Label>
+                    <Label className="text-foreground font-medium">Password</Label>
                     <LinkButton
                       onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
                       className="text-accent py-0"
@@ -164,7 +164,7 @@ export default function LoginScreen(): JSX.Element {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push("/(auth)/register");
               }}
-              className="text-primary font-semibold"
+              className="text-primary font-medium"
             >
               Sign up
             </LinkButton>

@@ -66,8 +66,8 @@ export function BalanceCard({
 
         <Card.Footer className="gap-3 pt-0">
           <View className="flex-1 bg-white/10 rounded-xl p-3">
-            <Typography type="body-xs" className="text-white/60 font-semibold tracking-wider">
-              OWED TO YOU
+            <Typography type="body-xs" className="text-white/60 font-medium tracking-wider">
+              Owed To You
             </Typography>
             <Typography type="h5" className="text-white font-bold mt-0.5">
               {currencySymbol}
@@ -75,8 +75,8 @@ export function BalanceCard({
             </Typography>
           </View>
           <View className="flex-1 bg-white/10 rounded-xl p-3">
-            <Typography type="body-xs" className="text-white/60 font-semibold tracking-wider">
-              YOU OWE
+            <Typography type="body-xs" className="text-white/60 font-medium tracking-wider">
+              You Owe
             </Typography>
             <Typography type="h5" className="text-white font-bold mt-0.5">
               {currencySymbol}

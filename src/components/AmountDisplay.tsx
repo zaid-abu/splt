@@ -65,7 +65,7 @@ export function AmountDisplay({
 
   return (
     <View style={{ flexDirection: "row", alignItems: "baseline", gap: 2 }}>
-      <Typography type={type} className={`font-semibold ${colorClass}`}>
+      <Typography type={type} className={`font-medium ${colorClass}`}>
         {prefix}
         {formatted}
       </Typography>

@@ -1,9 +1,9 @@
-import { PressableFeedback, Typography, Skeleton } from "heroui-native";
+import { Typography, Skeleton, Button, ListGroup, PressableFeedback } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, TextInput, View } from "react-native";
+import { ScrollView, View, RefreshControl, TextInput } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import { FocusAwareView } from "@/components/PageAnimator";
@@ -107,9 +107,9 @@ export default function ActivityScreen(): JSX.Element {
                 </View>
                 <Typography
                   type="body-xs"
-                  className="text-muted-foreground font-semibold tracking-wider mb-1"
+                  className="text-muted-foreground font-medium tracking-wider mb-1"
                 >
-                  OWED TO YOU
+                  Owed To You
                 </Typography>
                 <Typography type="h2" className="font-black text-foreground text-[22px]">
                   {formatAmount(owedToMe, preferredCurrency.code)}
@@ -122,9 +122,9 @@ export default function ActivityScreen(): JSX.Element {
                 </View>
                 <Typography
                   type="body-xs"
-                  className="text-muted-foreground font-semibold tracking-wider mb-1"
+                  className="text-muted-foreground font-medium tracking-wider mb-1"
                 >
-                  YOU OWE
+                  You Owe
                 </Typography>
                 <Typography type="h2" className="font-black text-foreground text-[22px]">
                   {formatAmount(iOwe, preferredCurrency.code)}
@@ -136,24 +136,33 @@ export default function ActivityScreen(): JSX.Element {
           {/* ── Transactions Search ──────────────────────────── */}
           <FocusAwareView delay={200} className="px-6 mb-6 h-[44px] justify-center">
             {isSearching ? (
-              <View className="flex-row items-center bg-white h-full rounded-[16px] px-4 border border-border">
-                <icons.Search size={18} className="text-muted-foreground mr-2" />
-                <TextInput
-                  autoFocus
-                  placeholder="Search activity..."
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  className="flex-1 font-medium text-foreground text-[14px]"
-                  placeholderTextColor="#8A8798"
-                />
-                <PressableFeedback
+              <View className="flex-row items-center gap-2">
+                <View className="flex-1 flex-row items-center bg-white rounded-[16px] border border-border/50 h-[44px] px-3">
+                  <icons.Search size={20} color="#8A8798" />
+                  <TextInput
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    autoFocus
+                    placeholder="Search activity..."
+                    placeholderTextColor="#8A8798"
+                    className="flex-1 ml-2 font-medium text-foreground text-[15px]"
+                  />
+                  {searchQuery.length > 0 && (
+                    <PressableFeedback onPress={() => setSearchQuery("")} hitSlop={8}>
+                      <icons.XCircle size={18} color="#8A8798" />
+                    </PressableFeedback>
+                  )}
+                </View>
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onPress={() => {
                     setIsSearching(false);
                     setSearchQuery("");
                   }}
                 >
-                  <icons.X size={18} className="text-muted-foreground ml-2" />
-                </PressableFeedback>
+                  Cancel
+                </Button>
               </View>
             ) : (
               <View className="flex-row items-center justify-between">
@@ -163,9 +172,14 @@ export default function ActivityScreen(): JSX.Element {
                 >
                   Timeline
                 </Typography>
-                <PressableFeedback onPress={() => setIsSearching(true)}>
-                  <icons.Search size={20} className="text-muted-foreground mr-2" />
-                </PressableFeedback>
+                <Button
+                  variant="ghost"
+                  isIconOnly
+                  onPress={() => setIsSearching(true)}
+                  className="p-0 min-w-0 min-h-0 w-8 h-8 rounded-full"
+                >
+                  <icons.Search size={20} className="text-muted-foreground" />
+                </Button>
               </View>
             )}
           </FocusAwareView>
@@ -213,7 +227,7 @@ export default function ActivityScreen(): JSX.Element {
                   >
                     {group.title}
                   </Typography>
-                  <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+                  <ListGroup className="bg-white rounded-[24px] overflow-hidden border border-border">
                     {group.data.map((activity, idx) => (
                       <ActivityItem
                         key={activity.id}
@@ -222,7 +236,7 @@ export default function ActivityScreen(): JSX.Element {
                         isLast={idx === group.data.length - 1}
                       />
                     ))}
-                  </View>
+                  </ListGroup>
                 </View>
               ))
             )}
