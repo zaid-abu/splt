@@ -17,6 +17,7 @@ import {
 } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -38,17 +39,21 @@ export default function RegisterScreen(): JSX.Element {
   const [error, setError] = useState("");
 
   async function handleRegister(): Promise<void> {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (!name.trim() || !email.trim() || !password) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError("Please fill in all fields");
       return;
     }
     if (!agreed) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError("Please accept the Terms of Service");
       return;
     }
     setLoading(true);
     setError("");
     await new Promise((r) => setTimeout(r, 1000));
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.replace("/(tabs)");
   }
 
@@ -144,7 +149,10 @@ export default function RegisterScreen(): JSX.Element {
               <View className="flex-row items-start gap-3 mt-1">
                 <Checkbox
                   isSelected={agreed}
-                  onSelectedChange={setAgreed}
+                  onSelectedChange={(val) => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setAgreed(val);
+                  }}
                   className="mt-1"
                 >
                   <Checkbox.Indicator />
@@ -188,7 +196,7 @@ export default function RegisterScreen(): JSX.Element {
             <Typography type="body-sm" className="text-muted-foreground">
               Already have an account?
             </Typography>
-            <LinkButton onPress={() => router.back()} className="text-primary font-semibold">
+            <LinkButton onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} className="text-primary font-semibold">
               Sign in
             </LinkButton>
           </Animated.View>

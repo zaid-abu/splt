@@ -4,7 +4,8 @@ import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, TextInput, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { BlurView } from "expo-blur";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { FocusAwareView } from "@/components/PageAnimator";
 import * as icons from "lucide-react-native";
@@ -17,6 +18,7 @@ import type { Activity } from "@/types";
 
 export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { activities, currentUser, getTotalOwedToMe, getTotalIOwe, preferredCurrency, isAppLoading } = useApp();
 
   const [isSearching, setIsSearching] = useState(false);
@@ -55,23 +57,39 @@ export default function ActivityScreen(): JSX.Element {
     <FocusAwareView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
         <StatusBar style="dark" />
+        
+        {/* ── Sticky Blurred Header ───────────────────── */}
+        <BlurView 
+          intensity={100} 
+          tint="light" 
+          style={{ 
+            paddingTop: insets.top + 16, 
+            paddingBottom: 16, 
+            paddingHorizontal: 24,
+            position: 'absolute',
+            top: 0, left: 0, right: 0,
+            zIndex: 50,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            backgroundColor: 'rgba(242, 242, 246, 0.90)',
+          }}
+        >
+          <Typography type="h1" className="font-black tracking-tight text-foreground text-[32px]">
+            Activity
+          </Typography>
+          <PressableFeedback onPress={() => router.push("/profile")}>
+            <View className="border-2 border-transparent rounded-full">
+              <AppUserAvatar user={currentUser} size="md" />
+            </View>
+          </PressableFeedback>
+        </BlurView>
+
         <ScrollView
           className="flex-1 bg-background"
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingTop: insets.top + 90, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Header ────────────────────────────────── */}
-          <View className="flex-row items-center justify-between px-6 pt-6 mb-8">
-            <Typography type="h1" className="font-black tracking-tight text-foreground text-[32px]">
-              Activity
-            </Typography>
-            <PressableFeedback onPress={() => router.push("/profile")}>
-              <View className="border-2 border-transparent rounded-full">
-                <AppUserAvatar user={currentUser} size="md" />
-              </View>
-            </PressableFeedback>
-          </View>
-
           {/* ── Stats Row ─────────────────────────────── */}
           <FocusAwareView delay={100} className="px-6 mb-8">
             <View className="flex-row gap-4">

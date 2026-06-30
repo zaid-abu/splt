@@ -6,6 +6,7 @@ import * as icons from "lucide-react-native";
 import { PressableFeedback } from "heroui-native";
 import Animated, { useAnimatedStyle, withSpring, withTiming } from "react-native-reanimated";
 import * as Haptics from 'expo-haptics';
+import { BlurView } from 'expo-blur';
 
 type TabBarItemProps = {
   isFocused: boolean;
@@ -73,19 +74,22 @@ export default function TabsLayout(): JSX.Element {
       }}
       tabBar={({ state, navigation }) => {
         return (
-          <View
+          <BlurView
+            intensity={100}
+            tint="light"
             className="flex-row items-center justify-between"
             style={{
               position: 'absolute',
               bottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 16) + 10 : 20,
               left: 20,
               right: 20,
-              backgroundColor: 'rgba(255, 255, 255, 0.92)',
+              backgroundColor: 'rgba(255, 255, 255, 0.85)',
               borderRadius: 32,
               paddingVertical: 8,
               paddingHorizontal: 12,
               borderWidth: 1,
-              borderColor: 'rgba(0,0,0,0.05)',
+              borderColor: 'rgba(0,0,0,0.03)',
+              overflow: 'hidden',
               elevation: 10,
             }}
           >
@@ -142,7 +146,7 @@ export default function TabsLayout(): JSX.Element {
               label="Activity" 
               onPress={() => navigation.navigate("activity")} 
             />
-          </View>
+          </BlurView>
         );
       }}
     >

@@ -24,6 +24,7 @@ import {
   ScrollView,
   TextInput,
   View,
+  InteractionManager,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
@@ -109,6 +110,14 @@ export default function AddExpenseScreen(): JSX.Element {
   const [included, setIncluded] = useState<Record<string, boolean>>({});
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
   const [customPercentages, setCustomPercentages] = useState<Record<string, string>>({});
+  
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    InteractionManager.runAfterInteractions(() => {
+      setIsReady(true);
+    });
+  }, []);
 
   useEffect(() => {
     setIncluded(Object.fromEntries(participants.map((u) => [u.id, true])));
@@ -202,7 +211,13 @@ export default function AddExpenseScreen(): JSX.Element {
           </View>
 
           {/* ── Group/Friend Selection ──────────────── */}
-          {!(initialGroupId || initialFriendId) && !selectionConfirmed && (
+          {!isReady ? (
+            <View className="items-center justify-center py-20 mt-10">
+              <Spinner />
+            </View>
+          ) : (
+            <View>
+              {!(initialGroupId || initialFriendId) && !selectionConfirmed && (
              <Animated.View entering={FadeInDown.duration(300)} className="mb-8">
                 <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-8 uppercase">
                   WHO IS THIS WITH?
@@ -635,6 +650,8 @@ export default function AddExpenseScreen(): JSX.Element {
                 </View>
               </View>
             </Animated.View>
+          )}
+          </View>
           )}
 
           {/* ── Error ──────────────────────────────── */}

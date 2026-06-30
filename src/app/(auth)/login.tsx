@@ -16,6 +16,7 @@ import {
 } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -32,7 +33,9 @@ export default function LoginScreen(): JSX.Element {
   const [error, setError] = useState("");
 
   async function handleLogin(): Promise<void> {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     if (!email.trim() || !password) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       setError("Please fill in all fields");
       return;
     }
@@ -40,6 +43,7 @@ export default function LoginScreen(): JSX.Element {
     setError("");
     // Simulate login
     await new Promise((r) => setTimeout(r, 1000));
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     router.replace("/(tabs)");
   }
 
@@ -102,7 +106,7 @@ export default function LoginScreen(): JSX.Element {
               <TextField isRequired>
                 <View className="flex-row justify-between items-center w-full mb-1">
                   <Label className="text-foreground font-semibold">Password</Label>
-                  <LinkButton onPress={() => {}} className="text-accent py-0">Forgot?</LinkButton>
+                  <LinkButton onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)} className="text-accent py-0">Forgot?</LinkButton>
                 </View>
                 <Input
                   placeholder="••••••••"
@@ -143,7 +147,7 @@ export default function LoginScreen(): JSX.Element {
             <Typography type="body-sm" className="text-muted-foreground">
               Don&apos;t have an account?
             </Typography>
-            <LinkButton onPress={() => router.push("/(auth)/register")} className="text-primary font-semibold">
+            <LinkButton onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push("/(auth)/register"); }} className="text-primary font-semibold">
               Sign up
             </LinkButton>
           </Animated.View>

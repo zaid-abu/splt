@@ -7,6 +7,7 @@ import { Text, View, Dimensions, FlatList } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
+import * as Haptics from "expo-haptics";
 
 const SLIDES = [
   {
@@ -76,7 +77,11 @@ export default function WelcomeScreen(): JSX.Element {
         bounces={false}
         onScroll={(e) => {
           const x = e.nativeEvent.contentOffset.x;
-          setCurrentIndex(Math.round(x / width));
+          const newIndex = Math.round(x / width);
+          if (newIndex !== currentIndex) {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setCurrentIndex(newIndex);
+          }
         }}
         scrollEventThrottle={16}
         renderItem={({ item }) => (
@@ -140,7 +145,10 @@ export default function WelcomeScreen(): JSX.Element {
               borderRadius: 24, 
               height: 56,
             }}
-            onPress={() => router.push("/(auth)/login")}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              router.push("/(auth)/login");
+            }}
           >
             <Text className="text-background font-[600] text-[16px]">Get Started</Text>
           </Button>
