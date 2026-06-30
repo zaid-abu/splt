@@ -14,7 +14,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#0A0A0F"
+        "backgroundColor": "#3d2b82"
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.splt.app"
@@ -26,7 +26,7 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#0A0A0F"
+          "backgroundColor": "#3d2b82"
         }
       ],
       "expo-font"
