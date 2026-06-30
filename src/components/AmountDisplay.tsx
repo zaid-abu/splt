@@ -53,9 +53,8 @@ export function AmountDisplay({
   const isNeg = amount < 0;
   const isZero = amount === 0;
 
-  const colorClass = colored && !isZero
-    ? isNeg ? "text-danger" : "text-success"
-    : "text-foreground";
+  const colorClass =
+    colored && !isZero ? (isNeg ? "text-danger" : "text-success") : "text-foreground";
 
   // Map size to Typography type
   const typeMap = { sm: "body-xs", md: "body-sm", lg: "body", xl: "h4" } as const;
@@ -67,7 +66,8 @@ export function AmountDisplay({
   return (
     <View style={{ flexDirection: "row", alignItems: "baseline", gap: 2 }}>
       <Typography type={type} className={`font-semibold ${colorClass}`}>
-        {prefix}{formatted}
+        {prefix}
+        {formatted}
       </Typography>
       <Typography type="body-xs" className="text-muted">
         {currency}

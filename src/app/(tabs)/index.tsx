@@ -23,7 +23,15 @@ import { ActivityItem } from "@/components/ActivityItem";
 export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { currentUser, groups, activities, getTotalOwedToMe, getTotalIOwe, getUserBalances, preferredCurrency } = useApp();
+  const {
+    currentUser,
+    groups,
+    activities,
+    getTotalOwedToMe,
+    getTotalIOwe,
+    getUserBalances,
+    preferredCurrency,
+  } = useApp();
 
   const [refreshing, setRefreshing] = useState(false);
   const [selectedSlice, setSelectedSlice] = useState<"owed" | "owe" | null>(null);
@@ -40,8 +48,8 @@ export default function DashboardScreen(): JSX.Element {
   const uniqueUsers = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
 
   const outstandingFriends = uniqueUsers
-    .filter(u => u.id !== currentUser.id && (balances.get(u.id) || 0) !== 0)
-    .map(u => ({ user: u, balance: balances.get(u.id) || 0 }))
+    .filter((u) => u.id !== currentUser.id && (balances.get(u.id) || 0) !== 0)
+    .map((u) => ({ user: u, balance: balances.get(u.id) || 0 }))
     .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance))
     .slice(0, 3);
 
@@ -49,7 +57,12 @@ export default function DashboardScreen(): JSX.Element {
     .sort((a, b) => b.date.getTime() - a.date.getTime())
     .slice(0, 3);
 
-  const greeting = new Date().getHours() < 12 ? "Good morning" : new Date().getHours() < 18 ? "Good afternoon" : "Good evening";
+  const greeting =
+    new Date().getHours() < 12
+      ? "Good morning"
+      : new Date().getHours() < 18
+        ? "Good afternoon"
+        : "Good evening";
   const firstName = currentUser.name.split(" ")[0];
 
   const onRefresh = useCallback(() => {
@@ -67,24 +80,26 @@ export default function DashboardScreen(): JSX.Element {
   }, []);
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: '#F2F2F6' }}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
       <StatusBar style="dark" />
-      
+
       {/* ── Sticky Blurred Header ───────────────────── */}
-      <BlurView 
-        intensity={100} 
-        tint="light" 
-        style={{ 
-          paddingTop: insets.top + 16, 
-          paddingBottom: 16, 
+      <BlurView
+        intensity={100}
+        tint="light"
+        style={{
+          paddingTop: insets.top + 16,
+          paddingBottom: 16,
           paddingHorizontal: 24,
-          position: 'absolute',
-          top: 0, left: 0, right: 0,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
           zIndex: 50,
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          backgroundColor: 'rgba(242, 242, 246, 0.90)',
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          backgroundColor: "rgba(242, 242, 246, 0.90)",
         }}
       >
         <View>
@@ -95,10 +110,12 @@ export default function DashboardScreen(): JSX.Element {
             {firstName}
           </Typography>
         </View>
-        <PressableFeedback onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-          router.push("/profile");
-        }}>
+        <PressableFeedback
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/profile");
+          }}
+        >
           <View className="rounded-full p-[2px]">
             <AppUserAvatar user={currentUser} size="md" />
           </View>
@@ -110,7 +127,12 @@ export default function DashboardScreen(): JSX.Element {
         contentContainerStyle={{ paddingTop: insets.top + 90, paddingBottom: 120 }} // padding for floating tab bar and header
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#3D2B82" progressViewOffset={insets.top + 80} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#3D2B82"
+            progressViewOffset={insets.top + 80}
+          />
         }
       >
         {/* ── Enhanced Hero Card (Financial Overview) ── */}
@@ -122,11 +144,32 @@ export default function DashboardScreen(): JSX.Element {
 
             <View className="flex-row justify-between items-center mb-6 z-10">
               <View>
-                <Typography type="body-sm" className="text-primary-foreground opacity-80 font-medium mb-1">
-                  {selectedSlice === "owed" ? "Total Owed to You" : selectedSlice === "owe" ? "Total You Owe" : netBalance >= 0 ? "Net Balance (Owed to You)" : "Net Balance (You Owe)"}
+                <Typography
+                  type="body-sm"
+                  className="text-primary-foreground opacity-80 font-medium mb-1"
+                >
+                  {selectedSlice === "owed"
+                    ? "Total Owed to You"
+                    : selectedSlice === "owe"
+                      ? "Total You Owe"
+                      : netBalance >= 0
+                        ? "Net Balance (Owed to You)"
+                        : "Net Balance (You Owe)"}
                 </Typography>
-                <Typography type="h1" className="text-primary-foreground font-black text-[40px] tracking-tight">
-                  {formatAmount(Math.abs(selectedSlice === "owed" ? owedToYou : selectedSlice === "owe" ? youOwe : netBalance || 0), preferredCurrency.code)}
+                <Typography
+                  type="h1"
+                  className="text-primary-foreground font-black text-[40px] tracking-tight"
+                >
+                  {formatAmount(
+                    Math.abs(
+                      selectedSlice === "owed"
+                        ? owedToYou
+                        : selectedSlice === "owe"
+                          ? youOwe
+                          : netBalance || 0
+                    ),
+                    preferredCurrency.code
+                  )}
                 </Typography>
               </View>
               <View style={{ marginRight: -10 }}>
@@ -137,8 +180,16 @@ export default function DashboardScreen(): JSX.Element {
                   radius={35}
                   innerRadius={22}
                   data={[
-                    { value: owedToYou || 1, color: '#10b981', onPress: () => setSelectedSlice(prev => prev === "owed" ? null : "owed") },
-                    { value: youOwe || 1, color: '#ef4444', onPress: () => setSelectedSlice(prev => prev === "owe" ? null : "owe") }
+                    {
+                      value: owedToYou || 1,
+                      color: "#10b981",
+                      onPress: () => setSelectedSlice((prev) => (prev === "owed" ? null : "owed")),
+                    },
+                    {
+                      value: youOwe || 1,
+                      color: "#ef4444",
+                      onPress: () => setSelectedSlice((prev) => (prev === "owe" ? null : "owe")),
+                    },
                   ]}
                   backgroundColor="transparent"
                   centerLabelComponent={() => {
@@ -152,7 +203,10 @@ export default function DashboardScreen(): JSX.Element {
             <View className="flex-row items-center gap-6 mb-6 z-10">
               <View>
                 <View className="flex-row items-center gap-1 mb-1">
-                  <Typography type="body-xs" className="text-primary-foreground opacity-70 font-semibold tracking-wider">
+                  <Typography
+                    type="body-xs"
+                    className="text-primary-foreground opacity-70 font-semibold tracking-wider"
+                  >
                     OWED TO YOU
                   </Typography>
                 </View>
@@ -163,7 +217,10 @@ export default function DashboardScreen(): JSX.Element {
               <View className="h-8 w-[1px] bg-white/20" />
               <View>
                 <View className="flex-row items-center gap-1 mb-1">
-                  <Typography type="body-xs" className="text-primary-foreground opacity-70 font-semibold tracking-wider">
+                  <Typography
+                    type="body-xs"
+                    className="text-primary-foreground opacity-70 font-semibold tracking-wider"
+                  >
                     YOU OWE
                   </Typography>
                 </View>
@@ -184,7 +241,9 @@ export default function DashboardScreen(): JSX.Element {
               >
                 <View className="flex-row items-center justify-center gap-2">
                   <icons.Send size={16} className="text-primary" strokeWidth={2.5} />
-                  <Typography type="body-sm" className="text-primary font-bold">Settle Up</Typography>
+                  <Typography type="body-sm" className="text-primary font-bold">
+                    Settle Up
+                  </Typography>
                 </View>
               </PressableFeedback>
               <PressableFeedback
@@ -193,7 +252,9 @@ export default function DashboardScreen(): JSX.Element {
               >
                 <View className="flex-row items-center justify-center gap-2">
                   <icons.Zap size={16} color="white" strokeWidth={2.5} />
-                  <Typography type="body-sm" className="text-white font-bold">Actions</Typography>
+                  <Typography type="body-sm" className="text-white font-bold">
+                    Actions
+                  </Typography>
                 </View>
               </PressableFeedback>
             </View>
@@ -204,10 +265,34 @@ export default function DashboardScreen(): JSX.Element {
         <FocusAwareView delay={200} className="px-6 mb-10">
           <View className="flex-row justify-between">
             {[
-              { icon: icons.Users, label: "Groups", route: "/(tabs)/groups", color: "#6B4EFF", bg: "#E0DDF2" },
-              { icon: icons.UserSquare2, label: "Friends", route: "/(tabs)/friends", color: "#10B981", bg: "#D1FAE5" },
-              { icon: icons.Activity, label: "Activity", route: "/(tabs)/activity", color: "#F59E0B", bg: "#FEF3C7" },
-              { icon: icons.UserCircle, label: "Profile", route: "/profile", color: "#EC4899", bg: "#FCE7F3" },
+              {
+                icon: icons.Users,
+                label: "Groups",
+                route: "/(tabs)/groups",
+                color: "#6B4EFF",
+                bg: "#E0DDF2",
+              },
+              {
+                icon: icons.UserSquare2,
+                label: "Friends",
+                route: "/(tabs)/friends",
+                color: "#10B981",
+                bg: "#D1FAE5",
+              },
+              {
+                icon: icons.Activity,
+                label: "Activity",
+                route: "/(tabs)/activity",
+                color: "#F59E0B",
+                bg: "#FEF3C7",
+              },
+              {
+                icon: icons.UserCircle,
+                label: "Profile",
+                route: "/profile",
+                color: "#EC4899",
+                bg: "#FCE7F3",
+              },
             ].map((action, index) => (
               <PressableFeedback
                 key={index}
@@ -237,11 +322,15 @@ export default function DashboardScreen(): JSX.Element {
             <Typography type="h3" className="text-[20px] font-bold text-foreground tracking-tight">
               Needs Attention
             </Typography>
-            <PressableFeedback onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push("/(tabs)/friends");
-            }}>
-              <Typography type="body-sm" className="text-primary font-bold">See all</Typography>
+            <PressableFeedback
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push("/(tabs)/friends");
+              }}
+            >
+              <Typography type="body-sm" className="text-primary font-bold">
+                See all
+              </Typography>
             </PressableFeedback>
           </View>
 
@@ -250,10 +339,13 @@ export default function DashboardScreen(): JSX.Element {
               outstandingFriends.map((f, idx) => {
                 const isPositive = f.balance > 0;
                 return (
-                  <PressableFeedback key={f.user.id} onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push(`/friend/${f.user.id}`);
-                  }}>
+                  <PressableFeedback
+                    key={f.user.id}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push(`/friend/${f.user.id}`);
+                    }}
+                  >
                     <View className="flex-row items-center justify-between p-4 bg-surface rounded-[20px] border border-border">
                       <View className="flex-row items-center gap-4">
                         <AppUserAvatar user={f.user} size="lg" />
@@ -261,8 +353,11 @@ export default function DashboardScreen(): JSX.Element {
                           <Typography type="body" className="font-bold text-foreground">
                             {f.user.name}
                           </Typography>
-                          <Typography type="body-sm" className={`font-bold mt-0.5 ${isPositive ? 'text-success' : 'text-danger'}`}>
-                            {isPositive ? 'Owes you ' : 'You owe '}
+                          <Typography
+                            type="body-sm"
+                            className={`font-bold mt-0.5 ${isPositive ? "text-success" : "text-danger"}`}
+                          >
+                            {isPositive ? "Owes you " : "You owe "}
                             {formatAmount(Math.abs(f.balance), preferredCurrency.code)}
                           </Typography>
                         </View>
@@ -294,25 +389,32 @@ export default function DashboardScreen(): JSX.Element {
         {recentActivities.length > 0 && (
           <FocusAwareView delay={400} className="px-6 mb-8">
             <View className="flex-row items-center justify-between mb-4">
-              <Typography type="h3" className="text-[20px] font-bold text-foreground tracking-tight">
+              <Typography
+                type="h3"
+                className="text-[20px] font-bold text-foreground tracking-tight"
+              >
                 Recent Activity
               </Typography>
-              <PressableFeedback onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push("/(tabs)/activity");
-              }}>
-                <Typography type="body-sm" className="text-primary font-bold">See all</Typography>
+              <PressableFeedback
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  router.push("/(tabs)/activity");
+                }}
+              >
+                <Typography type="body-sm" className="text-primary font-bold">
+                  See all
+                </Typography>
               </PressableFeedback>
             </View>
 
             <View className="rounded-[24px]">
               <View className="bg-white rounded-[24px] overflow-hidden border border-border">
                 {recentActivities.map((activity, idx) => (
-                  <ActivityItem 
-                    key={activity.id} 
-                    activity={activity} 
-                    index={idx} 
-                    isLast={idx === recentActivities.length - 1} 
+                  <ActivityItem
+                    key={activity.id}
+                    activity={activity}
+                    index={idx}
+                    isLast={idx === recentActivities.length - 1}
                   />
                 ))}
               </View>
@@ -325,19 +427,19 @@ export default function DashboardScreen(): JSX.Element {
       <BottomSheetModal
         ref={bottomSheetModalRef}
         index={0}
-        snapPoints={['35%']}
+        snapPoints={["35%"]}
         enablePanDownToClose={true}
         backdropComponent={(props) => (
           <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
         )}
-        backgroundStyle={{ borderRadius: 32, backgroundColor: '#FFFFFF' }}
+        backgroundStyle={{ borderRadius: 32, backgroundColor: "#FFFFFF" }}
       >
         <BottomSheetView style={{ padding: 24, paddingBottom: insets.bottom + 24 }}>
           <Typography type="h3" className="font-bold text-foreground mb-8 text-center text-[20px]">
             Quick Actions
           </Typography>
           <View className="flex-row justify-around">
-            <PressableFeedback 
+            <PressableFeedback
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 bottomSheetModalRef.current?.dismiss();
@@ -348,11 +450,13 @@ export default function DashboardScreen(): JSX.Element {
                 <View className="w-16 h-16 rounded-[24px] bg-primary/10 items-center justify-center mb-3">
                   <icons.Plus size={28} className="text-primary" />
                 </View>
-                <Typography type="body-sm" className="font-bold text-center">Add Bill</Typography>
+                <Typography type="body-sm" className="font-bold text-center">
+                  Add Bill
+                </Typography>
               </View>
             </PressableFeedback>
-            
-            <PressableFeedback 
+
+            <PressableFeedback
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 bottomSheetModalRef.current?.dismiss();
@@ -363,11 +467,13 @@ export default function DashboardScreen(): JSX.Element {
                 <View className="w-16 h-16 rounded-[24px] bg-success/10 items-center justify-center mb-3">
                   <icons.Send size={28} className="text-success" />
                 </View>
-                <Typography type="body-sm" className="font-bold text-center">Settle Up</Typography>
+                <Typography type="body-sm" className="font-bold text-center">
+                  Settle Up
+                </Typography>
               </View>
             </PressableFeedback>
 
-            <PressableFeedback 
+            <PressableFeedback
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 bottomSheetModalRef.current?.dismiss();
@@ -378,7 +484,9 @@ export default function DashboardScreen(): JSX.Element {
                 <View className="w-16 h-16 rounded-[24px] bg-accent/10 items-center justify-center mb-3">
                   <icons.Users size={28} className="text-accent" />
                 </View>
-                <Typography type="body-sm" className="font-bold text-center">New Group</Typography>
+                <Typography type="body-sm" className="font-bold text-center">
+                  New Group
+                </Typography>
               </View>
             </PressableFeedback>
           </View>

@@ -3,14 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  TextInput,
-  Switch,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, TextInput, Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CurrencySelector } from "@/components/CurrencySelector";
@@ -20,14 +13,36 @@ import * as icons from "lucide-react-native";
 import { useApp } from "@/context/AppContext";
 import { CURRENCIES } from "@/types";
 
-const GROUP_ICONS = ["Home", "Plane", "Pizza", "PartyPopper", "Tent", "Gamepad2", "Briefcase", "Music", "Dumbbell", "Coffee", "Car", "Film", "ShoppingCart", "Mountain", "Target"];
+const GROUP_ICONS = [
+  "Home",
+  "Plane",
+  "Pizza",
+  "PartyPopper",
+  "Tent",
+  "Gamepad2",
+  "Briefcase",
+  "Music",
+  "Dumbbell",
+  "Coffee",
+  "Car",
+  "Film",
+  "ShoppingCart",
+  "Mountain",
+  "Target",
+];
 
 export default function GroupSettingsScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { 
-    getGroup, updateGroup, deleteGroup, removeGroupMember, addGroupMembers, 
-    groups, currentUser, getGroupBalances
+  const {
+    getGroup,
+    updateGroup,
+    deleteGroup,
+    removeGroupMember,
+    addGroupMembers,
+    groups,
+    currentUser,
+    getGroupBalances,
   } = useApp();
 
   const group = getGroup(id ?? "");
@@ -37,7 +52,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   const [icon, setIcon] = useState(group?.icon ?? "Home");
   const [currencyCode, setCurrencyCode] = useState(group?.currency ?? "USD");
   const [simplifyDebts, setSimplifyDebts] = useState(group?.simplifyDebts ?? false);
-  const currency = CURRENCIES.find(c => c.code === currencyCode) ?? CURRENCIES[0];
+  const currency = CURRENCIES.find((c) => c.code === currencyCode) ?? CURRENCIES[0];
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -49,23 +64,28 @@ export default function GroupSettingsScreen(): JSX.Element {
     if (!group) return [];
     const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
     const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
-    const existingIds = new Set(group.members.map(m => m.userId));
-    return uniqueFriends.filter(f => !existingIds.has(f.id) && f.id !== currentUser.id);
+    const existingIds = new Set(group.members.map((m) => m.userId));
+    return uniqueFriends.filter((f) => !existingIds.has(f.id) && f.id !== currentUser.id);
   }, [groups, group, currentUser.id]);
 
   if (!group) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
         <View className="flex-1 items-center justify-center p-6">
           <Typography type="h3">Group not found</Typography>
-          <Button onPress={() => router.back()} className="mt-4">Go Back</Button>
+          <Button onPress={() => router.back()} className="mt-4">
+            Go Back
+          </Button>
         </View>
       </SafeAreaView>
     );
   }
 
   async function handleSave(): Promise<void> {
-    if (!name.trim()) { setError("Group name is required"); return; }
+    if (!name.trim()) {
+      setError("Group name is required");
+      return;
+    }
     setLoading(true);
     try {
       await updateGroup(group!.id, {
@@ -85,7 +105,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   function handleRemoveMember(userId: string) {
     const memBalance = balances.get(userId) ?? 0;
     if (Math.abs(memBalance) > 0.01) {
-      // Wait, we can't show alerts natively without the React Native Alert, 
+      // Wait, we can't show alerts natively without the React Native Alert,
       // but we can just set an error state here.
       setError("Cannot remove member with non-zero balance.");
       return;
@@ -105,7 +125,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top", "bottom"]}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -119,13 +139,20 @@ export default function GroupSettingsScreen(): JSX.Element {
         >
           {/* ── Header ────────────────────────────────── */}
           <View className="flex-row items-center justify-between px-6 pt-4 mb-8">
-            <Typography type="h3" className="font-black tracking-tight text-[28px]">Settings</Typography>
-            <Button variant="ghost" size="sm" onPress={() => router.back()}>✕ Cancel</Button>
+            <Typography type="h3" className="font-black tracking-tight text-[28px]">
+              Settings
+            </Typography>
+            <Button variant="ghost" size="sm" onPress={() => router.back()}>
+              ✕ Cancel
+            </Button>
           </View>
 
           {/* ── Icon picker ──────────────────────────── */}
           <View className="mb-8">
-            <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-8">
+            <Typography
+              type="body-xs"
+              className="text-muted-foreground font-bold tracking-widest mb-3 ml-8"
+            >
               CHOOSE ICON
             </Typography>
             <ScrollView
@@ -138,13 +165,13 @@ export default function GroupSettingsScreen(): JSX.Element {
                 const isSelected = icon === i;
                 return (
                   <PressableFeedback key={i} onPress={() => setIcon(i)}>
-                    <View 
-                      className={`w-14 h-14 rounded-full items-center justify-center border-2 ${isSelected ? 'bg-primary border-primary' : 'bg-white border-transparent'}`}
+                    <View
+                      className={`w-14 h-14 rounded-full items-center justify-center border-2 ${isSelected ? "bg-primary border-primary" : "bg-white border-transparent"}`}
                     >
-                      <IconComponent 
-                        size={24} 
-                        color={isSelected ? "white" : "#8A8798"} 
-                        strokeWidth={isSelected ? 2.5 : 2} 
+                      <IconComponent
+                        size={24}
+                        color={isSelected ? "white" : "#8A8798"}
+                        strokeWidth={isSelected ? 2.5 : 2}
                       />
                     </View>
                   </PressableFeedback>
@@ -156,13 +183,21 @@ export default function GroupSettingsScreen(): JSX.Element {
           {/* ── Form fields ───────────────────────────── */}
           <View className="px-6 mb-8 gap-5">
             <View>
-              <Typography type="body-sm" className="font-bold text-muted-foreground tracking-widest mb-2 ml-2">
+              <Typography
+                type="body-sm"
+                className="font-bold text-muted-foreground tracking-widest mb-2 ml-2"
+              >
                 GROUP NAME
               </Typography>
-              <View className={`bg-white h-[56px] rounded-[20px] px-4 justify-center border ${error && !name.trim() ? 'border-danger' : 'border-border'}`}>
-                <TextInput 
+              <View
+                className={`bg-white h-[56px] rounded-[20px] px-4 justify-center border ${error && !name.trim() ? "border-danger" : "border-border"}`}
+              >
+                <TextInput
                   value={name}
-                  onChangeText={(t) => { setName(t); setError(""); }}
+                  onChangeText={(t) => {
+                    setName(t);
+                    setError("");
+                  }}
                   placeholder="e.g. Weekend Trip, Housemates…"
                   className="font-medium text-[16px] text-foreground h-full"
                   placeholderTextColor="#8A8798"
@@ -172,11 +207,14 @@ export default function GroupSettingsScreen(): JSX.Element {
             </View>
 
             <View>
-              <Typography type="body-sm" className="font-bold text-muted-foreground tracking-widest mb-2 ml-2">
+              <Typography
+                type="body-sm"
+                className="font-bold text-muted-foreground tracking-widest mb-2 ml-2"
+              >
                 DESCRIPTION (OPTIONAL)
               </Typography>
               <View className="bg-white rounded-[20px] px-4 py-3 border border-border">
-                <TextInput 
+                <TextInput
                   value={description}
                   onChangeText={setDescription}
                   placeholder="What is this group for?"
@@ -184,19 +222,22 @@ export default function GroupSettingsScreen(): JSX.Element {
                   placeholderTextColor="#8A8798"
                   multiline
                   numberOfLines={3}
-                  style={{ minHeight: 80, textAlignVertical: 'top' }}
+                  style={{ minHeight: 80, textAlignVertical: "top" }}
                 />
               </View>
             </View>
 
-            <CurrencySelector 
-              label="Group Base Currency" 
-              value={currency.code} 
-              onChange={(c) => setCurrencyCode(c.code)} 
+            <CurrencySelector
+              label="Group Base Currency"
+              value={currency.code}
+              onChange={(c) => setCurrencyCode(c.code)}
             />
 
             <View>
-              <Typography type="body-sm" className="font-bold text-muted-foreground tracking-widest mb-2 ml-2">
+              <Typography
+                type="body-sm"
+                className="font-bold text-muted-foreground tracking-widest mb-2 ml-2"
+              >
                 SETTLEMENTS
               </Typography>
               <View className="bg-white rounded-[20px] px-4 py-4 border border-border flex-row items-center justify-between">
@@ -205,7 +246,8 @@ export default function GroupSettingsScreen(): JSX.Element {
                     Simplify Debts
                   </Typography>
                   <Typography type="body-sm" className="text-muted-foreground mt-0.5">
-                    Automatically combine debts to reduce the total number of payments between members.
+                    Automatically combine debts to reduce the total number of payments between
+                    members.
                   </Typography>
                 </View>
                 <Switch
@@ -220,14 +262,20 @@ export default function GroupSettingsScreen(): JSX.Element {
 
           {/* ── Members ────────────────────────────────── */}
           <View className="px-6 mb-8">
-            <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-2">
+            <Typography
+              type="body-xs"
+              className="text-muted-foreground font-bold tracking-widest mb-3 ml-2"
+            >
               MEMBERS
             </Typography>
             <View className="bg-white rounded-[24px] overflow-hidden border border-border">
               {group.members.map((member, idx) => {
                 const memBalance = balances.get(member.userId) ?? 0;
                 return (
-                  <View key={member.userId} className={`flex-row items-center justify-between p-4 ${idx < group.members.length - 1 ? 'border-b border-border/50' : ''}`}>
+                  <View
+                    key={member.userId}
+                    className={`flex-row items-center justify-between p-4 ${idx < group.members.length - 1 ? "border-b border-border/50" : ""}`}
+                  >
                     <View className="flex-row items-center gap-3">
                       <AppUserAvatar user={member.user} size="md" />
                       <View>
@@ -235,14 +283,15 @@ export default function GroupSettingsScreen(): JSX.Element {
                           {member.userId === currentUser.id ? "You" : member.user.name}
                         </Typography>
                         <Typography type="body-sm" className="text-muted-foreground">
-                          Balance: {getCurrencySymbol(currencyCode)}{Math.abs(memBalance).toLocaleString()}
+                          Balance: {getCurrencySymbol(currencyCode)}
+                          {Math.abs(memBalance).toLocaleString()}
                         </Typography>
                       </View>
                     </View>
                     {member.userId !== currentUser.id && (
-                      <Button 
-                        size="sm" 
-                        variant="ghost" 
+                      <Button
+                        size="sm"
+                        variant="ghost"
                         onPress={() => handleRemoveMember(member.userId)}
                         className="opacity-70"
                       >
@@ -258,22 +307,25 @@ export default function GroupSettingsScreen(): JSX.Element {
           {/* ── Add Friends ─────────────────────────────── */}
           {availableFriends.length > 0 && (
             <View className="px-6 mb-8">
-              <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-2">
+              <Typography
+                type="body-xs"
+                className="text-muted-foreground font-bold tracking-widest mb-3 ml-2"
+              >
                 ADD FRIENDS
               </Typography>
               <View className="bg-white rounded-[24px] overflow-hidden border border-border">
                 {availableFriends.map((friend, idx) => (
-                  <View key={friend.id} className={`flex-row items-center justify-between p-4 ${idx < availableFriends.length - 1 ? 'border-b border-border/50' : ''}`}>
+                  <View
+                    key={friend.id}
+                    className={`flex-row items-center justify-between p-4 ${idx < availableFriends.length - 1 ? "border-b border-border/50" : ""}`}
+                  >
                     <View className="flex-row items-center gap-3">
                       <AppUserAvatar user={friend} size="md" />
                       <Typography type="body" className="font-bold text-foreground">
                         {friend.name}
                       </Typography>
                     </View>
-                    <Button 
-                      size="sm" 
-                      onPress={() => handleAddFriend(friend)}
-                    >
+                    <Button size="sm" onPress={() => handleAddFriend(friend)}>
                       Add
                     </Button>
                   </View>
@@ -303,10 +355,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               <Typography type="body-sm" className="text-danger mb-4">
                 Deleting this group will permanently remove it from your groups list.
               </Typography>
-              <Button 
-                onPress={handleDeleteGroup}
-                className="bg-danger text-white rounded-[16px]"
-              >
+              <Button onPress={handleDeleteGroup} className="bg-danger text-white rounded-[16px]">
                 Delete Group
               </Button>
             </View>
@@ -316,7 +365,9 @@ export default function GroupSettingsScreen(): JSX.Element {
         {/* ── Fixed Submit Button ─────────────────────────────── */}
         <View className="px-6 py-4 bg-background border-t border-border/50">
           <PressableFeedback onPress={loading ? undefined : handleSave}>
-            <View className={`w-full h-[56px] rounded-[20px] flex-row items-center justify-center gap-2 ${loading ? 'bg-primary/70' : 'bg-primary'}`}>
+            <View
+              className={`w-full h-[56px] rounded-[20px] flex-row items-center justify-center gap-2 ${loading ? "bg-primary/70" : "bg-primary"}`}
+            >
               {loading && <Spinner color="white" size="sm" />}
               <Typography type="body" className="font-bold text-white">
                 Save Changes

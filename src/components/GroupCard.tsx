@@ -17,53 +17,69 @@ interface GroupCardProps {
   onPress?: () => void;
 }
 
-export function GroupCard({ group, currentUserId, index = 0, onPress }: GroupCardProps): JSX.Element {
+export function GroupCard({
+  group,
+  currentUserId,
+  index = 0,
+  onPress,
+}: GroupCardProps): JSX.Element {
   const { getGroupBalances } = useApp();
-  
+
   const balances = getGroupBalances(group.id);
   const balance = balances.get(currentUserId) ?? 0;
 
   const balanceLabel = balance > 0 ? "You are owed" : balance < 0 ? "You owe" : "Settled up";
-  const labelColor = balance > 0 ? "text-success" : balance < 0 ? "text-danger" : "text-muted-foreground";
-  
+  const labelColor =
+    balance > 0 ? "text-success" : balance < 0 ? "text-danger" : "text-muted-foreground";
+
   const GroupIcon = (icons as any)[group.icon] || icons.Users;
   const themeColor = getStringColor(group.id);
   const themeBgColor = hexToRgba(themeColor, 0.15);
 
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
-      <SwipeableRow onDelete={() => console.log('Delete group', group.id)}>
+      <SwipeableRow onDelete={() => console.log("Delete group", group.id)}>
         <PressableFeedback onPress={onPress}>
           <View className="bg-white p-4 border-b border-border/50 flex-row items-center justify-between">
             <View className="flex-row items-center gap-4 flex-1 pr-4">
-            <View className="w-12 h-12 rounded-[16px] items-center justify-center" style={{ backgroundColor: themeBgColor }}>
-              <GroupIcon size={24} color={themeColor} strokeWidth={2.5} />
+              <View
+                className="w-12 h-12 rounded-[16px] items-center justify-center"
+                style={{ backgroundColor: themeBgColor }}
+              >
+                <GroupIcon size={24} color={themeColor} strokeWidth={2.5} />
+              </View>
+              <View className="flex-1">
+                <Typography
+                  type="body"
+                  className="font-bold text-foreground text-[17px] mb-0.5"
+                  numberOfLines={1}
+                >
+                  {group.name}
+                </Typography>
+                <Typography type="body-xs" className="text-muted-foreground font-medium">
+                  {group.members.length} members
+                </Typography>
+              </View>
             </View>
-            <View className="flex-1">
-              <Typography type="body" className="font-bold text-foreground text-[17px] mb-0.5" numberOfLines={1}>
-                {group.name}
+
+            <View className="items-end">
+              <Typography
+                type="body-xs"
+                className={`font-bold mb-1 tracking-wider uppercase ${labelColor}`}
+              >
+                {balanceLabel}
               </Typography>
-              <Typography type="body-xs" className="text-muted-foreground font-medium">
-                {group.members.length} members
-              </Typography>
+              {balance !== 0 && (
+                <AmountDisplay
+                  amount={Math.abs(balance)}
+                  currency={group.currency}
+                  size="md"
+                  colored={true}
+                />
+              )}
             </View>
           </View>
-          
-          <View className="items-end">
-            <Typography type="body-xs" className={`font-bold mb-1 tracking-wider uppercase ${labelColor}`}>
-              {balanceLabel}
-            </Typography>
-            {balance !== 0 && (
-              <AmountDisplay
-                amount={Math.abs(balance)}
-                currency={group.currency}
-                size="md"
-                colored={true}
-              />
-            )}
-          </View>
-        </View>
-      </PressableFeedback>
+        </PressableFeedback>
       </SwipeableRow>
     </Animated.View>
   );

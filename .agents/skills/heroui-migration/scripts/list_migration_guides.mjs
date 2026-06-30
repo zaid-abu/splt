@@ -58,7 +58,7 @@ function main() {
   const componentsList = AVAILABLE_COMPONENTS.map((name) => `  - ${name}`).join("\n");
 
   console.log(
-    `# Available Component Migration Guides\n\nFound ${AVAILABLE_COMPONENTS.length} component migration guides:\n\n${componentsList}\n\nUse get_component_migration_guides.mjs with component names to fetch specific guides.\nExample: node get_component_migration_guides.mjs button card modal`,
+    `# Available Component Migration Guides\n\nFound ${AVAILABLE_COMPONENTS.length} component migration guides:\n\n${componentsList}\n\nUse get_component_migration_guides.mjs with component names to fetch specific guides.\nExample: node get_component_migration_guides.mjs button card modal`
   );
 }
 

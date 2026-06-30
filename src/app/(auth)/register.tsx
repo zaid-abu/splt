@@ -29,7 +29,7 @@ export default function RegisterScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { height } = Dimensions.get("window");
-  
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -60,13 +60,17 @@ export default function RegisterScreen(): JSX.Element {
   return (
     <View className="flex-1 bg-background">
       <StatusBar style="light" />
-      
+
       {/* Top Decorative Header matching the brand identity */}
-      <Surface 
+      <Surface
         className="bg-primary absolute w-full rounded-b-[40px] items-center justify-center"
         style={{ height: height * 0.35 }}
       >
-        <Typography type="h1" className="font-black text-primary-foreground tracking-tighter" style={{ fontSize: 40 }}>
+        <Typography
+          type="h1"
+          className="font-black text-primary-foreground tracking-tighter"
+          style={{ fontSize: 40 }}
+        >
           splt
         </Typography>
         <Typography type="body-sm" className="text-secondary opacity-80 mt-2">
@@ -90,113 +94,134 @@ export default function RegisterScreen(): JSX.Element {
         >
           {/* Main Card */}
           <Animated.View entering={FadeInDown.delay(100).springify()}>
-          <Card className="rounded-[24px] bg-surface border-0 mb-6">
-            <Card.Header className="pt-8 pb-2 items-center border-b-0">
-              <Typography type="h3" className="font-bold text-foreground">
-                Create account
-              </Typography>
-              <Typography type="body-sm" className="text-muted-foreground mt-1 text-center">
-                Start splitting expenses with friends
-              </Typography>
-            </Card.Header>
-            <Card.Body className="gap-5 px-6 pb-8">
-              <TextField isRequired>
-                <Label className="text-foreground font-semibold mb-1">Full Name</Label>
-                <Input
-                  placeholder="John Doe"
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                  autoComplete="name"
-                  className="bg-surface-secondary border-muted h-14 rounded-xl"
-                />
-              </TextField>
+            <Card className="rounded-[24px] bg-surface border-0 mb-6">
+              <Card.Header className="pt-8 pb-2 items-center border-b-0">
+                <Typography type="h3" className="font-bold text-foreground">
+                  Create account
+                </Typography>
+                <Typography type="body-sm" className="text-muted-foreground mt-1 text-center">
+                  Start splitting expenses with friends
+                </Typography>
+              </Card.Header>
+              <Card.Body className="gap-5 px-6 pb-8">
+                <TextField isRequired>
+                  <Label className="text-foreground font-semibold mb-1">Full Name</Label>
+                  <Input
+                    placeholder="John Doe"
+                    value={name}
+                    onChangeText={setName}
+                    autoCapitalize="words"
+                    autoComplete="name"
+                    className="bg-surface-secondary border-muted h-14 rounded-xl"
+                  />
+                </TextField>
 
-              <TextField isRequired>
-                <Label className="text-foreground font-semibold mb-1">Email</Label>
-                <Input
-                  placeholder="hello@splt.app"
-                  value={email}
-                  onChangeText={setEmail}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  className="bg-surface-secondary border-muted h-14 rounded-xl"
-                />
-              </TextField>
+                <TextField isRequired>
+                  <Label className="text-foreground font-semibold mb-1">Email</Label>
+                  <Input
+                    placeholder="hello@splt.app"
+                    value={email}
+                    onChangeText={setEmail}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    className="bg-surface-secondary border-muted h-14 rounded-xl"
+                  />
+                </TextField>
 
-              <TextField isRequired>
-                <Label className="text-foreground font-semibold mb-1">Password</Label>
-                <Input
-                  placeholder="••••••••"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry
-                  autoComplete="new-password"
-                  className="bg-surface-secondary border-muted h-14 rounded-xl"
-                />
-              </TextField>
+                <TextField isRequired>
+                  <Label className="text-foreground font-semibold mb-1">Password</Label>
+                  <Input
+                    placeholder="••••••••"
+                    value={password}
+                    onChangeText={setPassword}
+                    secureTextEntry
+                    autoComplete="new-password"
+                    className="bg-surface-secondary border-muted h-14 rounded-xl"
+                  />
+                </TextField>
 
-              <View className="mb-2 z-10">
-                <Label className="text-foreground font-semibold mb-2">Base Currency</Label>
-                <CurrencySelector 
-                  value={currency} 
-                  onChange={(c) => setCurrency(c.code)} 
-                />
-              </View>
+                <View className="mb-2 z-10">
+                  <Label className="text-foreground font-semibold mb-2">Base Currency</Label>
+                  <CurrencySelector value={currency} onChange={(c) => setCurrency(c.code)} />
+                </View>
 
-              {/* Terms checkbox */}
-              <View className="flex-row items-start gap-3 mt-1">
-                <Checkbox
-                  isSelected={agreed}
-                  onSelectedChange={(val) => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    setAgreed(val);
-                  }}
-                  className="mt-1"
-                >
-                  <Checkbox.Indicator />
-                </Checkbox>
-                <View className="flex-1">
-                  <View className="flex-row items-center flex-wrap">
-                    <Typography type="body-sm" className="text-muted-foreground">I agree to the </Typography>
-                    <LinkButton onPress={() => {}} className="text-primary font-semibold py-0 px-0 h-auto">Terms of Service</LinkButton>
-                    <Typography type="body-sm" className="text-muted-foreground"> and </Typography>
-                    <LinkButton onPress={() => {}} className="text-primary font-semibold py-0 px-0 h-auto">Privacy Policy</LinkButton>
+                {/* Terms checkbox */}
+                <View className="flex-row items-start gap-3 mt-1">
+                  <Checkbox
+                    isSelected={agreed}
+                    onSelectedChange={(val) => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setAgreed(val);
+                    }}
+                    className="mt-1"
+                  >
+                    <Checkbox.Indicator />
+                  </Checkbox>
+                  <View className="flex-1">
+                    <View className="flex-row items-center flex-wrap">
+                      <Typography type="body-sm" className="text-muted-foreground">
+                        I agree to the{" "}
+                      </Typography>
+                      <LinkButton
+                        onPress={() => {}}
+                        className="text-primary font-semibold py-0 px-0 h-auto"
+                      >
+                        Terms of Service
+                      </LinkButton>
+                      <Typography type="body-sm" className="text-muted-foreground">
+                        {" "}
+                        and{" "}
+                      </Typography>
+                      <LinkButton
+                        onPress={() => {}}
+                        className="text-primary font-semibold py-0 px-0 h-auto"
+                      >
+                        Privacy Policy
+                      </LinkButton>
+                    </View>
                   </View>
                 </View>
-              </View>
 
-              {error ? (
-                <Alert status="danger" className="rounded-xl mt-2">
-                  <Alert.Indicator />
-                  <Alert.Content>
-                    <Alert.Title>{error}</Alert.Title>
-                  </Alert.Content>
-                </Alert>
-              ) : null}
+                {error ? (
+                  <Alert status="danger" className="rounded-xl mt-2">
+                    <Alert.Indicator />
+                    <Alert.Content>
+                      <Alert.Title>{error}</Alert.Title>
+                    </Alert.Content>
+                  </Alert>
+                ) : null}
 
-              <Button
-                variant="primary"
-                size="lg"
-                className="w-full mt-4 h-14 rounded-[16px] bg-primary"
-                onPress={handleRegister}
-                isDisabled={loading}
-              >
-                <Typography type="body" weight="semibold" className="text-primary-foreground">
-                  {loading ? "Creating account…" : "Create Account"}
-                </Typography>
-              </Button>
-            </Card.Body>
-          </Card>
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-full mt-4 h-14 rounded-[16px] bg-primary"
+                  onPress={handleRegister}
+                  isDisabled={loading}
+                >
+                  <Typography type="body" weight="semibold" className="text-primary-foreground">
+                    {loading ? "Creating account…" : "Create Account"}
+                  </Typography>
+                </Button>
+              </Card.Body>
+            </Card>
           </Animated.View>
 
           {/* Footer */}
-          <Animated.View entering={FadeInDown.delay(200).springify()} className="flex-row items-center justify-center gap-2 mt-2">
+          <Animated.View
+            entering={FadeInDown.delay(200).springify()}
+            className="flex-row items-center justify-center gap-2 mt-2"
+          >
             <Typography type="body-sm" className="text-muted-foreground">
               Already have an account?
             </Typography>
-            <LinkButton onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.back(); }} className="text-primary font-semibold">
+            <LinkButton
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.back();
+              }}
+              className="text-primary font-semibold"
+            >
               Sign in
             </LinkButton>
           </Animated.View>

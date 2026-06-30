@@ -21,7 +21,7 @@ async function fetchDoc(filename) {
 
   try {
     const response = await fetch(url, {
-      headers: {"User-Agent": "HeroUI-Migration-Skill/1.0"},
+      headers: { "User-Agent": "HeroUI-Migration-Skill/1.0" },
       signal: AbortSignal.timeout(30000),
     });
 

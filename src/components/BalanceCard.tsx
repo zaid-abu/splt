@@ -38,11 +38,7 @@ export function BalanceCard({
 
   return (
     <LinearGradient
-      colors={
-        isPositive
-          ? ["#065F46", "#059669", "#10B981"]
-          : ["#7F1D1D", "#DC2626", "#EF4444"]
-      }
+      colors={isPositive ? ["#065F46", "#059669", "#10B981"] : ["#7F1D1D", "#DC2626", "#EF4444"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
       style={{ borderRadius: 20, marginBottom: 20 }}
@@ -74,7 +70,8 @@ export function BalanceCard({
               OWED TO YOU
             </Typography>
             <Typography type="h5" className="text-white font-bold mt-0.5">
-              {currencySymbol}{fmt(owedToYou)}
+              {currencySymbol}
+              {fmt(owedToYou)}
             </Typography>
           </View>
           <View className="flex-1 bg-white/10 rounded-xl p-3">
@@ -82,7 +79,8 @@ export function BalanceCard({
               YOU OWE
             </Typography>
             <Typography type="h5" className="text-white font-bold mt-0.5">
-              {currencySymbol}{fmt(youOwe)}
+              {currencySymbol}
+              {fmt(youOwe)}
             </Typography>
           </View>
         </Card.Footer>

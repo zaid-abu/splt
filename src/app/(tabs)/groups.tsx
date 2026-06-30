@@ -35,7 +35,7 @@ export default function GroupsScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
         <StatusBar style="dark" />
 
         {/* Header */}
@@ -46,13 +46,15 @@ export default function GroupsScreen(): JSX.Element {
             paddingTop: insets.top + 16,
             paddingBottom: 16,
             paddingHorizontal: 24,
-            position: 'absolute',
-            top: 0, left: 0, right: 0,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
             zIndex: 50,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: 'rgba(242, 242, 246, 0.90)',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            backgroundColor: "rgba(242, 242, 246, 0.90)",
           }}
         >
           <Typography type="h1" className="font-black tracking-tight text-foreground text-[32px]">
@@ -66,11 +68,17 @@ export default function GroupsScreen(): JSX.Element {
           </PressableFeedback>
         </BlurView>
 
-        <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingTop: insets.top + 75, paddingBottom: 100 }}>
-
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingTop: insets.top + 75, paddingBottom: 100 }}
+        >
           <View className="px-6 mt-2">
             {/* Search */}
-            <View className="bg-white h-[52px] rounded-[16px] flex-row items-center px-4 mb-6" style={{ borderWidth: 0 }}>
+            <View
+              className="bg-white h-[52px] rounded-[16px] flex-row items-center px-4 mb-6"
+              style={{ borderWidth: 0 }}
+            >
               <icons.Search size={20} className="text-primary mr-3" />
               <TextInput
                 value={search}
@@ -98,7 +106,9 @@ export default function GroupsScreen(): JSX.Element {
                   No groups found
                 </Typography>
                 <Typography type="body-sm" className="text-muted-foreground text-center">
-                  {search ? "Try a different search term" : "Create a group with friends to start splitting expenses easily."}
+                  {search
+                    ? "Try a different search term"
+                    : "Create a group with friends to start splitting expenses easily."}
                 </Typography>
                 {!search && (
                   <PressableFeedback
@@ -106,7 +116,9 @@ export default function GroupsScreen(): JSX.Element {
                     onPress={() => router.push("/group/new")}
                   >
                     <icons.Plus size={18} color="white" strokeWidth={2.5} />
-                    <Typography type="body" className="font-bold text-white">Create Group</Typography>
+                    <Typography type="body" className="font-bold text-white">
+                      Create Group
+                    </Typography>
                   </PressableFeedback>
                 )}
               </View>
@@ -133,15 +145,17 @@ export default function GroupsScreen(): JSX.Element {
                       </View>
                     </View>
                   </>
-                ) : filtered.map((group, index) => (
-                  <GroupCard
-                    key={group.id}
-                    group={group}
-                    index={index}
-                    currentUserId={currentUser.id}
-                    onPress={() => router.push(`/group/${group.id}`)}
-                  />
-                ))}
+                ) : (
+                  filtered.map((group, index) => (
+                    <GroupCard
+                      key={group.id}
+                      group={group}
+                      index={index}
+                      currentUserId={currentUser.id}
+                      onPress={() => router.push(`/group/${group.id}`)}
+                    />
+                  ))
+                )}
               </View>
             )}
           </View>

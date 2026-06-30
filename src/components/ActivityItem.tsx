@@ -32,7 +32,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
     if (activity.type === "expense" && activity.expense) {
       const exp = activity.expense;
       const mySplit = exp.splits.find((s) => s.userId === currentUser.id);
-      
+
       if (!mySplit) {
         return { type: "neutral", text: "Not involved", amount: 0, showAmount: false };
       }
@@ -75,60 +75,71 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
   const bgColors: Record<string, string> = {
     positive: "bg-success/10",
     negative: "bg-danger/10",
-    neutral: "bg-secondary"
+    neutral: "bg-secondary",
   };
 
   const textColors: Record<string, string> = {
     positive: "text-success",
     negative: "text-danger",
-    neutral: "text-foreground"
+    neutral: "text-foreground",
   };
 
   const iconColors: Record<string, string> = {
     positive: "text-success",
     negative: "text-danger",
-    neutral: "text-muted-foreground"
+    neutral: "text-muted-foreground",
   };
 
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
-      <SwipeableRow onDelete={() => console.log('Delete activity', activity.id)}>
-        <PressableFeedback onPress={() => {
-          if (activity.expense) {
-             router.push(`/expense/${activity.expense.id}`);
-          } else if (activity.groupId) {
-             router.push(`/group/${activity.groupId}`);
-          }
-        }}>
-          <View className={`flex-row items-center p-4 ${!isLast ? 'border-b border-border/50' : ''}`}>
-            <View className={`w-12 h-12 rounded-[16px] items-center justify-center mr-4 ${bgColors[involvement.type]}`}>
+      <SwipeableRow onDelete={() => console.log("Delete activity", activity.id)}>
+        <PressableFeedback
+          onPress={() => {
+            if (activity.expense) {
+              router.push(`/expense/${activity.expense.id}`);
+            } else if (activity.groupId) {
+              router.push(`/group/${activity.groupId}`);
+            }
+          }}
+        >
+          <View
+            className={`flex-row items-center p-4 ${!isLast ? "border-b border-border/50" : ""}`}
+          >
+            <View
+              className={`w-12 h-12 rounded-[16px] items-center justify-center mr-4 ${bgColors[involvement.type]}`}
+            >
               <IconComponent size={24} className={iconColors[involvement.type]} strokeWidth={2.5} />
             </View>
-            
+
             <View className="flex-1 mr-2">
               <Typography type="body" className="font-bold text-foreground" numberOfLines={1}>
                 {activity.description}
               </Typography>
-              <Typography type="body-sm" className="text-muted-foreground font-medium mt-0.5" numberOfLines={1}>
+              <Typography
+                type="body-sm"
+                className="text-muted-foreground font-medium mt-0.5"
+                numberOfLines={1}
+              >
                 {activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </Typography>
             </View>
-            
+
             <View className="items-end">
-               {involvement.showAmount ? (
-                 <>
-                   <Typography type="body-xs" className="text-muted-foreground font-bold mb-0.5">
-                     {involvement.text}
-                   </Typography>
-                   <Typography type="body" className={`font-black ${textColors[involvement.type]}`}>
-                     {involvement.type === "positive" ? "+" : ""}{formatAmount(involvement.amount, activity.currency || "USD")}
-                   </Typography>
-                 </>
-               ) : (
-                 <Typography type="body-sm" className="text-muted-foreground font-medium">
-                   {involvement.text}
-                 </Typography>
-               )}
+              {involvement.showAmount ? (
+                <>
+                  <Typography type="body-xs" className="text-muted-foreground font-bold mb-0.5">
+                    {involvement.text}
+                  </Typography>
+                  <Typography type="body" className={`font-black ${textColors[involvement.type]}`}>
+                    {involvement.type === "positive" ? "+" : ""}
+                    {formatAmount(involvement.amount, activity.currency || "USD")}
+                  </Typography>
+                </>
+              ) : (
+                <Typography type="body-sm" className="text-muted-foreground font-medium">
+                  {involvement.text}
+                </Typography>
+              )}
             </View>
           </View>
         </PressableFeedback>

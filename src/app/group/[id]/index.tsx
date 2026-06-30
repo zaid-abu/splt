@@ -18,7 +18,13 @@ import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolation } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+} from "react-native-reanimated";
 
 import { ExpenseItem } from "@/components/ExpenseItem";
 import { AvatarStack, AppUserAvatar } from "@/components/MemberAvatar";
@@ -29,7 +35,14 @@ import { useApp } from "@/context/AppContext";
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getGroup, getGroupExpenses, currentUser, getGroupBalances, convertCurrency, isAppLoading } = useApp();
+  const {
+    getGroup,
+    getGroupExpenses,
+    currentUser,
+    getGroupBalances,
+    convertCurrency,
+    isAppLoading,
+  } = useApp();
 
   const group = getGroup(id ?? "");
   const expenses = getGroupExpenses(id ?? "");
@@ -49,14 +62,14 @@ export default function GroupDetailScreen(): JSX.Element {
         },
         {
           scale: interpolate(scrollY.value, [-100, 0], [1.1, 1], Extrapolation.CLAMP),
-        }
+        },
       ],
     };
   });
 
   if (!group) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
         <View className="flex-1 items-center justify-center px-5 gap-4">
           <Alert status="danger" className="rounded-[20px]">
             <Alert.Indicator />
@@ -65,7 +78,10 @@ export default function GroupDetailScreen(): JSX.Element {
               <Alert.Description>This group may have been deleted.</Alert.Description>
             </Alert.Content>
           </Alert>
-          <Button onPress={() => router.back()} className="rounded-full">Go back</Button>        </View>
+          <Button onPress={() => router.back()} className="rounded-full">
+            Go back
+          </Button>{" "}
+        </View>
       </SafeAreaView>
     );
   }
@@ -75,11 +91,13 @@ export default function GroupDetailScreen(): JSX.Element {
   const myBalance = balances.get(currentUser.id) ?? 0;
 
   // Calculate total expenses in group currency
-  const totalExpensesInGroupCurrency = expenses.reduce((sum, exp) => sum + convertCurrency(exp.amount, exp.currency, group.currency), 0);
-
+  const totalExpensesInGroupCurrency = expenses.reduce(
+    (sum, exp) => sum + convertCurrency(exp.amount, exp.currency, group.currency),
+    0
+  );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
       <StatusBar style="dark" />
       <Animated.ScrollView
         onScroll={scrollHandler}
@@ -108,7 +126,9 @@ export default function GroupDetailScreen(): JSX.Element {
                 })()}
               </View>
               <View className="flex-1">
-                <Typography type="h2" className="font-black text-[24px] tracking-tight">{group.name}</Typography>
+                <Typography type="h2" className="font-black text-[24px] tracking-tight">
+                  {group.name}
+                </Typography>
                 {group.description && (
                   <Typography type="body-sm" className="text-muted-foreground mt-0.5">
                     {group.description}
@@ -130,32 +150,59 @@ export default function GroupDetailScreen(): JSX.Element {
             </PressableFeedback>
 
             {/* My balance highlight */}
-            <View className={`flex-row items-center justify-between rounded-[20px] p-4 ${myBalance > 0 ? "bg-success/10 border border-success/20"
-                : myBalance < 0 ? "bg-danger/10 border border-danger/20"
-                  : "bg-surface-secondary border border-border"
-              }`}>
+            <View
+              className={`flex-row items-center justify-between rounded-[20px] p-4 ${
+                myBalance > 0
+                  ? "bg-success/10 border border-success/20"
+                  : myBalance < 0
+                    ? "bg-danger/10 border border-danger/20"
+                    : "bg-surface-secondary border border-border"
+              }`}
+            >
               <View>
-                <Typography type="body-xs" className="font-bold tracking-wider mb-0.5 text-muted-foreground uppercase">
+                <Typography
+                  type="body-xs"
+                  className="font-bold tracking-wider mb-0.5 text-muted-foreground uppercase"
+                >
                   Your balance
                 </Typography>
                 <Typography
                   type="h2"
-                  className={`font-black tracking-tight text-[28px] ${myBalance > 0 ? "text-success"
-                      : myBalance < 0 ? "text-danger"
+                  className={`font-black tracking-tight text-[28px] ${
+                    myBalance > 0
+                      ? "text-success"
+                      : myBalance < 0
+                        ? "text-danger"
                         : "text-foreground"
-                    }`}
+                  }`}
                 >
-                  {myBalance > 0 ? "+" : myBalance < 0 ? "-" : ""}{sym}{Math.abs(myBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  {myBalance > 0 ? "+" : myBalance < 0 ? "-" : ""}
+                  {sym}
+                  {Math.abs(myBalance).toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </Typography>
               </View>
-              <View className={`px-3 py-1.5 rounded-full ${myBalance > 0 ? "bg-success/20"
-                  : myBalance < 0 ? "bg-danger/20"
-                    : "bg-white border border-border"
-                }`}>
-                <Typography type="body-sm" className={`font-bold ${myBalance > 0 ? "text-success"
-                    : myBalance < 0 ? "text-danger"
-                      : "text-muted-foreground"
-                  }`}>
+              <View
+                className={`px-3 py-1.5 rounded-full ${
+                  myBalance > 0
+                    ? "bg-success/20"
+                    : myBalance < 0
+                      ? "bg-danger/20"
+                      : "bg-white border border-border"
+                }`}
+              >
+                <Typography
+                  type="body-sm"
+                  className={`font-bold ${
+                    myBalance > 0
+                      ? "text-success"
+                      : myBalance < 0
+                        ? "text-danger"
+                        : "text-muted-foreground"
+                  }`}
+                >
                   {myBalance > 0 ? "Owed to you" : myBalance < 0 ? "You owe" : "Settled up"}
                 </Typography>
               </View>
@@ -165,7 +212,10 @@ export default function GroupDetailScreen(): JSX.Element {
 
         {/* ── Balances ───────────────────────────────── */}
         <View className="px-6 mb-8">
-          <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase">
+          <Typography
+            type="body-xs"
+            className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase"
+          >
             Balances
           </Typography>
           <View className="bg-white rounded-[24px] border border-border overflow-hidden">
@@ -186,48 +236,72 @@ export default function GroupDetailScreen(): JSX.Element {
                   </View>
                 </View>
               </>
-            ) : group.members.map((member, idx) => {
-              const memBalance = balances.get(member.userId) ?? 0;
-              return (
-              <PressableFeedback key={member.userId} onPress={() => { }}>
-                <View className={`flex-row items-center justify-between p-4 ${idx < group.members.length - 1 ? 'border-b border-border/50' : ''}`}>
-                  <View className="flex-row items-center gap-3">
-                    <AppUserAvatar user={member.user} size="md" balance={memBalance} />
-                    <View>
-                      <Typography type="body" className="font-bold text-foreground">
-                        {member.userId === currentUser.id ? "You" : member.user.name}
-                      </Typography>
-                      <Typography type="body-sm" className="text-muted-foreground">
-                        {memBalance === 0 ? "Settled up"
-                          : memBalance > 0 ? (member.userId === currentUser.id ? "Owed to you" : "Gets back")
-                            : (member.userId === currentUser.id ? "You owe" : "Owes")}
+            ) : (
+              group.members.map((member, idx) => {
+                const memBalance = balances.get(member.userId) ?? 0;
+                return (
+                  <PressableFeedback key={member.userId} onPress={() => {}}>
+                    <View
+                      className={`flex-row items-center justify-between p-4 ${idx < group.members.length - 1 ? "border-b border-border/50" : ""}`}
+                    >
+                      <View className="flex-row items-center gap-3">
+                        <AppUserAvatar user={member.user} size="md" balance={memBalance} />
+                        <View>
+                          <Typography type="body" className="font-bold text-foreground">
+                            {member.userId === currentUser.id ? "You" : member.user.name}
+                          </Typography>
+                          <Typography type="body-sm" className="text-muted-foreground">
+                            {memBalance === 0
+                              ? "Settled up"
+                              : memBalance > 0
+                                ? member.userId === currentUser.id
+                                  ? "Owed to you"
+                                  : "Gets back"
+                                : member.userId === currentUser.id
+                                  ? "You owe"
+                                  : "Owes"}
+                          </Typography>
+                        </View>
+                      </View>
+                      <Typography
+                        type="body"
+                        className={`font-black ${
+                          memBalance > 0
+                            ? "text-success"
+                            : memBalance < 0
+                              ? "text-danger"
+                              : "text-muted-foreground"
+                        }`}
+                      >
+                        {memBalance > 0 ? "+" : memBalance < 0 ? "-" : ""}
+                        {sym}
+                        {Math.abs(memBalance).toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </Typography>
                     </View>
-                  </View>
-                  <Typography
-                    type="body"
-                    className={`font-black ${memBalance > 0 ? "text-success"
-                        : memBalance < 0 ? "text-danger"
-                          : "text-muted-foreground"
-                      }`}
-                  >
-                    {memBalance > 0 ? "+" : memBalance < 0 ? "-" : ""}
-                    {sym}{Math.abs(memBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </Typography>
-                </View>
-              </PressableFeedback>
-              )
-            })}
-            </View>
+                  </PressableFeedback>
+                );
+              })
+            )}
           </View>
+        </View>
 
         {/* ── Expenses ───────────────────────────────── */}
         <View className="px-6 mb-4 flex-row items-center justify-between">
-          <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest ml-2 uppercase">
+          <Typography
+            type="body-xs"
+            className="text-muted-foreground font-bold tracking-widest ml-2 uppercase"
+          >
             Expenses ({expenses.length})
           </Typography>
           <Typography type="body-sm" className="font-bold text-foreground mr-2">
-            Total: {sym}{totalExpensesInGroupCurrency.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            Total: {sym}
+            {totalExpensesInGroupCurrency.toLocaleString(undefined, {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}
           </Typography>
         </View>
 
@@ -243,7 +317,9 @@ export default function GroupDetailScreen(): JSX.Element {
               <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
                 <Text style={{ fontSize: 32 }}>💸</Text>
               </View>
-              <Typography type="h3" className="font-black text-center mb-1">No expenses yet</Typography>
+              <Typography type="h3" className="font-black text-center mb-1">
+                No expenses yet
+              </Typography>
               <Typography type="body" className="text-muted-foreground text-center">
                 Add the first expense for this group
               </Typography>

@@ -24,11 +24,14 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
   let bg, textColor;
   if (balance !== undefined) {
     if (balance > 0) {
-      bg = "#D1FAE5"; textColor = "#059669";
+      bg = "#D1FAE5";
+      textColor = "#059669";
     } else if (balance < 0) {
-      bg = "#FEE2E2"; textColor = "#DC2626";
+      bg = "#FEE2E2";
+      textColor = "#DC2626";
     } else {
-      bg = "#F3F4F6"; textColor = "#4B5563";
+      bg = "#F3F4F6";
+      textColor = "#4B5563";
     }
   } else {
     textColor = getStringColor(user.id);
@@ -38,20 +41,22 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
   const sizeMap = {
     sm: { size: 32, font: 12 },
     md: { size: 40, font: 16 },
-    lg: { size: 48, font: 18 }
+    lg: { size: 48, font: 18 },
   };
-  
+
   const dims = sizeMap[size as keyof typeof sizeMap] || sizeMap.md;
 
   return (
-    <View style={{
-      width: dims.size,
-      height: dims.size,
-      borderRadius: dims.size / 2,
-      backgroundColor: bg,
-      alignItems: "center",
-      justifyContent: "center"
-    }}>
+    <View
+      style={{
+        width: dims.size,
+        height: dims.size,
+        borderRadius: dims.size / 2,
+        backgroundColor: bg,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Text style={{ fontSize: dims.font, fontWeight: "bold", color: textColor }}>
         {user.initials}
       </Text>
@@ -77,8 +82,8 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
         return (
           <View
             key={user.id}
-            style={{ 
-              marginLeft: idx === 0 ? 0 : -8, 
+            style={{
+              marginLeft: idx === 0 ? 0 : -8,
               zIndex: visible.length - idx,
               width: 28,
               height: 28,
@@ -87,7 +92,7 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
               alignItems: "center",
               justifyContent: "center",
               borderWidth: 2,
-              borderColor: "white"
+              borderColor: "white",
             }}
           >
             <Text style={{ fontSize: 10, fontWeight: "bold", color: textColor }}>
@@ -97,21 +102,21 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
         );
       })}
       {overflow > 0 && (
-        <View style={{ 
-          marginLeft: -8, 
-          zIndex: 0,
-          width: 28,
-          height: 28,
-          borderRadius: 14,
-          backgroundColor: "#E5E7EB",
-          alignItems: "center",
-          justifyContent: "center",
-          borderWidth: 2,
-          borderColor: "white"
-        }}>
-          <Text style={{ fontSize: 10, fontWeight: "bold", color: "#4B5563" }}>
-            +{overflow}
-          </Text>
+        <View
+          style={{
+            marginLeft: -8,
+            zIndex: 0,
+            width: 28,
+            height: 28,
+            borderRadius: 14,
+            backgroundColor: "#E5E7EB",
+            alignItems: "center",
+            justifyContent: "center",
+            borderWidth: 2,
+            borderColor: "white",
+          }}
+        >
+          <Text style={{ fontSize: 10, fontWeight: "bold", color: "#4B5563" }}>+{overflow}</Text>
         </View>
       )}
     </View>

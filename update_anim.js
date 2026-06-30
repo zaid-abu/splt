@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require("fs");
 
 const animatorCode = `import type { JSX, PropsWithChildren } from "react";
 import { useCallback } from "react";
@@ -44,38 +44,50 @@ export function FocusAwareView({ children, delay = 0, className, style }: FocusA
   );
 }
 `;
-fs.writeFileSync('src/components/PageAnimator.tsx', animatorCode);
+fs.writeFileSync("src/components/PageAnimator.tsx", animatorCode);
 
 const files = [
   "src/app/(tabs)/index.tsx",
   "src/app/(tabs)/friends.tsx",
   "src/app/(tabs)/groups.tsx",
   "src/app/(tabs)/activity.tsx",
-  "src/app/profile.tsx"
+  "src/app/profile.tsx",
 ];
 
 for (const file of files) {
-  let content = fs.readFileSync(file, 'utf8');
-  
-  if (!content.includes('FocusAwareView')) {
+  let content = fs.readFileSync(file, "utf8");
+
+  if (!content.includes("FocusAwareView")) {
     content = content.replace(
-      /import Animated, { FadeInDown } from "react-native-reanimated";\n?/g, 
+      /import Animated, { FadeInDown } from "react-native-reanimated";\n?/g,
       'import Animated, { FadeInDown } from "react-native-reanimated";\nimport { FocusAwareView } from "@/components/PageAnimator";\n'
     );
   }
 
   // Replace outer
-  content = content.replace(/<Animated\.View style={{ flex: 1 }} entering={FadeInDown\.duration\(300\)\.springify\(\)}>/g, '<FocusAwareView style={{ flex: 1 }}>');
-  
+  content = content.replace(
+    /<Animated\.View style={{ flex: 1 }} entering={FadeInDown\.duration\(300\)\.springify\(\)}>/g,
+    "<FocusAwareView style={{ flex: 1 }}>"
+  );
+
   // Replace inner with delay
-  content = content.replace(/<Animated\.View entering={FadeInDown\.delay\((\d+)\)\.springify\(\)}/g, '<FocusAwareView delay={$1}');
-  
+  content = content.replace(
+    /<Animated\.View entering={FadeInDown\.delay\((\d+)\)\.springify\(\)}/g,
+    "<FocusAwareView delay={$1}"
+  );
+
   // Replace mathematical delays like 100 + index * 50
-  content = content.replace(/<Animated\.View key={([^}]+)} entering={FadeInDown\.delay\(([^)]+)\)\.springify\(\)}/g, '<FocusAwareView key={$1} delay={$2}');
-  content = content.replace(/<Animated\.View entering={FadeInDown\.delay\(([^)]+)\)\.springify\(\)}/g, '<FocusAwareView delay={$1}');
+  content = content.replace(
+    /<Animated\.View key={([^}]+)} entering={FadeInDown\.delay\(([^)]+)\)\.springify\(\)}/g,
+    "<FocusAwareView key={$1} delay={$2}"
+  );
+  content = content.replace(
+    /<Animated\.View entering={FadeInDown\.delay\(([^)]+)\)\.springify\(\)}/g,
+    "<FocusAwareView delay={$1}"
+  );
 
   // Replace closing tags
-  content = content.replace(/<\/Animated\.View>/g, '</FocusAwareView>');
+  content = content.replace(/<\/Animated\.View>/g, "</FocusAwareView>");
 
   fs.writeFileSync(file, content);
 }

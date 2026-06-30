@@ -31,7 +31,7 @@ export default function GroupSettleScreen(): JSX.Element {
 
     if (!group.simplifyDebts) {
       const exact = getExactPairwiseDebts(group.id);
-      return exact.filter(p => p.fromUserId === currentUser.id || p.toUserId === currentUser.id);
+      return exact.filter((p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id);
     }
 
     // Separate into debtors (balance < 0) and creditors (balance > 0)
@@ -58,7 +58,7 @@ export default function GroupSettleScreen(): JSX.Element {
       const creditor = creditors[j];
 
       const amount = Math.min(debtor.amount, creditor.amount);
-      
+
       // We only care about positive amounts
       if (amount > 0.01) {
         payments.push({
@@ -76,17 +76,17 @@ export default function GroupSettleScreen(): JSX.Element {
     }
 
     // Filter to only payments involving the current user
-    return payments.filter(
-      p => p.fromUserId === currentUser.id || p.toUserId === currentUser.id
-    );
+    return payments.filter((p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id);
   })();
 
   if (!group) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
         <View className="flex-1 items-center justify-center p-6">
           <Typography type="h3">Group not found</Typography>
-          <Button onPress={() => router.back()} className="mt-4">Go Back</Button>
+          <Button onPress={() => router.back()} className="mt-4">
+            Go Back
+          </Button>
         </View>
       </SafeAreaView>
     );
@@ -94,15 +94,18 @@ export default function GroupSettleScreen(): JSX.Element {
 
   const handleSettle = (suggestion: SettlementSuggestion) => {
     // Navigate to settle/[id] modal with pre-filled parameters
-    const friendId = suggestion.fromUserId === currentUser.id ? suggestion.toUserId : suggestion.fromUserId;
+    const friendId =
+      suggestion.fromUserId === currentUser.id ? suggestion.toUserId : suggestion.fromUserId;
     const direction = suggestion.fromUserId === currentUser.id ? "you" : "them";
     const amountStr = suggestion.amount.toString();
-    
-    router.push(`/settle/${friendId}?groupId=${group.id}&amount=${amountStr}&direction=${direction}`);
+
+    router.push(
+      `/settle/${friendId}?groupId=${group.id}&amount=${amountStr}&direction=${direction}`
+    );
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top", "bottom"]}>
       <StatusBar style="dark" />
       <ScrollView
         className="flex-1 bg-background"
@@ -123,7 +126,11 @@ export default function GroupSettleScreen(): JSX.Element {
 
         <View className="px-6 mb-8">
           <Typography type="body" className="text-muted-foreground mb-4">
-            Suggested payments to settle your balance in <Typography type="body" className="font-bold text-foreground">{group.name}</Typography>.
+            Suggested payments to settle your balance in{" "}
+            <Typography type="body" className="font-bold text-foreground">
+              {group.name}
+            </Typography>
+            .
           </Typography>
 
           {suggestions.length === 0 ? (
@@ -143,14 +150,14 @@ export default function GroupSettleScreen(): JSX.Element {
               {suggestions.map((s, idx) => {
                 const isYouPaying = s.fromUserId === currentUser.id;
                 const otherUserId = isYouPaying ? s.toUserId : s.fromUserId;
-                const otherUser = group.members.find(m => m.userId === otherUserId)?.user;
-                
+                const otherUser = group.members.find((m) => m.userId === otherUserId)?.user;
+
                 if (!otherUser) return null;
 
                 return (
-                  <View 
-                    key={`${s.fromUserId}-${s.toUserId}`} 
-                    className={`p-4 ${idx < suggestions.length - 1 ? 'border-b border-border/50' : ''}`}
+                  <View
+                    key={`${s.fromUserId}-${s.toUserId}`}
+                    className={`p-4 ${idx < suggestions.length - 1 ? "border-b border-border/50" : ""}`}
                   >
                     <View className="flex-row items-center justify-between mb-3">
                       <View className="flex-row items-center gap-3">
@@ -164,15 +171,19 @@ export default function GroupSettleScreen(): JSX.Element {
                           </Typography>
                         </View>
                       </View>
-                      <Typography 
-                        type="h3" 
-                        className={`font-black ${isYouPaying ? 'text-danger' : 'text-success'}`}
+                      <Typography
+                        type="h3"
+                        className={`font-black ${isYouPaying ? "text-danger" : "text-success"}`}
                       >
-                        {sym}{s.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {sym}
+                        {s.amount.toLocaleString(undefined, {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        })}
                       </Typography>
                     </View>
-                    <Button 
-                      onPress={() => handleSettle(s)} 
+                    <Button
+                      onPress={() => handleSettle(s)}
                       variant={isYouPaying ? undefined : "outline"}
                       className="w-full"
                     >

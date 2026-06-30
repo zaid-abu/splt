@@ -18,7 +18,14 @@ import type { Activity } from "@/types";
 export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { activities, currentUser, getTotalOwedToMe, getTotalIOwe, preferredCurrency, isAppLoading } = useApp();
+  const {
+    activities,
+    currentUser,
+    getTotalOwedToMe,
+    getTotalIOwe,
+    preferredCurrency,
+    isAppLoading,
+  } = useApp();
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -54,24 +61,26 @@ export default function ActivityScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
         <StatusBar style="dark" />
-        
+
         {/* ── Sticky Blurred Header ───────────────────── */}
-        <BlurView 
-          intensity={100} 
-          tint="light" 
-          style={{ 
-            paddingTop: insets.top + 16, 
-            paddingBottom: 16, 
+        <BlurView
+          intensity={100}
+          tint="light"
+          style={{
+            paddingTop: insets.top + 16,
+            paddingBottom: 16,
             paddingHorizontal: 24,
-            position: 'absolute',
-            top: 0, left: 0, right: 0,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
             zIndex: 50,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            backgroundColor: 'rgba(242, 242, 246, 0.90)',
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            backgroundColor: "rgba(242, 242, 246, 0.90)",
           }}
         >
           <Typography type="h1" className="font-black tracking-tight text-foreground text-[32px]">
@@ -96,7 +105,10 @@ export default function ActivityScreen(): JSX.Element {
                 <View className="w-10 h-10 rounded-full bg-success/10 items-center justify-center mb-3">
                   <icons.ArrowDownLeft size={20} className="text-success" />
                 </View>
-                <Typography type="body-xs" className="text-muted-foreground font-semibold tracking-wider mb-1">
+                <Typography
+                  type="body-xs"
+                  className="text-muted-foreground font-semibold tracking-wider mb-1"
+                >
                   OWED TO YOU
                 </Typography>
                 <Typography type="h2" className="font-black text-foreground text-[22px]">
@@ -108,7 +120,10 @@ export default function ActivityScreen(): JSX.Element {
                 <View className="w-10 h-10 rounded-full bg-danger/10 items-center justify-center mb-3">
                   <icons.ArrowUpRight size={20} className="text-danger" />
                 </View>
-                <Typography type="body-xs" className="text-muted-foreground font-semibold tracking-wider mb-1">
+                <Typography
+                  type="body-xs"
+                  className="text-muted-foreground font-semibold tracking-wider mb-1"
+                >
                   YOU OWE
                 </Typography>
                 <Typography type="h2" className="font-black text-foreground text-[22px]">
@@ -131,13 +146,21 @@ export default function ActivityScreen(): JSX.Element {
                   className="flex-1 font-medium text-foreground text-[14px]"
                   placeholderTextColor="#8A8798"
                 />
-                <PressableFeedback onPress={() => { setIsSearching(false); setSearchQuery(""); }}>
+                <PressableFeedback
+                  onPress={() => {
+                    setIsSearching(false);
+                    setSearchQuery("");
+                  }}
+                >
                   <icons.X size={18} className="text-muted-foreground ml-2" />
                 </PressableFeedback>
               </View>
             ) : (
               <View className="flex-row items-center justify-between">
-                <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest ml-2 uppercase">
+                <Typography
+                  type="body-xs"
+                  className="text-muted-foreground font-bold tracking-widest ml-2 uppercase"
+                >
                   Timeline
                 </Typography>
                 <PressableFeedback onPress={() => setIsSearching(true)}>
@@ -184,16 +207,19 @@ export default function ActivityScreen(): JSX.Element {
             ) : (
               groupedActivities.map((group, groupIdx) => (
                 <View key={group.title}>
-                  <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest ml-2 uppercase mb-3">
+                  <Typography
+                    type="body-xs"
+                    className="text-muted-foreground font-bold tracking-widest ml-2 uppercase mb-3"
+                  >
                     {group.title}
                   </Typography>
                   <View className="bg-white rounded-[24px] overflow-hidden border border-border">
                     {group.data.map((activity, idx) => (
-                      <ActivityItem 
-                        key={activity.id} 
-                        activity={activity} 
-                        index={groupIdx * 5 + idx} 
-                        isLast={idx === group.data.length - 1} 
+                      <ActivityItem
+                        key={activity.id}
+                        activity={activity}
+                        index={groupIdx * 5 + idx}
+                        isLast={idx === group.data.length - 1}
                       />
                     ))}
                   </View>

@@ -30,9 +30,7 @@ export function ExpenseItem({
   const category = EXPENSE_CATEGORIES.find((c) => c.key === expense.category);
 
   // Net relative to me: positive if I'm owed, negative if I owe
-  const myNetAmount = paidByMe
-    ? expense.amount - (myShare?.amount ?? 0)
-    : -(myShare?.amount ?? 0);
+  const myNetAmount = paidByMe ? expense.amount - (myShare?.amount ?? 0) : -(myShare?.amount ?? 0);
 
   const dateStr = expense.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   const CategoryIcon = (icons as any)[category?.icon ?? "Package"] || icons.Package;
@@ -59,9 +57,15 @@ export function ExpenseItem({
               </Typography>
               {showGroup && groupName && (
                 <>
-                  <Typography type="body-sm" className="text-muted-foreground">·</Typography>
+                  <Typography type="body-sm" className="text-muted-foreground">
+                    ·
+                  </Typography>
                   {GroupIcon && <GroupIcon size={12} color="#8A8798" />}
-                  <Typography type="body-sm" className="text-muted-foreground font-medium" numberOfLines={1}>
+                  <Typography
+                    type="body-sm"
+                    className="text-muted-foreground font-medium"
+                    numberOfLines={1}
+                  >
                     {groupName}
                   </Typography>
                 </>

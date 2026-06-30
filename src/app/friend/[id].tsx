@@ -1,6 +1,13 @@
 import { Typography, PressableFeedback, Button, Alert, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import Animated, { FadeInDown, useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolation } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  useSharedValue,
+  useAnimatedScrollHandler,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+} from "react-native-reanimated";
 import type { JSX } from "react";
 import { useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -16,28 +23,33 @@ import { AppUserAvatar } from "@/components/MemberAvatar";
 export default function FriendDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { activities, groups, currentUser, preferredCurrency, getUserBalances, isAppLoading } = useApp();
+  const { activities, groups, currentUser, preferredCurrency, getUserBalances, isAppLoading } =
+    useApp();
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
-  const friend = uniqueFriends.find(f => f.id === id);
+  const friend = uniqueFriends.find((f) => f.id === id);
 
   const sharedActivities = useMemo(() => {
-    return activities.filter(a => {
-      if (a.type === "expense" && a.expense) {
-        const e = a.expense;
-        const friendInvolved = e.paidBy === id || e.splits.some(s => s.userId === id);
-        const currentUserInvolved = e.paidBy === currentUser.id || e.splits.some(s => s.userId === currentUser.id);
-        return friendInvolved && currentUserInvolved;
-      }
-      if (a.type === "settlement" && a.settlement) {
-        const s = a.settlement;
-        const friendInvolved = s.fromUserId === id || s.toUserId === id;
-        const currentUserInvolved = s.fromUserId === currentUser.id || s.toUserId === currentUser.id;
-        return friendInvolved && currentUserInvolved;
-      }
-      return false;
-    }).sort((a, b) => b.date.getTime() - a.date.getTime());
+    return activities
+      .filter((a) => {
+        if (a.type === "expense" && a.expense) {
+          const e = a.expense;
+          const friendInvolved = e.paidBy === id || e.splits.some((s) => s.userId === id);
+          const currentUserInvolved =
+            e.paidBy === currentUser.id || e.splits.some((s) => s.userId === currentUser.id);
+          return friendInvolved && currentUserInvolved;
+        }
+        if (a.type === "settlement" && a.settlement) {
+          const s = a.settlement;
+          const friendInvolved = s.fromUserId === id || s.toUserId === id;
+          const currentUserInvolved =
+            s.fromUserId === currentUser.id || s.toUserId === currentUser.id;
+          return friendInvolved && currentUserInvolved;
+        }
+        return false;
+      })
+      .sort((a, b) => b.date.getTime() - a.date.getTime());
   }, [activities, id, currentUser.id]);
 
   const balances = getUserBalances();
@@ -58,14 +70,14 @@ export default function FriendDetailScreen(): JSX.Element {
         },
         {
           scale: interpolate(scrollY.value, [-100, 0], [1.1, 1], Extrapolation.CLAMP),
-        }
+        },
       ],
     };
   });
 
   if (!friend) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
         <View className="flex-1 items-center justify-center p-6">
           <Alert status="danger" className="mb-4 rounded-[20px]">
             <Alert.Indicator />
@@ -74,22 +86,27 @@ export default function FriendDetailScreen(): JSX.Element {
               <Alert.Description>We couldn&apos;t find this friend.</Alert.Description>
             </Alert.Content>
           </Alert>
-          <Button onPress={() => router.back()} className="rounded-full mt-4">Go back</Button>
+          <Button onPress={() => router.back()} className="rounded-full mt-4">
+            Go back
+          </Button>
         </View>
       </SafeAreaView>
     );
   }
 
-
   return (
     <Animated.View style={{ flex: 1 }} entering={FadeInDown.duration(300).springify()}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top", "bottom"]}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top", "bottom"]}>
         <StatusBar style="dark" />
-        <Animated.ScrollView onScroll={scrollHandler} scrollEventThrottle={16} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
-          
+        <Animated.ScrollView
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
+          style={{ flex: 1 }}
+        >
           {/* ── Header ─────────────────────────────────── */}
           <View className="px-4 pt-2 flex-row items-center justify-between z-10">
-            <PressableFeedback 
+            <PressableFeedback
               className="w-12 h-12 rounded-full bg-white/50 items-center justify-center backdrop-blur-md"
               onPress={() => router.back()}
             >
@@ -102,21 +119,37 @@ export default function FriendDetailScreen(): JSX.Element {
             <View className="mb-4">
               <AppUserAvatar user={friend} size="lg" />
             </View>
-            <Typography type="h1" className="font-black text-foreground text-[32px] text-center mb-2">
+            <Typography
+              type="h1"
+              className="font-black text-foreground text-[32px] text-center mb-2"
+            >
               {friend.name}
             </Typography>
 
-            <View className={`px-4 py-2 rounded-full mt-2 border ${
-              netBalance === 0 ? 'bg-secondary border-border' : 
-              isPositive ? 'bg-success/10 border-success/20' : 'bg-danger/10 border-danger/20'
-            }`}>
-              <Typography type="body-sm" className={`font-bold ${
-                netBalance === 0 ? 'text-muted-foreground' : 
-                isPositive ? 'text-success' : 'text-danger'
-              }`}>
-                {netBalance === 0 ? "You are settled up" : 
-                 isPositive ? `Owes you ${formatAmount(Math.abs(netBalance), preferredCurrency.code)}` : 
-                 `You owe ${formatAmount(Math.abs(netBalance), preferredCurrency.code)}`}
+            <View
+              className={`px-4 py-2 rounded-full mt-2 border ${
+                netBalance === 0
+                  ? "bg-secondary border-border"
+                  : isPositive
+                    ? "bg-success/10 border-success/20"
+                    : "bg-danger/10 border-danger/20"
+              }`}
+            >
+              <Typography
+                type="body-sm"
+                className={`font-bold ${
+                  netBalance === 0
+                    ? "text-muted-foreground"
+                    : isPositive
+                      ? "text-success"
+                      : "text-danger"
+                }`}
+              >
+                {netBalance === 0
+                  ? "You are settled up"
+                  : isPositive
+                    ? `Owes you ${formatAmount(Math.abs(netBalance), preferredCurrency.code)}`
+                    : `You owe ${formatAmount(Math.abs(netBalance), preferredCurrency.code)}`}
               </Typography>
             </View>
           </Animated.View>
@@ -147,7 +180,10 @@ export default function FriendDetailScreen(): JSX.Element {
 
           {/* ── Activities ───────────────────────────────── */}
           <View className="px-6 mb-4 flex-row items-center justify-between">
-            <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest ml-2 uppercase">
+            <Typography
+              type="body-xs"
+              className="text-muted-foreground font-bold tracking-widest ml-2 uppercase"
+            >
               Shared Activity ({sharedActivities.length})
             </Typography>
           </View>
@@ -177,7 +213,9 @@ export default function FriendDetailScreen(): JSX.Element {
                 <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
                   <Text style={{ fontSize: 32 }}>💸</Text>
                 </View>
-                <Typography type="h3" className="font-black text-center mb-1">No shared activity</Typography>
+                <Typography type="h3" className="font-black text-center mb-1">
+                  No shared activity
+                </Typography>
                 <Typography type="body" className="text-muted-foreground text-center">
                   Add an expense to start tracking
                 </Typography>

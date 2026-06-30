@@ -13,21 +13,26 @@ interface CurrencySelectorProps {
   label?: string;
 }
 
-export function CurrencySelector({ value, onChange, label }: CurrencySelectorProps): React.JSX.Element {
+export function CurrencySelector({
+  value,
+  onChange,
+  label,
+}: CurrencySelectorProps): React.JSX.Element {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [search, setSearch] = useState("");
 
   const selectedCurrency = CURRENCIES.find((c) => c.code === value) || CURRENCIES[0];
 
-  const filtered = useMemo(() =>
-    search.trim()
-      ? CURRENCIES.filter(
-          (c) =>
-            c.code.toLowerCase().includes(search.toLowerCase()) ||
-            c.name.toLowerCase().includes(search.toLowerCase()),
-        )
-      : CURRENCIES,
-    [search],
+  const filtered = useMemo(
+    () =>
+      search.trim()
+        ? CURRENCIES.filter(
+            (c) =>
+              c.code.toLowerCase().includes(search.toLowerCase()) ||
+              c.name.toLowerCase().includes(search.toLowerCase())
+          )
+        : CURRENCIES,
+    [search]
   );
 
   const handlePresentModalPress = useCallback(() => {
@@ -41,14 +46,24 @@ export function CurrencySelector({ value, onChange, label }: CurrencySelectorPro
   }, []);
 
   const renderBackdrop = useCallback(
-    (props: any) => <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" />,
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        pressBehavior="close"
+      />
+    ),
     []
   );
 
   return (
     <View className="gap-2">
       {label && (
-        <Typography type="body-xs" className="text-muted-foreground font-bold tracking-widest uppercase ml-2">
+        <Typography
+          type="body-xs"
+          className="text-muted-foreground font-bold tracking-widest uppercase ml-2"
+        >
           {label}
         </Typography>
       )}
@@ -59,7 +74,14 @@ export function CurrencySelector({ value, onChange, label }: CurrencySelectorPro
       >
         <View className="flex-row items-center gap-3">
           <View className="w-10 h-10 rounded-full bg-secondary items-center justify-center px-1">
-            <Typography type="body-sm" numberOfLines={1} adjustsFontSizeToFit className="font-bold text-foreground">{selectedCurrency.symbol}</Typography>
+            <Typography
+              type="body-sm"
+              numberOfLines={1}
+              adjustsFontSizeToFit
+              className="font-bold text-foreground"
+            >
+              {selectedCurrency.symbol}
+            </Typography>
           </View>
           <Typography type="body" className="font-bold text-foreground">
             {selectedCurrency.code} — {selectedCurrency.name}
@@ -77,7 +99,7 @@ export function CurrencySelector({ value, onChange, label }: CurrencySelectorPro
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: "#F2F2F6" }}
         handleIndicatorStyle={{ backgroundColor: "#8A8798", width: 40 }}
-        style={{ minWidth: '100%', alignSelf: 'center' }}
+        style={{ minWidth: "100%", alignSelf: "center" }}
       >
         <View className="flex-1 px-6 pt-2 pb-6">
           <Typography type="h3" className="font-black text-[20px] mb-4 text-foreground text-center">
@@ -116,16 +138,26 @@ export function CurrencySelector({ value, onChange, label }: CurrencySelectorPro
                       onChange(currency);
                       bottomSheetModalRef.current?.dismiss();
                     }}
-                    className={`flex-row items-center justify-between p-4 ${idx < filtered.length - 1 ? 'border-b border-border/50' : ''}`}
+                    className={`flex-row items-center justify-between p-4 ${idx < filtered.length - 1 ? "border-b border-border/50" : ""}`}
                   >
                     <View className="flex-row items-center gap-3 flex-1">
-                      <View className={`w-12 h-12 rounded-full items-center justify-center px-1 ${isSelected ? 'bg-primary/10' : 'bg-secondary'}`}>
-                        <Typography type="body-sm" numberOfLines={1} adjustsFontSizeToFit className={`font-bold text-center ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                      <View
+                        className={`w-12 h-12 rounded-full items-center justify-center px-1 ${isSelected ? "bg-primary/10" : "bg-secondary"}`}
+                      >
+                        <Typography
+                          type="body-sm"
+                          numberOfLines={1}
+                          adjustsFontSizeToFit
+                          className={`font-bold text-center ${isSelected ? "text-primary" : "text-foreground"}`}
+                        >
                           {currency.symbol}
                         </Typography>
                       </View>
                       <View className="flex-1 pr-2">
-                        <Typography type="body" className={`font-bold ${isSelected ? 'text-primary' : 'text-foreground'}`}>
+                        <Typography
+                          type="body"
+                          className={`font-bold ${isSelected ? "text-primary" : "text-foreground"}`}
+                        >
                           {currency.code}
                         </Typography>
                         <Typography type="body-sm" className="text-muted-foreground mt-0.5">
@@ -139,7 +171,9 @@ export function CurrencySelector({ value, onChange, label }: CurrencySelectorPro
               }}
               ListEmptyComponent={
                 <View className="p-8 items-center">
-                  <Typography type="body" className="text-muted-foreground">No currencies found</Typography>
+                  <Typography type="body" className="text-muted-foreground">
+                    No currencies found
+                  </Typography>
                 </View>
               }
             />

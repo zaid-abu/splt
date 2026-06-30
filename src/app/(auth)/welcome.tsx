@@ -44,23 +44,29 @@ export default function WelcomeScreen(): JSX.Element {
       <StatusBar style="light" />
 
       {/* Fixed Top Background with rounded bottom */}
-      <View 
+      <View
         className="bg-primary overflow-hidden rounded-b-[40px]"
-        style={{ 
+        style={{
           position: "absolute",
           top: 0,
           left: 0,
           right: 0,
-          height: height * 0.6, 
+          height: height * 0.6,
         }}
       >
         {/* Floating decor elements */}
-        <Animated.View entering={FadeInDown.delay(500)} style={{ position: "absolute", top: "20%", left: "15%" }}>
+        <Animated.View
+          entering={FadeInDown.delay(500)}
+          style={{ position: "absolute", top: "20%", left: "15%" }}
+        >
           <View className="bg-white p-3 rounded-xl" style={{ transform: [{ rotate: "-15deg" }] }}>
             <Text className="font-bold text-primary">$</Text>
           </View>
         </Animated.View>
-        <Animated.View entering={FadeInDown.delay(700)} style={{ position: "absolute", bottom: "25%", right: "20%" }}>
+        <Animated.View
+          entering={FadeInDown.delay(700)}
+          style={{ position: "absolute", bottom: "25%", right: "20%" }}
+        >
           <View className="bg-white p-3 rounded-xl" style={{ transform: [{ rotate: "15deg" }] }}>
             <Text className="font-bold text-primary">$</Text>
           </View>
@@ -91,7 +97,9 @@ export default function WelcomeScreen(): JSX.Element {
               <Animated.View entering={FadeIn.delay(300).duration(800)}>
                 <View className="items-center gap-6">
                   <item.icon size={80} color="white" strokeWidth={1} />
-                  <Text style={{ fontSize: 32, fontWeight: "900", color: "white", letterSpacing: -1 }}>
+                  <Text
+                    style={{ fontSize: 32, fontWeight: "900", color: "white", letterSpacing: -1 }}
+                  >
                     {item.logoText}
                   </Text>
                 </View>
@@ -101,7 +109,7 @@ export default function WelcomeScreen(): JSX.Element {
             {/* Bottom Content Area */}
             <View style={{ flex: 1, paddingHorizontal: 32, paddingTop: 40, alignItems: "center" }}>
               <View style={{ alignItems: "center", gap: 16 }}>
-                <Animated.Text 
+                <Animated.Text
                   entering={FadeInDown.delay(200).springify()}
                   className="text-foreground text-[34px] font-[800] text-center"
                   style={{ lineHeight: 40 }}
@@ -109,7 +117,7 @@ export default function WelcomeScreen(): JSX.Element {
                   {item.title}
                 </Animated.Text>
 
-                <Animated.Text 
+                <Animated.Text
                   entering={FadeInDown.delay(300).springify()}
                   className="text-muted-foreground text-base text-center"
                   style={{ lineHeight: 24 }}
@@ -127,22 +135,25 @@ export default function WelcomeScreen(): JSX.Element {
         {/* Navigation dots */}
         <View style={{ flexDirection: "row", gap: 8, marginBottom: 24 }}>
           {SLIDES.map((_, i) => (
-            <View 
-              key={i} 
-              className={`w-2 h-2 rounded-full ${currentIndex === i ? "bg-primary" : "bg-muted-foreground opacity-30"}`} 
+            <View
+              key={i}
+              className={`w-2 h-2 rounded-full ${currentIndex === i ? "bg-primary" : "bg-muted-foreground opacity-30"}`}
             />
           ))}
         </View>
 
         {/* Get Started Button */}
-        <Animated.View entering={FadeInDown.delay(400).springify()} style={{ width: "100%", alignItems: "center" }}>
+        <Animated.View
+          entering={FadeInDown.delay(400).springify()}
+          style={{ width: "100%", alignItems: "center" }}
+        >
           <Button
             size="lg"
             variant="primary"
             className="bg-foreground"
-            style={{ 
-              width: "70%", 
-              borderRadius: 24, 
+            style={{
+              width: "70%",
+              borderRadius: 24,
               height: 56,
             }}
             onPress={() => {

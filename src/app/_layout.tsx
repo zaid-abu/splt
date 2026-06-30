@@ -4,13 +4,13 @@ import type { JSX } from "react";
 import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { 
-  useFonts, 
-  PlusJakartaSans_400Regular, 
-  PlusJakartaSans_500Medium, 
-  PlusJakartaSans_600SemiBold, 
-  PlusJakartaSans_700Bold, 
-  PlusJakartaSans_800ExtraBold 
+import {
+  useFonts,
+  PlusJakartaSans_400Regular,
+  PlusJakartaSans_500Medium,
+  PlusJakartaSans_600SemiBold,
+  PlusJakartaSans_700Bold,
+  PlusJakartaSans_800ExtraBold,
 } from "@expo-google-fonts/plus-jakarta-sans";
 
 import { AppProvider } from "@/context/AppContext";
@@ -41,33 +41,30 @@ export default function RootLayout(): JSX.Element | null {
         <BottomSheetModalProvider>
           <AppProvider>
             <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen
-              name="group/new"
-              options={{
-                presentation: "modal",
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="group/[id]"
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen
-              name="expense/[id]"
-              options={{
-                presentation: "modal",
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen
-              name="settle/[id]"
-              options={{
-                presentation: "modal",
-                headerShown: false,
-              }}
-            />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen
+                name="group/new"
+                options={{
+                  presentation: "modal",
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen name="group/[id]" options={{ headerShown: false }} />
+              <Stack.Screen
+                name="expense/[id]"
+                options={{
+                  presentation: "modal",
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen
+                name="settle/[id]"
+                options={{
+                  presentation: "modal",
+                  headerShown: false,
+                }}
+              />
             </Stack>
           </AppProvider>
         </BottomSheetModalProvider>

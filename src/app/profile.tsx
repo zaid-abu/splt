@@ -27,20 +27,17 @@ import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { CurrencySelector } from "@/components/CurrencySelector";
 
-function SettingItem({ 
-  icon: Icon, 
-  title, 
-  subtitle, 
-  color, 
-  onPress, 
-  rightElement,
-  isLast 
-}: any) {
+function SettingItem({ icon: Icon, title, subtitle, color, onPress, rightElement, isLast }: any) {
   return (
     <PressableFeedback onPress={onPress}>
-      <View className={`flex-row items-center justify-between p-4 ${!isLast ? 'border-b border-border/50' : ''}`}>
+      <View
+        className={`flex-row items-center justify-between p-4 ${!isLast ? "border-b border-border/50" : ""}`}
+      >
         <View className="flex-row items-center gap-4">
-          <View className="w-10 h-10 rounded-full items-center justify-center" style={{ backgroundColor: `${color}15` }}>
+          <View
+            className="w-10 h-10 rounded-full items-center justify-center"
+            style={{ backgroundColor: `${color}15` }}
+          >
             <Icon size={20} color={color} strokeWidth={2.5} />
           </View>
           <View>
@@ -54,16 +51,15 @@ function SettingItem({
             )}
           </View>
         </View>
-        {rightElement || (
-          <icons.ChevronRight size={20} className="text-muted-foreground" />
-        )}
+        {rightElement || <icons.ChevronRight size={20} className="text-muted-foreground" />}
       </View>
     </PressableFeedback>
   );
 }
 
 export default function ProfileScreen(): JSX.Element {
-  const { currentUser, groups, getTotalOwedToMe, getTotalIOwe, preferredCurrency, setCurrency } = useApp();
+  const { currentUser, groups, getTotalOwedToMe, getTotalIOwe, preferredCurrency, setCurrency } =
+    useApp();
   const router = useRouter();
   const [darkMode, setDarkMode] = useState(true);
   const [notifs, setNotifs] = useState(true);
@@ -82,7 +78,7 @@ export default function ProfileScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
         <StatusBar style="dark" />
         <ScrollView
           style={{ flex: 1 }}
@@ -92,7 +88,9 @@ export default function ProfileScreen(): JSX.Element {
         >
           {/* ── Header ─────────────────────────────────── */}
           <FocusAwareView delay={0} className="px-6 pt-4 mb-6">
-            <Typography type="h2" className="font-black tracking-tight text-[28px]">Profile</Typography>
+            <Typography type="h2" className="font-black tracking-tight text-[28px]">
+              Profile
+            </Typography>
           </FocusAwareView>
 
           {/* ── User card ───────────────────────────────── */}
@@ -111,17 +109,31 @@ export default function ProfileScreen(): JSX.Element {
               {/* Stats Row */}
               <View className="flex-row gap-3 w-full">
                 <View className="flex-1 bg-secondary rounded-[16px] py-3 items-center">
-                  <Typography type="body-sm" className="text-muted-foreground font-semibold mb-0.5">Groups</Typography>
-                  <Typography type="body" className="font-black text-foreground">{groups.length}</Typography>
+                  <Typography type="body-sm" className="text-muted-foreground font-semibold mb-0.5">
+                    Groups
+                  </Typography>
+                  <Typography type="body" className="font-black text-foreground">
+                    {groups.length}
+                  </Typography>
                 </View>
                 <View className="flex-1 bg-success/10 rounded-[16px] py-3 items-center">
-                  <Typography type="body-sm" className="text-success font-semibold mb-0.5">Owed</Typography>
-                  <Typography type="body" className="font-black text-success">+{preferredCurrency.symbol}{owedToMe.toFixed(0)}</Typography>
+                  <Typography type="body-sm" className="text-success font-semibold mb-0.5">
+                    Owed
+                  </Typography>
+                  <Typography type="body" className="font-black text-success">
+                    +{preferredCurrency.symbol}
+                    {owedToMe.toFixed(0)}
+                  </Typography>
                 </View>
                 {iOwe > 0 && (
                   <View className="flex-1 bg-danger/10 rounded-[16px] py-3 items-center">
-                    <Typography type="body-sm" className="text-danger font-semibold mb-0.5">Owe</Typography>
-                    <Typography type="body" className="font-black text-danger">-{preferredCurrency.symbol}{iOwe.toFixed(0)}</Typography>
+                    <Typography type="body-sm" className="text-danger font-semibold mb-0.5">
+                      Owe
+                    </Typography>
+                    <Typography type="body" className="font-black text-danger">
+                      -{preferredCurrency.symbol}
+                      {iOwe.toFixed(0)}
+                    </Typography>
                   </View>
                 )}
               </View>
@@ -135,28 +147,28 @@ export default function ProfileScreen(): JSX.Element {
             </Typography>
             <View className="rounded-[24px]">
               <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-              <SettingItem 
-                icon={icons.User} 
-                title="Edit Profile" 
-                subtitle="Name, email, photo" 
-                color="#6B4EFF" 
-                onPress={() => {}} 
-              />
-              <SettingItem 
-                icon={icons.Bell} 
-                title="Notifications" 
-                subtitle="Push, email alerts" 
-                color="#F59E0B" 
-                rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />} 
-              />
-              <SettingItem 
-                icon={icons.Shield} 
-                title="Security" 
-                subtitle="Password, biometrics" 
-                color="#10B981" 
-                onPress={() => {}} 
-                isLast 
-              />
+                <SettingItem
+                  icon={icons.User}
+                  title="Edit Profile"
+                  subtitle="Name, email, photo"
+                  color="#6B4EFF"
+                  onPress={() => {}}
+                />
+                <SettingItem
+                  icon={icons.Bell}
+                  title="Notifications"
+                  subtitle="Push, email alerts"
+                  color="#F59E0B"
+                  rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />}
+                />
+                <SettingItem
+                  icon={icons.Shield}
+                  title="Security"
+                  subtitle="Password, biometrics"
+                  color="#10B981"
+                  onPress={() => {}}
+                  isLast
+                />
               </View>
             </View>
           </FocusAwareView>
@@ -168,26 +180,25 @@ export default function ProfileScreen(): JSX.Element {
             </Typography>
             <View className="gap-3">
               <View className="bg-white rounded-[24px] border border-border">
-              <SettingItem 
-                icon={icons.Moon} 
-                title="Dark Mode" 
-                color="#8A8798" 
-                rightElement={<Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />} 
-              />
-              <SettingItem 
-                icon={icons.CreditCard} 
-                title="Payment Methods" 
-                subtitle="Link bank account, card" 
-                color="#3B82F6" 
-                onPress={() => {}} 
-                isLast
-              />
+                <SettingItem
+                  icon={icons.Moon}
+                  title="Dark Mode"
+                  color="#8A8798"
+                  rightElement={
+                    <Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />
+                  }
+                />
+                <SettingItem
+                  icon={icons.CreditCard}
+                  title="Payment Methods"
+                  subtitle="Link bank account, card"
+                  color="#3B82F6"
+                  onPress={() => {}}
+                  isLast
+                />
               </View>
-              
-              <CurrencySelector
-                value={preferredCurrency.code}
-                onChange={handleCurrencyChange}
-              />
+
+              <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
             </View>
           </FocusAwareView>
 
@@ -198,30 +209,48 @@ export default function ProfileScreen(): JSX.Element {
             </Typography>
             <View className="rounded-[24px]">
               <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-              <SettingItem icon={icons.HelpCircle} title="Help & Support" color="#EC4899" onPress={() => {}} />
-              <SettingItem icon={icons.FileText} title="Privacy Policy" color="#6366F1" onPress={() => {}} />
-              <SettingItem 
-                icon={icons.Info} 
-                title="Version" 
-                color="#8B5CF6" 
-                rightElement={
-                  <View className="bg-secondary px-3 py-1 rounded-full">
-                    <Typography type="body-sm" className="font-bold text-muted-foreground">1.0.0</Typography>
-                  </View>
-                }
-                isLast 
-              />
+                <SettingItem
+                  icon={icons.HelpCircle}
+                  title="Help & Support"
+                  color="#EC4899"
+                  onPress={() => {}}
+                />
+                <SettingItem
+                  icon={icons.FileText}
+                  title="Privacy Policy"
+                  color="#6366F1"
+                  onPress={() => {}}
+                />
+                <SettingItem
+                  icon={icons.Info}
+                  title="Version"
+                  color="#8B5CF6"
+                  rightElement={
+                    <View className="bg-secondary px-3 py-1 rounded-full">
+                      <Typography type="body-sm" className="font-bold text-muted-foreground">
+                        1.0.0
+                      </Typography>
+                    </View>
+                  }
+                  isLast
+                />
               </View>
             </View>
           </FocusAwareView>
 
           {/* ── Sign Out ────────────────────────────────── */}
           <FocusAwareView delay={500} className="px-6">
-            <Button variant="danger-soft" size="lg" className="rounded-[20px]" onPress={() => router.replace("/(auth)/welcome")}>
-              <Typography type="body" className="font-bold text-danger">Sign Out</Typography>
+            <Button
+              variant="danger-soft"
+              size="lg"
+              className="rounded-[20px]"
+              onPress={() => router.replace("/(auth)/welcome")}
+            >
+              <Typography type="body" className="font-bold text-danger">
+                Sign Out
+              </Typography>
             </Button>
           </FocusAwareView>
-
         </ScrollView>
       </SafeAreaView>
     </FocusAwareView>
