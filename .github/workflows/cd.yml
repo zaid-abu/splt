@@ -2,6 +2,9 @@ name: CD
 
 on:
   workflow_dispatch: # Allows manual trigger from the GitHub Actions UI
+  push:
+    tags:
+      - 'v*' # Trigger on tags that start with 'v' (e.g. v1.0.0)
 
 permissions:
   contents: write
