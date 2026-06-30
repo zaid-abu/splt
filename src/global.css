@@ -4,6 +4,12 @@
 
 @source "./node_modules/heroui-native/lib";
 
+@utility font-normal { font-family: "PlusJakartaSans_400Regular"; font-weight: normal; }
+@utility font-medium { font-family: "PlusJakartaSans_500Medium"; font-weight: 500; }
+@utility font-semibold { font-family: "PlusJakartaSans_600SemiBold"; font-weight: 600; }
+@utility font-bold { font-family: "PlusJakartaSans_700Bold"; font-weight: 700; }
+@utility font-black { font-family: "PlusJakartaSans_800ExtraBold"; font-weight: 800; }
+
 @theme {
    --color-background: var(--color-background);
    --color-foreground: var(--color-foreground);

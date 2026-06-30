@@ -8,6 +8,7 @@ import { useRouter } from "expo-router";
 import type { Activity } from "@/types";
 import { useApp } from "@/context/AppContext";
 import { formatAmount } from "@/components/AmountDisplay";
+import { SwipeableRow } from "@/components/SwipeableRow";
 
 interface ActivityItemProps {
   activity: Activity;
@@ -91,45 +92,47 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
 
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
-      <PressableFeedback onPress={() => {
-        if (activity.expense) {
-           router.push(`/expense/${activity.expense.id}`);
-        } else if (activity.groupId) {
-           router.push(`/group/${activity.groupId}`);
-        }
-      }}>
-        <View className={`flex-row items-center p-4 ${!isLast ? 'border-b border-border/50' : ''}`}>
-          <View className={`w-12 h-12 rounded-[16px] items-center justify-center mr-4 ${bgColors[involvement.type]}`}>
-            <IconComponent size={24} className={iconColors[involvement.type]} strokeWidth={2.5} />
-          </View>
-          
-          <View className="flex-1 mr-2">
-            <Typography type="body" className="font-bold text-foreground" numberOfLines={1}>
-              {activity.description}
-            </Typography>
-            <Typography type="body-sm" className="text-muted-foreground font-medium mt-0.5" numberOfLines={1}>
-              {activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-            </Typography>
-          </View>
-          
-          <View className="items-end">
-             {involvement.showAmount ? (
-               <>
-                 <Typography type="body-xs" className="text-muted-foreground font-bold mb-0.5">
+      <SwipeableRow onDelete={() => console.log('Delete activity', activity.id)}>
+        <PressableFeedback onPress={() => {
+          if (activity.expense) {
+             router.push(`/expense/${activity.expense.id}`);
+          } else if (activity.groupId) {
+             router.push(`/group/${activity.groupId}`);
+          }
+        }}>
+          <View className={`flex-row items-center p-4 ${!isLast ? 'border-b border-border/50' : ''}`}>
+            <View className={`w-12 h-12 rounded-[16px] items-center justify-center mr-4 ${bgColors[involvement.type]}`}>
+              <IconComponent size={24} className={iconColors[involvement.type]} strokeWidth={2.5} />
+            </View>
+            
+            <View className="flex-1 mr-2">
+              <Typography type="body" className="font-bold text-foreground" numberOfLines={1}>
+                {activity.description}
+              </Typography>
+              <Typography type="body-sm" className="text-muted-foreground font-medium mt-0.5" numberOfLines={1}>
+                {activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+              </Typography>
+            </View>
+            
+            <View className="items-end">
+               {involvement.showAmount ? (
+                 <>
+                   <Typography type="body-xs" className="text-muted-foreground font-bold mb-0.5">
+                     {involvement.text}
+                   </Typography>
+                   <Typography type="body" className={`font-black ${textColors[involvement.type]}`}>
+                     {involvement.type === "positive" ? "+" : ""}{formatAmount(involvement.amount, activity.currency || "USD")}
+                   </Typography>
+                 </>
+               ) : (
+                 <Typography type="body-sm" className="text-muted-foreground font-medium">
                    {involvement.text}
                  </Typography>
-                 <Typography type="body" className={`font-black ${textColors[involvement.type]}`}>
-                   {involvement.type === "positive" ? "+" : ""}{formatAmount(involvement.amount, activity.currency || "USD")}
-                 </Typography>
-               </>
-             ) : (
-               <Typography type="body-sm" className="text-muted-foreground font-medium">
-                 {involvement.text}
-               </Typography>
-             )}
+               )}
+            </View>
           </View>
-        </View>
-      </PressableFeedback>
+        </PressableFeedback>
+      </SwipeableRow>
     </Animated.View>
   );
 }

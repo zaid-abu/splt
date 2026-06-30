@@ -1,6 +1,6 @@
 import { Typography, PressableFeedback, Button, Alert, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, { FadeInDown, useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolation } from "react-native-reanimated";
 import type { JSX } from "react";
 import { useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -63,11 +63,31 @@ export default function FriendDetailScreen(): JSX.Element {
     );
   }
 
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const heroStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: interpolate(scrollY.value, [-100, 0, 100], [50, 0, 0], Extrapolation.CLAMP),
+        },
+        {
+          scale: interpolate(scrollY.value, [-100, 0], [1.1, 1], Extrapolation.CLAMP),
+        }
+      ],
+    };
+  });
+
   return (
     <Animated.View style={{ flex: 1 }} entering={FadeInDown.duration(300).springify()}>
       <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top", "bottom"]}>
         <StatusBar style="dark" />
-        <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
+        <Animated.ScrollView onScroll={scrollHandler} scrollEventThrottle={16} showsVerticalScrollIndicator={false} style={{ flex: 1 }}>
           
           {/* ── Header ─────────────────────────────────── */}
           <View className="px-4 pt-2 flex-row items-center justify-between z-10">
@@ -80,7 +100,7 @@ export default function FriendDetailScreen(): JSX.Element {
           </View>
 
           {/* ── Friend Info ────────────────────────────── */}
-          <View className="px-6 items-center mt-2 mb-8">
+          <Animated.View className="px-6 items-center mt-2 mb-8" style={heroStyle}>
             <View className="mb-4">
               <AppUserAvatar user={friend} size="lg" />
             </View>
@@ -101,7 +121,7 @@ export default function FriendDetailScreen(): JSX.Element {
                  `You owe ${formatAmount(Math.abs(netBalance), preferredCurrency.code)}`}
               </Typography>
             </View>
-          </View>
+          </Animated.View>
 
           {/* ── Actions ────────────────────────────────── */}
           <View className="px-6 flex-row gap-3 mb-8">
@@ -181,7 +201,7 @@ export default function FriendDetailScreen(): JSX.Element {
           )}
 
           <View className="h-12" />
-        </ScrollView>
+        </Animated.ScrollView>
       </SafeAreaView>
     </Animated.View>
   );

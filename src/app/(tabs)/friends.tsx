@@ -9,6 +9,7 @@ import * as icons from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import LottieView from "lottie-react-native";
+import { SwipeableRow } from "@/components/SwipeableRow";
 
 import { FocusAwareView } from "@/components/PageAnimator";
 import { formatAmount } from "@/components/AmountDisplay";
@@ -154,29 +155,34 @@ export default function FriendsScreen(): JSX.Element {
                 const isNegative = bal < 0;
                 
                 return (
-                  <FocusAwareView key={friend.id} delay={100 + index * 50}>
-                    <PressableFeedback onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(`/friend/${friend.id}`);
-                    }}>
-                      <View className="flex-row items-center bg-white rounded-[24px] p-4 mb-2 border border-border">
-                        <AppUserAvatar user={friend} size="lg" />
-                        <View className="flex-1 ml-4">
-                          <Typography type="h3" className="font-bold text-[18px] text-foreground mb-1">
-                            {friend.name}
-                          </Typography>
-                          {bal === 0 ? (
-                            <Typography type="body-sm" className="text-muted-foreground font-medium">Settled up</Typography>
-                          ) : (
-                            <Typography type="body-sm" className={`font-bold ${isPositive ? 'text-success' : 'text-danger'}`}>
-                              {isPositive ? 'Owes you ' : 'You owe '}
-                              {formatAmount(Math.abs(bal), preferredCurrency.code)}
+                  <FocusAwareView key={friend.id} delay={100 + index * 50} className="mb-2">
+                    <SwipeableRow 
+                      onDelete={() => console.log('Delete friend', friend.id)}
+                      onSettle={bal !== 0 ? () => console.log('Settle up with', friend.id) : undefined}
+                    >
+                      <PressableFeedback onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        router.push(`/friend/${friend.id}`);
+                      }}>
+                        <View className="flex-row items-center bg-white rounded-[24px] p-4 border border-border">
+                          <AppUserAvatar user={friend} size="lg" />
+                          <View className="flex-1 ml-4">
+                            <Typography type="h3" className="font-bold text-[18px] text-foreground mb-1">
+                              {friend.name}
                             </Typography>
-                          )}
+                            {bal === 0 ? (
+                              <Typography type="body-sm" className="text-muted-foreground font-medium">Settled up</Typography>
+                            ) : (
+                              <Typography type="body-sm" className={`font-bold ${isPositive ? 'text-success' : 'text-danger'}`}>
+                                {isPositive ? 'Owes you ' : 'You owe '}
+                                {formatAmount(Math.abs(bal), preferredCurrency.code)}
+                              </Typography>
+                            )}
+                          </View>
+                          <icons.ChevronRight size={20} color="#8A8798" />
                         </View>
-                        <icons.ChevronRight size={20} color="#8A8798" />
-                      </View>
-                    </PressableFeedback>
+                      </PressableFeedback>
+                    </SwipeableRow>
                   </FocusAwareView>
                 );
               })}

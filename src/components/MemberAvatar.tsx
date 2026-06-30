@@ -7,21 +7,12 @@
  * @see https://heroui.com/docs/native/components/avatar.mdx
  */
 import { Avatar } from "heroui-native";
-import type { AvatarColor, AvatarSize } from "heroui-native";
+import type { AvatarSize } from "heroui-native";
 import type { JSX } from "react";
 import { View, Text } from "react-native";
 
 import type { User } from "@/types";
-
-const COLORS: AvatarColor[] = ["accent", "success", "warning", "danger", "default"];
-
-function pickColor(userId: string): AvatarColor {
-  let hash = 0;
-  for (let i = 0; i < userId.length; i++) {
-    hash = userId.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return COLORS[Math.abs(hash) % COLORS.length]!;
-}
+import { getStringColor, hexToRgba } from "@/utils/theme";
 
 interface AppUserAvatarProps {
   user: User;
@@ -31,22 +22,19 @@ interface AppUserAvatarProps {
 }
 
 export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps): JSX.Element {
-  const color: AvatarColor =
-    balance !== undefined
-      ? balance > 0 ? "success" : balance < 0 ? "danger" : "default"
-      : pickColor(user.id);
-
-  const bg = color === "danger" ? "#FEE2E2" 
-           : color === "success" ? "#D1FAE5"
-           : color === "warning" ? "#FEF3C7"
-           : color === "accent" ? "#E0DDF2"
-           : "#F3F4F6";
-  
-  const textColor = color === "danger" ? "#DC2626" 
-                  : color === "success" ? "#059669"
-                  : color === "warning" ? "#D97706"
-                  : color === "accent" ? "#6B4EFF"
-                  : "#4B5563";
+  let bg, textColor;
+  if (balance !== undefined) {
+    if (balance > 0) {
+      bg = "#D1FAE5"; textColor = "#059669";
+    } else if (balance < 0) {
+      bg = "#FEE2E2"; textColor = "#DC2626";
+    } else {
+      bg = "#F3F4F6"; textColor = "#4B5563";
+    }
+  } else {
+    textColor = getStringColor(user.id);
+    bg = hexToRgba(textColor, 0.15);
+  }
 
   const sizeMap = {
     sm: { size: 32, font: 12 },
@@ -84,17 +72,8 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       {visible.map((user, idx) => {
-        const bg = pickColor(user.id) === "danger" ? "#FEE2E2" 
-                 : pickColor(user.id) === "success" ? "#D1FAE5"
-                 : pickColor(user.id) === "warning" ? "#FEF3C7"
-                 : pickColor(user.id) === "accent" ? "#E0DDF2"
-                 : "#F3F4F6"; // default
-        
-        const textColor = pickColor(user.id) === "danger" ? "#DC2626" 
-                        : pickColor(user.id) === "success" ? "#059669"
-                        : pickColor(user.id) === "warning" ? "#D97706"
-                        : pickColor(user.id) === "accent" ? "#6B4EFF"
-                        : "#4B5563";
+        const textColor = getStringColor(user.id);
+        const bg = hexToRgba(textColor, 0.15);
 
         return (
           <View

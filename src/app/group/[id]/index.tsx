@@ -18,6 +18,7 @@ import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Animated, { useSharedValue, useAnimatedScrollHandler, useAnimatedStyle, interpolate, Extrapolation } from "react-native-reanimated";
 
 import { ExpenseItem } from "@/components/ExpenseItem";
 import { AvatarStack, AppUserAvatar } from "@/components/MemberAvatar";
@@ -56,10 +57,32 @@ export default function GroupDetailScreen(): JSX.Element {
   // Calculate total expenses in preferred currency
   const totalExpensesInPref = expenses.reduce((sum, exp) => sum + convertCurrency(exp.amount, exp.currency, preferredCurrency.code), 0);
 
+  const scrollY = useSharedValue(0);
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
+
+  const heroStyle = useAnimatedStyle(() => {
+    return {
+      transform: [
+        {
+          translateY: interpolate(scrollY.value, [-100, 0, 100], [50, 0, 0], Extrapolation.CLAMP),
+        },
+        {
+          scale: interpolate(scrollY.value, [-100, 0], [1.1, 1], Extrapolation.CLAMP),
+        }
+      ],
+    };
+  });
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: '#F2F2F6' }} edges={["top"]}>
       <StatusBar style="dark" />
-      <ScrollView
+      <Animated.ScrollView
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
         className="flex-1 bg-background"
         contentContainerStyle={{ paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
@@ -74,7 +97,7 @@ export default function GroupDetailScreen(): JSX.Element {
         </View>
 
         {/* ── Group hero ─────────────────────────────── */}
-        <View className="px-6 mb-8">
+        <Animated.View className="px-6 mb-8" style={heroStyle}>
           <View className="bg-white rounded-[32px] p-6 border border-border">
             <View className="flex-row items-center gap-4 mb-5">
               <View className="w-16 h-16 rounded-full bg-primary/10 items-center justify-center">
@@ -137,7 +160,7 @@ export default function GroupDetailScreen(): JSX.Element {
               </View>
             </View>
           </View>
-        </View>
+        </Animated.View>
 
         {/* ── Balances ───────────────────────────────── */}
         <View className="px-6 mb-8">
@@ -237,7 +260,7 @@ export default function GroupDetailScreen(): JSX.Element {
             ))}
           </View>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
 
       {/* ── Bottom Action Bar ──────────────────────── */}
       <View className="bg-white border-t border-border/30 px-6 pt-4 pb-8 flex-row gap-4">

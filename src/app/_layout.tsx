@@ -1,13 +1,40 @@
-import { Stack } from "expo-router";
+import { Stack, SplashScreen } from "expo-router";
 import { HeroUINativeProvider } from "heroui-native";
 import type { JSX } from "react";
+import { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { 
+  useFonts, 
+  PlusJakartaSans_400Regular, 
+  PlusJakartaSans_500Medium, 
+  PlusJakartaSans_600SemiBold, 
+  PlusJakartaSans_700Bold, 
+  PlusJakartaSans_800ExtraBold 
+} from "@expo-google-fonts/plus-jakarta-sans";
 
 import { AppProvider } from "@/context/AppContext";
 import "../global.css";
 
-export default function RootLayout(): JSX.Element {
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout(): JSX.Element | null {
+  const [loaded] = useFonts({
+    PlusJakartaSans_400Regular,
+    PlusJakartaSans_500Medium,
+    PlusJakartaSans_600SemiBold,
+    PlusJakartaSans_700Bold,
+    PlusJakartaSans_800ExtraBold,
+  });
+
+  useEffect(() => {
+    if (loaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded]);
+
+  if (!loaded) return null;
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <HeroUINativeProvider config={{ devInfo: { stylingPrinciples: false } }}>

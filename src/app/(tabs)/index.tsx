@@ -26,6 +26,7 @@ export default function DashboardScreen(): JSX.Element {
   const { currentUser, groups, activities, getTotalOwedToMe, getTotalIOwe, getUserBalances, preferredCurrency } = useApp();
 
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedSlice, setSelectedSlice] = useState<"owed" | "owe" | null>(null);
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
   const owedToYou = getTotalOwedToMe();
@@ -122,20 +123,22 @@ export default function DashboardScreen(): JSX.Element {
             <View className="flex-row justify-between items-center mb-6 z-10">
               <View>
                 <Typography type="body-sm" className="text-primary-foreground opacity-80 font-medium mb-1">
-                  {netBalance >= 0 ? "Net Balance (Owed to You)" : "Net Balance (You Owe)"}
+                  {selectedSlice === "owed" ? "Total Owed to You" : selectedSlice === "owe" ? "Total You Owe" : netBalance >= 0 ? "Net Balance (Owed to You)" : "Net Balance (You Owe)"}
                 </Typography>
                 <Typography type="h1" className="text-primary-foreground font-black text-[40px] tracking-tight">
-                  {formatAmount(Math.abs(netBalance || 0), preferredCurrency.code)}
+                  {formatAmount(Math.abs(selectedSlice === "owed" ? owedToYou : selectedSlice === "owe" ? youOwe : netBalance || 0), preferredCurrency.code)}
                 </Typography>
               </View>
               <View style={{ marginRight: -10 }}>
                 <PieChart
                   donut
+                  focusOnPress
+                  toggleFocusOnPress
                   radius={35}
                   innerRadius={22}
                   data={[
-                    { value: owedToYou || 1, color: '#10b981' },
-                    { value: youOwe || 1, color: '#ef4444' }
+                    { value: owedToYou || 1, color: '#10b981', onPress: () => setSelectedSlice(prev => prev === "owed" ? null : "owed") },
+                    { value: youOwe || 1, color: '#ef4444', onPress: () => setSelectedSlice(prev => prev === "owe" ? null : "owe") }
                   ]}
                   backgroundColor="transparent"
                   centerLabelComponent={() => {
