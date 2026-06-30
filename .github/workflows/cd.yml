@@ -48,6 +48,9 @@ jobs:
             echo "ANDROID_KEYSTORE_BASE64 secret is not set. Building unsigned APK."
           fi
 
+      - name: Accept Android SDK licenses
+        run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
       - name: Build APK
         working-directory: android
         env:
