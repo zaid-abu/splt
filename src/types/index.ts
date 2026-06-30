@@ -78,6 +78,7 @@ export interface Group {
   createdAt: Date;
   createdBy: string;
   totalExpenses: number;
+  simplifyDebts?: boolean;
 }
 
 export interface ExpenseSplit {

@@ -9,6 +9,7 @@ import {
   ScrollView,
   View,
   TextInput,
+  Switch,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -35,6 +36,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   const [description, setDescription] = useState(group?.description ?? "");
   const [icon, setIcon] = useState(group?.icon ?? "Home");
   const [currencyCode, setCurrencyCode] = useState(group?.currency ?? "USD");
+  const [simplifyDebts, setSimplifyDebts] = useState(group?.simplifyDebts ?? false);
   const currency = CURRENCIES.find(c => c.code === currencyCode) ?? CURRENCIES[0];
 
   const [loading, setLoading] = useState(false);
@@ -71,6 +73,7 @@ export default function GroupSettingsScreen(): JSX.Element {
         description: description.trim() || undefined,
         icon,
         currency: currency.code,
+        simplifyDebts,
       });
       router.back();
     } catch {
@@ -191,6 +194,28 @@ export default function GroupSettingsScreen(): JSX.Element {
               value={currency.code} 
               onChange={(c) => setCurrencyCode(c.code)} 
             />
+
+            <View>
+              <Typography type="body-sm" className="font-bold text-muted-foreground tracking-widest mb-2 ml-2">
+                SETTLEMENTS
+              </Typography>
+              <View className="bg-white rounded-[20px] px-4 py-4 border border-border flex-row items-center justify-between">
+                <View className="flex-1 mr-4">
+                  <Typography type="body" className="font-bold text-foreground">
+                    Simplify Debts
+                  </Typography>
+                  <Typography type="body-sm" className="text-muted-foreground mt-0.5">
+                    Automatically combine debts to reduce the total number of payments between members.
+                  </Typography>
+                </View>
+                <Switch
+                  value={simplifyDebts}
+                  onValueChange={setSimplifyDebts}
+                  trackColor={{ false: "#E5E5EA", true: "#000000" }}
+                  thumbColor="#FFFFFF"
+                />
+              </View>
+            </View>
           </View>
 
           {/* ── Members ────────────────────────────────── */}

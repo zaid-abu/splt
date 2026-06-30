@@ -48,6 +48,7 @@ export interface AppContextValue {
     description?: string;
     currency: string;
     memberEmails: string[];
+    simplifyDebts?: boolean;
   }) => Promise<Group>;
   updateGroup: (id: string, group: Partial<Omit<Group, "id" | "members">>) => Promise<Group>;
   addGroupMembers: (groupId: string, users: User[]) => void;
@@ -77,6 +78,7 @@ export interface AppContextValue {
   getTotalIOwe: () => number;
   getUserBalances: (groupId?: string) => Map<string, number>;
   getGroupBalances: (groupId: string) => Map<string, number>;
+  getExactPairwiseDebts: (groupId: string) => { fromUserId: string; toUserId: string; amount: number }[];
 
   // Settlements
   addSettlement: (data: {
@@ -199,6 +201,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       description?: string;
       currency: string;
       memberEmails: string[];
+      simplifyDebts?: boolean;
     }) => {
       await new Promise(resolve => setTimeout(resolve, 500));
       const selfMember: GroupMember = {
@@ -216,6 +219,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         createdAt: new Date(),
         createdBy: currentUser.id,
         totalExpenses: 0,
+        simplifyDebts: data.simplifyDebts ?? false,
       };
       setGroups((prev) => [newGroup, ...prev]);
 
@@ -424,6 +428,60 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     return balances;
   }, [expenses, settlements, groups, preferredCurrency.code, convertCurrency]);
 
+  const getExactPairwiseDebts = useCallback((groupId: string) => {
+    const pairwise = new Map<string, number>();
+    const group = groups.find(g => g.id === groupId);
+    const targetCurrency = group ? group.currency : preferredCurrency.code;
+    
+    // 1. Tally up all expenses
+    expenses.filter(e => e.groupId === groupId).forEach((exp) => {
+      exp.splits.forEach((s) => {
+        if (s.userId !== exp.paidBy) {
+          const amtInPref = convertCurrency(s.amount, exp.currency, targetCurrency);
+          const key = `${s.userId}:${exp.paidBy}`; // userId owes paidBy
+          pairwise.set(key, (pairwise.get(key) || 0) + amtInPref);
+        }
+      });
+    });
+
+    // 2. Subtract settlements
+    settlements.filter(s => s.groupId === groupId).forEach((set) => {
+      const amtInPref = convertCurrency(set.amount, set.currency, targetCurrency);
+      const key = `${set.fromUserId}:${set.toUserId}`;
+      if (pairwise.has(key)) {
+        pairwise.set(key, pairwise.get(key)! - amtInPref);
+      } else {
+        const revKey = `${set.toUserId}:${set.fromUserId}`;
+        pairwise.set(revKey, (pairwise.get(revKey) || 0) + amtInPref);
+      }
+    });
+
+    // 3. Resolve mutual debts and format
+    const finalDebts: {fromUserId: string, toUserId: string, amount: number}[] = [];
+    const processedPairs = new Set<string>();
+
+    for (const [key, amount] of pairwise.entries()) {
+      if (processedPairs.has(key)) continue;
+      
+      const [from, to] = key.split(":");
+      const revKey = `${to}:${from}`;
+      
+      const revAmount = pairwise.get(revKey) || 0;
+      processedPairs.add(key);
+      processedPairs.add(revKey);
+
+      const netAmount = amount - revAmount;
+      if (netAmount > 0.01) {
+        finalDebts.push({ fromUserId: from, toUserId: to, amount: netAmount });
+      } else if (netAmount < -0.01) {
+        finalDebts.push({ fromUserId: to, toUserId: from, amount: Math.abs(netAmount) });
+      }
+    }
+
+    // Sort by amount descending
+    return finalDebts.sort((a, b) => b.amount - a.amount);
+  }, [expenses, settlements, groups, preferredCurrency.code, convertCurrency]);
+
   const getNetBalance = useCallback(() => {
     return getTotalOwedToMe() - getTotalIOwe();
   }, [getTotalOwedToMe, getTotalIOwe]);
@@ -513,6 +571,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         getTotalIOwe,
         getUserBalances,
         getGroupBalances,
+        getExactPairwiseDebts,
         addSettlement,
       }}
     >

@@ -20,7 +20,7 @@ interface SettlementSuggestion {
 export default function GroupSettleScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getGroup, getGroupBalances, currentUser } = useApp();
+  const { getGroup, getGroupBalances, getExactPairwiseDebts, currentUser } = useApp();
 
   const group = getGroup(id ?? "");
   const balances = getGroupBalances(id ?? "");
@@ -28,6 +28,11 @@ export default function GroupSettleScreen(): JSX.Element {
 
   const suggestions = useMemo(() => {
     if (!group) return [];
+
+    if (!group.simplifyDebts) {
+      const exact = getExactPairwiseDebts(group.id);
+      return exact.filter(p => p.fromUserId === currentUser.id || p.toUserId === currentUser.id);
+    }
 
     // Separate into debtors (balance < 0) and creditors (balance > 0)
     const debtors: { userId: string; amount: number }[] = [];
@@ -74,7 +79,7 @@ export default function GroupSettleScreen(): JSX.Element {
     return payments.filter(
       p => p.fromUserId === currentUser.id || p.toUserId === currentUser.id
     );
-  }, [balances, group, currentUser.id]);
+  }, [balances, group, currentUser.id, getExactPairwiseDebts]);
 
   if (!group) {
     return (

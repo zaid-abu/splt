@@ -24,6 +24,7 @@
     "expo": "~56.0.5",
     "expo-blur": "~56.0.3",
     "expo-constants": "~56.0.16",
+    "expo-dev-client": "~56.0.20",
     "expo-font": "^56.0.7",
     "expo-haptics": "~56.0.3",
     "expo-linear-gradient": "^56.0.4",
@@ -52,6 +53,7 @@
   },
   "devDependencies": {
     "@types/react": "~19.2.15",
+    "eas-cli": "^20.5.0",
     "eslint": "^9.39.4",
     "eslint-config-expo": "^56.0.4",
     "prettier": "^3.8.3",
