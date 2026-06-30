@@ -33,8 +33,8 @@ export default function GroupsScreen(): JSX.Element {
     : groups;
 
   return (
-    <FocusAwareView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
+      <View style={{ flex: 1 }}>
         <StatusBar style="dark" />
 
         {/* Header */}
@@ -72,7 +72,7 @@ export default function GroupsScreen(): JSX.Element {
         <ScrollView
           showsVerticalScrollIndicator={false}
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingTop: insets.top + 75, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingTop: insets.top + 90, paddingBottom: 100 }}
         >
           <View className="px-6 mt-2">
             {/* Search */}
@@ -120,7 +120,7 @@ export default function GroupsScreen(): JSX.Element {
                 )}
               </View>
             ) : (
-              <View className="gap-2 bg-white rounded-[24px] border border-border/50 overflow-hidden">
+              <View className="bg-white rounded-[24px] border border-border/50 overflow-hidden">
                 {isAppLoading ? (
                   <>
                     <View className="p-4 border-b border-border/50 flex-row items-center justify-between">
@@ -157,7 +157,7 @@ export default function GroupsScreen(): JSX.Element {
             )}
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     </FocusAwareView>
   );
 }

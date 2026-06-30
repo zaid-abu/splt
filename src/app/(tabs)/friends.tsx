@@ -78,7 +78,7 @@ export default function FriendsScreen(): JSX.Element {
           className="w-12 h-12 rounded-full"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            router.push("/expense/new");
+            router.push("/friend/new");
           }}
         >
           <icons.Plus size={24} color="white" strokeWidth={3} />
@@ -166,7 +166,7 @@ export default function FriendsScreen(): JSX.Element {
                   const isNegative = bal < 0;
 
                   return (
-                    <FocusAwareView key={friend.id} delay={100 + index * 50} className="mb-2">
+                    <FocusAwareView key={friend.id} delay={100 + index * 50}>
                       <SwipeableRow
                         onDelete={() => console.log("Delete friend", friend.id)}
                         onSettle={

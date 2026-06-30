@@ -91,14 +91,15 @@ export default function RegisterScreen(): JSX.Element {
           contentContainerStyle={{
             flexGrow: 1,
             paddingHorizontal: 24,
-            paddingTop: insets.top + 60,
+            paddingTop: insets.top + 24,
             paddingBottom: insets.bottom + 24,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Header */}
-          <Animated.View entering={FadeInDown.delay(100).springify()} className="mb-10">
+          <View className="flex-1 justify-center">
+            {/* Header */}
+            <Animated.View entering={FadeInDown.delay(100).springify()} className="mb-8">
             <View className="w-12 h-12 bg-primary rounded-[16px] items-center justify-center mb-6">
               <icons.UserPlus size={24} color="white" />
             </View>
@@ -110,8 +111,8 @@ export default function RegisterScreen(): JSX.Element {
             </Typography>
           </Animated.View>
 
-          {/* Form */}
-          <Animated.View entering={FadeInDown.delay(200).springify()} className="gap-5">
+            {/* Form */}
+            <Animated.View entering={FadeInDown.delay(200).springify()} className="gap-4">
             <View>
               <Typography type="body-sm" className="font-medium text-foreground mb-2">
                 Full Name
@@ -248,7 +249,8 @@ export default function RegisterScreen(): JSX.Element {
                 {loading ? "Creating account…" : "Create Account"}
               </Typography>
             </Button>
-          </Animated.View>
+            </Animated.View>
+          </View>
 
           <View className="flex-1" />
 

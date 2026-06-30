@@ -70,6 +70,17 @@ export interface AppContextValue {
     date: Date;
     notes?: string;
   }) => Promise<Expense>;
+  updateExpense: (id: string, data: {
+    title: string;
+    amount: number;
+    currency: string;
+    category: ExpenseCategory;
+    paidBy: string;
+    splits: { userId: string; user: User; amount: number; percentage?: number }[];
+    splitMethod: SplitMethod;
+    date: Date;
+    notes?: string;
+  }) => Promise<Expense>;
   getExpense: (id: string) => Expense | undefined;
   deleteExpense: (id: string) => Promise<void>;
 
@@ -83,6 +94,9 @@ export interface AppContextValue {
   getUserBalances: (groupId?: string) => Map<string, number>;
   getGroupBalances: (groupId: string) => Map<string, number>;
   getExactPairwiseDebts: (
+    groupId: string
+  ) => { fromUserId: string; toUserId: string; amount: number }[];
+  getSimplifiedDebts: (
     groupId: string
   ) => { fromUserId: string; toUserId: string; amount: number }[];
 
@@ -359,6 +373,81 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     [currentUser, convertCurrency]
   );
 
+  const updateExpense = useCallback(
+    async (
+      id: string,
+      data: {
+        title: string;
+        amount: number;
+        currency: string;
+        category: ExpenseCategory;
+        paidBy: string;
+        splits: { userId: string; user: User; amount: number; percentage?: number }[];
+        splitMethod: SplitMethod;
+        date: Date;
+        notes?: string;
+      }
+    ) => {
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      
+      const existingExpense = expenses.find((e) => e.id === id);
+      if (!existingExpense) throw new Error("Expense not found");
+
+      const paidByUser = data.splits.find((s) => s.userId === data.paidBy)?.user ?? currentUser;
+      const splits = data.splits.map((s) => ({
+        ...s,
+        paid: s.userId === data.paidBy,
+      }));
+
+      const updatedExpense = {
+        ...existingExpense,
+        title: data.title,
+        amount: data.amount,
+        currency: data.currency,
+        category: data.category,
+        paidBy: data.paidBy,
+        paidByUser,
+        splits,
+        splitMethod: data.splitMethod,
+        date: data.date,
+        notes: data.notes,
+      };
+
+      setExpenses((prev) => prev.map((e) => (e.id === id ? updatedExpense : e)));
+
+      if (existingExpense.groupId) {
+        setGroups((prev) =>
+          prev.map((g) => {
+            if (g.id !== existingExpense.groupId) return g;
+            const oldAmt = convertCurrency(existingExpense.amount, existingExpense.currency, g.currency);
+            const newAmt = convertCurrency(data.amount, data.currency, g.currency);
+            return {
+              ...g,
+              totalExpenses: Math.max(0, g.totalExpenses - oldAmt + newAmt),
+            };
+          })
+        );
+      }
+
+      const newActivity = {
+        id: `act-${Date.now()}`,
+        type: "expense" as const,
+        groupId: existingExpense.groupId,
+        expense: updatedExpense,
+        userId: currentUser.id,
+        user: currentUser,
+        description: `You updated ${data.title}`,
+        amount: data.amount,
+        currency: data.currency,
+        date: new Date(),
+      };
+      setActivities((prev) => [newActivity, ...prev]);
+
+      return updatedExpense;
+    },
+    [expenses, currentUser, convertCurrency]
+  );
+
   const deleteExpense = useCallback(
     async (id: string) => {
       await new Promise((resolve) => setTimeout(resolve, 300));
@@ -401,63 +490,6 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
 
   // ── Balances ──────────────────────────────────────────────────────────────
 
-  const getUserBalances = useCallback(
-    (groupId?: string) => {
-      const balances = new Map<string, number>();
-
-      const relevantExpenses = groupId ? expenses.filter((e) => e.groupId === groupId) : expenses;
-      const relevantSettlements = groupId
-        ? settlements.filter((s) => s.groupId === groupId)
-        : settlements;
-
-      relevantExpenses.forEach((exp) => {
-        if (exp.paidBy === currentUser.id) {
-          exp.splits.forEach((s) => {
-            if (s.userId !== currentUser.id) {
-              const amtInPref = convertCurrency(s.amount, exp.currency, preferredCurrency.code);
-              balances.set(s.userId, (balances.get(s.userId) || 0) + amtInPref);
-            }
-          });
-        } else {
-          const mySplit = exp.splits.find((s) => s.userId === currentUser.id);
-          if (mySplit) {
-            const amtInPref = convertCurrency(mySplit.amount, exp.currency, preferredCurrency.code);
-            balances.set(exp.paidBy, (balances.get(exp.paidBy) || 0) - amtInPref);
-          }
-        }
-      });
-
-      relevantSettlements.forEach((set) => {
-        if (set.fromUserId === currentUser.id) {
-          const amtInPref = convertCurrency(set.amount, set.currency, preferredCurrency.code);
-          balances.set(set.toUserId, (balances.get(set.toUserId) || 0) + amtInPref);
-        } else if (set.toUserId === currentUser.id) {
-          const amtInPref = convertCurrency(set.amount, set.currency, preferredCurrency.code);
-          balances.set(set.fromUserId, (balances.get(set.fromUserId) || 0) - amtInPref);
-        }
-      });
-
-      return balances;
-    },
-    [expenses, settlements, currentUser.id, preferredCurrency.code, convertCurrency]
-  );
-
-  const getTotalOwedToMe = useCallback(() => {
-    let total = 0;
-    for (const [, balance] of getUserBalances()) {
-      if (balance > 0) total += balance;
-    }
-    return total;
-  }, [getUserBalances]);
-
-  const getTotalIOwe = useCallback(() => {
-    let total = 0;
-    for (const [, balance] of getUserBalances()) {
-      if (balance < 0) total += Math.abs(balance);
-    }
-    return total;
-  }, [getUserBalances]);
-
   const getGroupBalances = useCallback(
     (groupId: string) => {
       const balances = new Map<string, number>();
@@ -487,6 +519,52 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       return balances;
     },
     [expenses, settlements, groups, preferredCurrency.code, convertCurrency]
+  );
+
+  const getSimplifiedDebts = useCallback(
+    (groupId: string) => {
+      const balances = getGroupBalances(groupId);
+
+      const debtors: { userId: string; amount: number }[] = [];
+      const creditors: { userId: string; amount: number }[] = [];
+
+      for (const [userId, balance] of balances.entries()) {
+        if (balance < -0.01) debtors.push({ userId, amount: Math.abs(balance) });
+        else if (balance > 0.01) creditors.push({ userId, amount: balance });
+      }
+
+      debtors.sort((a, b) => b.amount - a.amount);
+      creditors.sort((a, b) => b.amount - a.amount);
+
+      const payments: { fromUserId: string; toUserId: string; amount: number }[] = [];
+
+      let i = 0;
+      let j = 0;
+
+      while (i < debtors.length && j < creditors.length) {
+        const debtor = debtors[i];
+        const creditor = creditors[j];
+
+        const amount = Math.min(debtor.amount, creditor.amount);
+
+        if (amount > 0.01) {
+          payments.push({
+            fromUserId: debtor.userId,
+            toUserId: creditor.userId,
+            amount,
+          });
+        }
+
+        debtor.amount -= amount;
+        creditor.amount -= amount;
+
+        if (debtor.amount < 0.01) i++;
+        if (creditor.amount < 0.01) j++;
+      }
+
+      return payments;
+    },
+    [getGroupBalances]
   );
 
   const getExactPairwiseDebts = useCallback(
@@ -549,6 +627,127 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
     },
     [expenses, settlements, groups, preferredCurrency.code, convertCurrency]
   );
+
+  const getUserBalances = useCallback(
+    (groupId?: string) => {
+      const balances = new Map<string, number>();
+
+      if (groupId) {
+        const group = groups.find((g) => g.id === groupId);
+        if (group?.simplifyDebts) {
+          const simplified = getSimplifiedDebts(groupId);
+          simplified.forEach((debt) => {
+            if (debt.fromUserId === currentUser.id) {
+              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              balances.set(debt.toUserId, (balances.get(debt.toUserId) || 0) - amtInPref);
+            } else if (debt.toUserId === currentUser.id) {
+              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              balances.set(debt.fromUserId, (balances.get(debt.fromUserId) || 0) + amtInPref);
+            }
+          });
+        } else {
+          const exact = getExactPairwiseDebts(groupId);
+          const targetCurrency = group ? group.currency : preferredCurrency.code;
+          exact.forEach((debt) => {
+            if (debt.fromUserId === currentUser.id) {
+              const amtInPref = convertCurrency(debt.amount, targetCurrency, preferredCurrency.code);
+              balances.set(debt.toUserId, (balances.get(debt.toUserId) || 0) - amtInPref);
+            } else if (debt.toUserId === currentUser.id) {
+              const amtInPref = convertCurrency(debt.amount, targetCurrency, preferredCurrency.code);
+              balances.set(debt.fromUserId, (balances.get(debt.fromUserId) || 0) + amtInPref);
+            }
+          });
+        }
+        return balances;
+      }
+
+      // Aggregate all groups
+      groups.forEach((group) => {
+        if (group.simplifyDebts) {
+          const simplified = getSimplifiedDebts(group.id);
+          simplified.forEach((debt) => {
+            if (debt.fromUserId === currentUser.id) {
+              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              balances.set(debt.toUserId, (balances.get(debt.toUserId) || 0) - amtInPref);
+            } else if (debt.toUserId === currentUser.id) {
+              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              balances.set(debt.fromUserId, (balances.get(debt.fromUserId) || 0) + amtInPref);
+            }
+          });
+        } else {
+          const exact = getExactPairwiseDebts(group.id);
+          exact.forEach((debt) => {
+            if (debt.fromUserId === currentUser.id) {
+              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              balances.set(debt.toUserId, (balances.get(debt.toUserId) || 0) - amtInPref);
+            } else if (debt.toUserId === currentUser.id) {
+              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              balances.set(debt.fromUserId, (balances.get(debt.fromUserId) || 0) + amtInPref);
+            }
+          });
+        }
+      });
+
+      // Add non-group expenses and settlements
+      const nonGroupExpenses = expenses.filter((e) => !e.groupId);
+      const nonGroupSettlements = settlements.filter((s) => !s.groupId);
+
+      nonGroupExpenses.forEach((exp) => {
+        if (exp.paidBy === currentUser.id) {
+          exp.splits.forEach((s) => {
+            if (s.userId !== currentUser.id) {
+              const amtInPref = convertCurrency(s.amount, exp.currency, preferredCurrency.code);
+              balances.set(s.userId, (balances.get(s.userId) || 0) + amtInPref);
+            }
+          });
+        } else {
+          const mySplit = exp.splits.find((s) => s.userId === currentUser.id);
+          if (mySplit) {
+            const amtInPref = convertCurrency(mySplit.amount, exp.currency, preferredCurrency.code);
+            balances.set(exp.paidBy, (balances.get(exp.paidBy) || 0) - amtInPref);
+          }
+        }
+      });
+
+      nonGroupSettlements.forEach((set) => {
+        if (set.fromUserId === currentUser.id) {
+          const amtInPref = convertCurrency(set.amount, set.currency, preferredCurrency.code);
+          balances.set(set.toUserId, (balances.get(set.toUserId) || 0) + amtInPref);
+        } else if (set.toUserId === currentUser.id) {
+          const amtInPref = convertCurrency(set.amount, set.currency, preferredCurrency.code);
+          balances.set(set.fromUserId, (balances.get(set.fromUserId) || 0) - amtInPref);
+        }
+      });
+
+      return balances;
+    },
+    [
+      groups,
+      expenses,
+      settlements,
+      currentUser.id,
+      preferredCurrency.code,
+      convertCurrency,
+      getSimplifiedDebts,
+      getExactPairwiseDebts,
+    ]
+  );
+
+  const getTotalOwedToMe = useCallback(() => {
+    let total = 0;
+    for (const [, balance] of getUserBalances()) {
+      if (balance > 0) total += balance;
+    }
+    return total;
+  }, [getUserBalances]);
+
+  const getTotalIOwe = useCallback(() => {
+    let total = 0;
+    for (const [, balance] of getUserBalances()) {
+      if (balance < 0) total += Math.abs(balance);
+    }
+    return total;
+  }, [getUserBalances]);
 
   const getNetBalance = useCallback(() => {
     return getTotalOwedToMe() - getTotalIOwe();
@@ -634,6 +833,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         getGroup,
         getGroupExpenses,
         addExpense,
+        updateExpense,
         getExpense,
         deleteExpense,
         deleteActivity,
@@ -642,6 +842,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         getTotalIOwe,
         getUserBalances,
         getGroupBalances,
+        getSimplifiedDebts,
         getExactPairwiseDebts,
         addSettlement,
       }}

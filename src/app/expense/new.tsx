@@ -13,6 +13,9 @@
  * - Separator
  * - Alert
  */
+import DateTimePicker from "react-native-ui-datepicker";
+import dayjs from "dayjs";
+import { format } from "date-fns";
 import {
   Alert,
   Checkbox,
@@ -24,17 +27,16 @@ import {
   TextField,
   Label,
   Input,
-  SearchField,
-  Chip,
   useToast,
+  Popover,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, InteractionManager } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, InteractionManager, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInDown, FadeInUp, FadeIn, FadeOut, Layout } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 import { useApp } from "@/context/AppContext";
@@ -42,7 +44,7 @@ import { AppUserAvatar } from "@/components/MemberAvatar";
 import { formatAmount } from "@/components/AmountDisplay";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import * as icons from "lucide-react-native";
-import type { ExpenseCategory, SplitMethod, User, GroupMember } from "@/types";
+import type { ExpenseCategory, SplitMethod } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/types";
 
 const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
@@ -52,20 +54,30 @@ const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
 ];
 
 export default function AddExpenseScreen(): JSX.Element {
-  const { groupId: initialGroupId, friendId: initialFriendId } = useLocalSearchParams<{
+  const { groupId: initialGroupId, friendId: initialFriendId, expenseId } = useLocalSearchParams<{
     groupId?: string;
     friendId?: string;
+    expenseId?: string;
   }>();
   const router = useRouter();
-  const { getGroup, addExpense, currentUser, groups, preferredCurrency, setCurrency } = useApp();
+  const { getGroup, getExpense, addExpense, updateExpense, currentUser, groups, preferredCurrency, setCurrency } = useApp();
+
+  const existingExpense = useMemo(() => expenseId ? getExpense(expenseId) : undefined, [expenseId, getExpense]);
   const { toast } = useToast();
 
-  const [selectedGroupId, setSelectedGroupId] = useState(initialGroupId ?? "");
-  const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>(
-    initialFriendId ? [initialFriendId] : []
-  );
+  const initialGroup = existingExpense?.groupId || initialGroupId || "";
+  const initialFriends = (() => {
+    if (existingExpense && !existingExpense.groupId) {
+       const other = existingExpense.splits.find(s => s.userId !== currentUser.id);
+       if (other) return [other.userId];
+    }
+    return initialFriendId ? [initialFriendId] : [];
+  })();
+
+  const [selectedGroupId, setSelectedGroupId] = useState(initialGroup);
+  const [selectedFriendIds, setSelectedFriendIds] = useState<string[]>(initialFriends);
   const [selectionConfirmed, setSelectionConfirmed] = useState(
-    !!initialGroupId || !!initialFriendId
+    !!initialGroup || initialFriends.length > 0 || !!existingExpense
   );
   const [selectionTab, setSelectionTab] = useState<"friends" | "groups">("friends");
   const [searchQuery, setSearchQuery] = useState("");
@@ -114,17 +126,37 @@ export default function AddExpenseScreen(): JSX.Element {
     }
   }, [selectedGroup, preferredCurrency.code]);
 
-  const [title, setTitle] = useState("");
-  const [amount, setAmount] = useState("");
-  const [category, setCategory] = useState<ExpenseCategory>("food");
-  const [splitMethod, setSplitMethod] = useState<SplitMethod>("equal");
-  const [paidBy, setPaidBy] = useState(currentUser.id);
+  const [title, setTitle] = useState(existingExpense?.title || "");
+  const [amount, setAmount] = useState(existingExpense?.amount.toString() || "");
+  const [category, setCategory] = useState<ExpenseCategory>(existingExpense?.category || "food");
+  const [splitMethod, setSplitMethod] = useState<SplitMethod>(existingExpense?.splitMethod || "equal");
+  const [paidBy, setPaidBy] = useState(existingExpense?.paidBy || currentUser.id);
   const [loading, setLoading] = useState(false);
-  const [expenseDate, setExpenseDate] = useState<"today" | "yesterday">("today");
+  const [expenseDate, setExpenseDate] = useState<Date>(existingExpense?.date || new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [included, setIncluded] = useState<Record<string, boolean>>({});
-  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
-  const [customPercentages, setCustomPercentages] = useState<Record<string, string>>({});
+  const [included, setIncluded] = useState<Record<string, boolean>>(() => {
+    if (!existingExpense) return {};
+    const map: Record<string, boolean> = {};
+    existingExpense.splits.forEach(s => { map[s.userId] = true; });
+    return map;
+  });
+  
+  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>(() => {
+    if (existingExpense?.splitMethod !== "custom") return {};
+    const map: Record<string, string> = {};
+    existingExpense.splits.forEach(s => { map[s.userId] = s.amount.toString(); });
+    return map;
+  });
+  
+  const [customPercentages, setCustomPercentages] = useState<Record<string, string>>(() => {
+    if (existingExpense?.splitMethod !== "percentage") return {};
+    const map: Record<string, string> = {};
+    existingExpense.splits.forEach(s => { 
+      map[s.userId] = ((s.amount / existingExpense.amount) * 100).toString(); 
+    });
+    return map;
+  });
 
   const [isReady, setIsReady] = useState(false);
 
@@ -133,6 +165,8 @@ export default function AddExpenseScreen(): JSX.Element {
       setIsReady(true);
     });
   }, []);
+
+
 
   useEffect(() => {
     setTimeout(() => setIncluded(Object.fromEntries(participants.map((u) => [u.id, true]))), 0);
@@ -213,7 +247,6 @@ export default function AddExpenseScreen(): JSX.Element {
     }
 
     setLoading(true);
-    toast.show({ label: "Error", description: "", variant: "danger", placement: "top" });
     try {
       const splits = includedMembers.map((u) => {
         let splitAmt = equalShare;
@@ -230,22 +263,30 @@ export default function AddExpenseScreen(): JSX.Element {
         };
       });
 
-      const dateObj = new Date();
-      if (expenseDate === "yesterday") {
-        dateObj.setDate(dateObj.getDate() - 1);
+      if (existingExpense) {
+        await updateExpense(existingExpense.id, {
+          title: title.trim(),
+          amount: parsedAmount,
+          currency: expenseCurrency,
+          category,
+          paidBy,
+          splits,
+          splitMethod,
+          date: expenseDate,
+        });
+      } else {
+        await addExpense({
+          groupId: selectedGroup?.id,
+          title: title.trim(),
+          amount: parsedAmount,
+          currency: expenseCurrency,
+          category,
+          paidBy,
+          splits,
+          splitMethod,
+          date: expenseDate,
+        });
       }
-
-      await addExpense({
-        groupId: selectedGroup?.id,
-        title: title.trim(),
-        amount: parsedAmount,
-        currency: expenseCurrency,
-        category,
-        paidBy,
-        splits,
-        splitMethod,
-        date: dateObj,
-      });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (e: any) {
@@ -273,9 +314,9 @@ export default function AddExpenseScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           {/* ── Header ───────────────────────────────── */}
-          <View className="flex-row items-center justify-between px-6 pt-4 mb-8">
+          <View className="flex-row items-center justify-between px-6 pt-4 mb-4">
             <Typography type="h3" className="font-black tracking-tight text-[28px]">
-              Add Expense
+              {existingExpense ? "Edit Expense" : "Add Expense"}
             </Typography>
             <Button variant="ghost" size="sm" onPress={() => router.back()}>
               ✕ Cancel
@@ -290,7 +331,7 @@ export default function AddExpenseScreen(): JSX.Element {
           ) : (
             <View>
               {!(initialGroupId || initialFriendId) && !selectionConfirmed && (
-                <Animated.View entering={FadeInDown.duration(300)} className="mb-8">
+                <Animated.View entering={FadeInDown.duration(300)} className="mb-6">
                   <Typography
                     type="body-xs"
                     className="text-muted-foreground font-bold tracking-widest mb-3 ml-8 uppercase"
@@ -299,17 +340,21 @@ export default function AddExpenseScreen(): JSX.Element {
                   </Typography>
 
                   <View className="px-6 mb-4">
-                    <SearchField value={searchQuery} onChange={setSearchQuery}>
-                      <SearchField.Group className="bg-white h-[44px] rounded-[16px] border border-border px-4">
-                        <SearchField.SearchIcon />
-                        <SearchField.Input
-                          placeholder="Search friends or groups..."
-                          className="flex-1 font-medium text-[15px] text-foreground h-full"
-                          placeholderTextColor="#8A8798"
-                        />
-                        <SearchField.ClearButton />
-                      </SearchField.Group>
-                    </SearchField>
+                    <View className="flex-row items-center bg-white rounded-[16px] border border-border/50 h-[48px] px-4">
+                      <icons.Search size={20} color="#8A8798" />
+                      <TextInput
+                        value={searchQuery}
+                        onChangeText={setSearchQuery}
+                        placeholder="Search friends or groups..."
+                        placeholderTextColor="#8A8798"
+                        className="flex-1 ml-2 font-medium text-foreground text-[16px]"
+                      />
+                      {searchQuery.length > 0 && (
+                        <PressableFeedback onPress={() => setSearchQuery("")} hitSlop={8}>
+                          <icons.XCircle size={18} color="#8A8798" />
+                        </PressableFeedback>
+                      )}
+                    </View>
                   </View>
 
                   {selectedFriends.length > 0 && (
@@ -492,7 +537,7 @@ export default function AddExpenseScreen(): JSX.Element {
               {(selectedGroup || selectedFriends.length > 0) &&
                 selectionConfirmed &&
                 !(initialGroupId || initialFriendId) && (
-                  <Animated.View entering={FadeInUp.duration(300)} className="px-6 mb-8">
+                  <Animated.View entering={FadeInUp.duration(300)} className="px-6 mb-6">
                     <View className="flex-row items-center justify-between bg-white rounded-[24px] p-4 border border-border">
                       <View className="flex-row items-center gap-4 flex-1 pr-2">
                         {selectedGroup ? (
@@ -544,7 +589,7 @@ export default function AddExpenseScreen(): JSX.Element {
 
               {((initialGroupId && selectedGroup) ||
                 (initialFriendId && selectedFriends.length > 0)) && (
-                <View className="px-6 mb-8">
+                <View className="px-6 mb-6">
                   <View className="flex-row items-center gap-4 bg-white rounded-[24px] p-4 border border-border">
                     {selectedGroup ? (
                       <View className="w-12 h-12 rounded-[16px] bg-primary/10 items-center justify-center">
@@ -576,7 +621,7 @@ export default function AddExpenseScreen(): JSX.Element {
               {(selectedGroup || selectedFriends.length > 0) && selectionConfirmed && (
                 <Animated.View entering={FadeInUp.duration(300).delay(100)}>
                   {/* ── Title + Amount + Currency ────────────── */}
-                  <View className="px-6 mb-8 gap-5">
+                  <View className="px-6 mb-6 gap-5">
                     <CurrencySelector
                       label="Currency"
                       value={expenseCurrency}
@@ -626,36 +671,58 @@ export default function AddExpenseScreen(): JSX.Element {
                   </View>
 
                   {/* ── Date ───────────────────────────── */}
-                  <View className="px-6 mb-8">
+                  <View className="px-6 mb-6">
                     <Typography
                       type="body-xs"
                       className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase"
                     >
                       DATE
                     </Typography>
-                    <View className="flex-row gap-3">
-                      {[
-                        { key: "today", label: "Today" },
-                        { key: "yesterday", label: "Yesterday" },
-                      ].map((d) => (
-                        <PressableFeedback key={d.key} onPress={() => setExpenseDate(d.key as any)}>
-                          <View
-                            className={`px-5 h-[44px] rounded-full items-center justify-center border-2 ${expenseDate === d.key ? "bg-primary border-primary" : "bg-white border-transparent"}`}
-                          >
-                            <Typography
-                              type="body-sm"
-                              className={`font-bold ${expenseDate === d.key ? "text-white" : "text-foreground"}`}
-                            >
-                              {d.label}
+                    
+                    <Popover
+                      isOpen={showDatePicker}
+                      onOpenChange={setShowDatePicker}
+                    >
+                      <Popover.Trigger asChild>
+                        <PressableFeedback>
+                          <View className="bg-white h-[56px] rounded-[20px] px-4 border border-border flex-row items-center gap-3">
+                            <icons.Calendar size={20} color="#8A8798" />
+                            <Typography type="body" className="font-medium text-foreground">
+                              {format(expenseDate, "MMMM d, yyyy")}
                             </Typography>
                           </View>
                         </PressableFeedback>
-                      ))}
-                    </View>
+                      </Popover.Trigger>
+                      <Popover.Portal>
+                        <Popover.Overlay />
+                        <Popover.Content presentation="popover" placement="top" width={340} className="bg-white rounded-[24px] p-2 border border-border shadow-lg">
+                          <Popover.Arrow fill="white" />
+                          <DateTimePicker
+                            mode="single"
+                            date={dayjs(expenseDate)}
+                            onChange={(params: any) => {
+                              if (params.date) {
+                                setExpenseDate(dayjs(params.date).toDate());
+                                setTimeout(() => setShowDatePicker(false), 300);
+                              }
+                            }}
+                            styles={{
+                              selected: { backgroundColor: '#6b4eff', borderRadius: 16 },
+                              today: { backgroundColor: '#f3f4f6', borderRadius: 16 },
+                              day_label: { color: '#11181C', fontSize: 15 },
+                              header: { paddingBottom: 12 },
+                              month_selector_label: { fontWeight: '600', color: '#11181C', fontSize: 16 },
+                              year_selector_label: { fontWeight: '600', color: '#11181C', fontSize: 16 },
+                              weekday_label: { color: '#71717A', fontWeight: '500' }
+                            }}
+                          />
+                        </Popover.Content>
+                      </Popover.Portal>
+                    </Popover>
                   </View>
 
                   {/* ── Category ───────────────────────────── */}
-                  <View className="mb-8">
+                  <View className="mb-6">
                     <Typography
                       type="body-xs"
                       className="text-muted-foreground font-bold tracking-widest mb-3 ml-8 uppercase"
@@ -700,7 +767,7 @@ export default function AddExpenseScreen(): JSX.Element {
                   </View>
 
                   {/* ── Paid by ────────────────────────────── */}
-                  <View className="mb-8">
+                  <View className="mb-6">
                     <Typography
                       type="body-xs"
                       className="text-muted-foreground font-bold tracking-widest mb-3 ml-8 uppercase"
@@ -740,7 +807,7 @@ export default function AddExpenseScreen(): JSX.Element {
                   </View>
 
                   {/* ── Split method ───────────────────────── */}
-                  <View className="px-6 mb-8">
+                  <View className="px-6 mb-6">
                     <Typography
                       type="body-xs"
                       className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase"
@@ -776,7 +843,7 @@ export default function AddExpenseScreen(): JSX.Element {
                   </View>
 
                   {/* ── Participants ───────────────────────── */}
-                  <View className="px-6 mb-8">
+                  <View className="px-6 mb-6">
                     <View className="flex-row justify-between items-end mb-3 ml-2 mr-2">
                       <Typography
                         type="body-xs"

@@ -115,7 +115,7 @@ export default function FriendDetailScreen(): JSX.Element {
           </View>
 
           {/* ── Friend Info ────────────────────────────── */}
-          <Animated.View className="px-6 items-center mt-2 mb-8" style={heroStyle}>
+          <Animated.View className="px-6 items-center mt-2 mb-6" style={heroStyle}>
             <View className="mb-4">
               <AppUserAvatar user={friend} size="lg" />
             </View>
@@ -155,7 +155,7 @@ export default function FriendDetailScreen(): JSX.Element {
           </Animated.View>
 
           {/* ── Actions ────────────────────────────────── */}
-          <View className="px-6 flex-row gap-3 mb-8">
+          <View className="px-6 flex-row gap-3 mb-6">
             <View className="flex-1">
               <PressableFeedback onPress={() => router.push(`/settle/${id}`)}>
                 <View className="w-full h-[56px] rounded-full items-center justify-center border-2 border-border flex-row gap-2">

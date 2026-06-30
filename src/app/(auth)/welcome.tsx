@@ -123,14 +123,14 @@ export default function WelcomeScreen(): JSX.Element {
         }}
         renderItem={({ item, index }: any) => {
           return (
-            <View style={{ width, flex: 1, paddingHorizontal: 32 }}>
+            <View style={{ width, flex: 1, paddingHorizontal: 32, justifyContent: "center", paddingBottom: 20 }}>
               {/* Top Illustration Area */}
               <View
                 style={{
-                  height: height * 0.55,
                   alignItems: "center",
                   justifyContent: "center",
                   paddingTop: insets.top,
+                  marginBottom: 32,
                 }}
               >
                 <Animated.View entering={FadeIn.delay(200).duration(800)}>
@@ -143,7 +143,7 @@ export default function WelcomeScreen(): JSX.Element {
                 </Animated.View>
                 <Animated.View entering={FadeInDown.delay(300)}>
                   <Typography
-                    style={{ fontSize: 36, fontWeight: "900", color: "white", letterSpacing: -1.5 }}
+                    style={{ fontSize: 36, fontWeight: "900", color: "white", letterSpacing: -1.5, lineHeight: 48 }}
                   >
                     {item.logoText}
                   </Typography>
@@ -151,7 +151,7 @@ export default function WelcomeScreen(): JSX.Element {
               </View>
 
               {/* Bottom Content Area */}
-              <View style={{ flex: 1, alignItems: "center", marginTop: 20 }}>
+              <View style={{ alignItems: "center", marginTop: 24 }}>
                 <Animated.Text
                   entering={FadeInDown.delay(400).springify()}
                   className="text-white text-[34px] font-[800] text-center mb-4"
@@ -174,7 +174,7 @@ export default function WelcomeScreen(): JSX.Element {
 
       {/* Bottom Controls inside a white card */}
       <Animated.View
-        entering={FadeInDown.delay(600).springify().damping(18)}
+        entering={FadeInDown.delay(600).duration(500)}
         className="bg-white rounded-t-[40px] px-8 pt-8 pb-10"
         style={{ paddingBottom: Math.max(insets.bottom + 16, 40) }}
       >

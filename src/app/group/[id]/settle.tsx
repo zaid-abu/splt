@@ -1,7 +1,6 @@
 import { Button, Typography, PressableFeedback } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
-import { useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,10 +19,9 @@ interface SettlementSuggestion {
 export default function GroupSettleScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getGroup, getGroupBalances, getExactPairwiseDebts, currentUser } = useApp();
+  const { getGroup, getSimplifiedDebts, getExactPairwiseDebts, currentUser } = useApp();
 
   const group = getGroup(id ?? "");
-  const balances = getGroupBalances(id ?? "");
   const sym = group ? getCurrencySymbol(group.currency) : "$";
 
   const suggestions = (() => {
@@ -34,49 +32,8 @@ export default function GroupSettleScreen(): JSX.Element {
       return exact.filter((p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id);
     }
 
-    // Separate into debtors (balance < 0) and creditors (balance > 0)
-    const debtors: { userId: string; amount: number }[] = [];
-    const creditors: { userId: string; amount: number }[] = [];
-
-    for (const [userId, balance] of balances.entries()) {
-      // Small epsilon to ignore floating point precision issues
-      if (balance < -0.01) debtors.push({ userId, amount: Math.abs(balance) });
-      else if (balance > 0.01) creditors.push({ userId, amount: balance });
-    }
-
-    // Sort by amount descending to minimize transactions (simple greedy approach)
-    debtors.sort((a, b) => b.amount - a.amount);
-    creditors.sort((a, b) => b.amount - a.amount);
-
-    const payments: SettlementSuggestion[] = [];
-
-    let i = 0;
-    let j = 0;
-
-    while (i < debtors.length && j < creditors.length) {
-      const debtor = debtors[i];
-      const creditor = creditors[j];
-
-      const amount = Math.min(debtor.amount, creditor.amount);
-
-      // We only care about positive amounts
-      if (amount > 0.01) {
-        payments.push({
-          fromUserId: debtor.userId,
-          toUserId: creditor.userId,
-          amount,
-        });
-      }
-
-      debtor.amount -= amount;
-      creditor.amount -= amount;
-
-      if (debtor.amount < 0.01) i++;
-      if (creditor.amount < 0.01) j++;
-    }
-
-    // Filter to only payments involving the current user
-    return payments.filter((p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id);
+    const simplified = getSimplifiedDebts(group.id);
+    return simplified.filter((p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id);
   })();
 
   if (!group) {

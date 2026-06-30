@@ -93,7 +93,7 @@ export default function ProfileScreen(): JSX.Element {
           </FocusAwareView>
 
           {/* ── User card ───────────────────────────────── */}
-          <FocusAwareView delay={100} className="px-6 mb-8">
+          <FocusAwareView delay={100} className="px-6 mb-6">
             <View className="bg-white rounded-[32px] p-6 items-center border border-border">
               <View className="mb-4">
                 <AppUserAvatar user={currentUser} size="lg" />
@@ -140,7 +140,7 @@ export default function ProfileScreen(): JSX.Element {
           </FocusAwareView>
 
           {/* ── Account settings ───────────────────────── */}
-          <FocusAwareView delay={200} className="px-6 mb-6">
+          <FocusAwareView delay={200} className="px-6 mb-4">
             <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
               ACCOUNT
             </Typography>
@@ -173,7 +173,7 @@ export default function ProfileScreen(): JSX.Element {
           </FocusAwareView>
 
           {/* ── Preferences ────────────────────────────── */}
-          <FocusAwareView delay={300} className="px-6 mb-6 z-50">
+          <FocusAwareView delay={300} className="px-6 mb-4 z-50">
             <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
               PREFERENCES
             </Typography>
@@ -202,7 +202,7 @@ export default function ProfileScreen(): JSX.Element {
           </FocusAwareView>
 
           {/* ── About ──────────────────────────────────── */}
-          <FocusAwareView delay={400} className="px-6 mb-8">
+          <FocusAwareView delay={400} className="px-6 mb-6">
             <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
               ABOUT
             </Typography>

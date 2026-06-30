@@ -19,6 +19,7 @@ import { useApp } from "@/context/AppContext";
 import { formatAmount } from "@/components/AmountDisplay";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { ActivityItem } from "@/components/ActivityItem";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
@@ -124,19 +125,19 @@ export default function DashboardScreen(): JSX.Element {
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingTop: insets.top + 90, paddingBottom: 120 }} // padding for floating tab bar and header
+        contentContainerStyle={{ paddingTop: insets.top + 110, paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor="#3D2B82"
-            progressViewOffset={insets.top + 80}
+            progressViewOffset={insets.top + 100}
           />
         }
       >
         {/* ── Enhanced Hero Card (Financial Overview) ── */}
-        <FocusAwareView delay={100} className="px-6 mb-8 mt-2">
+        <FocusAwareView delay={100} className="px-6 mb-6 mt-1">
           <View className="bg-primary rounded-[32px] p-6 relative overflow-hidden">
             {/* Decorative background circle */}
             <View className="absolute -top-10 -right-10 w-[150px] h-[150px] rounded-full bg-white opacity-10" />
@@ -262,7 +263,7 @@ export default function DashboardScreen(): JSX.Element {
         </FocusAwareView>
 
         {/* ── Functional Quick Actions Grid ─────────── */}
-        <FocusAwareView delay={200} className="px-6 mb-10">
+        <FocusAwareView delay={200} className="px-6 mb-8">
           <View className="flex-row justify-between">
             {[
               {
@@ -317,7 +318,7 @@ export default function DashboardScreen(): JSX.Element {
         </FocusAwareView>
 
         {/* ── Outstanding Balances ──────────────────── */}
-        <FocusAwareView delay={300} className="px-6 mb-8">
+        <FocusAwareView delay={300} className="px-6 mb-6">
           <View className="flex-row items-center justify-between mb-4">
             <Typography type="h3" className="text-[20px] font-bold text-foreground tracking-tight">
               Needs Attention
@@ -339,34 +340,35 @@ export default function DashboardScreen(): JSX.Element {
               outstandingFriends.map((f, idx) => {
                 const isPositive = f.balance > 0;
                 return (
-                  <PressableFeedback
-                    key={f.user.id}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      router.push(`/friend/${f.user.id}`);
-                    }}
-                  >
-                    <View className="flex-row items-center justify-between p-4 bg-surface rounded-[20px] border border-border">
-                      <View className="flex-row items-center gap-4">
-                        <AppUserAvatar user={f.user} size="lg" />
-                        <View>
-                          <Typography type="body" className="font-bold text-foreground">
-                            {f.user.name}
-                          </Typography>
-                          <Typography
-                            type="body-sm"
-                            className={`font-bold mt-0.5 ${isPositive ? "text-success" : "text-danger"}`}
-                          >
-                            {isPositive ? "Owes you " : "You owe "}
-                            {formatAmount(Math.abs(f.balance), preferredCurrency.code)}
-                          </Typography>
+                  <Animated.View key={f.user.id} entering={FadeInDown.delay(300 + idx * 100).springify()}>
+                    <PressableFeedback
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        router.push(`/friend/${f.user.id}`);
+                      }}
+                    >
+                      <View className="flex-row items-center justify-between p-4 bg-surface rounded-[20px] border border-border">
+                        <View className="flex-row items-center gap-4">
+                          <AppUserAvatar user={f.user} size="lg" />
+                          <View>
+                            <Typography type="body" className="font-bold text-foreground">
+                              {f.user.name}
+                            </Typography>
+                            <Typography
+                              type="body-sm"
+                              className={`font-bold mt-0.5 ${isPositive ? "text-success" : "text-danger"}`}
+                            >
+                              {isPositive ? "Owes you " : "You owe "}
+                              {formatAmount(Math.abs(f.balance), preferredCurrency.code)}
+                            </Typography>
+                          </View>
+                        </View>
+                        <View className="w-10 h-10 rounded-full bg-secondary items-center justify-center">
+                          <icons.ChevronRight size={20} className="text-primary" />
                         </View>
                       </View>
-                      <View className="w-10 h-10 rounded-full bg-secondary items-center justify-center">
-                        <icons.ChevronRight size={20} className="text-primary" />
-                      </View>
-                    </View>
-                  </PressableFeedback>
+                    </PressableFeedback>
+                  </Animated.View>
                 );
               })
             ) : (
@@ -407,17 +409,15 @@ export default function DashboardScreen(): JSX.Element {
               </PressableFeedback>
             </View>
 
-            <View className="rounded-[24px]">
-              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-                {recentActivities.map((activity, idx) => (
-                  <ActivityItem
-                    key={activity.id}
-                    activity={activity}
-                    index={idx}
-                    isLast={idx === recentActivities.length - 1}
-                  />
-                ))}
-              </View>
+            <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+              {recentActivities.map((activity, idx) => (
+                <ActivityItem 
+                  key={activity.id} 
+                  activity={activity} 
+                  index={idx}
+                  isLast={idx === recentActivities.length - 1} 
+                />
+              ))}
             </View>
           </FocusAwareView>
         )}

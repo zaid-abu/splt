@@ -60,8 +60,8 @@ export default function ActivityScreen(): JSX.Element {
   }, [filteredActivities]);
 
   return (
-    <FocusAwareView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
+      <View style={{ flex: 1 }}>
         <StatusBar style="dark" />
 
         {/* ── Sticky Blurred Header ───────────────────── */}
@@ -95,7 +95,7 @@ export default function ActivityScreen(): JSX.Element {
 
         <ScrollView
           className="flex-1 bg-background"
-          contentContainerStyle={{ paddingTop: insets.top + 90, paddingBottom: 100 }}
+          contentContainerStyle={{ paddingTop: insets.top + 100, paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
         >
           {/* ── Stats Row ─────────────────────────────── */}
@@ -242,7 +242,7 @@ export default function ActivityScreen(): JSX.Element {
             )}
           </View>
         </ScrollView>
-      </SafeAreaView>
+      </View>
     </FocusAwareView>
   );
 }

@@ -23,6 +23,7 @@ import {
   Label,
   Input,
   useToast,
+  Chip,
 } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
@@ -68,6 +69,20 @@ export default function NewGroupScreen(): JSX.Element {
     symbol: "$",
   });
   const [loading, setLoading] = useState(false);
+  const [memberEmails, setMemberEmails] = useState<string[]>([]);
+  const [emailInput, setEmailInput] = useState("");
+
+  const handleAddEmail = () => {
+    const trimmed = emailInput.trim().toLowerCase();
+    if (trimmed && trimmed.includes("@") && !memberEmails.includes(trimmed)) {
+      setMemberEmails([...memberEmails, trimmed]);
+      setEmailInput("");
+    }
+  };
+
+  const handleRemoveEmail = (emailToRemove: string) => {
+    setMemberEmails(memberEmails.filter((email) => email !== emailToRemove));
+  };
 
   async function handleCreate(): Promise<void> {
     if (!name.trim()) {
@@ -87,7 +102,7 @@ export default function NewGroupScreen(): JSX.Element {
         description: description.trim() || undefined,
         icon,
         currency: currency.code,
-        memberEmails: [],
+        memberEmails: memberEmails,
       });
       router.replace(`/group/${group.id}`);
     } catch {
@@ -233,17 +248,60 @@ export default function NewGroupScreen(): JSX.Element {
             </View>
           </View>
 
-          {/* ── Members note ──────────────────────────── */}
+          {/* ── Members ──────────────────────────────── */}
           <View className="px-6 mb-6">
-            <Alert status="default" className="rounded-[20px]">
-              <Alert.Indicator />
-              <Alert.Content>
-                <Alert.Title>You&apos;ll be added automatically</Alert.Title>
-                <Alert.Description>
-                  Invite others after creating the group from the group detail screen.
-                </Alert.Description>
-              </Alert.Content>
-            </Alert>
+            <Typography
+              type="body-xs"
+              className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase"
+            >
+              MEMBERS
+            </Typography>
+            <View className="bg-white rounded-[24px] p-5 border border-border">
+              <Typography type="body-sm" className="text-muted-foreground font-medium mb-4">
+                Add friends by their email address
+              </Typography>
+              
+              <View className="flex-row gap-2 mb-4">
+                <View className="flex-1">
+                  <Input
+                    value={emailInput}
+                    onChangeText={setEmailInput}
+                    placeholder="friend@example.com"
+                    autoCapitalize="none"
+                    keyboardType="email-address"
+                    onSubmitEditing={handleAddEmail}
+                    className="bg-[#F8F8F9] h-[48px] rounded-[16px] px-4 border border-border text-[15px]"
+                  />
+                </View>
+                <Button
+                  variant="secondary"
+                  onPress={handleAddEmail}
+                  className="h-[48px] rounded-[16px] px-4"
+                  isDisabled={!emailInput.includes("@")}
+                >
+                  <Button.Label>Add</Button.Label>
+                </Button>
+              </View>
+
+              <View className="flex-row flex-wrap gap-2">
+                {memberEmails.map((email) => (
+                  <Chip
+                    key={email}
+                    className="bg-primary/10 rounded-full pl-3 pr-2 py-1 flex-row items-center gap-1"
+                  >
+                    <Typography type="body-sm" className="text-primary font-medium">
+                      {email}
+                    </Typography>
+                    <PressableFeedback
+                      onPress={() => handleRemoveEmail(email)}
+                      className="p-1 rounded-full bg-primary/20 ml-1"
+                    >
+                      <icons.X size={12} className="text-primary" />
+                    </PressableFeedback>
+                  </Chip>
+                ))}
+              </View>
+            </View>
           </View>
         </ScrollView>
 

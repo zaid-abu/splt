@@ -2,7 +2,7 @@ import { Button, Dialog, Typography, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import * as icons from "lucide-react-native";
@@ -75,7 +75,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         {/* ── Header row ─────────────────────────────── */}
-        <View className="flex-row items-center justify-between px-6 pt-4 mb-8">
+        <View className="flex-row items-center justify-between px-6 pt-4 mb-4">
           <Button
             variant="outline"
             isIconOnly
@@ -85,18 +85,28 @@ export default function ExpenseDetailScreen(): JSX.Element {
             <icons.ChevronLeft size={24} className="text-foreground" strokeWidth={2.5} />
           </Button>
 
-          <Dialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <Dialog.Trigger asChild>
-              <Button
-                variant="outline"
-                isIconOnly
-                className="w-12 h-12 rounded-full bg-white border border-border"
-              >
-                <icons.Trash2 size={20} className="text-danger" strokeWidth={2.5} />
-              </Button>
-            </Dialog.Trigger>
-            <Dialog.Portal className="absolute inset-0 justify-center p-5 z-50">
-              <Dialog.Overlay className="absolute inset-0 bg-black/40" />
+          <View className="flex-row items-center gap-3">
+            <Button
+              variant="outline"
+              isIconOnly
+              className="w-12 h-12 rounded-full bg-white border border-border"
+              onPress={() => router.push({ pathname: "/expense/new", params: { expenseId: expense.id } })}
+            >
+              <icons.Edit2 size={20} className="text-foreground" strokeWidth={2.5} />
+            </Button>
+
+            <Dialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <Dialog.Trigger asChild>
+                <Button
+                  variant="outline"
+                  isIconOnly
+                  className="w-12 h-12 rounded-full bg-white border border-border"
+                >
+                  <icons.Trash2 size={20} className="text-danger" strokeWidth={2.5} />
+                </Button>
+              </Dialog.Trigger>
+              <Dialog.Portal className="absolute inset-0 justify-center p-5 z-50">
+                <Dialog.Overlay className="absolute inset-0 bg-black/40" />
               <Dialog.Content className="bg-white p-6 rounded-[32px] shadow-lg self-center w-full max-w-[400px]">
                 <View className="absolute top-4 right-4 z-10">
                   <Button
@@ -144,13 +154,14 @@ export default function ExpenseDetailScreen(): JSX.Element {
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog>
+          </View>
         </View>
 
         {/* ── Receipt Card ─────────────────────────────── */}
-        <View className="mx-6 bg-white rounded-[32px] p-8 border border-border mb-6">
+        <View className="mx-6 bg-white rounded-[32px] p-6 border border-border mb-4">
           <View className="items-center mb-6">
-            <View className="w-20 h-20 rounded-full bg-primary/10 border border-primary/20 items-center justify-center mb-5">
-              <CategoryIcon size={40} className="text-primary" strokeWidth={2} />
+            <View className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 items-center justify-center mb-4">
+              <CategoryIcon size={32} className="text-primary" strokeWidth={2} />
             </View>
             <Typography
               type="body"
@@ -160,7 +171,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
             </Typography>
             <Typography
               type="h1"
-              className="text-[52px] font-black tracking-tighter text-foreground mb-4 text-center leading-tight"
+              className="text-[48px] font-black tracking-tighter text-foreground mb-3 text-center leading-tight"
             >
               {formatAmt(expense.amount)}
             </Typography>
@@ -224,7 +235,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
         </View>
 
         {/* ── Split breakdown ────────────────────────────── */}
-        <View className="px-6 mb-6">
+        <View className="px-6 mb-4">
           <Typography
             type="body-xs"
             className="font-bold text-muted-foreground tracking-widest uppercase mb-4 ml-2"

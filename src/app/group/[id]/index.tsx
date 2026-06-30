@@ -24,6 +24,7 @@ import Animated, {
   useAnimatedStyle,
   interpolate,
   Extrapolation,
+  FadeInDown,
 } from "react-native-reanimated";
 
 import { ExpenseItem } from "@/components/ExpenseItem";
@@ -42,6 +43,8 @@ export default function GroupDetailScreen(): JSX.Element {
     getGroupBalances,
     convertCurrency,
     isAppLoading,
+    getSimplifiedDebts,
+    getExactPairwiseDebts,
   } = useApp();
 
   const group = getGroup(id ?? "");
@@ -90,6 +93,10 @@ export default function GroupDetailScreen(): JSX.Element {
   const balances = getGroupBalances(group.id);
   const myBalance = balances.get(currentUser.id) ?? 0;
 
+  const groupDebts = group.simplifyDebts
+    ? getSimplifiedDebts(group.id)
+    : getExactPairwiseDebts(group.id);
+
   // Calculate total expenses in group currency
   const totalExpensesInGroupCurrency = expenses.reduce(
     (sum, exp) => sum + convertCurrency(exp.amount, exp.currency, group.currency),
@@ -116,7 +123,7 @@ export default function GroupDetailScreen(): JSX.Element {
         </View>
 
         {/* ── Group hero ─────────────────────────────── */}
-        <Animated.View className="px-6 mb-8" style={heroStyle}>
+        <Animated.View className="px-6 mb-6" style={heroStyle}>
           <View className="bg-white rounded-[32px] p-6 border border-border">
             <View className="flex-row items-center gap-4 mb-5">
               <View className="w-16 h-16 rounded-full bg-primary/10 items-center justify-center">
@@ -211,7 +218,7 @@ export default function GroupDetailScreen(): JSX.Element {
         </Animated.View>
 
         {/* ── Balances ───────────────────────────────── */}
-        <View className="px-6 mb-8">
+        <View className="px-6 mb-6">
           <Typography
             type="body-xs"
             className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase"
@@ -236,46 +243,49 @@ export default function GroupDetailScreen(): JSX.Element {
                   </View>
                 </View>
               </>
+            ) : groupDebts.length === 0 ? (
+              <View className="p-6 items-center justify-center">
+                <View className="w-12 h-12 rounded-full bg-success/10 items-center justify-center mb-3">
+                  <icons.Check size={24} className="text-success" strokeWidth={3} />
+                </View>
+                <Typography type="body" className="font-bold text-foreground">
+                  All settled up!
+                </Typography>
+              </View>
             ) : (
-              group.members.map((member, idx) => {
-                const memBalance = balances.get(member.userId) ?? 0;
+              groupDebts.map((debt, idx) => {
+                const fromUser = group.members.find(m => m.userId === debt.fromUserId)?.user;
+                const toUser = group.members.find(m => m.userId === debt.toUserId)?.user;
+                if (!fromUser || !toUser) return null;
+
                 return (
-                  <PressableFeedback key={member.userId} onPress={() => {}}>
+                  <PressableFeedback key={`${debt.fromUserId}-${debt.toUserId}`} onPress={() => {}}>
                     <View
-                      className={`flex-row items-center justify-between p-4 ${idx < group.members.length - 1 ? "border-b border-border/50" : ""}`}
+                      className={`flex-row items-center justify-between p-4 ${idx < groupDebts.length - 1 ? "border-b border-border/50" : ""}`}
                     >
                       <View className="flex-row items-center gap-3">
-                        <AppUserAvatar user={member.user} size="md" balance={memBalance} />
+                        <AppUserAvatar user={fromUser} size="md" />
                         <View>
                           <Typography type="body" className="font-bold text-foreground">
-                            {member.userId === currentUser.id ? "You" : member.user.name}
+                            {fromUser.id === currentUser.id ? "You" : fromUser.name}
                           </Typography>
                           <Typography type="body-sm" className="text-muted-foreground">
-                            {memBalance === 0
-                              ? "Settled up"
-                              : memBalance > 0
-                                ? member.userId === currentUser.id
-                                  ? "Owed to you"
-                                  : "Gets back"
-                                : member.userId === currentUser.id
-                                  ? "You owe"
-                                  : "Owes"}
+                            owes {toUser.id === currentUser.id ? "you" : toUser.name}
                           </Typography>
                         </View>
                       </View>
                       <Typography
                         type="body"
                         className={`font-black ${
-                          memBalance > 0
-                            ? "text-success"
-                            : memBalance < 0
-                              ? "text-danger"
-                              : "text-muted-foreground"
+                          fromUser.id === currentUser.id
+                            ? "text-danger"
+                            : toUser.id === currentUser.id
+                              ? "text-success"
+                              : "text-foreground"
                         }`}
                       >
-                        {memBalance > 0 ? "+" : memBalance < 0 ? "-" : ""}
                         {sym}
-                        {Math.abs(memBalance).toLocaleString(undefined, {
+                        {debt.amount.toLocaleString(undefined, {
                           minimumFractionDigits: 2,
                           maximumFractionDigits: 2,
                         })}
@@ -327,13 +337,14 @@ export default function GroupDetailScreen(): JSX.Element {
           </View>
         ) : (
           <View className="px-4 gap-2">
-            {expenses.map((expense) => (
-              <ExpenseItem
-                key={expense.id}
-                expense={expense}
-                currentUserId={currentUser.id}
-                onPress={() => router.push(`/expense/${expense.id}`)}
-              />
+            {expenses.map((expense, idx) => (
+              <Animated.View key={expense.id} entering={FadeInDown.delay(100 + idx * 50).springify()}>
+                <ExpenseItem
+                  expense={expense}
+                  currentUserId={currentUser.id}
+                  onPress={() => router.push(`/expense/${expense.id}`)}
+                />
+              </Animated.View>
             ))}
           </View>
         )}
