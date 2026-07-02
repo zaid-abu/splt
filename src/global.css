@@ -31,71 +31,129 @@
 }
 
 @theme {
+  --color-primary: var(--color-primary);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-primary-foreground: var(--color-primary-foreground);
+
+  --color-secondary: var(--color-secondary);
+  --color-secondary-light: var(--color-secondary-light);
+  --color-secondary-dark: var(--color-secondary-dark);
+  --color-secondary-foreground: var(--color-secondary-foreground);
+
+  --color-accent-purple-light: var(--color-accent-purple-light);
+  --color-accent-purple-medium: var(--color-accent-purple-medium);
+  --color-accent-orange: var(--color-accent-orange);
+  --color-accent-blue: var(--color-accent-blue);
+
   --color-background: var(--color-background);
-  --color-foreground: var(--color-foreground);
   --color-surface: var(--color-surface);
   --color-surface-secondary: var(--color-surface-secondary);
-  --color-surface-tertiary: var(--color-surface-tertiary);
-  --color-primary: var(--color-primary);
-  --color-primary-foreground: var(--color-primary-foreground);
-  --color-secondary: var(--color-secondary);
-  --color-secondary-foreground: var(--color-secondary-foreground);
-  --color-accent: var(--color-accent);
-  --color-accent-foreground: var(--color-accent-foreground);
-  --color-success: var(--color-success);
-  --color-warning: var(--color-warning);
-  --color-danger: var(--color-danger);
-  --color-muted: var(--color-muted);
-  --color-muted-foreground: var(--color-muted-foreground);
-  --color-border: var(--color-border);
+  
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-disabled: var(--color-text-disabled);
+  --color-text-inverse: var(--color-text-inverse);
+
+  --color-border-light: var(--color-border-light);
+  --color-border-main: var(--color-border-main);
+
+  /* Aliases for backwards compatibility with previous theme */
+  --color-foreground: var(--color-text-primary);
+  --color-surface-tertiary: var(--color-border-light);
+  --color-accent: var(--color-accent-blue);
+  --color-accent-foreground: #ffffff;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-muted: var(--color-border-main);
+  --color-muted-foreground: var(--color-text-secondary);
+  --color-border: var(--color-border-main);
+  
+  --font-family-heading: var(--font-family-heading);
+  --font-family-body: var(--font-family-body);
+  
+  --text-xs: var(--text-xs);
+  --text-sm: var(--text-sm);
+  --text-md: var(--text-md);
+  --text-lg: var(--text-lg);
+  --text-xl: var(--text-xl);
+  --text-xxl: var(--text-xxl);
+  --text-xxxl: var(--text-xxxl);
+
+  --spacing-xxs: var(--spacing-xxs);
+  --spacing-xs: var(--spacing-xs);
+  --spacing-sm: var(--spacing-sm);
+  --spacing-md: var(--spacing-md);
+  --spacing-lg: var(--spacing-lg);
+  --spacing-xl: var(--spacing-xl);
+  --spacing-xxl: var(--spacing-xxl);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-xxl: var(--radius-xxl);
+  --radius-pill: var(--radius-pill);
 }
 
 @layer base {
   :root {
-    /* Base background */
-    --color-background: #f2f2f6;
-    /* background.app */
-    --color-foreground: #1e1a34;
-    /* text.primary */
+    /* Colors */
+    --color-primary: #3D2B82;
+    --color-primary-light: #6749D2;
+    --color-primary-dark: #261C4C;
+    --color-primary-foreground: #FFFFFF;
 
-    /* Surfaces */
-    --color-surface: #ffffff;
-    /* background.default */
-    --color-surface-secondary: #f8f9fb;
-    /* background.paper */
-    --color-surface-tertiary: #f0f0f0;
-    /* border.light */
+    --color-secondary: #D4E9FA;
+    --color-secondary-light: #E9F4FC;
+    --color-secondary-dark: #A9D2F5;
+    --color-secondary-foreground: #1A1A1A;
 
-    /* Primary */
-    --color-primary: #3d2b82;
-    /* primary.main */
-    --color-primary-foreground: #ffffff;
-    /* primary.contrastText */
+    --color-accent-purple-light: #E0DDF2;
+    --color-accent-purple-medium: #A092E1;
+    --color-accent-orange: #F89D7B;
+    --color-accent-blue: #6B4EFF;
 
-    /* Secondary */
-    --color-secondary: #c8e6ff;
-    /* secondary.main */
-    --color-secondary-foreground: #1a1a1a;
-    /* secondary.contrastText */
+    --color-background: #F2F2F6;
+    --color-surface: #FFFFFF;
+    --color-surface-secondary: #F8F9FB;
 
-    /* Accent */
-    --color-accent: #6b4eff;
-    /* accent.blue */
-    --color-accent-foreground: #ffffff;
+    --color-text-primary: #1E1A34;
+    --color-text-secondary: #8A8798;
+    --color-text-disabled: #C4C4C4;
+    --color-text-inverse: #FFFFFF;
 
-    /* Success, Warning, Danger */
-    --color-success: #10b981;
-    --color-warning: #f59e0b;
-    --color-danger: #ef4444;
+    --color-border-light: #F0F0F0;
+    --color-border-main: #E5E5E5;
 
-    /* Muted */
-    --color-muted: #c2c2c2;
-    /* border.main */
-    --color-muted-foreground: #8a8798;
-    /* text.secondary */
+    /* Typography */
+    --font-family-heading: 'PlusJakartaSans_700Bold';
+    --font-family-body: 'PlusJakartaSans_400Regular';
+    
+    --text-xs: 12px;
+    --text-sm: 14px;
+    --text-md: 16px;
+    --text-lg: 20px;
+    --text-xl: 24px;
+    --text-xxl: 32px;
+    --text-xxxl: 40px;
 
-    /* Border */
-    --color-border: #e5e5e5;
-    /* border.main */
+    /* Spacing */
+    --spacing-xxs: 4px;
+    --spacing-xs: 8px;
+    --spacing-sm: 12px;
+    --spacing-md: 16px;
+    --spacing-lg: 24px;
+    --spacing-xl: 32px;
+    --spacing-xxl: 48px;
+
+    /* Border Radius */
+    --radius-sm: 8px;
+    --radius-md: 16px;
+    --radius-lg: 24px;
+    --radius-xl: 32px;
+    --radius-xxl: 40px;
+    --radius-pill: 9999px;
   }
 }
