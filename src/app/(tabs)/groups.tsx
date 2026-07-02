@@ -33,7 +33,7 @@ export default function GroupsScreen(): JSX.Element {
     : groups;
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
+    <FocusAwareView style={{ flex: 1 }} className="bg-background">
       <View style={{ flex: 1 }}>
         <StatusBar style="dark" />
 

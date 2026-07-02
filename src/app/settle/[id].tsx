@@ -69,7 +69,7 @@ export default function SettleUpScreen(): JSX.Element {
 
   if (!friend) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background">
         <View className="flex-1 items-center justify-center p-6">
           <Typography className="text-muted-foreground">Friend not found</Typography>
           <Button onPress={() => router.back()} className="rounded-full mt-4">
@@ -120,7 +120,7 @@ export default function SettleUpScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top", "bottom"]}>
       <StatusBar style="dark" />
       <KeyboardAvoidingView
         style={{ flex: 1 }}

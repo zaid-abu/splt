@@ -9,7 +9,7 @@
 import type { AvatarSize } from "heroui-native";
 import type { JSX } from "react";
 import { View } from "react-native";
-import { Avatar, Typography } from "heroui-native";
+import { Avatar, Typography, useThemeColor } from "heroui-native";
 
 import type { User } from "@/types";
 import { getStringColor, hexToRgba } from "@/utils/theme";
@@ -22,17 +22,22 @@ interface AppUserAvatarProps {
 }
 
 export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps): JSX.Element {
+  const successColor = useThemeColor("success" as any) as unknown as string;
+  const dangerColor = useThemeColor("danger" as any) as unknown as string;
+  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
+  const secondaryColor = useThemeColor("secondary" as any) as unknown as string;
+
   let bg, textColor;
   if (balance !== undefined) {
     if (balance > 0) {
-      bg = "#D1FAE5";
-      textColor = "#059669";
+      bg = hexToRgba(successColor, 0.15);
+      textColor = successColor;
     } else if (balance < 0) {
-      bg = "#FEE2E2";
-      textColor = "#DC2626";
+      bg = hexToRgba(dangerColor, 0.15);
+      textColor = dangerColor;
     } else {
-      bg = "#F3F4F6";
-      textColor = "#4B5563";
+      bg = secondaryColor;
+      textColor = mutedForeground;
     }
   } else {
     textColor = getStringColor(user.id);
@@ -74,6 +79,8 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
 export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number }): JSX.Element {
   const visible = users.slice(0, max);
   const overflow = users.length - max;
+  const secondaryColor = useThemeColor("secondary" as any) as unknown as string;
+  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -108,7 +115,7 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
         <Avatar
           size="sm"
           style={{
-            backgroundColor: "#E5E7EB",
+            backgroundColor: secondaryColor,
             marginLeft: -8,
             zIndex: 0,
             borderWidth: 2,
@@ -119,7 +126,7 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
           }}
         >
           <Avatar.Fallback>
-            <Typography style={{ color: "#4B5563", fontSize: 10, fontWeight: "bold" }}>
+            <Typography style={{ color: mutedForeground, fontSize: 10, fontWeight: "bold" }}>
               +{overflow}
             </Typography>
           </Avatar.Fallback>

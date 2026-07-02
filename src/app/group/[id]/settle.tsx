@@ -40,7 +40,7 @@ export default function GroupSettleScreen(): JSX.Element {
 
   if (!group) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background">
         <View className="flex-1 items-center justify-center p-6">
           <Typography type="h3">Group not found</Typography>
           <Button onPress={() => router.back()} className="mt-4">
@@ -64,7 +64,7 @@ export default function GroupSettleScreen(): JSX.Element {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top", "bottom"]}>
       <StatusBar style="dark" />
       <ScrollView
         className="flex-1 bg-background"

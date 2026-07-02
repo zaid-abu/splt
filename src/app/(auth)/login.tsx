@@ -1,4 +1,4 @@
-import { Button, Typography, PressableFeedback, useToast } from "heroui-native";
+import { Button, Typography, PressableFeedback, useToast, useThemeColor } from "heroui-native";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -25,6 +25,9 @@ export default function LoginScreen(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
+  const foreground = useThemeColor("foreground" as any) as unknown as string;
 
   async function handleLogin(): Promise<void> {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -84,7 +87,7 @@ export default function LoginScreen(): JSX.Element {
                   Email Address
                 </Typography>
                 <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
-                  <icons.Mail size={20} color="#8A8798" />
+                  <icons.Mail size={20} color={mutedForeground} />
                   <TextInput
                     placeholder="hello@splt.app"
                     value={email}
@@ -93,7 +96,7 @@ export default function LoginScreen(): JSX.Element {
                     autoCapitalize="none"
                     autoComplete="email"
                     className="flex-1 ml-3 font-medium text-foreground text-[16px]"
-                    placeholderTextColor="#8A8798"
+                    placeholderTextColor={mutedForeground}
                   />
                 </View>
               </View>
@@ -112,7 +115,7 @@ export default function LoginScreen(): JSX.Element {
                   </PressableFeedback>
                 </View>
                 <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
-                  <icons.Lock size={20} color="#8A8798" />
+                  <icons.Lock size={20} color={mutedForeground} />
                   <TextInput
                     placeholder="••••••••"
                     value={password}
@@ -120,7 +123,7 @@ export default function LoginScreen(): JSX.Element {
                     secureTextEntry={!showPassword}
                     autoComplete="password"
                     className="flex-1 ml-3 font-medium text-foreground text-[16px]"
-                    placeholderTextColor="#8A8798"
+                    placeholderTextColor={mutedForeground}
                   />
                   <PressableFeedback
                     onPress={() => {
@@ -130,9 +133,9 @@ export default function LoginScreen(): JSX.Element {
                     hitSlop={8}
                   >
                     {showPassword ? (
-                      <icons.EyeOff size={20} color="#8A8798" />
+                      <icons.EyeOff size={20} color={mutedForeground} />
                     ) : (
-                      <icons.Eye size={20} color="#8A8798" />
+                      <icons.Eye size={20} color={mutedForeground} />
                     )}
                   </PressableFeedback>
                 </View>
@@ -166,7 +169,7 @@ export default function LoginScreen(): JSX.Element {
                   className="flex-1 h-14 rounded-2xl bg-surface-secondary border border-border/50 flex-row items-center justify-center gap-2"
                   onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
                 >
-                  <icons.Globe size={20} color="#1E1E1E" />
+                  <icons.Globe size={20} color={foreground} />
                   <Typography type="body" weight="semibold" className="text-foreground">
                     Google
                   </Typography>
@@ -176,7 +179,7 @@ export default function LoginScreen(): JSX.Element {
                   className="flex-1 h-14 rounded-2xl bg-surface-secondary border border-border/50 flex-row items-center justify-center gap-2"
                   onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
                 >
-                  <icons.Apple size={20} color="#1E1E1E" />
+                  <icons.Apple size={20} color={foreground} />
                   <Typography type="body" weight="semibold" className="text-foreground">
                     Apple
                   </Typography>

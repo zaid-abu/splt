@@ -11,7 +11,7 @@
  * - Typography
  * - Chip
  */
-import { Switch, Typography, Button, ListGroup } from "heroui-native";
+import { Switch, Typography, Button, ListGroup, useThemeColor } from "heroui-native";
 import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/PageAnimator";
 import { Uniwind } from "uniwind";
@@ -66,6 +66,12 @@ export default function ProfileScreen(): JSX.Element {
   const owedToMe = getTotalOwedToMe();
   const iOwe = getTotalIOwe();
 
+  const accentColor = useThemeColor("accent" as any) as unknown as string;
+  const warningColor = useThemeColor("warning" as any) as unknown as string;
+  const successColor = useThemeColor("success" as any) as unknown as string;
+  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
+  const primaryColor = useThemeColor("primary" as any) as unknown as string;
+
   const handleCurrencyChange = (currency: Currency) => {
     setCurrency(currency);
   };
@@ -77,7 +83,7 @@ export default function ProfileScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
         <StatusBar style="dark" />
         <ScrollView
           style={{ flex: 1 }}
@@ -150,21 +156,21 @@ export default function ProfileScreen(): JSX.Element {
                   icon={icons.User}
                   title="Edit Profile"
                   subtitle="Name, email, photo"
-                  color="#6B4EFF"
+                  color={accentColor}
                   onPress={() => {}}
                 />
                 <SettingItem
                   icon={icons.Bell}
                   title="Notifications"
                   subtitle="Push, email alerts"
-                  color="#F59E0B"
+                  color={warningColor}
                   rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />}
                 />
                 <SettingItem
                   icon={icons.Shield}
                   title="Security"
                   subtitle="Password, biometrics"
-                  color="#10B981"
+                  color={successColor}
                   onPress={() => {}}
                   isLast
                 />
@@ -182,7 +188,7 @@ export default function ProfileScreen(): JSX.Element {
                 <SettingItem
                   icon={icons.Moon}
                   title="Dark Mode"
-                  color="#8A8798"
+                  color={mutedForeground}
                   rightElement={
                     <Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />
                   }
@@ -191,7 +197,7 @@ export default function ProfileScreen(): JSX.Element {
                   icon={icons.CreditCard}
                   title="Payment Methods"
                   subtitle="Link bank account, card"
-                  color="#3B82F6"
+                  color={primaryColor}
                   onPress={() => {}}
                   isLast
                 />
@@ -211,19 +217,19 @@ export default function ProfileScreen(): JSX.Element {
                 <SettingItem
                   icon={icons.HelpCircle}
                   title="Help & Support"
-                  color="#EC4899"
+                  color={accentColor}
                   onPress={() => {}}
                 />
                 <SettingItem
                   icon={icons.FileText}
                   title="Privacy Policy"
-                  color="#6366F1"
+                  color={primaryColor}
                   onPress={() => {}}
                 />
                 <SettingItem
                   icon={icons.Info}
                   title="Version"
-                  color="#8B5CF6"
+                  color={primaryColor}
                   rightElement={
                     <View className="bg-secondary px-3 py-1 rounded-full">
                       <Typography type="body-sm" className="font-bold text-muted-foreground">

@@ -1,4 +1,4 @@
-import { Button, Checkbox, Typography, PressableFeedback, useToast } from "heroui-native";
+import { Button, Checkbox, Typography, PressableFeedback, useToast, useThemeColor } from "heroui-native";
 import Animated, {
   FadeInDown,
   FadeIn,
@@ -36,13 +36,18 @@ export default function RegisterScreen(): JSX.Element {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
+  const dangerColor = useThemeColor("danger" as any) as unknown as string;
+  const warningColor = useThemeColor("warning" as any) as unknown as string;
+  const successColor = useThemeColor("success" as any) as unknown as string;
+  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
+
   const passwordStrength = useMemo(() => {
     if (!password) return { label: "", color: "transparent", progress: 0 };
-    if (password.length < 6) return { label: "Weak", color: "#EF4444", progress: 33 };
+    if (password.length < 6) return { label: "Weak", color: dangerColor, progress: 33 };
     if (password.length < 10 || !/\d/.test(password))
-      return { label: "Good", color: "#F5A524", progress: 66 };
-    return { label: "Strong", color: "#17C964", progress: 100 };
-  }, [password]);
+      return { label: "Good", color: warningColor, progress: 66 };
+    return { label: "Strong", color: successColor, progress: 100 };
+  }, [password, dangerColor, warningColor, successColor]);
 
   const strengthStyle = useAnimatedStyle(() => {
     return {
@@ -118,7 +123,7 @@ export default function RegisterScreen(): JSX.Element {
                   Full Name
                 </Typography>
                 <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
-                  <icons.User size={20} color="#8A8798" />
+                  <icons.User size={20} color={mutedForeground} />
                   <TextInput
                     placeholder="John Doe"
                     value={name}
@@ -126,7 +131,7 @@ export default function RegisterScreen(): JSX.Element {
                     autoCapitalize="words"
                     autoComplete="name"
                     className="flex-1 ml-3 font-medium text-foreground text-[16px]"
-                    placeholderTextColor="#8A8798"
+                    placeholderTextColor={mutedForeground}
                   />
                 </View>
               </View>
@@ -136,7 +141,7 @@ export default function RegisterScreen(): JSX.Element {
                   Email Address
                 </Typography>
                 <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
-                  <icons.Mail size={20} color="#8A8798" />
+                  <icons.Mail size={20} color={mutedForeground} />
                   <TextInput
                     placeholder="hello@splt.app"
                     value={email}
@@ -145,7 +150,7 @@ export default function RegisterScreen(): JSX.Element {
                     autoCapitalize="none"
                     autoComplete="email"
                     className="flex-1 ml-3 font-medium text-foreground text-[16px]"
-                    placeholderTextColor="#8A8798"
+                    placeholderTextColor={mutedForeground}
                   />
                 </View>
               </View>
@@ -155,7 +160,7 @@ export default function RegisterScreen(): JSX.Element {
                   Password
                 </Typography>
                 <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
-                  <icons.Lock size={20} color="#8A8798" />
+                  <icons.Lock size={20} color={mutedForeground} />
                   <TextInput
                     placeholder="••••••••"
                     value={password}
@@ -163,7 +168,7 @@ export default function RegisterScreen(): JSX.Element {
                     secureTextEntry={!showPassword}
                     autoComplete="new-password"
                     className="flex-1 ml-3 font-medium text-foreground text-[16px]"
-                    placeholderTextColor="#8A8798"
+                    placeholderTextColor={mutedForeground}
                   />
                   <PressableFeedback
                     onPress={() => {
@@ -173,9 +178,9 @@ export default function RegisterScreen(): JSX.Element {
                     hitSlop={8}
                   >
                     {showPassword ? (
-                      <icons.EyeOff size={20} color="#8A8798" />
+                      <icons.EyeOff size={20} color={mutedForeground} />
                     ) : (
-                      <icons.Eye size={20} color="#8A8798" />
+                      <icons.Eye size={20} color={mutedForeground} />
                     )}
                   </PressableFeedback>
                 </View>

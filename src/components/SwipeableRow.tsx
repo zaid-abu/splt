@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { View, StyleSheet, Animated } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import { PressableFeedback, Typography } from "heroui-native";
+import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 
@@ -13,6 +13,8 @@ interface SwipeableRowProps {
 
 export function SwipeableRow({ children, onDelete, onSettle }: SwipeableRowProps) {
   const swipeableRef = useRef<Swipeable>(null);
+  const successColor = useThemeColor("success" as any) as unknown as string;
+  const dangerColor = useThemeColor("danger" as any) as unknown as string;
 
   const renderRightActions = (
     progress: Animated.AnimatedInterpolation<number>,
@@ -36,7 +38,7 @@ export function SwipeableRow({ children, onDelete, onSettle }: SwipeableRowProps
           <Animated.View
             style={[
               styles.actionButton,
-              { backgroundColor: "#10b981", transform: [{ scale }], opacity },
+              { backgroundColor: successColor, transform: [{ scale }], opacity },
             ]}
           >
             <PressableFeedback
@@ -59,7 +61,7 @@ export function SwipeableRow({ children, onDelete, onSettle }: SwipeableRowProps
           <Animated.View
             style={[
               styles.actionButton,
-              { backgroundColor: "#ef4444", transform: [{ scale }], opacity },
+              { backgroundColor: dangerColor, transform: [{ scale }], opacity },
             ]}
           >
             <PressableFeedback

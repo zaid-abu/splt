@@ -24,7 +24,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
   if (!expense) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
         <View className="flex-1 items-center justify-center px-5 gap-4">
           <icons.AlertCircle size={48} className="text-danger" />
           <Typography type="h3" className="font-bold">
@@ -67,7 +67,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
   const CategoryIcon = (icons as any)[category?.icon ?? "Package"] || icons.Package;
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
       <StatusBar style="dark" />
       <ScrollView
         className="flex-1"

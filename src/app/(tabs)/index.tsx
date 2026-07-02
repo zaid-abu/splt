@@ -81,7 +81,7 @@ export default function DashboardScreen(): JSX.Element {
   }, []);
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
+    <FocusAwareView style={{ flex: 1 }} className="bg-background">
       <StatusBar style="dark" />
 
       {/* ── Sticky Blurred Header ───────────────────── */}

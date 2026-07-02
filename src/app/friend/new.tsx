@@ -62,7 +62,7 @@ export default function NewFriendScreen(): JSX.Element {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top", "bottom"]}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top", "bottom"]}>
       <StatusBar style="dark" />
 
       {/* Header */}

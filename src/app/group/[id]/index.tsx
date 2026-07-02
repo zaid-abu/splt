@@ -72,7 +72,7 @@ export default function GroupDetailScreen(): JSX.Element {
 
   if (!group) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
         <View className="flex-1 items-center justify-center px-5 gap-4">
           <Alert status="danger" className="rounded-[20px]">
             <Alert.Indicator />
@@ -104,7 +104,7 @@ export default function GroupDetailScreen(): JSX.Element {
   );
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top"]}>
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
       <StatusBar style="dark" />
       <Animated.ScrollView
         onScroll={scrollHandler}

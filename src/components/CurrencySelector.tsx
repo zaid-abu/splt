@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import { View, TextInput } from "react-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import * as icons from "lucide-react-native";
-import { Typography, PressableFeedback } from "heroui-native";
+import { Typography, PressableFeedback, useThemeColor } from "heroui-native";
 
 import type { Currency } from "@/types";
 import { CURRENCIES } from "@/types";
@@ -20,6 +20,9 @@ export function CurrencySelector({
 }: CurrencySelectorProps): React.JSX.Element {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [search, setSearch] = useState("");
+
+  const backgroundColor = useThemeColor("background" as any) as unknown as string;
+  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
 
   const selectedCurrency = CURRENCIES.find((c) => c.code === value) || CURRENCIES[0];
 
@@ -96,8 +99,8 @@ export function CurrencySelector({
         enableDynamicSizing={false}
         onChange={handleSheetChanges}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: "#F2F2F6" }}
-        handleIndicatorStyle={{ backgroundColor: "#8A8798", width: 40 }}
+        backgroundStyle={{ backgroundColor }}
+        handleIndicatorStyle={{ backgroundColor: mutedForeground, width: 40 }}
         style={{ minWidth: "100%", alignSelf: "center" }}
       >
         <View className="flex-1 px-6 pt-2 pb-6">
@@ -107,19 +110,19 @@ export function CurrencySelector({
 
           <View className="mb-4">
             <View className="flex-row items-center bg-white h-[44px] rounded-[16px] px-4 border border-border">
-              <icons.Search size={20} color="#8A8798" />
+              <icons.Search size={20} color={mutedForeground} />
               <TextInput
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Search currencies…"
                 className="flex-1 ml-2 font-medium text-[15px] text-foreground"
-                placeholderTextColor="#8A8798"
+                placeholderTextColor={mutedForeground}
                 autoCapitalize="none"
                 autoCorrect={false}
               />
               {search.length > 0 && (
                 <PressableFeedback onPress={() => setSearch("")} hitSlop={8}>
-                  <icons.XCircle size={18} color="#8A8798" />
+                  <icons.XCircle size={18} color={mutedForeground} />
                 </PressableFeedback>
               )}
             </View>

@@ -1,4 +1,4 @@
-import { Button, Typography } from "heroui-native";
+import { Button, Typography, useThemeColor } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useRef } from "react";
@@ -49,11 +49,14 @@ const SLIDES = [
 ];
 
 const Dot = ({ index, scrollX, width }: { index: number; scrollX: any; width: number }) => {
+  const primary = useThemeColor("primary" as any) as unknown as string;
+  const border = useThemeColor("border" as any) as unknown as string;
+
   const dotStyle = useAnimatedStyle(() => {
     const isActive = Math.round(scrollX.value / width) === index;
     return {
       width: withSpring(isActive ? 24 : 8),
-      backgroundColor: isActive ? "#3D2B82" : "#E5E5EA",
+      backgroundColor: isActive ? primary : border,
     };
   });
   return <Animated.View className="h-2 rounded-full" style={dotStyle} />;
@@ -83,7 +86,7 @@ export default function WelcomeScreen(): JSX.Element {
   });
 
   return (
-    <Animated.View style={[{ flex: 1, backgroundColor: "#3D2B82" }, backgroundStyle]}>
+    <Animated.View className="bg-primary" style={[{ flex: 1 }, backgroundStyle]}>
       <StatusBar style="light" />
 
       {/* Dynamic Decor Background Elements */}
@@ -202,7 +205,7 @@ export default function WelcomeScreen(): JSX.Element {
           <Button
             size="lg"
             variant="primary"
-            className="w-full h-14 rounded-[16px] bg-[#3D2B82]"
+            className="w-full h-14 rounded-[16px] bg-primary"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
               router.push("/(auth)/register");
@@ -216,7 +219,7 @@ export default function WelcomeScreen(): JSX.Element {
           <Button
             size="lg"
             variant="secondary"
-            className="w-full h-14 rounded-[16px] bg-[#F2F2F6]"
+            className="w-full h-14 rounded-[16px] bg-background"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
               router.push("/(auth)/login");

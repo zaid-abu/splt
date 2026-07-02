@@ -1,4 +1,4 @@
-import { PressableFeedback, Typography } from "heroui-native";
+import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { View } from "react-native";
 
@@ -25,6 +25,7 @@ export function ExpenseItem({
   groupName,
   groupIcon,
 }: ExpenseItemProps): JSX.Element {
+  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
   const myShare = expense.splits.find((s) => s.userId === currentUserId);
   const paidByMe = expense.paidBy === currentUserId;
   const category = EXPENSE_CATEGORIES.find((c) => c.key === expense.category);
@@ -60,7 +61,7 @@ export function ExpenseItem({
                   <Typography type="body-sm" className="text-muted-foreground">
                     ·
                   </Typography>
-                  {GroupIcon && <GroupIcon size={12} color="#8A8798" />}
+                  {GroupIcon && <GroupIcon size={12} color={mutedForeground} />}
                   <Typography
                     type="body-sm"
                     className="text-muted-foreground font-medium"

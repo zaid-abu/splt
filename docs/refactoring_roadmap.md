@@ -278,24 +278,26 @@ Recommend only one next phase. Wait for approval before continuing.
 ### ✅ Phase 3: Folder Structure (Completed)
 - Scaffold the production-ready directory hierarchy (`src/features`, `src/services`, `src/components/ui`, etc.) with `.gitkeep` files.
 
-### ⏳ Phase 4: Design System
+### ✅ Phase 4: Design System (Completed)
 - **Objective:** Establish reusable styling tokens (colors, typography, spacing).
 - **Implementation:** 
   - Review `design-tokens.json` and map them to Tailwind variants / Uniwind configuration.
   - Create standard typography utility constants.
   - Ensure `global.css` reflects the strict tokens.
 
-### ⏳ Phase 5: Theme Refactor
-- **Objective:** Implement dark mode and theme tokens globally.
-- **Implementation:**
-  - Remove all hardcoded colors (e.g., `#3d2b82`, `#F2F2F6`, `#8A8798`) from existing screens (like `_layout.tsx`, `expense/new.tsx`).
-  - Replace them with dynamic theme classes (e.g., `bg-background`, `text-muted-foreground`).
+### ✅ Phase 5: Theme Refactor (COMPLETED)
+- **Goal:** Unify color system by replacing hardcoded hex values with Tailwind semantic classes.
+- **Tasks:**
+  - `[x]` Migrate `src/app/(auth)/welcome.tsx`, `login.tsx`, `register.tsx` hex colors (e.g., `#3D2B82` -> `bg-primary`, `#E5E5EA` -> `border-border/50`).
+  - `[x]` Migrate components (`MemberAvatar.tsx`, `BalanceCard.tsx`, `CurrencySelector.tsx`, `SwipeableRow.tsx`).
+  - `[x]` Update all `<SafeAreaView>` and `<FocusAwareView>` background styles to use `className="bg-background"` instead of inline hex `backgroundColor: "#F2F2F6"`.
+  - `[x]` Fix TS strict mode warnings for `useThemeColor` by casting valid hex variable outputs where necessary.
 
-### ⏳ Phase 6: Providers
+### ✅ Phase 6: Providers (COMPLETED)
 - **Objective:** Clean up `_layout.tsx` by extracting complex provider trees.
 - **Implementation:**
-  - Create `src/providers/AppProvider.tsx`.
-  - Wrap `HeroUINativeProvider`, `BottomSheetModalProvider`, `SafeAreaProvider`, and future `QueryClientProvider` neatly to keep `_layout.tsx` purely for routing.
+  - `[x]` Create `src/providers/AppProvider.tsx`.
+  - `[x]` Wrap `HeroUINativeProvider`, `BottomSheetModalProvider`, `SafeAreaProvider`, and `AppContextProvider` neatly to keep `_layout.tsx` purely for routing.
 
 ### ⏳ Phase 7: Global State (Zustand)
 - **Objective:** Replace prop-drilling or large React Contexts with Zustand.

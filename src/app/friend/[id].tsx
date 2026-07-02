@@ -77,7 +77,7 @@ export default function FriendDetailScreen(): JSX.Element {
 
   if (!friend) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }}>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background">
         <View className="flex-1 items-center justify-center p-6">
           <Alert status="danger" className="mb-4 rounded-[20px]">
             <Alert.Indicator />
@@ -96,7 +96,7 @@ export default function FriendDetailScreen(): JSX.Element {
 
   return (
     <Animated.View style={{ flex: 1 }} entering={FadeInDown.duration(300).springify()}>
-      <SafeAreaView style={{ flex: 1, backgroundColor: "#F2F2F6" }} edges={["top", "bottom"]}>
+      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top", "bottom"]}>
         <StatusBar style="dark" />
         <Animated.ScrollView
           onScroll={scrollHandler}
