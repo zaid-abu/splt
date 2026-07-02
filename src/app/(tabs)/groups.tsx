@@ -20,12 +20,16 @@ import { BlurView } from "expo-blur";
 import * as icons from "lucide-react-native";
 
 import { GroupCard } from "@/components/GroupCard";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 
 export default function GroupsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { groups, currentUser, isAppLoading } = useApp();
+  const { currentUser } = useAuth();
+  const groups = useDataStore(s => s.groups);
+  const isAppLoading = useUIStore(s => s.isAppLoading);
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()

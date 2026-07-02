@@ -17,7 +17,9 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import * as icons from "lucide-react-native";
@@ -32,14 +34,18 @@ export default function SettleUpScreen(): JSX.Element {
   } = useLocalSearchParams<{ id: string; groupId?: string; amount?: string; direction?: string }>();
   const router = useRouter();
   const { toast } = useToast();
-  const { groups, currentUser, preferredCurrency, getUserBalances, addSettlement, setCurrency } =
-    useApp();
+  const { currentUser } = useAuth();
+  const groups = useDataStore(s => s.groups);
+  const preferredCurrency = useUIStore(s => s.preferredCurrency);
+  const getUserBalances = useDataStore(s => s.getUserBalances);
+  const addSettlement = useDataStore(s => s.addSettlement);
+  const setCurrency = useUIStore(s => s.setCurrency);
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
   const friend = uniqueFriends.find((f) => f.id === id);
 
-  const balances = getUserBalances();
+  const balances = getUserBalances(currentUser.id);
   const netBalance = balances.get(id ?? "") || 0; // Negative means you owe them
 
   // "you" means you paid them (so they owe you less, or you owe them less)
@@ -96,15 +102,18 @@ export default function SettleUpScreen(): JSX.Element {
     setLoading(true);
 
     try {
-      await addSettlement({
-        groupId: selectedGroupId,
-        fromUserId: direction === "you" ? currentUser.id : friend!.id,
-        toUserId: direction === "you" ? friend!.id : currentUser.id,
-        amount: parsedAmount,
-        currency: settleCurrency,
-        date: new Date(),
-        note: note.trim(),
-      });
+      await addSettlement(
+        {
+          groupId: selectedGroupId,
+          fromUserId: direction === "you" ? currentUser.id : friend!.id,
+          toUserId: direction === "you" ? friend!.id : currentUser.id,
+          amount: parsedAmount,
+          currency: settleCurrency,
+          date: new Date(),
+          note: note.trim(),
+        },
+        currentUser
+      );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (e: any) {

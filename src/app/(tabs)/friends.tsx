@@ -13,18 +13,24 @@ import { SwipeableRow } from "@/components/SwipeableRow";
 
 import { FocusAwareView } from "@/components/PageAnimator";
 import { formatAmount } from "@/components/AmountDisplay";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 
 export default function FriendsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { groups, currentUser, getUserBalances, preferredCurrency, isAppLoading } = useApp();
+  const { currentUser } = useAuth();
+  const groups = useDataStore(s => s.groups);
+  const getUserBalances = useDataStore(s => s.getUserBalances);
+  const preferredCurrency = useUIStore(s => s.preferredCurrency);
+  const isAppLoading = useUIStore(s => s.isAppLoading);
 
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
-  const balances = getUserBalances();
+  const balances = getUserBalances(currentUser.id);
 
   const uniqueFriends = useMemo(() => {
     const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));

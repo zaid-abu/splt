@@ -5,7 +5,9 @@ import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { getCurrencySymbol } from "@/components/AmountDisplay";
 import * as icons from "lucide-react-native";
@@ -19,7 +21,10 @@ interface SettlementSuggestion {
 export default function GroupSettleScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getGroup, getSimplifiedDebts, getExactPairwiseDebts, currentUser } = useApp();
+  const { currentUser } = useAuth();
+  const getGroup = useDataStore(s => s.getGroup);
+  const getSimplifiedDebts = useDataStore(s => s.getSimplifiedDebts);
+  const getExactPairwiseDebts = useDataStore(s => s.getExactPairwiseDebts);
 
   const group = getGroup(id ?? "");
   const sym = group ? getCurrencySymbol(group.currency) : "$";

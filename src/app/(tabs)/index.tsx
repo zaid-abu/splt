@@ -15,7 +15,9 @@ import * as Haptics from "expo-haptics";
 import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { PieChart } from "react-native-gifted-charts";
 
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { formatAmount } from "@/components/AmountDisplay";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { ActivityItem } from "@/components/ActivityItem";
@@ -24,25 +26,23 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const {
-    currentUser,
-    groups,
-    activities,
-    getTotalOwedToMe,
-    getTotalIOwe,
-    getUserBalances,
-    preferredCurrency,
-  } = useApp();
+  const { currentUser } = useAuth();
+  const groups = useDataStore(s => s.groups);
+  const activities = useDataStore(s => s.activities);
+  const getTotalOwedToMe = useDataStore(s => s.getTotalOwedToMe);
+  const getTotalIOwe = useDataStore(s => s.getTotalIOwe);
+  const getUserBalances = useDataStore(s => s.getUserBalances);
+  const preferredCurrency = useUIStore(s => s.preferredCurrency);
 
   const [refreshing, setRefreshing] = useState(false);
   const [selectedSlice, setSelectedSlice] = useState<"owed" | "owe" | null>(null);
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const owedToYou = getTotalOwedToMe();
-  const youOwe = Math.abs(getTotalIOwe());
+  const owedToYou = getTotalOwedToMe(currentUser.id);
+  const youOwe = Math.abs(getTotalIOwe(currentUser.id));
   const netBalance = owedToYou - youOwe;
 
-  const balances = getUserBalances();
+  const balances = getUserBalances(currentUser.id);
 
   // Find top outstanding balances (up to 3)
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));

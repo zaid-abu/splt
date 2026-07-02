@@ -23,7 +23,9 @@ import { CurrencySelector } from "@/components/CurrencySelector";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { getCurrencySymbol } from "@/components/AmountDisplay";
 import * as icons from "lucide-react-native";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 
 const GROUP_ICONS = [
@@ -47,16 +49,14 @@ const GROUP_ICONS = [
 export default function GroupSettingsScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const {
-    getGroup,
-    updateGroup,
-    deleteGroup,
-    removeGroupMember,
-    addGroupMembers,
-    groups,
-    currentUser,
-    getGroupBalances,
-  } = useApp();
+  const { currentUser } = useAuth();
+  const getGroup = useDataStore(s => s.getGroup);
+  const updateGroup = useDataStore(s => s.updateGroup);
+  const deleteGroup = useDataStore(s => s.deleteGroup);
+  const removeGroupMember = useDataStore(s => s.removeGroupMember);
+  const addGroupMembers = useDataStore(s => s.addGroupMembers);
+  const groups = useDataStore(s => s.groups);
+  const getGroupBalances = useDataStore(s => s.getGroupBalances);
   const { toast } = useToast();
 
   const group = getGroup(id ?? "");

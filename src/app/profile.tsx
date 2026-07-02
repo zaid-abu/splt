@@ -22,7 +22,9 @@ import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { CurrencySelector } from "@/components/CurrencySelector";
@@ -57,14 +59,18 @@ function SettingItem({ icon: Icon, title, subtitle, color, onPress, rightElement
 }
 
 export default function ProfileScreen(): JSX.Element {
-  const { currentUser, groups, getTotalOwedToMe, getTotalIOwe, preferredCurrency, setCurrency } =
-    useApp();
+  const { currentUser } = useAuth();
+  const groups = useDataStore(s => s.groups);
+  const getTotalOwedToMe = useDataStore(s => s.getTotalOwedToMe);
+  const getTotalIOwe = useDataStore(s => s.getTotalIOwe);
+  const preferredCurrency = useUIStore(s => s.preferredCurrency);
+  const setCurrency = useUIStore(s => s.setCurrency);
   const router = useRouter();
   const [darkMode, setDarkMode] = useState(true);
   const [notifs, setNotifs] = useState(true);
 
-  const owedToMe = getTotalOwedToMe();
-  const iOwe = getTotalIOwe();
+  const owedToMe = getTotalOwedToMe(currentUser.id);
+  const iOwe = getTotalIOwe(currentUser.id);
 
   const accentColor = useThemeColor("accent" as any) as unknown as string;
   const warningColor = useThemeColor("warning" as any) as unknown as string;

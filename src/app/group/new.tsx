@@ -34,7 +34,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { CurrencySelector } from "@/components/CurrencySelector";
 import * as icons from "lucide-react-native";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
 
 const GROUP_ICONS = [
@@ -57,7 +59,8 @@ const GROUP_ICONS = [
 
 export default function NewGroupScreen(): JSX.Element {
   const router = useRouter();
-  const { createGroup } = useApp();
+  const { currentUser } = useAuth();
+  const createGroup = useDataStore(s => s.createGroup);
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -97,13 +100,16 @@ export default function NewGroupScreen(): JSX.Element {
 
     setLoading(true);
     try {
-      const group = await createGroup({
-        name: name.trim(),
-        description: description.trim() || undefined,
-        icon,
-        currency: currency.code,
-        memberEmails: memberEmails,
-      });
+      const group = await createGroup(
+        {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          icon,
+          currency: currency.code,
+          memberEmails: memberEmails,
+        },
+        currentUser
+      );
       router.replace(`/group/${group.id}`);
     } catch {
       toast.show({

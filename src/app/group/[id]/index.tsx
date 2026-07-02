@@ -31,21 +31,21 @@ import { ExpenseItem } from "@/components/ExpenseItem";
 import { AvatarStack, AppUserAvatar } from "@/components/MemberAvatar";
 import { getCurrencySymbol } from "@/components/AmountDisplay";
 import * as icons from "lucide-react-native";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const {
-    getGroup,
-    getGroupExpenses,
-    currentUser,
-    getGroupBalances,
-    convertCurrency,
-    isAppLoading,
-    getSimplifiedDebts,
-    getExactPairwiseDebts,
-  } = useApp();
+  const { currentUser } = useAuth();
+  const getGroup = useDataStore(s => s.getGroup);
+  const getGroupExpenses = useDataStore(s => s.getGroupExpenses);
+  const getGroupBalances = useDataStore(s => s.getGroupBalances);
+  const convertCurrency = useUIStore(s => s.convertCurrency);
+  const isAppLoading = useUIStore(s => s.isAppLoading);
+  const getSimplifiedDebts = useDataStore(s => s.getSimplifiedDebts);
+  const getExactPairwiseDebts = useDataStore(s => s.getExactPairwiseDebts);
 
   const group = getGroup(id ?? "");
   const expenses = getGroupExpenses(id ?? "");

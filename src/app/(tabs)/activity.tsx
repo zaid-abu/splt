@@ -9,7 +9,9 @@ import { BlurView } from "expo-blur";
 import { FocusAwareView } from "@/components/PageAnimator";
 import * as icons from "lucide-react-native";
 
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { formatAmount } from "@/components/AmountDisplay";
 import { ActivityItem } from "@/components/ActivityItem";
@@ -18,20 +20,18 @@ import type { Activity } from "@/types";
 export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const {
-    activities,
-    currentUser,
-    getTotalOwedToMe,
-    getTotalIOwe,
-    preferredCurrency,
-    isAppLoading,
-  } = useApp();
+  const { currentUser } = useAuth();
+  const activities = useDataStore(s => s.activities);
+  const getTotalOwedToMe = useDataStore(s => s.getTotalOwedToMe);
+  const getTotalIOwe = useDataStore(s => s.getTotalIOwe);
+  const preferredCurrency = useUIStore(s => s.preferredCurrency);
+  const isAppLoading = useUIStore(s => s.isAppLoading);
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const owedToMe = getTotalOwedToMe();
-  const iOwe = Math.abs(getTotalIOwe());
+  const owedToMe = getTotalOwedToMe(currentUser.id);
+  const iOwe = Math.abs(getTotalIOwe(currentUser.id));
 
   // Sort activities by date descending
   const sortedActivities = useMemo(() => {

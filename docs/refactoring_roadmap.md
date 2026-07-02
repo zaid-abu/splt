@@ -347,13 +347,11 @@ Recommend only one next phase. Wait for approval before continuing.
   - `[x]` Create `src/providers/AppProvider.tsx`.
   - `[x]` Wrap `HeroUINativeProvider`, `BottomSheetModalProvider`, `SafeAreaProvider`, and `AppContextProvider` neatly to keep `_layout.tsx` purely for routing.
 
-### ⏳ Phase 7: Global State (Zustand)
+### ✅ Phase 7: Global State Management
 
-- **Objective:** Replace prop-drilling or large React Contexts with Zustand.
-- **Implementation:**
-  - Create `src/store/useUIStore.ts` (for bottom sheets, dialog visibility, active tabs).
-  - Create `src/store/usePreferencesStore.ts` (for selected currency, theme override).
-  - Refactor screens to select only the state they need to prevent unnecessary re-renders.
+- [x] Migrate `AppContext` to Zustand stores (`useDataStore`, `useUIStore`).
+- [x] Refactor `AppContext` to serve as a pure `AuthProvider`.
+- [x] Integrate Zustand stores across all screens, utilizing atomic selectors to prevent unnecessary re-renders.
 
 ### ⏳ Phase 8: React Query Integration
 

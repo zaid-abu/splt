@@ -17,14 +17,20 @@ import * as icons from "lucide-react-native";
 
 import { formatAmount } from "@/components/AmountDisplay";
 import { ActivityItem } from "@/components/ActivityItem";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 
 export default function FriendDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { activities, groups, currentUser, preferredCurrency, getUserBalances, isAppLoading } =
-    useApp();
+  const { currentUser } = useAuth();
+  const activities = useDataStore(s => s.activities);
+  const groups = useDataStore(s => s.groups);
+  const preferredCurrency = useUIStore(s => s.preferredCurrency);
+  const getUserBalances = useDataStore(s => s.getUserBalances);
+  const isAppLoading = useUIStore(s => s.isAppLoading);
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
@@ -52,7 +58,7 @@ export default function FriendDetailScreen(): JSX.Element {
       .sort((a, b) => b.date.getTime() - a.date.getTime());
   }, [activities, id, currentUser.id]);
 
-  const balances = getUserBalances();
+  const balances = getUserBalances(currentUser.id);
   const netBalance = balances.get(id ?? "") || 0;
   const isPositive = netBalance > 0;
   const scrollY = useSharedValue(0);

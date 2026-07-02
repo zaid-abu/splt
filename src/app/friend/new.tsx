@@ -16,11 +16,14 @@ import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import * as icons from "lucide-react-native";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 
 export default function NewFriendScreen(): JSX.Element {
   const router = useRouter();
-  const { createGroup, currentUser } = useApp();
+  const { currentUser } = useAuth();
+  const createGroup = useDataStore(s => s.createGroup);
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -36,13 +39,16 @@ export default function NewFriendScreen(): JSX.Element {
     try {
       // In the current data model, friends are derived from groups.
       // So we create a 1-on-1 group representing this friendship.
-      await createGroup({
-        name: `Non-group expenses with ${name.trim()}`,
-        icon: "User", // Using a fallback string icon
-        currency: currentUser.defaultCurrency || "USD",
-        memberEmails: [currentUser.email, email.trim()],
-        simplifyDebts: true,
-      });
+      await createGroup(
+        {
+          name: `Non-group expenses with ${name.trim()}`,
+          icon: "User", // Using a fallback string icon
+          currency: currentUser.defaultCurrency || "USD",
+          memberEmails: [currentUser.email, email.trim()],
+          simplifyDebts: true,
+        },
+        currentUser
+      );
 
       toast.show({
         label: "Friend added",

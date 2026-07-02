@@ -6,7 +6,9 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 
 import type { Activity } from "@/types";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { formatAmount } from "@/components/AmountDisplay";
 import { SwipeableRow } from "@/components/SwipeableRow";
 
@@ -17,7 +19,8 @@ interface ActivityItemProps {
 }
 
 export function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
-  const { currentUser, deleteActivity } = useApp();
+  const { currentUser } = useAuth();
+  const deleteActivity = useDataStore(s => s.deleteActivity);
   const router = useRouter();
 
   // Determine financial involvement

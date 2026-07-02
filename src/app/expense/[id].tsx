@@ -9,13 +9,19 @@ import * as icons from "lucide-react-native";
 
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { getCurrencySymbol } from "@/components/AmountDisplay";
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { EXPENSE_CATEGORIES } from "@/types";
 
 export default function ExpenseDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { getExpense, deleteExpense, currentUser, getGroup, isAppLoading } = useApp();
+  const { currentUser } = useAuth();
+  const getExpense = useDataStore(s => s.getExpense);
+  const deleteExpense = useDataStore(s => s.deleteExpense);
+  const getGroup = useDataStore(s => s.getGroup);
+  const isAppLoading = useUIStore(s => s.isAppLoading);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const expense = getExpense(id ?? "");

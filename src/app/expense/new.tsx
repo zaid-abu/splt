@@ -45,7 +45,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeInUp, FadeIn, FadeOut, Layout } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
-import { useApp } from "@/context/AppContext";
+import { useAuth } from "@/context/AppContext";
+import { useDataStore } from "@/store/useDataStore";
+import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { formatAmount } from "@/components/AmountDisplay";
 import { CurrencySelector } from "@/components/CurrencySelector";
@@ -70,16 +72,14 @@ export default function AddExpenseScreen(): JSX.Element {
     expenseId?: string;
   }>();
   const router = useRouter();
-  const {
-    getGroup,
-    getExpense,
-    addExpense,
-    updateExpense,
-    currentUser,
-    groups,
-    preferredCurrency,
-    setCurrency,
-  } = useApp();
+  const { currentUser } = useAuth();
+  const getGroup = useDataStore(s => s.getGroup);
+  const getExpense = useDataStore(s => s.getExpense);
+  const addExpense = useDataStore(s => s.addExpense);
+  const updateExpense = useDataStore(s => s.updateExpense);
+  const groups = useDataStore(s => s.groups);
+  const preferredCurrency = useUIStore(s => s.preferredCurrency);
+  const setCurrency = useUIStore(s => s.setCurrency);
 
   const existingExpense = useMemo(
     () => (expenseId ? getExpense(expenseId) : undefined),
@@ -290,28 +290,35 @@ export default function AddExpenseScreen(): JSX.Element {
       });
 
       if (existingExpense) {
-        await updateExpense(existingExpense.id, {
-          title: title.trim(),
-          amount: parsedAmount,
-          currency: expenseCurrency,
-          category,
-          paidBy,
-          splits,
-          splitMethod,
-          date: expenseDate,
-        });
+        await updateExpense(
+          existingExpense.id,
+          {
+            title: title.trim(),
+            amount: parsedAmount,
+            currency: expenseCurrency,
+            category,
+            paidBy,
+            splits,
+            splitMethod,
+            date: expenseDate,
+          },
+          currentUser
+        );
       } else {
-        await addExpense({
-          groupId: selectedGroup?.id,
-          title: title.trim(),
-          amount: parsedAmount,
-          currency: expenseCurrency,
-          category,
-          paidBy,
-          splits,
-          splitMethod,
-          date: expenseDate,
-        });
+        await addExpense(
+          {
+            groupId: selectedGroup?.id,
+            title: title.trim(),
+            amount: parsedAmount,
+            currency: expenseCurrency,
+            category,
+            paidBy,
+            splits,
+            splitMethod,
+            date: expenseDate,
+          },
+          currentUser
+        );
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
