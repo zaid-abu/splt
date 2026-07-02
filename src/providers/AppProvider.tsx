@@ -15,9 +15,7 @@ export function AppProvider({ children }: AppProviderProps): JSX.Element {
       <SafeAreaProvider>
         <HeroUINativeProvider config={{ devInfo: { stylingPrinciples: false } }}>
           <BottomSheetModalProvider>
-            <AppContextProvider>
-              {children}
-            </AppContextProvider>
+            <AppContextProvider>{children}</AppContextProvider>
           </BottomSheetModalProvider>
         </HeroUINativeProvider>
       </SafeAreaProvider>

@@ -1,4 +1,11 @@
-import { Button, Checkbox, Typography, PressableFeedback, useToast, useThemeColor } from "heroui-native";
+import {
+  Button,
+  Checkbox,
+  Typography,
+  PressableFeedback,
+  useToast,
+  useThemeColor,
+} from "heroui-native";
 import Animated, {
   FadeInDown,
   FadeIn,

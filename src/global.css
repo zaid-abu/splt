@@ -49,7 +49,7 @@
   --color-background: var(--color-background);
   --color-surface: var(--color-surface);
   --color-surface-secondary: var(--color-surface-secondary);
-  
+
   --color-text-primary: var(--color-text-primary);
   --color-text-secondary: var(--color-text-secondary);
   --color-text-disabled: var(--color-text-disabled);
@@ -69,10 +69,10 @@
   --color-muted: var(--color-border-main);
   --color-muted-foreground: var(--color-text-secondary);
   --color-border: var(--color-border-main);
-  
+
   --font-family-heading: var(--font-family-heading);
   --font-family-body: var(--font-family-body);
-  
+
   --text-xs: var(--text-xs);
   --text-sm: var(--text-sm);
   --text-md: var(--text-md);
@@ -100,37 +100,37 @@
 @layer base {
   :root {
     /* Colors */
-    --color-primary: #3D2B82;
-    --color-primary-light: #6749D2;
-    --color-primary-dark: #261C4C;
-    --color-primary-foreground: #FFFFFF;
+    --color-primary: #3d2b82;
+    --color-primary-light: #6749d2;
+    --color-primary-dark: #261c4c;
+    --color-primary-foreground: #ffffff;
 
-    --color-secondary: #D4E9FA;
-    --color-secondary-light: #E9F4FC;
-    --color-secondary-dark: #A9D2F5;
-    --color-secondary-foreground: #1A1A1A;
+    --color-secondary: #d4e9fa;
+    --color-secondary-light: #e9f4fc;
+    --color-secondary-dark: #a9d2f5;
+    --color-secondary-foreground: #1a1a1a;
 
-    --color-accent-purple-light: #E0DDF2;
-    --color-accent-purple-medium: #A092E1;
-    --color-accent-orange: #F89D7B;
-    --color-accent-blue: #6B4EFF;
+    --color-accent-purple-light: #e0ddf2;
+    --color-accent-purple-medium: #a092e1;
+    --color-accent-orange: #f89d7b;
+    --color-accent-blue: #6b4eff;
 
-    --color-background: #F2F2F6;
-    --color-surface: #FFFFFF;
-    --color-surface-secondary: #F8F9FB;
+    --color-background: #f2f2f6;
+    --color-surface: #ffffff;
+    --color-surface-secondary: #f8f9fb;
 
-    --color-text-primary: #1E1A34;
-    --color-text-secondary: #8A8798;
-    --color-text-disabled: #C4C4C4;
-    --color-text-inverse: #FFFFFF;
+    --color-text-primary: #1e1a34;
+    --color-text-secondary: #8a8798;
+    --color-text-disabled: #c4c4c4;
+    --color-text-inverse: #ffffff;
 
-    --color-border-light: #F0F0F0;
-    --color-border-main: #E5E5E5;
+    --color-border-light: #f0f0f0;
+    --color-border-main: #e5e5e5;
 
     /* Typography */
-    --font-family-heading: 'PlusJakartaSans_700Bold';
-    --font-family-body: 'PlusJakartaSans_400Regular';
-    
+    --font-family-heading: "PlusJakartaSans_700Bold";
+    --font-family-body: "PlusJakartaSans_400Regular";
+
     --text-xs: 12px;
     --text-sm: 14px;
     --text-md: 16px;

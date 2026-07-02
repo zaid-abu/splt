@@ -5,8 +5,8 @@
 
 export const TYPOGRAPHY = {
   fontFamily: {
-    heading: 'PlusJakartaSans_700Bold',
-    body: 'PlusJakartaSans_400Regular',
+    heading: "PlusJakartaSans_700Bold",
+    body: "PlusJakartaSans_400Regular",
   },
   fontSize: {
     xs: 12,
@@ -18,11 +18,11 @@ export const TYPOGRAPHY = {
     xxxl: 40,
   },
   fontWeight: {
-    regular: '400',
-    medium: '500',
-    semibold: '600',
-    bold: '700',
-  }
+    regular: "400",
+    medium: "500",
+    semibold: "600",
+    bold: "700",
+  },
 } as const;
 
 export const SPACING = {
