@@ -353,12 +353,11 @@ Recommend only one next phase. Wait for approval before continuing.
 - [x] Refactor `AppContext` to serve as a pure `AuthProvider`.
 - [x] Integrate Zustand stores across all screens, utilizing atomic selectors to prevent unnecessary re-renders.
 
-### ⏳ Phase 8: React Query Integration
+### ✅ Phase 8: React Query Integration
 
-- **Objective:** Set up `@tanstack/react-query` clients.
-- **Implementation:**
-  - Create `src/lib/queryClient.ts` with standard caching and retry strategies.
-  - Create `src/queries/keys.ts` for consistent query key management (e.g., `['expenses', groupId]`).
+- [x] Create `src/lib/queryClient.ts` with standard caching and retry strategies.
+- [x] Create `src/queries/keys.ts` for consistent query key management (e.g., `['expenses', groupId]`).
+- [x] Integrate `QueryClientProvider` into `src/providers/AppProvider.tsx`.
 
 ### ⏳ Phase 9: Supabase Service Layer
 
