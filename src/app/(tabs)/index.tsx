@@ -340,7 +340,10 @@ export default function DashboardScreen(): JSX.Element {
               outstandingFriends.map((f, idx) => {
                 const isPositive = f.balance > 0;
                 return (
-                  <Animated.View key={f.user.id} entering={FadeInDown.delay(300 + idx * 100).springify()}>
+                  <Animated.View
+                    key={f.user.id}
+                    entering={FadeInDown.delay(300 + idx * 100).springify()}
+                  >
                     <PressableFeedback
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -411,11 +414,11 @@ export default function DashboardScreen(): JSX.Element {
 
             <View className="bg-white rounded-[24px] overflow-hidden border border-border">
               {recentActivities.map((activity, idx) => (
-                <ActivityItem 
-                  key={activity.id} 
-                  activity={activity} 
+                <ActivityItem
+                  key={activity.id}
+                  activity={activity}
                   index={idx}
-                  isLast={idx === recentActivities.length - 1} 
+                  isLast={idx === recentActivities.length - 1}
                 />
               ))}
             </View>

@@ -90,7 +90,9 @@ export default function ExpenseDetailScreen(): JSX.Element {
               variant="outline"
               isIconOnly
               className="w-12 h-12 rounded-full bg-white border border-border"
-              onPress={() => router.push({ pathname: "/expense/new", params: { expenseId: expense.id } })}
+              onPress={() =>
+                router.push({ pathname: "/expense/new", params: { expenseId: expense.id } })
+              }
             >
               <icons.Edit2 size={20} className="text-foreground" strokeWidth={2.5} />
             </Button>
@@ -107,53 +109,55 @@ export default function ExpenseDetailScreen(): JSX.Element {
               </Dialog.Trigger>
               <Dialog.Portal className="absolute inset-0 justify-center p-5 z-50">
                 <Dialog.Overlay className="absolute inset-0 bg-black/40" />
-              <Dialog.Content className="bg-white p-6 rounded-[32px] shadow-lg self-center w-full max-w-[400px]">
-                <View className="absolute top-4 right-4 z-10">
-                  <Button
-                    variant="ghost"
-                    isIconOnly
-                    size="sm"
-                    onPress={() => setIsDialogOpen(false)}
-                    className="p-2"
-                  >
-                    <icons.X size={20} className="text-muted-foreground" />
-                  </Button>
-                </View>
-                <View className="w-12 h-12 rounded-full bg-danger/10 items-center justify-center mb-4">
-                  <icons.AlertTriangle size={24} className="text-danger" />
-                </View>
-                <Dialog.Title className="text-[22px] font-bold mb-2">Delete Expense?</Dialog.Title>
-                <Dialog.Description className="text-[16px] text-muted-foreground mb-6">
-                  Are you sure you want to delete &quot;{expense.title}&quot;? This cannot be
-                  undone.
-                </Dialog.Description>
-                <View className="flex-row gap-3">
-                  <Button
-                    variant="secondary"
-                    className="flex-1 rounded-full h-[56px] border border-border"
-                    onPress={() => setIsDialogOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="danger"
-                    className="flex-1 rounded-full h-[56px]"
-                    onPress={() => {
-                      setIsDialogOpen(false);
-                      setTimeout(() => {
-                        router.back();
+                <Dialog.Content className="bg-white p-6 rounded-[32px] shadow-lg self-center w-full max-w-[400px]">
+                  <View className="absolute top-4 right-4 z-10">
+                    <Button
+                      variant="ghost"
+                      isIconOnly
+                      size="sm"
+                      onPress={() => setIsDialogOpen(false)}
+                      className="p-2"
+                    >
+                      <icons.X size={20} className="text-muted-foreground" />
+                    </Button>
+                  </View>
+                  <View className="w-12 h-12 rounded-full bg-danger/10 items-center justify-center mb-4">
+                    <icons.AlertTriangle size={24} className="text-danger" />
+                  </View>
+                  <Dialog.Title className="text-[22px] font-bold mb-2">
+                    Delete Expense?
+                  </Dialog.Title>
+                  <Dialog.Description className="text-[16px] text-muted-foreground mb-6">
+                    Are you sure you want to delete &quot;{expense.title}&quot;? This cannot be
+                    undone.
+                  </Dialog.Description>
+                  <View className="flex-row gap-3">
+                    <Button
+                      variant="secondary"
+                      className="flex-1 rounded-full h-[56px] border border-border"
+                      onPress={() => setIsDialogOpen(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="danger"
+                      className="flex-1 rounded-full h-[56px]"
+                      onPress={() => {
+                        setIsDialogOpen(false);
                         setTimeout(() => {
-                          deleteExpense(expense.id);
-                        }, 400); // Wait for the screen transition to finish
-                      }, 300); // Wait for the dialog animation to finish
-                    }}
-                  >
-                    Delete
-                  </Button>
-                </View>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog>
+                          router.back();
+                          setTimeout(() => {
+                            deleteExpense(expense.id);
+                          }, 400); // Wait for the screen transition to finish
+                        }, 300); // Wait for the dialog animation to finish
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </View>
+                </Dialog.Content>
+              </Dialog.Portal>
+            </Dialog>
           </View>
         </View>
 

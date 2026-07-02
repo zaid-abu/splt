@@ -260,7 +260,7 @@ export default function NewGroupScreen(): JSX.Element {
               <Typography type="body-sm" className="text-muted-foreground font-medium mb-4">
                 Add friends by their email address
               </Typography>
-              
+
               <View className="flex-row gap-2 mb-4">
                 <View className="flex-1">
                   <Input

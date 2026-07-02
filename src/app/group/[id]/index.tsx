@@ -254,8 +254,8 @@ export default function GroupDetailScreen(): JSX.Element {
               </View>
             ) : (
               groupDebts.map((debt, idx) => {
-                const fromUser = group.members.find(m => m.userId === debt.fromUserId)?.user;
-                const toUser = group.members.find(m => m.userId === debt.toUserId)?.user;
+                const fromUser = group.members.find((m) => m.userId === debt.fromUserId)?.user;
+                const toUser = group.members.find((m) => m.userId === debt.toUserId)?.user;
                 if (!fromUser || !toUser) return null;
 
                 return (
@@ -338,7 +338,10 @@ export default function GroupDetailScreen(): JSX.Element {
         ) : (
           <View className="px-4 gap-2">
             {expenses.map((expense, idx) => (
-              <Animated.View key={expense.id} entering={FadeInDown.delay(100 + idx * 50).springify()}>
+              <Animated.View
+                key={expense.id}
+                entering={FadeInDown.delay(100 + idx * 50).springify()}
+              >
                 <ExpenseItem
                   expense={expense}
                   currentUserId={currentUser.id}

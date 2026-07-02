@@ -1,14 +1,17 @@
 # ADR 001: Production Architecture Strategy
 
 ## Status
+
 Accepted
 
 ## Context
+
 The SPLT application is currently a functional Expo application but lacks the architectural rigor required for a large-scale production deployment. The current state features UI components and business logic tightly coupled in screens, missing abstraction layers for API calls (Supabase), and inadequate state management segregation.
 
 To scale the application to the level of industry leaders (Linear, Airbnb), we need a robust, maintainable, and scalable architecture.
 
 ## Decision
+
 We will systematically refactor the application across 22 phases, adopting the following architectural patterns:
 
 1. **Feature-Sliced Design (Modified)**: Features will be modularized into a `src/features/` directory containing their own components, hooks, queries, mutations, services, and types.
@@ -22,5 +25,6 @@ We will systematically refactor the application across 22 phases, adopting the f
 5. **UI Layer**: We will leverage HeroUI Native, Uniwind, and Tailwind Variants to build a strict, reusable design system.
 
 ## Consequences
+
 - **Positive**: High maintainability, easier testing, clear separation of concerns, and robust error handling.
 - **Negative**: Increased initial overhead for developers to learn the strict boundaries and patterns.

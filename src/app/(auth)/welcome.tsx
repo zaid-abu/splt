@@ -123,7 +123,15 @@ export default function WelcomeScreen(): JSX.Element {
         }}
         renderItem={({ item, index }: any) => {
           return (
-            <View style={{ width, flex: 1, paddingHorizontal: 32, justifyContent: "center", paddingBottom: 20 }}>
+            <View
+              style={{
+                width,
+                flex: 1,
+                paddingHorizontal: 32,
+                justifyContent: "center",
+                paddingBottom: 20,
+              }}
+            >
               {/* Top Illustration Area */}
               <View
                 style={{
@@ -143,7 +151,13 @@ export default function WelcomeScreen(): JSX.Element {
                 </Animated.View>
                 <Animated.View entering={FadeInDown.delay(300)}>
                   <Typography
-                    style={{ fontSize: 36, fontWeight: "900", color: "white", letterSpacing: -1.5, lineHeight: 48 }}
+                    style={{
+                      fontSize: 36,
+                      fontWeight: "900",
+                      color: "white",
+                      letterSpacing: -1.5,
+                      lineHeight: 48,
+                    }}
                   >
                     {item.logoText}
                   </Typography>

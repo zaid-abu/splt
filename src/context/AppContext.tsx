@@ -70,17 +70,20 @@ export interface AppContextValue {
     date: Date;
     notes?: string;
   }) => Promise<Expense>;
-  updateExpense: (id: string, data: {
-    title: string;
-    amount: number;
-    currency: string;
-    category: ExpenseCategory;
-    paidBy: string;
-    splits: { userId: string; user: User; amount: number; percentage?: number }[];
-    splitMethod: SplitMethod;
-    date: Date;
-    notes?: string;
-  }) => Promise<Expense>;
+  updateExpense: (
+    id: string,
+    data: {
+      title: string;
+      amount: number;
+      currency: string;
+      category: ExpenseCategory;
+      paidBy: string;
+      splits: { userId: string; user: User; amount: number; percentage?: number }[];
+      splitMethod: SplitMethod;
+      date: Date;
+      notes?: string;
+    }
+  ) => Promise<Expense>;
   getExpense: (id: string) => Expense | undefined;
   deleteExpense: (id: string) => Promise<void>;
 
@@ -389,7 +392,7 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
       }
     ) => {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      
+
       const existingExpense = expenses.find((e) => e.id === id);
       if (!existingExpense) throw new Error("Expense not found");
 
@@ -419,7 +422,11 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
         setGroups((prev) =>
           prev.map((g) => {
             if (g.id !== existingExpense.groupId) return g;
-            const oldAmt = convertCurrency(existingExpense.amount, existingExpense.currency, g.currency);
+            const oldAmt = convertCurrency(
+              existingExpense.amount,
+              existingExpense.currency,
+              g.currency
+            );
             const newAmt = convertCurrency(data.amount, data.currency, g.currency);
             return {
               ...g,
@@ -638,10 +645,18 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
           const simplified = getSimplifiedDebts(groupId);
           simplified.forEach((debt) => {
             if (debt.fromUserId === currentUser.id) {
-              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              const amtInPref = convertCurrency(
+                debt.amount,
+                group.currency,
+                preferredCurrency.code
+              );
               balances.set(debt.toUserId, (balances.get(debt.toUserId) || 0) - amtInPref);
             } else if (debt.toUserId === currentUser.id) {
-              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              const amtInPref = convertCurrency(
+                debt.amount,
+                group.currency,
+                preferredCurrency.code
+              );
               balances.set(debt.fromUserId, (balances.get(debt.fromUserId) || 0) + amtInPref);
             }
           });
@@ -650,10 +665,18 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
           const targetCurrency = group ? group.currency : preferredCurrency.code;
           exact.forEach((debt) => {
             if (debt.fromUserId === currentUser.id) {
-              const amtInPref = convertCurrency(debt.amount, targetCurrency, preferredCurrency.code);
+              const amtInPref = convertCurrency(
+                debt.amount,
+                targetCurrency,
+                preferredCurrency.code
+              );
               balances.set(debt.toUserId, (balances.get(debt.toUserId) || 0) - amtInPref);
             } else if (debt.toUserId === currentUser.id) {
-              const amtInPref = convertCurrency(debt.amount, targetCurrency, preferredCurrency.code);
+              const amtInPref = convertCurrency(
+                debt.amount,
+                targetCurrency,
+                preferredCurrency.code
+              );
               balances.set(debt.fromUserId, (balances.get(debt.fromUserId) || 0) + amtInPref);
             }
           });
@@ -667,10 +690,18 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
           const simplified = getSimplifiedDebts(group.id);
           simplified.forEach((debt) => {
             if (debt.fromUserId === currentUser.id) {
-              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              const amtInPref = convertCurrency(
+                debt.amount,
+                group.currency,
+                preferredCurrency.code
+              );
               balances.set(debt.toUserId, (balances.get(debt.toUserId) || 0) - amtInPref);
             } else if (debt.toUserId === currentUser.id) {
-              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              const amtInPref = convertCurrency(
+                debt.amount,
+                group.currency,
+                preferredCurrency.code
+              );
               balances.set(debt.fromUserId, (balances.get(debt.fromUserId) || 0) + amtInPref);
             }
           });
@@ -678,10 +709,18 @@ export function AppProvider({ children }: { children: ReactNode }): React.JSX.El
           const exact = getExactPairwiseDebts(group.id);
           exact.forEach((debt) => {
             if (debt.fromUserId === currentUser.id) {
-              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              const amtInPref = convertCurrency(
+                debt.amount,
+                group.currency,
+                preferredCurrency.code
+              );
               balances.set(debt.toUserId, (balances.get(debt.toUserId) || 0) - amtInPref);
             } else if (debt.toUserId === currentUser.id) {
-              const amtInPref = convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+              const amtInPref = convertCurrency(
+                debt.amount,
+                group.currency,
+                preferredCurrency.code
+              );
               balances.set(debt.fromUserId, (balances.get(debt.fromUserId) || 0) + amtInPref);
             }
           });

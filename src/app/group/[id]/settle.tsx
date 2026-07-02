@@ -33,7 +33,9 @@ export default function GroupSettleScreen(): JSX.Element {
     }
 
     const simplified = getSimplifiedDebts(group.id);
-    return simplified.filter((p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id);
+    return simplified.filter(
+      (p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id
+    );
   })();
 
   if (!group) {

@@ -34,7 +34,14 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, InteractionManager, TextInput } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  InteractionManager,
+  TextInput,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeInUp, FadeIn, FadeOut, Layout } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -54,22 +61,38 @@ const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
 ];
 
 export default function AddExpenseScreen(): JSX.Element {
-  const { groupId: initialGroupId, friendId: initialFriendId, expenseId } = useLocalSearchParams<{
+  const {
+    groupId: initialGroupId,
+    friendId: initialFriendId,
+    expenseId,
+  } = useLocalSearchParams<{
     groupId?: string;
     friendId?: string;
     expenseId?: string;
   }>();
   const router = useRouter();
-  const { getGroup, getExpense, addExpense, updateExpense, currentUser, groups, preferredCurrency, setCurrency } = useApp();
+  const {
+    getGroup,
+    getExpense,
+    addExpense,
+    updateExpense,
+    currentUser,
+    groups,
+    preferredCurrency,
+    setCurrency,
+  } = useApp();
 
-  const existingExpense = useMemo(() => expenseId ? getExpense(expenseId) : undefined, [expenseId, getExpense]);
+  const existingExpense = useMemo(
+    () => (expenseId ? getExpense(expenseId) : undefined),
+    [expenseId, getExpense]
+  );
   const { toast } = useToast();
 
   const initialGroup = existingExpense?.groupId || initialGroupId || "";
   const initialFriends = (() => {
     if (existingExpense && !existingExpense.groupId) {
-       const other = existingExpense.splits.find(s => s.userId !== currentUser.id);
-       if (other) return [other.userId];
+      const other = existingExpense.splits.find((s) => s.userId !== currentUser.id);
+      if (other) return [other.userId];
     }
     return initialFriendId ? [initialFriendId] : [];
   })();
@@ -129,7 +152,9 @@ export default function AddExpenseScreen(): JSX.Element {
   const [title, setTitle] = useState(existingExpense?.title || "");
   const [amount, setAmount] = useState(existingExpense?.amount.toString() || "");
   const [category, setCategory] = useState<ExpenseCategory>(existingExpense?.category || "food");
-  const [splitMethod, setSplitMethod] = useState<SplitMethod>(existingExpense?.splitMethod || "equal");
+  const [splitMethod, setSplitMethod] = useState<SplitMethod>(
+    existingExpense?.splitMethod || "equal"
+  );
   const [paidBy, setPaidBy] = useState(existingExpense?.paidBy || currentUser.id);
   const [loading, setLoading] = useState(false);
   const [expenseDate, setExpenseDate] = useState<Date>(existingExpense?.date || new Date());
@@ -138,22 +163,26 @@ export default function AddExpenseScreen(): JSX.Element {
   const [included, setIncluded] = useState<Record<string, boolean>>(() => {
     if (!existingExpense) return {};
     const map: Record<string, boolean> = {};
-    existingExpense.splits.forEach(s => { map[s.userId] = true; });
+    existingExpense.splits.forEach((s) => {
+      map[s.userId] = true;
+    });
     return map;
   });
-  
+
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>(() => {
     if (existingExpense?.splitMethod !== "custom") return {};
     const map: Record<string, string> = {};
-    existingExpense.splits.forEach(s => { map[s.userId] = s.amount.toString(); });
+    existingExpense.splits.forEach((s) => {
+      map[s.userId] = s.amount.toString();
+    });
     return map;
   });
-  
+
   const [customPercentages, setCustomPercentages] = useState<Record<string, string>>(() => {
     if (existingExpense?.splitMethod !== "percentage") return {};
     const map: Record<string, string> = {};
-    existingExpense.splits.forEach(s => { 
-      map[s.userId] = ((s.amount / existingExpense.amount) * 100).toString(); 
+    existingExpense.splits.forEach((s) => {
+      map[s.userId] = ((s.amount / existingExpense.amount) * 100).toString();
     });
     return map;
   });
@@ -165,8 +194,6 @@ export default function AddExpenseScreen(): JSX.Element {
       setIsReady(true);
     });
   }, []);
-
-
 
   useEffect(() => {
     setTimeout(() => setIncluded(Object.fromEntries(participants.map((u) => [u.id, true]))), 0);
@@ -678,11 +705,8 @@ export default function AddExpenseScreen(): JSX.Element {
                     >
                       DATE
                     </Typography>
-                    
-                    <Popover
-                      isOpen={showDatePicker}
-                      onOpenChange={setShowDatePicker}
-                    >
+
+                    <Popover isOpen={showDatePicker} onOpenChange={setShowDatePicker}>
                       <Popover.Trigger asChild>
                         <PressableFeedback>
                           <View className="bg-white h-[56px] rounded-[20px] px-4 border border-border flex-row items-center gap-3">
@@ -695,7 +719,12 @@ export default function AddExpenseScreen(): JSX.Element {
                       </Popover.Trigger>
                       <Popover.Portal>
                         <Popover.Overlay />
-                        <Popover.Content presentation="popover" placement="top" width={340} className="bg-white rounded-[24px] p-2 border border-border shadow-lg">
+                        <Popover.Content
+                          presentation="popover"
+                          placement="top"
+                          width={340}
+                          className="bg-white rounded-[24px] p-2 border border-border shadow-lg"
+                        >
                           <Popover.Arrow fill="white" />
                           <DateTimePicker
                             mode="single"
@@ -707,13 +736,21 @@ export default function AddExpenseScreen(): JSX.Element {
                               }
                             }}
                             styles={{
-                              selected: { backgroundColor: '#6b4eff', borderRadius: 16 },
-                              today: { backgroundColor: '#f3f4f6', borderRadius: 16 },
-                              day_label: { color: '#11181C', fontSize: 15 },
+                              selected: { backgroundColor: "#6b4eff", borderRadius: 16 },
+                              today: { backgroundColor: "#f3f4f6", borderRadius: 16 },
+                              day_label: { color: "#11181C", fontSize: 15 },
                               header: { paddingBottom: 12 },
-                              month_selector_label: { fontWeight: '600', color: '#11181C', fontSize: 16 },
-                              year_selector_label: { fontWeight: '600', color: '#11181C', fontSize: 16 },
-                              weekday_label: { color: '#71717A', fontWeight: '500' }
+                              month_selector_label: {
+                                fontWeight: "600",
+                                color: "#11181C",
+                                fontSize: 16,
+                              },
+                              year_selector_label: {
+                                fontWeight: "600",
+                                color: "#11181C",
+                                fontSize: 16,
+                              },
+                              weekday_label: { color: "#71717A", fontWeight: "500" },
                             }}
                           />
                         </Popover.Content>
