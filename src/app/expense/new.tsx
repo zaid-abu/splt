@@ -15,7 +15,6 @@
  */
 import DateTimePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-import { format } from "date-fns";
 import {
   Alert,
   Checkbox,
@@ -712,7 +711,7 @@ export default function AddExpenseScreen(): JSX.Element {
                           <View className="bg-white h-[56px] rounded-[20px] px-4 border border-border flex-row items-center gap-3">
                             <icons.Calendar size={20} color="#8A8798" />
                             <Typography type="body" className="font-medium text-foreground">
-                              {format(expenseDate, "MMMM d, yyyy")}
+                              {dayjs(expenseDate).format("MMMM D, YYYY")}
                             </Typography>
                           </View>
                         </PressableFeedback>
