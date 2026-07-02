@@ -33,7 +33,7 @@ export interface UIState {
   exchangeRates: Record<string, number>;
   setExchangeRates: (rates: Record<string, number>) => void;
   fetchExchangeRates: () => Promise<void>;
-  
+
   convertCurrency: (amount: number, from: string, to: string) => number;
 }
 
@@ -46,7 +46,7 @@ export const useUIStore = create<UIState>((set, get) => ({
 
   exchangeRates: FALLBACK_RATES,
   setExchangeRates: (rates) => set({ exchangeRates: rates }),
-  
+
   fetchExchangeRates: async () => {
     try {
       const res = await fetch("https://open.er-api.com/v6/latest/USD");

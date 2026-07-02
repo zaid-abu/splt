@@ -20,7 +20,7 @@ export const queryKeys = {
   // Settlements
   settlements: ["settlements"] as const,
   groupSettlements: (groupId: string) => ["settlements", "group", groupId] as const,
-  
+
   // Activities
   activities: ["activities"] as const,
   groupActivities: (groupId: string) => ["activities", "group", groupId] as const,

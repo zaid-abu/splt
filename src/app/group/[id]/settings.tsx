@@ -50,13 +50,13 @@ export default function GroupSettingsScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const getGroup = useDataStore(s => s.getGroup);
-  const updateGroup = useDataStore(s => s.updateGroup);
-  const deleteGroup = useDataStore(s => s.deleteGroup);
-  const removeGroupMember = useDataStore(s => s.removeGroupMember);
-  const addGroupMembers = useDataStore(s => s.addGroupMembers);
-  const groups = useDataStore(s => s.groups);
-  const getGroupBalances = useDataStore(s => s.getGroupBalances);
+  const getGroup = useDataStore((s) => s.getGroup);
+  const updateGroup = useDataStore((s) => s.updateGroup);
+  const deleteGroup = useDataStore((s) => s.deleteGroup);
+  const removeGroupMember = useDataStore((s) => s.removeGroupMember);
+  const addGroupMembers = useDataStore((s) => s.addGroupMembers);
+  const groups = useDataStore((s) => s.groups);
+  const getGroupBalances = useDataStore((s) => s.getGroupBalances);
   const { toast } = useToast();
 
   const group = getGroup(id ?? "");

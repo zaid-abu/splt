@@ -23,7 +23,7 @@ import { useUIStore } from "@/store/useUIStore";
 export default function NewFriendScreen(): JSX.Element {
   const router = useRouter();
   const { currentUser } = useAuth();
-  const createGroup = useDataStore(s => s.createGroup);
+  const createGroup = useDataStore((s) => s.createGroup);
   const { toast } = useToast();
 
   const [name, setName] = useState("");

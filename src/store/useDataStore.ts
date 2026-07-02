@@ -1,10 +1,5 @@
 import { create } from "zustand";
-import {
-  MOCK_ACTIVITIES,
-  MOCK_EXPENSES,
-  MOCK_GROUPS,
-  MOCK_SETTLEMENTS,
-} from "@/lib/mock-data";
+import { MOCK_ACTIVITIES, MOCK_EXPENSES, MOCK_GROUPS, MOCK_SETTLEMENTS } from "@/lib/mock-data";
 import type {
   Activity,
   Expense,
@@ -96,8 +91,12 @@ export interface DataState {
 
   // Derived state (getters)
   getGroupBalances: (groupId: string) => Map<string, number>;
-  getSimplifiedDebts: (groupId: string) => { fromUserId: string; toUserId: string; amount: number }[];
-  getExactPairwiseDebts: (groupId: string) => { fromUserId: string; toUserId: string; amount: number }[];
+  getSimplifiedDebts: (
+    groupId: string
+  ) => { fromUserId: string; toUserId: string; amount: number }[];
+  getExactPairwiseDebts: (
+    groupId: string
+  ) => { fromUserId: string; toUserId: string; amount: number }[];
   getUserBalances: (currentUserId: string, groupId?: string) => Map<string, number>;
   getTotalOwedToMe: (currentUserId: string) => number;
   getTotalIOwe: (currentUserId: string) => number;
@@ -113,8 +112,8 @@ export const useDataStore = create<DataState>((set, get) => ({
   getGroup: (id) => get().groups.find((g) => g.id === id),
 
   getGroupExpenses: (groupId) =>
-    get().expenses
-      .filter((e) => e.groupId === groupId)
+    get()
+      .expenses.filter((e) => e.groupId === groupId)
       .sort((a, b) => b.date.getTime() - a.date.getTime()),
 
   createGroup: async (data, currentUser) => {
@@ -299,7 +298,11 @@ export const useDataStore = create<DataState>((set, get) => ({
         nextGroups = state.groups.map((g) => {
           if (g.id !== existingExpense.groupId) return g;
           const { convertCurrency } = useUIStore.getState();
-          const oldAmt = convertCurrency(existingExpense.amount, existingExpense.currency, g.currency);
+          const oldAmt = convertCurrency(
+            existingExpense.amount,
+            existingExpense.currency,
+            g.currency
+          );
           const newAmt = convertCurrency(data.amount, data.currency, g.currency);
           return {
             ...g,
@@ -328,7 +331,11 @@ export const useDataStore = create<DataState>((set, get) => ({
         nextGroups = state.groups.map((g) => {
           if (g.id !== expense.groupId) return g;
           const { convertCurrency } = useUIStore.getState();
-          const amountInGroupCurrency = convertCurrency(expense.amount, expense.currency, g.currency);
+          const amountInGroupCurrency = convertCurrency(
+            expense.amount,
+            expense.currency,
+            g.currency
+          );
           return { ...g, totalExpenses: Math.max(0, g.totalExpenses - amountInGroupCurrency) };
         });
       }
@@ -531,13 +538,17 @@ export const useDataStore = create<DataState>((set, get) => ({
     const processDebts = (group: Group, exact: boolean) => {
       const debts = exact ? getExactPairwiseDebts(group.id) : getSimplifiedDebts(group.id);
       const targetCurrency = exact ? group.currency : preferredCurrency.code;
-      
+
       debts.forEach((debt) => {
         if (debt.fromUserId === currentUserId) {
-          const amtInPref = exact ? convertCurrency(debt.amount, targetCurrency, preferredCurrency.code) : convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+          const amtInPref = exact
+            ? convertCurrency(debt.amount, targetCurrency, preferredCurrency.code)
+            : convertCurrency(debt.amount, group.currency, preferredCurrency.code);
           balances.set(debt.toUserId, (balances.get(debt.toUserId) || 0) - amtInPref);
         } else if (debt.toUserId === currentUserId) {
-          const amtInPref = exact ? convertCurrency(debt.amount, targetCurrency, preferredCurrency.code) : convertCurrency(debt.amount, group.currency, preferredCurrency.code);
+          const amtInPref = exact
+            ? convertCurrency(debt.amount, targetCurrency, preferredCurrency.code)
+            : convertCurrency(debt.amount, group.currency, preferredCurrency.code);
           balances.set(debt.fromUserId, (balances.get(debt.fromUserId) || 0) + amtInPref);
         }
       });

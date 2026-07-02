@@ -22,9 +22,9 @@ export default function GroupSettleScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const getGroup = useDataStore(s => s.getGroup);
-  const getSimplifiedDebts = useDataStore(s => s.getSimplifiedDebts);
-  const getExactPairwiseDebts = useDataStore(s => s.getExactPairwiseDebts);
+  const getGroup = useDataStore((s) => s.getGroup);
+  const getSimplifiedDebts = useDataStore((s) => s.getSimplifiedDebts);
+  const getExactPairwiseDebts = useDataStore((s) => s.getExactPairwiseDebts);
 
   const group = getGroup(id ?? "");
   const sym = group ? getCurrencySymbol(group.currency) : "$";

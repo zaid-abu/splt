@@ -21,11 +21,11 @@ export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const activities = useDataStore(s => s.activities);
-  const getTotalOwedToMe = useDataStore(s => s.getTotalOwedToMe);
-  const getTotalIOwe = useDataStore(s => s.getTotalIOwe);
-  const preferredCurrency = useUIStore(s => s.preferredCurrency);
-  const isAppLoading = useUIStore(s => s.isAppLoading);
+  const activities = useDataStore((s) => s.activities);
+  const getTotalOwedToMe = useDataStore((s) => s.getTotalOwedToMe);
+  const getTotalIOwe = useDataStore((s) => s.getTotalIOwe);
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const isAppLoading = useUIStore((s) => s.isAppLoading);
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");

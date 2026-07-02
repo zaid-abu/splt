@@ -27,12 +27,12 @@ export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const groups = useDataStore(s => s.groups);
-  const activities = useDataStore(s => s.activities);
-  const getTotalOwedToMe = useDataStore(s => s.getTotalOwedToMe);
-  const getTotalIOwe = useDataStore(s => s.getTotalIOwe);
-  const getUserBalances = useDataStore(s => s.getUserBalances);
-  const preferredCurrency = useUIStore(s => s.preferredCurrency);
+  const groups = useDataStore((s) => s.groups);
+  const activities = useDataStore((s) => s.activities);
+  const getTotalOwedToMe = useDataStore((s) => s.getTotalOwedToMe);
+  const getTotalIOwe = useDataStore((s) => s.getTotalIOwe);
+  const getUserBalances = useDataStore((s) => s.getUserBalances);
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
 
   const [refreshing, setRefreshing] = useState(false);
   const [selectedSlice, setSelectedSlice] = useState<"owed" | "owe" | null>(null);

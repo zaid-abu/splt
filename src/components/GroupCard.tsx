@@ -25,8 +25,8 @@ export function GroupCard({
   index = 0,
   onPress,
 }: GroupCardProps): JSX.Element {
-  const getGroupBalances = useDataStore(s => s.getGroupBalances);
-  const deleteGroup = useDataStore(s => s.deleteGroup);
+  const getGroupBalances = useDataStore((s) => s.getGroupBalances);
+  const deleteGroup = useDataStore((s) => s.deleteGroup);
 
   const balances = getGroupBalances(group.id);
   const balance = balances.get(currentUserId) ?? 0;

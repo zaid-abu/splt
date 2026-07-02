@@ -18,10 +18,10 @@ export default function ExpenseDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const getExpense = useDataStore(s => s.getExpense);
-  const deleteExpense = useDataStore(s => s.deleteExpense);
-  const getGroup = useDataStore(s => s.getGroup);
-  const isAppLoading = useUIStore(s => s.isAppLoading);
+  const getExpense = useDataStore((s) => s.getExpense);
+  const deleteExpense = useDataStore((s) => s.deleteExpense);
+  const getGroup = useDataStore((s) => s.getGroup);
+  const isAppLoading = useUIStore((s) => s.isAppLoading);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const expense = getExpense(id ?? "");

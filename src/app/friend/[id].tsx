@@ -26,11 +26,11 @@ export default function FriendDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const activities = useDataStore(s => s.activities);
-  const groups = useDataStore(s => s.groups);
-  const preferredCurrency = useUIStore(s => s.preferredCurrency);
-  const getUserBalances = useDataStore(s => s.getUserBalances);
-  const isAppLoading = useUIStore(s => s.isAppLoading);
+  const activities = useDataStore((s) => s.activities);
+  const groups = useDataStore((s) => s.groups);
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const getUserBalances = useDataStore((s) => s.getUserBalances);
+  const isAppLoading = useUIStore((s) => s.isAppLoading);
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());

@@ -35,11 +35,11 @@ export default function SettleUpScreen(): JSX.Element {
   const router = useRouter();
   const { toast } = useToast();
   const { currentUser } = useAuth();
-  const groups = useDataStore(s => s.groups);
-  const preferredCurrency = useUIStore(s => s.preferredCurrency);
-  const getUserBalances = useDataStore(s => s.getUserBalances);
-  const addSettlement = useDataStore(s => s.addSettlement);
-  const setCurrency = useUIStore(s => s.setCurrency);
+  const groups = useDataStore((s) => s.groups);
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const getUserBalances = useDataStore((s) => s.getUserBalances);
+  const addSettlement = useDataStore((s) => s.addSettlement);
+  const setCurrency = useUIStore((s) => s.setCurrency);
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());

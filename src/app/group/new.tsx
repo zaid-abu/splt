@@ -60,7 +60,7 @@ const GROUP_ICONS = [
 export default function NewGroupScreen(): JSX.Element {
   const router = useRouter();
   const { currentUser } = useAuth();
-  const createGroup = useDataStore(s => s.createGroup);
+  const createGroup = useDataStore((s) => s.createGroup);
   const { toast } = useToast();
 
   const [name, setName] = useState("");

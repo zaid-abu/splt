@@ -20,7 +20,7 @@ interface ActivityItemProps {
 
 export function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
   const { currentUser } = useAuth();
-  const deleteActivity = useDataStore(s => s.deleteActivity);
+  const deleteActivity = useDataStore((s) => s.deleteActivity);
   const router = useRouter();
 
   // Determine financial involvement

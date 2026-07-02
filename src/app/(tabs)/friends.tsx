@@ -22,10 +22,10 @@ export default function FriendsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const groups = useDataStore(s => s.groups);
-  const getUserBalances = useDataStore(s => s.getUserBalances);
-  const preferredCurrency = useUIStore(s => s.preferredCurrency);
-  const isAppLoading = useUIStore(s => s.isAppLoading);
+  const groups = useDataStore((s) => s.groups);
+  const getUserBalances = useDataStore((s) => s.getUserBalances);
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const isAppLoading = useUIStore((s) => s.isAppLoading);
 
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);

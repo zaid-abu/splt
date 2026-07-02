@@ -73,13 +73,13 @@ export default function AddExpenseScreen(): JSX.Element {
   }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const getGroup = useDataStore(s => s.getGroup);
-  const getExpense = useDataStore(s => s.getExpense);
-  const addExpense = useDataStore(s => s.addExpense);
-  const updateExpense = useDataStore(s => s.updateExpense);
-  const groups = useDataStore(s => s.groups);
-  const preferredCurrency = useUIStore(s => s.preferredCurrency);
-  const setCurrency = useUIStore(s => s.setCurrency);
+  const getGroup = useDataStore((s) => s.getGroup);
+  const getExpense = useDataStore((s) => s.getExpense);
+  const addExpense = useDataStore((s) => s.addExpense);
+  const updateExpense = useDataStore((s) => s.updateExpense);
+  const groups = useDataStore((s) => s.groups);
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const setCurrency = useUIStore((s) => s.setCurrency);
 
   const existingExpense = useMemo(
     () => (expenseId ? getExpense(expenseId) : undefined),

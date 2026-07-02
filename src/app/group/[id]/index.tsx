@@ -39,13 +39,13 @@ export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const getGroup = useDataStore(s => s.getGroup);
-  const getGroupExpenses = useDataStore(s => s.getGroupExpenses);
-  const getGroupBalances = useDataStore(s => s.getGroupBalances);
-  const convertCurrency = useUIStore(s => s.convertCurrency);
-  const isAppLoading = useUIStore(s => s.isAppLoading);
-  const getSimplifiedDebts = useDataStore(s => s.getSimplifiedDebts);
-  const getExactPairwiseDebts = useDataStore(s => s.getExactPairwiseDebts);
+  const getGroup = useDataStore((s) => s.getGroup);
+  const getGroupExpenses = useDataStore((s) => s.getGroupExpenses);
+  const getGroupBalances = useDataStore((s) => s.getGroupBalances);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
+  const isAppLoading = useUIStore((s) => s.isAppLoading);
+  const getSimplifiedDebts = useDataStore((s) => s.getSimplifiedDebts);
+  const getExactPairwiseDebts = useDataStore((s) => s.getExactPairwiseDebts);
 
   const group = getGroup(id ?? "");
   const expenses = getGroupExpenses(id ?? "");

@@ -60,11 +60,11 @@ function SettingItem({ icon: Icon, title, subtitle, color, onPress, rightElement
 
 export default function ProfileScreen(): JSX.Element {
   const { currentUser } = useAuth();
-  const groups = useDataStore(s => s.groups);
-  const getTotalOwedToMe = useDataStore(s => s.getTotalOwedToMe);
-  const getTotalIOwe = useDataStore(s => s.getTotalIOwe);
-  const preferredCurrency = useUIStore(s => s.preferredCurrency);
-  const setCurrency = useUIStore(s => s.setCurrency);
+  const groups = useDataStore((s) => s.groups);
+  const getTotalOwedToMe = useDataStore((s) => s.getTotalOwedToMe);
+  const getTotalIOwe = useDataStore((s) => s.getTotalIOwe);
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const setCurrency = useUIStore((s) => s.setCurrency);
   const router = useRouter();
   const [darkMode, setDarkMode] = useState(true);
   const [notifs, setNotifs] = useState(true);

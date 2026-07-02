@@ -28,8 +28,8 @@ export default function GroupsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const groups = useDataStore(s => s.groups);
-  const isAppLoading = useUIStore(s => s.isAppLoading);
+  const groups = useDataStore((s) => s.groups);
+  const isAppLoading = useUIStore((s) => s.isAppLoading);
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()
