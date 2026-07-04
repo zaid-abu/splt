@@ -22,7 +22,7 @@ export const expensesApi = {
     if (error) throw error;
     return data?.map(mapExpense) ?? [];
   },
-  
+
   async fetchUserExpenses(userId: string): Promise<Expense[]> {
     const { data, error } = await supabase
       .from("expenses")
@@ -49,7 +49,7 @@ export const expensesApi = {
 
   async addExpense(expenseData: Partial<Expense>): Promise<Expense> {
     const { splits, ...coreData } = expenseData;
-    
+
     // 1. Insert core expense
     const { data: expData, error: expError } = await supabase
       .from("expenses")
@@ -62,11 +62,9 @@ export const expensesApi = {
     // 2. Insert splits if provided
     if (splits && splits.length > 0) {
       const splitsToInsert = splits.map((split) => toExpenseSplitInsert(expData.id, split));
-      
-      const { error: splitError } = await supabase
-        .from("expense_splits")
-        .insert(splitsToInsert);
-        
+
+      const { error: splitError } = await supabase.from("expense_splits").insert(splitsToInsert);
+
       if (splitError) throw splitError;
     }
 
@@ -76,7 +74,7 @@ export const expensesApi = {
 
   async updateExpense(expenseId: string, updates: Partial<Expense>): Promise<Expense> {
     const { splits, ...coreData } = updates;
-    
+
     // 1. Update core expense
     if (Object.keys(coreData).length > 0) {
       const { error: expError } = await supabase
@@ -90,14 +88,12 @@ export const expensesApi = {
     // 2. Update splits if provided (simplified as delete and recreate)
     if (splits) {
       await supabase.from("expense_splits").delete().eq("expense_id", expenseId);
-      
+
       if (splits.length > 0) {
         const splitsToInsert = splits.map((split) => toExpenseSplitInsert(expenseId, split));
-        
-        const { error: splitError } = await supabase
-          .from("expense_splits")
-          .insert(splitsToInsert);
-          
+
+        const { error: splitError } = await supabase.from("expense_splits").insert(splitsToInsert);
+
         if (splitError) throw splitError;
       }
     }

@@ -2,13 +2,23 @@ import { Chip, PressableFeedback, Typography } from "heroui-native";
 import type { JSX } from "react";
 import { View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
 import { useMemo } from "react";
-
 
 import { AmountDisplay } from "@/components/AmountDisplay";
 import { SwipeableRow } from "@/components/SwipeableRow";
@@ -31,21 +41,27 @@ export function GroupCard({
   index = 0,
   onPress,
 }: GroupCardProps): JSX.Element {
-  
   const { currentUser } = useAuth();
   const { mutateAsync: deleteGroup } = useDeleteGroup();
-  
+
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
-  
+
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
-  
+
   const balances = useMemo(() => {
-    return balancesUtil.getGroupBalances(group.id, expenses, settlements, group, preferredCurrency, convertCurrency);
+    return balancesUtil.getGroupBalances(
+      group.id,
+      expenses,
+      settlements,
+      group,
+      preferredCurrency,
+      convertCurrency
+    );
   }, [group.id, expenses, settlements, group, preferredCurrency, convertCurrency]);
-  
+
   const balance = balances.get(currentUserId) ?? 0;
 
   const balanceLabel = balance > 0 ? "You are owed" : balance < 0 ? "You owe" : "Settled up";

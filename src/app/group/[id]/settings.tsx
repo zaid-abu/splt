@@ -18,12 +18,27 @@ import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useGroupExpenses, useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useGroupExpenses,
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
-import { useGroupSettlements, useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import {
+  useGroupSettlements,
+  useUserSettlements,
+  useAddSettlement,
+} from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { AppUserAvatar } from "@/components/MemberAvatar";
@@ -65,7 +80,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   const { data: settlements = [] } = useGroupSettlements(id);
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
-  
+
   const { toast } = useToast();
 
   const group = groups.find((item) => item.id === id);

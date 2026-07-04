@@ -16,12 +16,22 @@ import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -47,14 +57,21 @@ export default function SettleUpScreen(): JSX.Element {
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
 
-  const balances = balancesUtil.getUserBalances(currentUser.id, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency);
+  const balances = balancesUtil.getUserBalances(
+    currentUser.id,
+    undefined,
+    groups,
+    expenses,
+    settlements,
+    preferredCurrency,
+    convertCurrency
+  );
   const { mutateAsync: addSettlement, isPending: isAddingSettlement } = useAddSettlement();
   const setCurrency = useUIStore((s) => s.setCurrency);
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
   const friend = uniqueFriends.find((f) => f.id === id);
-
 
   const netBalance = balances.get(id ?? "") || 0; // Negative means you owe them
 
@@ -112,17 +129,15 @@ export default function SettleUpScreen(): JSX.Element {
     setLoading(true);
 
     try {
-      await addSettlement(
-        {
-          groupId: selectedGroupId,
-          fromUserId: direction === "you" ? currentUser.id : friend!.id,
-          toUserId: direction === "you" ? friend!.id : currentUser.id,
-          amount: parsedAmount,
-          currency: settleCurrency,
-          date: new Date(),
-          note: note.trim(),
-        }
-      );
+      await addSettlement({
+        groupId: selectedGroupId,
+        fromUserId: direction === "you" ? currentUser.id : friend!.id,
+        toUserId: direction === "you" ? friend!.id : currentUser.id,
+        amount: parsedAmount,
+        currency: settleCurrency,
+        date: new Date(),
+        note: note.trim(),
+      });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (e: any) {

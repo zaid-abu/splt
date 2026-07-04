@@ -8,12 +8,22 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { BlurView } from "expo-blur";
 import { FocusAwareView } from "@/components/PageAnimator";
 import * as icons from "lucide-react-native";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -26,11 +36,13 @@ export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(currentUser?.id);
+  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(
+    currentUser?.id
+  );
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
-  
+
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const isAppLoading = useUIStore((s) => s.isAppLoading);
@@ -38,8 +50,24 @@ export default function ActivityScreen(): JSX.Element {
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const owedToYou = balancesUtil.getTotalOwedToMe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency);
-  const youOwe = Math.abs(balancesUtil.getTotalIOwe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency));
+  const owedToYou = balancesUtil.getTotalOwedToMe(
+    currentUser.id,
+    groups,
+    expenses,
+    settlements,
+    preferredCurrency,
+    convertCurrency
+  );
+  const youOwe = Math.abs(
+    balancesUtil.getTotalIOwe(
+      currentUser.id,
+      groups,
+      expenses,
+      settlements,
+      preferredCurrency,
+      convertCurrency
+    )
+  );
   const netBalance = owedToYou - youOwe;
 
   // Sort activities by date descending

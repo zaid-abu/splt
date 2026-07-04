@@ -14,12 +14,22 @@ import { StatusBar } from "expo-status-bar";
 import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import { formatAmount } from "@/components/AmountDisplay";
 import { ActivityItem } from "@/components/ActivityItem";
@@ -31,18 +41,28 @@ export default function FriendDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(currentUser?.id);
+  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(
+    currentUser?.id
+  );
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
-  
+
   const isAppLoading = useUIStore((s) => s.isAppLoading);
 
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
-  
+
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
-  const balances = balancesUtil.getUserBalances(currentUser.id, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency);
+  const balances = balancesUtil.getUserBalances(
+    currentUser.id,
+    undefined,
+    groups,
+    expenses,
+    settlements,
+    preferredCurrency,
+    convertCurrency
+  );
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());

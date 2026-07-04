@@ -6,12 +6,22 @@ import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import * as icons from "lucide-react-native";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { getCurrencySymbol } from "@/components/AmountDisplay";
@@ -26,7 +36,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { mutateAsync: deleteExpense } = useDeleteExpense();
-  
+
   const isAppLoading = useUIStore((s) => s.isAppLoading);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 

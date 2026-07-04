@@ -16,7 +16,7 @@ export const settlementsApi = {
     if (error) throw error;
     return data?.map(mapSettlement) ?? [];
   },
-  
+
   async fetchUserSettlements(userId: string): Promise<Settlement[]> {
     const { data, error } = await supabase
       .from("settlements")

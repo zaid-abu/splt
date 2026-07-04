@@ -21,12 +21,22 @@ import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -73,8 +83,24 @@ export default function ProfileScreen(): JSX.Element {
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const setCurrency = useUIStore((s) => s.setCurrency);
 
-  const owedToYou = balancesUtil.getTotalOwedToMe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency);
-  const youOwe = Math.abs(balancesUtil.getTotalIOwe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency));
+  const owedToYou = balancesUtil.getTotalOwedToMe(
+    currentUser.id,
+    groups,
+    expenses,
+    settlements,
+    preferredCurrency,
+    convertCurrency
+  );
+  const youOwe = Math.abs(
+    balancesUtil.getTotalIOwe(
+      currentUser.id,
+      groups,
+      expenses,
+      settlements,
+      preferredCurrency,
+      convertCurrency
+    )
+  );
   const netBalance = owedToYou - youOwe;
 
   const router = useRouter();

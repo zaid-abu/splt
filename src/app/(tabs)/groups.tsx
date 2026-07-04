@@ -27,7 +27,7 @@ export default function GroupsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  
+
   const { data: groups = [], isLoading } = useGroups(currentUser?.id);
   const [search, setSearch] = useState("");
 

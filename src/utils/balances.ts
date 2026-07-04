@@ -44,7 +44,14 @@ export function getSimplifiedDebts(
   preferredCurrency: Currency,
   convertCurrency: CurrencyConverter
 ): { fromUserId: string; toUserId: string; amount: number }[] {
-  const balances = getGroupBalances(groupId, expenses, settlements, group, preferredCurrency, convertCurrency);
+  const balances = getGroupBalances(
+    groupId,
+    expenses,
+    settlements,
+    group,
+    preferredCurrency,
+    convertCurrency
+  );
   const debtors: { userId: string; amount: number }[] = [];
   const creditors: { userId: string; amount: number }[] = [];
 
@@ -155,10 +162,24 @@ export function getUserBalances(
   const balances = new Map<string, number>();
 
   const processDebts = (group: Group, exact: boolean) => {
-    const debts = exact 
-      ? getExactPairwiseDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency) 
-      : getSimplifiedDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency);
-      
+    const debts = exact
+      ? getExactPairwiseDebts(
+          group.id,
+          expenses,
+          settlements,
+          group,
+          preferredCurrency,
+          convertCurrency
+        )
+      : getSimplifiedDebts(
+          group.id,
+          expenses,
+          settlements,
+          group,
+          preferredCurrency,
+          convertCurrency
+        );
+
     const targetCurrency = exact ? group.currency : preferredCurrency.code;
 
     debts.forEach((debt) => {
@@ -230,7 +251,15 @@ export function getTotalOwedToMe(
   convertCurrency: CurrencyConverter
 ): number {
   let total = 0;
-  for (const [, balance] of getUserBalances(currentUserId, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency)) {
+  for (const [, balance] of getUserBalances(
+    currentUserId,
+    undefined,
+    groups,
+    expenses,
+    settlements,
+    preferredCurrency,
+    convertCurrency
+  )) {
     if (balance > 0) total += balance;
   }
   return total;
@@ -245,7 +274,15 @@ export function getTotalIOwe(
   convertCurrency: CurrencyConverter
 ): number {
   let total = 0;
-  for (const [, balance] of getUserBalances(currentUserId, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency)) {
+  for (const [, balance] of getUserBalances(
+    currentUserId,
+    undefined,
+    groups,
+    expenses,
+    settlements,
+    preferredCurrency,
+    convertCurrency
+  )) {
     if (balance < 0) total += balance;
   }
   return total;

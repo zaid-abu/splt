@@ -33,12 +33,22 @@ import { getCurrencySymbol } from "@/components/AmountDisplay";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -47,7 +57,7 @@ export default function GroupDetailScreen(): JSX.Element {
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: allExpenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
-  
+
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const isAppLoading = useUIStore((s) => s.isAppLoading);
@@ -95,12 +105,33 @@ export default function GroupDetailScreen(): JSX.Element {
   }
 
   const sym = getCurrencySymbol(group.currency);
-  const balances = balancesUtil.getGroupBalances(group.id, expenses, settlements, group, preferredCurrency, convertCurrency);
+  const balances = balancesUtil.getGroupBalances(
+    group.id,
+    expenses,
+    settlements,
+    group,
+    preferredCurrency,
+    convertCurrency
+  );
   const myBalance = balances.get(currentUser.id) ?? 0;
 
   const groupDebts = group.simplifyDebts
-    ? balancesUtil.getSimplifiedDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency)
-    : balancesUtil.getExactPairwiseDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency);
+    ? balancesUtil.getSimplifiedDebts(
+        group.id,
+        expenses,
+        settlements,
+        group,
+        preferredCurrency,
+        convertCurrency
+      )
+    : balancesUtil.getExactPairwiseDebts(
+        group.id,
+        expenses,
+        settlements,
+        group,
+        preferredCurrency,
+        convertCurrency
+      );
 
   // Calculate total expenses in group currency
   const totalExpensesInGroupCurrency = expenses.reduce(

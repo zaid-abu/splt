@@ -50,7 +50,9 @@ export function useUpdateExpense() {
     onSuccess: (updatedExpense, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenseDetails(variables.id) });
       if (updatedExpense.groupId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.groupExpenses(updatedExpense.groupId) });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.groupExpenses(updatedExpense.groupId),
+        });
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
     },

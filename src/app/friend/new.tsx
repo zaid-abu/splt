@@ -14,12 +14,22 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
@@ -44,16 +54,14 @@ export default function NewFriendScreen(): JSX.Element {
     try {
       // In the current data model, friends are derived from groups.
       // So we create a 1-on-1 group representing this friendship.
-      await createGroup(
-        {
-          name: `Non-group expenses with ${name.trim()}`,
-          icon: "User", // Using a fallback string icon
-          currency: currentUser.defaultCurrency || "USD",
-          createdBy: currentUser.id,
-          members: [{ userId: currentUser.id, user: currentUser, balance: 0 }],
-          simplifyDebts: true,
-        }
-      );
+      await createGroup({
+        name: `Non-group expenses with ${name.trim()}`,
+        icon: "User", // Using a fallback string icon
+        currency: currentUser.defaultCurrency || "USD",
+        createdBy: currentUser.id,
+        members: [{ userId: currentUser.id, user: currentUser, balance: 0 }],
+        simplifyDebts: true,
+      });
 
       toast.show({
         label: "Friend added",

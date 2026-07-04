@@ -44,12 +44,22 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeInUp, FadeIn, FadeOut, Layout } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -304,25 +314,23 @@ export default function AddExpenseScreen(): JSX.Element {
             currency: expenseCurrency,
             category,
             paidBy,
-            splits: splits.map(s => ({ ...s, paid: s.userId === paidBy })),
+            splits: splits.map((s) => ({ ...s, paid: s.userId === paidBy })),
             splitMethod,
             date: expenseDate,
-          }
+          },
         });
       } else {
-        await addExpense(
-          {
-            groupId: selectedGroup?.id,
-            title: title.trim(),
-            amount: parsedAmount,
-            currency: expenseCurrency,
-            category,
-            paidBy,
-            splits: splits.map(s => ({ ...s, paid: s.userId === paidBy })),
-            splitMethod,
-            date: expenseDate,
-          }
-        );
+        await addExpense({
+          groupId: selectedGroup?.id,
+          title: title.trim(),
+          amount: parsedAmount,
+          currency: expenseCurrency,
+          category,
+          paidBy,
+          splits: splits.map((s) => ({ ...s, paid: s.userId === paidBy })),
+          splitMethod,
+          date: expenseDate,
+        });
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();

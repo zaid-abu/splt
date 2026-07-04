@@ -69,7 +69,7 @@ export const groupsApi = {
       user_id: id,
       balance: 0,
     }));
-    
+
     const { error } = await supabase.from("group_members").insert(members);
     if (error) throw error;
   },

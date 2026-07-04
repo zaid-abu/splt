@@ -10,12 +10,22 @@ import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import LottieView from "lottie-react-native";
 import { SwipeableRow } from "@/components/SwipeableRow";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import { FocusAwareView } from "@/components/PageAnimator";
 import { formatAmount } from "@/components/AmountDisplay";
@@ -30,14 +40,22 @@ export default function FriendsScreen(): JSX.Element {
   const { data: groups = [], isLoading } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
-  
+
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
-  const balances = balancesUtil.getUserBalances(currentUser.id, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency);
+  const balances = balancesUtil.getUserBalances(
+    currentUser.id,
+    undefined,
+    groups,
+    expenses,
+    settlements,
+    preferredCurrency,
+    convertCurrency
+  );
 
   const uniqueFriends = useMemo(() => {
     const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));

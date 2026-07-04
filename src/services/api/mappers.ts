@@ -154,7 +154,7 @@ export function toGroupUpdate(group: Partial<Group>): Updates<"groups"> {
   return compact({
     name: group.name,
     icon: group.icon,
-    description: "description" in group ? group.description ?? null : undefined,
+    description: "description" in group ? (group.description ?? null) : undefined,
     currency: group.currency,
     total_expenses: group.totalExpenses,
     simplify_debts: group.simplifyDebts,
@@ -179,7 +179,7 @@ export function toExpenseInsert(expense: Partial<Expense>): Inserts<"expenses"> 
 
 export function toExpenseUpdate(expense: Partial<Expense>): Updates<"expenses"> {
   return compact({
-    group_id: "groupId" in expense ? expense.groupId ?? null : undefined,
+    group_id: "groupId" in expense ? (expense.groupId ?? null) : undefined,
     title: expense.title,
     amount: expense.amount,
     currency: expense.currency,
@@ -187,7 +187,7 @@ export function toExpenseUpdate(expense: Partial<Expense>): Updates<"expenses"> 
     paid_by: expense.paidBy,
     split_method: expense.splitMethod,
     date: expense.date?.toISOString(),
-    notes: "notes" in expense ? expense.notes ?? null : undefined,
+    notes: "notes" in expense ? (expense.notes ?? null) : undefined,
   });
 }
 

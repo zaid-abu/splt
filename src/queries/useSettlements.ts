@@ -23,10 +23,13 @@ export function useAddSettlement() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (settlementData: Partial<Settlement>) => settlementsApi.addSettlement(settlementData),
+    mutationFn: (settlementData: Partial<Settlement>) =>
+      settlementsApi.addSettlement(settlementData),
     onSuccess: (newSettlement) => {
       if (newSettlement.groupId) {
-        queryClient.invalidateQueries({ queryKey: queryKeys.groupSettlements(newSettlement.groupId) });
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.groupSettlements(newSettlement.groupId),
+        });
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.settlements });
     },

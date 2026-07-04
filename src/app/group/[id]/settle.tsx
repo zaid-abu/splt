@@ -4,12 +4,22 @@ import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
-import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import {
+  useGroups,
+  useCreateGroup,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+} from "@/queries/useGroups";
+import {
+  useUserExpenses,
+  useAddExpense,
+  useUpdateExpense,
+  useDeleteExpense,
+} from "@/queries/useExpenses";
 import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
-
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -43,8 +53,22 @@ export default function GroupSettleScreen(): JSX.Element {
     if (!group) return [];
 
     const pairwiseDebts = group?.simplifyDebts
-      ? balancesUtil.getSimplifiedDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency)
-      : balancesUtil.getExactPairwiseDebts(group?.id ?? "", expenses, settlements, group, preferredCurrency, convertCurrency);
+      ? balancesUtil.getSimplifiedDebts(
+          group.id,
+          expenses,
+          settlements,
+          group,
+          preferredCurrency,
+          convertCurrency
+        )
+      : balancesUtil.getExactPairwiseDebts(
+          group?.id ?? "",
+          expenses,
+          settlements,
+          group,
+          preferredCurrency,
+          convertCurrency
+        );
 
     return pairwiseDebts.filter(
       (p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id
