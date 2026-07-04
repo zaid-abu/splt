@@ -11,7 +11,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { ScrollView } from "react-native-gesture-handler";
 import Animated, { LinearTransition, FadeIn, FadeOut } from "react-native-reanimated";
-import { Button, Typography, Spinner, useToast } from "heroui-native";
+import { Button, Typography, Spinner } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,6 +21,7 @@ import { useCreateGroup } from "@/features/groups/queries/useGroups";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useAuth } from "@/context/AppContext";
 import type { Currency } from "@/types";
+import { useAppToast } from "@/hooks/useAppToast";
 
 const GROUP_ICONS = [
   "Home",
@@ -50,7 +51,7 @@ export default function NewGroupScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
   const { mutateAsync: createGroup } = useCreateGroup();
-  const { toast } = useToast();
+  const { toast } = useAppToast();
 
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 

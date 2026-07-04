@@ -1,7 +1,6 @@
 import {
   Typography,
   Spinner,
-  useToast,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupSettingsRouteParams } from "@/types/navigation";
@@ -30,6 +29,7 @@ import { useAuth } from "@/context/AppContext";
 import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
+import { useAppToast } from "@/hooks/useAppToast";
 
 const BG = "#F5F0EB";
 const TEXT_PRIMARY = "#000000";
@@ -79,7 +79,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
-  const { toast } = useToast();
+  const { toast } = useAppToast();
 
   const group = groups.find((item) => item.id === id);
 
@@ -164,10 +164,18 @@ export default function GroupSettingsScreen(): JSX.Element {
     addGroupMembers({ groupId: group!.id, userIds: [friend.id] });
   }
 
-  function handleDeleteGroup() {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    deleteGroup(group!.id);
-    router.replace("/(tabs)/groups");
+  async function handleDeleteGroup() {
+    console.log("Delete group button pressed!");
+    try {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      console.log("Attempting to delete group with ID:", group?.id);
+      await deleteGroup(group!.id);
+      console.log("Delete group successful! Navigating to groups tab...");
+      router.replace("/(tabs)/groups");
+    } catch (e: any) {
+      console.error("Delete group failed with error:", e);
+      toast.show({ label: "Error", description: e?.message || JSON.stringify(e) || "Failed to delete group", variant: "danger", placement: "top" });
+    }
   }
 
   return (

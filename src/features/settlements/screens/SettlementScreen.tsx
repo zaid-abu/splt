@@ -1,4 +1,4 @@
-import { Typography, Spinner, useToast } from "heroui-native";
+import { Typography, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { SettleRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
@@ -18,6 +18,7 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
+import { useAppToast } from "@/hooks/useAppToast";
 
 const BG = "#F5F0EB";
 const SURFACE = "#FFFFFF";
@@ -55,7 +56,7 @@ export default function SettleUpScreen(): JSX.Element {
   } = useLocalSearchParams<SettleRouteParams>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { toast } = useToast();
+  const { toast } = useAppToast();
   const { currentUser } = useAuth();
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);

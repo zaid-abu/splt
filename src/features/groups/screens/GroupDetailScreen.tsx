@@ -302,7 +302,13 @@ export default function GroupDetailScreen(): JSX.Element {
       >
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.back()}
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/(tabs)");
+            }
+          }}
           style={({ pressed }) => ({
             width: 44,
             height: 44,
@@ -318,14 +324,17 @@ export default function GroupDetailScreen(): JSX.Element {
           <icons.ArrowLeft size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
         </Pressable>
 
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, flex: 1, marginHorizontal: 16 }}>
           <GroupIcon size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
           <Typography
+            numberOfLines={1}
             style={{
               fontFamily: "DMSerifDisplay_400Regular",
               fontSize: 28,
               color: TEXT_PRIMARY,
               lineHeight: 36,
+              flexShrink: 1,
+              textAlign: "center",
             }}
           >
             {group.name}

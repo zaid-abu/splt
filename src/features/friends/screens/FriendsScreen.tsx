@@ -13,6 +13,7 @@ import { SwipeableRow } from "@/components/layout/SwipeableRow";
 import { FlashList } from "@shopify/flash-list";
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { useGroups } from "@/features/groups/queries/useGroups";
+import { useFriends } from "@/features/friends/queries/useFriends";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
@@ -35,9 +36,12 @@ export default function FriendsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const { data: groups = [], isLoading } = useGroups(currentUser?.id);
+  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+  const { data: friends = [], isLoading: isLoadingFriends } = useFriends(currentUser?.id);
+  
+  const isLoading = isLoadingGroups || isLoadingFriends;
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
@@ -55,12 +59,7 @@ export default function FriendsScreen(): JSX.Element {
     convertCurrency
   );
 
-  const uniqueFriends = useMemo(() => {
-    const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
-    return Array.from(new Map(allMembers.map((user) => [user.id, user])).values()).filter(
-      (user) => user.id !== currentUser.id
-    );
-  }, [groups, currentUser.id]);
+  const uniqueFriends = friends;
 
   const filtered = search.trim()
     ? uniqueFriends.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()))

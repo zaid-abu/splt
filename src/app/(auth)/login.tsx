@@ -1,4 +1,4 @@
-import { Button, Typography, PressableFeedback, useToast, useThemeColor } from "heroui-native";
+import { Button, Typography, PressableFeedback, useThemeColor } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -14,11 +14,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSignIn } from "@/features/auth/hooks/useAuthMutations";
 import { loginSchema, type LoginFormData } from "@/validation/schemas";
 import { FormInput } from "@/components/forms/FormInput";
+import { useAppToast } from "@/hooks/useAppToast";
 
 export default function LoginScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { toast } = useToast();
+  const { toast } = useAppToast();
   const { mutateAsync: signIn, isPending } = useSignIn();
 
   const [showPassword, setShowPassword] = useState(false);

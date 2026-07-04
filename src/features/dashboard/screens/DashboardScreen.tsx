@@ -23,6 +23,7 @@ import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
+import { useNotifications } from "@/features/notifications/queries/useNotifications";
 import type { Expense, Group, User } from "@/types";
 
 // ─── Design tokens (Edge-to-Edge) ──
@@ -211,6 +212,8 @@ function TransactionRow({
 // ─── GroupRow ─────────────────────────────────────────────────────────────────
 interface GroupRowProps {
   group: Group;
+  balance: number;
+  currency: string;
   isLast: boolean;
   onPress: () => void;
 }
@@ -222,9 +225,22 @@ function getGroupColor(id: string): string {
   return GROUP_BG_PALETTE[idx];
 }
 
-function GroupRow({ group, isLast, onPress }: GroupRowProps): JSX.Element {
+function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps): JSX.Element {
   const memberCount = group.members.length;
   const iconBg = getGroupColor(group.id);
+
+  let subAmountText = "";
+  let subAmountColor = TEXT_SECONDARY;
+  
+  if (balance < 0) {
+    subAmountText = `You owe ${formatAmount(Math.abs(balance), currency)}`;
+    subAmountColor = TEXT_DANGER;
+  } else if (balance > 0) {
+    subAmountText = `Owes you ${formatAmount(balance, currency)}`;
+    subAmountColor = TEXT_SUCCESS;
+  } else {
+    subAmountText = "Settled up";
+  }
 
   return (
     <Pressable
@@ -241,8 +257,8 @@ function GroupRow({ group, isLast, onPress }: GroupRowProps): JSX.Element {
     >
       <View
         style={{
-          width: 56,
-          height: 56,
+          width: 48,
+          height: 48,
           borderRadius: 0,
           backgroundColor: iconBg,
           borderWidth: 1,
@@ -254,7 +270,7 @@ function GroupRow({ group, isLast, onPress }: GroupRowProps): JSX.Element {
       >
         <Typography
           style={{
-            fontSize: 24,
+            fontSize: 20,
             textAlign: "center",
             color: TEXT_PRIMARY,
           }}
@@ -263,15 +279,15 @@ function GroupRow({ group, isLast, onPress }: GroupRowProps): JSX.Element {
         </Typography>
       </View>
 
-      <View style={{ flex: 1 }}>
+      <View style={{ flex: 1, marginRight: 12 }}>
         <Typography
           numberOfLines={1}
           style={{
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: "700",
             color: TEXT_PRIMARY,
             fontFamily: "PlusJakartaSans_700Bold",
-            letterSpacing: -0.4,
+            letterSpacing: -0.3,
           }}
         >
           {group.name}
@@ -288,7 +304,18 @@ function GroupRow({ group, isLast, onPress }: GroupRowProps): JSX.Element {
         </Typography>
       </View>
 
-      <icons.ChevronRight size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+      <View style={{ alignItems: "flex-end" }}>
+        <Typography
+          style={{
+            fontSize: 14,
+            fontWeight: "700",
+            color: subAmountColor,
+            fontFamily: "PlusJakartaSans_700Bold",
+          }}
+        >
+          {subAmountText}
+        </Typography>
+      </View>
     </Pressable>
   );
 }
@@ -305,6 +332,9 @@ export default function DashboardScreen(): JSX.Element {
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
+
+  const { data: notifications = [] } = useNotifications(currentUser?.id);
+  const hasNotifications = notifications.length > 0;
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -347,7 +377,30 @@ export default function DashboardScreen(): JSX.Element {
     return map;
   }, [groups]);
 
-  const activeGroups = useMemo(() => groups.slice(0, 4), [groups]);
+  const activeGroups = useMemo(() => {
+    const groupBalances = groups.map(group => {
+      const balancesMap = balancesUtil.getUserBalances(
+        currentUser.id,
+        group.id,
+        groups,
+        expenses,
+        settlements,
+        preferredCurrency,
+        convertCurrency
+      );
+      let netBalance = 0;
+      for (const amount of balancesMap.values()) {
+        netBalance += amount;
+      }
+      return { group, netBalance };
+    });
+
+    // Sort by netBalance ascending (most owed first)
+    groupBalances.sort((a, b) => a.netBalance - b.netBalance);
+    
+    return groupBalances.slice(0, 4);
+  }, [groups, currentUser.id, expenses, settlements, preferredCurrency, convertCurrency]);
+
   const firstName = useMemo(() => currentUser.name.split(" ")[0], [currentUser.name]);
 
   const onRefresh = useCallback(() => {
@@ -390,7 +443,10 @@ export default function DashboardScreen(): JSX.Element {
 
         <Pressable
           accessibilityRole="button"
-          onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.push("/notifications");
+          }}
           style={({ pressed }) => ({
             width: 44, height: 44, alignItems: "center", justifyContent: "center", 
             backgroundColor: "transparent", borderRadius: 0, borderWidth: 1, borderColor: SEPARATOR,
@@ -399,7 +455,9 @@ export default function DashboardScreen(): JSX.Element {
         >
           <View>
             <icons.Bell size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
-            <View style={{ position: "absolute", top: 0, right: 0, backgroundColor: "#000", width: 8, height: 8, borderRadius: 4, borderWidth: 2, borderColor: BG }} />
+            {hasNotifications && (
+              <View style={{ position: "absolute", top: -2, right: -2, backgroundColor: "#E85D5D", width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: BG }} />
+            )}
           </View>
         </Pressable>
       </View>
@@ -427,9 +485,16 @@ export default function DashboardScreen(): JSX.Element {
         <FocusAwareView delay={50} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40 }}>
           <SectionLabel
             rightAction={
-              <Pressable onPress={() => router.push("/group/new")}>
-                <icons.Plus size={24} color={TEXT_PRIMARY} strokeWidth={2} />
-              </Pressable>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+                <Pressable onPress={() => router.push("/(tabs)/groups")} hitSlop={8}>
+                  <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                    View all
+                  </Typography>
+                </Pressable>
+                <Pressable onPress={() => router.push("/group/new")} hitSlop={8}>
+                  <icons.Plus size={22} color={TEXT_PRIMARY} strokeWidth={2.5} />
+                </Pressable>
+              </View>
             }
           >
             Groups
@@ -440,13 +505,19 @@ export default function DashboardScreen(): JSX.Element {
               <View style={{ paddingVertical: 16 }}><Typography style={{ color: TEXT_SECONDARY }}>Loading...</Typography></View>
             ) : activeGroups.length > 0 ? (
               <>
-                {activeGroups.map((group, idx) => (
+                {activeGroups.map(({ group, netBalance }, idx) => (
                   <Animated.View
                     key={group.id}
                     entering={FadeInDown.duration(400).delay(idx * 50).easing(Easing.out(Easing.quad))}
                     layout={LinearTransition}
                   >
-                    <GroupRow group={group} isLast={idx === activeGroups.length - 1} onPress={() => router.push(`/group/${group.id}`)} />
+                    <GroupRow 
+                      group={group} 
+                      balance={netBalance}
+                      currency={preferredCurrency.code}
+                      isLast={idx === activeGroups.length - 1} 
+                      onPress={() => router.push(`/group/${group.id}`)} 
+                    />
                   </Animated.View>
                 ))}
               </>

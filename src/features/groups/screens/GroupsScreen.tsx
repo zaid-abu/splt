@@ -6,41 +6,68 @@
 import { Typography, Skeleton } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, TextInput, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import * as icons from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
-import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
+import { FocusAwareView } from "@/components/animations/PageAnimator";
+import Animated, { LinearTransition } from "react-native-reanimated";
 
 import { GroupCard } from "@/features/groups/components/GroupCard";
 import { useAuth } from "@/context/AppContext";
+import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
+import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
+import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
+import * as balancesUtil from "@/features/settlements/utils/balances";
 import type { Group } from "@/types";
 
 // ─── Design Tokens ───
-const BG = "#F7F6F1";
-const SURFACE = "#FEFDFA";
-const BORDER = "#E7E5DE";
-const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_SECONDARY = "#6E6D68";
-const TEXT_TERTIARY = "#9B9A94";
-const CARD_RADIUS = 14;
-const SECTION_PAD = 20;
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const SEPARATOR = "#E8E4DF";
+const SECTION_PAD = 24;
 
 export default function GroupsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
+
   const { data: groups = [], isLoading } = useGroups(currentUser?.id);
+  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
+  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+
   const [search, setSearch] = useState("");
 
+  const activeGroups = useMemo(() => {
+    return groups.map((group) => {
+      const balancesMap = balancesUtil.getUserBalances(
+        currentUser.id,
+        group.id,
+        groups,
+        expenses,
+        settlements,
+        preferredCurrency,
+        convertCurrency
+      );
+      let netBalance = 0;
+      for (const amount of balancesMap.values()) {
+        netBalance += amount;
+      }
+      return { group, netBalance };
+    });
+  }, [groups, currentUser.id, expenses, settlements, preferredCurrency, convertCurrency]);
+
   const filtered = search.trim()
-    ? groups.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
-    : groups;
+    ? activeGroups.filter((g) => g.group.name.toLowerCase().includes(search.toLowerCase()))
+    : activeGroups;
 
   const ListHeaderComponent = useCallback(
     () => (
@@ -49,9 +76,10 @@ export default function GroupsScreen(): JSX.Element {
           <Typography
             style={{
               fontFamily: "DMSerifDisplay_400Regular",
-              fontSize: 32,
+              fontSize: 36,
               color: TEXT_PRIMARY,
-              lineHeight: 40,
+              lineHeight: 44,
+              letterSpacing: -0.5,
             }}
           >
             Groups.
@@ -60,16 +88,12 @@ export default function GroupsScreen(): JSX.Element {
             accessibilityRole="button"
             onPress={() => router.push("/group/new")}
             style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: 0,
-              backgroundColor: "#8C7A6B",
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: pressed ? 0.8 : 1,
+              width: 44, height: 44, alignItems: "center", justifyContent: "center", 
+              backgroundColor: "transparent", borderRadius: 0, borderWidth: 1, borderColor: SEPARATOR,
+              opacity: pressed ? 0.5 : 1,
             })}
           >
-            <icons.Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
+            <icons.Plus size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
           </Pressable>
         </View>
 
@@ -77,29 +101,31 @@ export default function GroupsScreen(): JSX.Element {
           style={{
             flexDirection: "row",
             alignItems: "center",
-            backgroundColor: "#5D5C5A", // from surface.inputField
-            borderRadius: CARD_RADIUS,
-            height: 48,
+            backgroundColor: BG,
+            borderWidth: 1,
+            borderColor: SEPARATOR,
+            borderRadius: 0,
+            height: 56,
             paddingHorizontal: 16,
           }}
         >
-          <icons.Search size={18} color="rgba(255,255,255,0.6)" />
+          <icons.Search size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
           <TextInput
             value={search}
             onChangeText={setSearch}
             placeholder="Search your groups..."
-            placeholderTextColor="rgba(255,255,255,0.6)"
+            placeholderTextColor={TEXT_SECONDARY}
             style={{
               flex: 1,
               marginLeft: 12,
               fontFamily: "PlusJakartaSans_500Medium",
-              color: "#FFFFFF",
-              fontSize: 14,
+              color: TEXT_PRIMARY,
+              fontSize: 16,
             }}
           />
           {search.length > 0 && (
             <Pressable accessibilityRole="button" onPress={() => setSearch("")} hitSlop={8}>
-              <icons.XCircle size={18} color="rgba(255,255,255,0.6)" />
+              <icons.XCircle size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
             </Pressable>
           )}
         </View>
@@ -112,19 +138,19 @@ export default function GroupsScreen(): JSX.Element {
     () => (
       <View style={{ paddingHorizontal: SECTION_PAD }}>
         {isLoading ? (
-          <View style={{ backgroundColor: SURFACE, borderRadius: CARD_RADIUS, overflow: "hidden", borderWidth: 1, borderColor: BORDER }}>
-            <View style={{ padding: 16, borderBottomWidth: 1, borderBottomColor: BORDER, flexDirection: "row", alignItems: "center" }}>
-              <Skeleton className="w-10 h-10 rounded-none mr-4" />
+          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
+            <View style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR, flexDirection: "row", alignItems: "center" }}>
+              <Skeleton className="w-12 h-12 rounded-none mr-4" />
               <View style={{ flex: 1, gap: 8 }}>
-                <Skeleton className="w-3/4 h-4 rounded-[4px]" />
-                <Skeleton className="w-1/3 h-3 rounded-[4px]" />
+                <Skeleton className="w-3/4 h-5 rounded-[4px]" />
+                <Skeleton className="w-1/3 h-4 rounded-[4px]" />
               </View>
             </View>
-            <View style={{ padding: 16, flexDirection: "row", alignItems: "center" }}>
-              <Skeleton className="w-10 h-10 rounded-none mr-4" />
+            <View style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR, flexDirection: "row", alignItems: "center" }}>
+              <Skeleton className="w-12 h-12 rounded-none mr-4" />
               <View style={{ flex: 1, gap: 8 }}>
-                <Skeleton className="w-1/2 h-4 rounded-[4px]" />
-                <Skeleton className="w-1/4 h-3 rounded-[4px]" />
+                <Skeleton className="w-1/2 h-5 rounded-[4px]" />
+                <Skeleton className="w-1/4 h-4 rounded-[4px]" />
               </View>
             </View>
           </View>
@@ -135,11 +161,6 @@ export default function GroupsScreen(): JSX.Element {
               alignItems: "center",
               justifyContent: "center",
               padding: 32,
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
-              borderWidth: 1,
-              borderColor: BORDER,
-              borderStyle: "dashed",
             }}
           >
             <View
@@ -147,18 +168,20 @@ export default function GroupsScreen(): JSX.Element {
                 width: 64,
                 height: 64,
                 borderRadius: 0,
-                backgroundColor: "#EFEEE9", // secondary background
+                backgroundColor: "#F0EBE1", // slightly darker secondary background for contrast
                 alignItems: "center",
                 justifyContent: "center",
                 marginBottom: 16,
+                borderWidth: 1,
+                borderColor: SEPARATOR,
               }}
             >
-              <icons.Users size={32} color={TEXT_PRIMARY} />
+              <icons.Users size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
             </View>
-            <Typography style={{ fontSize: 18, fontWeight: "700", color: TEXT_PRIMARY, marginBottom: 8, fontFamily: "PlusJakartaSans_700Bold", textAlign: "center" }}>
+            <Typography style={{ fontSize: 20, fontWeight: "700", color: TEXT_PRIMARY, marginBottom: 8, fontFamily: "PlusJakartaSans_700Bold", textAlign: "center", letterSpacing: -0.5 }}>
               No groups found
             </Typography>
-            <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, textAlign: "center", fontFamily: "PlusJakartaSans_400Regular" }}>
+            <Typography style={{ fontSize: 15, color: TEXT_SECONDARY, textAlign: "center", fontFamily: "PlusJakartaSans_500Medium" }}>
               {search
                 ? "Try a different search term"
                 : "Create a group with friends to start splitting expenses easily."}
@@ -167,19 +190,21 @@ export default function GroupsScreen(): JSX.Element {
               <Pressable
                 onPress={() => router.push("/group/new")}
                 style={({ pressed }) => ({
-                  marginTop: 24,
+                  marginTop: 32,
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: "#8C7A6B",
-                  height: 48,
+                  backgroundColor: "transparent",
+                  height: 56,
                   borderRadius: 0,
-                  paddingHorizontal: 24,
-                  opacity: pressed ? 0.8 : 1,
+                  borderWidth: 1,
+                  borderColor: TEXT_PRIMARY,
+                  paddingHorizontal: 32,
+                  opacity: pressed ? 0.5 : 1,
                 })}
               >
-                <icons.Plus size={18} color="#FFFFFF" strokeWidth={2.5} />
-                <Typography style={{ color: "#FFFFFF", fontWeight: "600", fontSize: 15, fontFamily: "PlusJakartaSans_600SemiBold", marginLeft: 8 }}>
+                <icons.Plus size={20} color={TEXT_PRIMARY} strokeWidth={2} />
+                <Typography style={{ color: TEXT_PRIMARY, fontWeight: "700", fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", marginLeft: 8 }}>
                   Create Group
                 </Typography>
               </Pressable>
@@ -192,50 +217,39 @@ export default function GroupsScreen(): JSX.Element {
   );
 
   const renderItem = useCallback(
-    ({ item, index }: { item: Group; index: number }) => {
-      const isFirst = index === 0;
+    ({ item, index }: { item: { group: Group, netBalance: number }; index: number }) => {
       const isLast = index === filtered.length - 1;
 
       return (
-        <Animated.View layout={LinearTransition.springify()} style={{ paddingHorizontal: SECTION_PAD }}>
+        <Animated.View layout={LinearTransition.springify()}>
           <View
             style={{
-              backgroundColor: SURFACE,
-              overflow: "hidden",
-              borderLeftWidth: 1,
-              borderRightWidth: 1,
-              borderColor: BORDER,
-              borderTopWidth: isFirst ? 1 : 0,
-              borderBottomWidth: isLast ? 1 : 0,
-              borderTopLeftRadius: isFirst ? CARD_RADIUS : 0,
-              borderTopRightRadius: isFirst ? CARD_RADIUS : 0,
-              borderBottomLeftRadius: isLast ? CARD_RADIUS : 0,
-              borderBottomRightRadius: isLast ? CARD_RADIUS : 0,
-              marginBottom: isLast ? 24 : 0,
+              backgroundColor: BG,
+              borderTopWidth: index === 0 ? 1 : 0,
+              borderTopColor: SEPARATOR,
             }}
           >
             <GroupCard
-              group={item}
+              group={item.group}
               currentUserId={currentUser.id}
+              balance={item.netBalance}
+              currency={preferredCurrency.code}
               index={index}
               isLast={isLast}
-              onPress={() => router.push(`/group/${item.id}`)}
+              onPress={() => router.push(`/group/${item.group.id}`)}
             />
           </View>
         </Animated.View>
       );
     },
-    [currentUser.id, filtered.length, router]
+    [currentUser.id, filtered.length, preferredCurrency.code, router]
   );
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
 
-      <Animated.View
-        entering={FadeInDown.duration(400).springify()}
-        style={{ flex: 1 }}
-      >
+      <FocusAwareView delay={0} style={{ flex: 1 }}>
         <FlashList
           data={filtered}
           renderItem={renderItem}
@@ -245,7 +259,7 @@ export default function GroupsScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
           extraData={{ filteredLength: filtered.length }}
         />
-      </Animated.View>
+      </FocusAwareView>
     </View>
   );
 }

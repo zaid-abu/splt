@@ -22,6 +22,7 @@ import {
   useDeleteGroup,
   useAddGroupMembers,
 } from "@/features/groups/queries/useGroups";
+import { useFriends } from "@/features/friends/queries/useFriends";
 import {
   useUserExpenses,
   useAddExpense,
@@ -72,9 +73,8 @@ export default function FriendDetailScreen(): JSX.Element {
     convertCurrency
   );
 
-  const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
-  const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
-  const friend = uniqueFriends.find((f) => f.id === id);
+  const { data: friendsList = [] } = useFriends(currentUser?.id);
+  const friend = friendsList.find((f) => f.id === id);
 
   const sharedActivities = useMemo(() => {
     return activities

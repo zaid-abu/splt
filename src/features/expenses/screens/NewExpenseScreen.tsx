@@ -8,7 +8,6 @@ import dayjs from "dayjs";
 import {
   Typography,
   Spinner,
-  useToast,
   Popover,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -22,6 +21,7 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 import { useGroups } from "@/features/groups/queries/useGroups";
+import { useFriends } from "@/features/friends/queries/useFriends";
 import {
   useUserExpenses,
   useAddExpense,
@@ -38,6 +38,7 @@ import {
   ExpenseFormParticipants,
 } from "@/features/expenses/components/ExpenseFormParticipants";
 import { ExpenseFormSelectors } from "@/features/expenses/components/ExpenseFormSplits";
+import { useAppToast } from "@/hooks/useAppToast";
 
 const BG = "#F5F0EB";
 const TEXT_PRIMARY = "#000000";
@@ -54,16 +55,18 @@ export default function AddExpenseScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
   const { data: groups = [] } = useGroups(currentUser?.id);
+  const { data: friendsList = [] } = useFriends(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { mutateAsync: addExpense } = useAddExpense();
   const { mutateAsync: updateExpense } = useUpdateExpense();
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const setCurrency = useUIStore((s) => s.setCurrency);
-  const { toast } = useToast();
+  const { toast } = useAppToast();
 
   const { state, actions } = useExpenseForm({
     currentUser,
     groups,
+    friends: friendsList,
     expenses,
     initialGroupId,
     initialFriendId,
@@ -96,7 +99,13 @@ export default function AddExpenseScreen(): JSX.Element {
             {state.existingExpense ? "Edit Expense" : "Add Expense"}
           </Typography>
           <Pressable 
-            onPress={() => router.back()} 
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/(tabs)");
+              }
+            }} 
             accessibilityRole="button" 
             style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
           >

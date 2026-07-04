@@ -1,4 +1,4 @@
-import { Button, Typography, PressableFeedback, useToast, useThemeColor } from "heroui-native";
+import { Button, Typography, PressableFeedback, useThemeColor } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -14,11 +14,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSignUp } from "@/features/auth/hooks/useAuthMutations";
 import { registerSchema, type RegisterFormData } from "@/validation/schemas";
 import { FormInput } from "@/components/forms/FormInput";
+import { useAppToast } from "@/hooks/useAppToast";
 
 export default function RegisterScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { toast } = useToast();
+  const { toast } = useAppToast();
   const { mutateAsync: signUp, isPending } = useSignUp();
 
   const [showPassword, setShowPassword] = useState(false);
