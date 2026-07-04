@@ -275,8 +275,8 @@ export default function ExpenseDetailScreen(): JSX.Element {
           <View>
             {isAppLoading ? (
               <View style={{ gap: 16 }}>
-                <Skeleton className="w-full h-[64px] rounded-[16px]" />
-                <Skeleton className="w-full h-[64px] rounded-[16px]" />
+                <Skeleton className="w-full h-[64px] rounded-none bg-[#E8E4DF]" />
+                <Skeleton className="w-full h-[64px] rounded-none bg-[#E8E4DF]" />
               </View>
             ) : (
               expense.splits.map((split: any, idx: number) => {

@@ -244,17 +244,17 @@ export default function FriendDetailScreen(): JSX.Element {
             <View className="px-6">
               <View className="bg-white rounded-[12px] overflow-hidden border border-border p-4 gap-4">
                 <View className="flex-row items-center gap-4">
-                  <Skeleton className="w-12 h-12 rounded-[16px]" />
+                  <Skeleton className="w-12 h-12 rounded-none bg-[#E8E4DF]" />
                   <View className="flex-1 gap-2">
-                    <Skeleton className="w-3/4 h-4 rounded-none" />
-                    <Skeleton className="w-1/3 h-3 rounded-none" />
+                    <Skeleton className="w-3/4 h-4 rounded-none bg-[#E8E4DF]" />
+                    <Skeleton className="w-1/3 h-3 rounded-none bg-[#E8E4DF]" />
                   </View>
                 </View>
                 <View className="flex-row items-center gap-4">
-                  <Skeleton className="w-12 h-12 rounded-[16px]" />
+                  <Skeleton className="w-12 h-12 rounded-none bg-[#E8E4DF]" />
                   <View className="flex-1 gap-2">
-                    <Skeleton className="w-1/2 h-4 rounded-none" />
-                    <Skeleton className="w-1/4 h-3 rounded-none" />
+                    <Skeleton className="w-1/2 h-4 rounded-none bg-[#E8E4DF]" />
+                    <Skeleton className="w-1/4 h-3 rounded-none bg-[#E8E4DF]" />
                   </View>
                 </View>
               </View>

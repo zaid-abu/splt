@@ -210,20 +210,20 @@ export default function ActivityScreen(): JSX.Element {
 
         {isAppLoading && (
           <View className="px-6 mt-4">
-            <Skeleton className="w-24 h-4 rounded-none ml-2 mb-3" />
+            <Skeleton className="w-24 h-4 rounded-none ml-2 mb-3 bg-[#E8E4DF]" />
             <View className="bg-white rounded-[12px] overflow-hidden border border-border">
               <View className="p-4 flex-row items-center gap-4">
-                <Skeleton className="w-12 h-12 rounded-[16px]" />
+                <Skeleton className="w-12 h-12 rounded-none bg-[#E8E4DF]" />
                 <View className="flex-1 gap-2">
-                  <Skeleton className="w-3/4 h-4 rounded-none" />
-                  <Skeleton className="w-1/3 h-3 rounded-none" />
+                  <Skeleton className="w-3/4 h-4 rounded-none bg-[#E8E4DF]" />
+                  <Skeleton className="w-1/3 h-3 rounded-none bg-[#E8E4DF]" />
                 </View>
               </View>
               <View className="p-4 flex-row items-center gap-4 border-t border-border/50">
-                <Skeleton className="w-12 h-12 rounded-[16px]" />
+                <Skeleton className="w-12 h-12 rounded-none bg-[#E8E4DF]" />
                 <View className="flex-1 gap-2">
-                  <Skeleton className="w-1/2 h-4 rounded-none" />
-                  <Skeleton className="w-1/4 h-3 rounded-none" />
+                  <Skeleton className="w-1/2 h-4 rounded-none bg-[#E8E4DF]" />
+                  <Skeleton className="w-1/4 h-3 rounded-none bg-[#E8E4DF]" />
                 </View>
               </View>
             </View>

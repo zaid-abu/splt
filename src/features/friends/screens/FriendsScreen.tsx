@@ -104,9 +104,9 @@ export default function FriendsScreen(): JSX.Element {
       <View style={{ paddingHorizontal: 24, alignItems: "center", justifyContent: "center", paddingTop: 80 }}>
         {isLoading ? (
           <View style={{ gap: 32, width: "100%" }}>
-            <Skeleton className="w-full h-16 rounded-lg" />
-            <Skeleton className="w-full h-16 rounded-lg" />
-            <Skeleton className="w-full h-16 rounded-lg" />
+            <Skeleton className="w-full h-16 rounded-none bg-[#E8E4DF]" />
+            <Skeleton className="w-full h-16 rounded-none bg-[#E8E4DF]" />
+            <Skeleton className="w-full h-16 rounded-none bg-[#E8E4DF]" />
           </View>
         ) : (
           <View style={{ alignItems: "center" }}>

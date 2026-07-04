@@ -140,17 +140,17 @@ export default function GroupsScreen(): JSX.Element {
         {isLoading ? (
           <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
             <View style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR, flexDirection: "row", alignItems: "center" }}>
-              <Skeleton className="w-12 h-12 rounded-none mr-4" />
+              <Skeleton className="w-12 h-12 rounded-none mr-4 bg-[#E8E4DF]" />
               <View style={{ flex: 1, gap: 8 }}>
-                <Skeleton className="w-3/4 h-5 rounded-[4px]" />
-                <Skeleton className="w-1/3 h-4 rounded-[4px]" />
+                <Skeleton className="w-3/4 h-5 rounded-none bg-[#E8E4DF]" />
+                <Skeleton className="w-1/3 h-4 rounded-none bg-[#E8E4DF]" />
               </View>
             </View>
             <View style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR, flexDirection: "row", alignItems: "center" }}>
-              <Skeleton className="w-12 h-12 rounded-none mr-4" />
+              <Skeleton className="w-12 h-12 rounded-none mr-4 bg-[#E8E4DF]" />
               <View style={{ flex: 1, gap: 8 }}>
-                <Skeleton className="w-1/2 h-5 rounded-[4px]" />
-                <Skeleton className="w-1/4 h-4 rounded-[4px]" />
+                <Skeleton className="w-1/2 h-5 rounded-none bg-[#E8E4DF]" />
+                <Skeleton className="w-1/4 h-4 rounded-none bg-[#E8E4DF]" />
               </View>
             </View>
           </View>
