@@ -209,8 +209,9 @@ export function getUserBalances(
     processDebts(group, !group.simplifyDebts);
   });
 
-  const nonGroupExpenses = expenses.filter((e) => !e.groupId);
-  const nonGroupSettlements = settlements.filter((s) => !s.groupId);
+  const groupIds = new Set(groups.map((g) => g.id));
+  const nonGroupExpenses = expenses.filter((e) => !e.groupId || !groupIds.has(e.groupId));
+  const nonGroupSettlements = settlements.filter((s) => !s.groupId || !groupIds.has(s.groupId));
 
   nonGroupExpenses.forEach((exp) => {
     if (exp.paidBy === currentUserId) {

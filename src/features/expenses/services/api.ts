@@ -24,10 +24,23 @@ export const expensesApi = {
   },
 
   async fetchUserExpenses(userId: string): Promise<Expense[]> {
+    // 1. Get all expense IDs the user is part of
+    const { data: splitsData, error: splitsError } = await supabase
+      .from("expense_splits")
+      .select("expense_id")
+      .eq("user_id", userId);
+
+    if (splitsError) throw splitsError;
+
+    if (!splitsData || splitsData.length === 0) return [];
+
+    const expenseIds = splitsData.map((s) => s.expense_id);
+
+    // 2. Fetch those expenses with ALL their splits
     const { data, error } = await supabase
       .from("expenses")
-      .select("*, paidByUser:users!paid_by(*), splits:expense_splits!inner(*, user:users(*))")
-      .eq("expense_splits.user_id", userId)
+      .select(expenseSelect)
+      .in("id", expenseIds)
       .order("date", { ascending: false })
       .returns<ExpenseRow[]>();
 

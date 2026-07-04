@@ -326,7 +326,15 @@ export default function ExpenseDetailScreen(): JSX.Element {
               {!paidByMe && !myShare.paid && (
                  <Pressable
                    accessibilityRole="button"
-                   onPress={() => router.push(`/settle/${expense.paidBy}`)}
+                   onPress={() => 
+                     router.push({
+                       pathname: `/settle/${expense.paidBy}`,
+                       params: {
+                         amount: myShare.amount.toString(),
+                         groupId: expense.groupId || undefined,
+                       },
+                     } as any)
+                   }
                    style={({ pressed }) => ({
                      marginTop: 24,
                      height: 48,

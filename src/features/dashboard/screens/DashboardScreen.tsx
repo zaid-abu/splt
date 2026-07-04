@@ -11,7 +11,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { Typography } from "heroui-native";
+import { Typography, Skeleton } from "heroui-native";
+import { useQueryClient } from "@tanstack/react-query";
 import Animated, { FadeInDown, LinearTransition, Easing } from "react-native-reanimated";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
@@ -20,11 +21,19 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
+import { useFriends } from "@/features/friends/queries/useFriends";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 import { useNotifications } from "@/features/notifications/queries/useNotifications";
 import type { Expense, Group, User } from "@/types";
+
+function getGreeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
 
 // ─── Design tokens (Edge-to-Edge) ──
 const BG = "#F5F0EB";
@@ -218,7 +227,16 @@ interface GroupRowProps {
   onPress: () => void;
 }
 
-const GROUP_BG_PALETTE = ["#FAFAFA", "#F8F8F8"];
+const GROUP_BG_PALETTE = [
+  "#FEF3C7", // Amber
+  "#DBEAFE", // Blue
+  "#FCE7F3", // Pink
+  "#EDE9FE", // Purple
+  "#D1FAE5", // Emerald
+  "#CFFAFE", // Cyan
+  "#FEE2E2", // Red
+  "#E0E7FF", // Indigo
+];
 
 function getGroupColor(id: string): string {
   const idx = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % GROUP_BG_PALETTE.length;
@@ -327,6 +345,7 @@ export default function DashboardScreen(): JSX.Element {
   const { currentUser } = useAuth();
 
   const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
+  const { data: friends = [] } = useFriends(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
 
@@ -337,6 +356,8 @@ export default function DashboardScreen(): JSX.Element {
   const hasNotifications = notifications.length > 0;
 
   const [refreshing, setRefreshing] = useState(false);
+  const [activityFilter, setActivityFilter] = useState<"all"|"paid"|"owe">("all");
+  const queryClient = useQueryClient();
 
   // Balance computations
   const owedToYou = useMemo(
@@ -355,27 +376,28 @@ export default function DashboardScreen(): JSX.Element {
   );
 
   const oweUsers = useMemo(() => {
-    const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
-    const unique = Array.from(new Map(allMembers.map((u) => [u.id, u])).values());
-    return unique.filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) < 0).slice(0, 4);
-  }, [groups, currentUser.id, perUserBalances]);
+    return friends.filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) < 0).slice(0, 4);
+  }, [friends, currentUser.id, perUserBalances]);
 
   const owedUsers = useMemo(() => {
-    const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
-    const unique = Array.from(new Map(allMembers.map((u) => [u.id, u])).values());
-    return unique.filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) > 0).slice(0, 4);
-  }, [groups, currentUser.id, perUserBalances]);
+    return friends.filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) > 0).slice(0, 4);
+  }, [friends, currentUser.id, perUserBalances]);
 
-  const recentExpenses = useMemo(
-    () => [...expenses].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5),
-    [expenses]
-  );
+  const recentExpenses = useMemo(() => {
+    let filtered = [...expenses];
+    if (activityFilter === "paid") {
+      filtered = filtered.filter(e => e.paidBy === currentUser.id);
+    } else if (activityFilter === "owe") {
+      filtered = filtered.filter(e => e.paidBy !== currentUser.id && e.splits.some(s => s.userId === currentUser.id && !s.paid));
+    }
+    return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
+  }, [expenses, activityFilter, currentUser.id]);
 
   const userById = useMemo(() => {
     const map = new Map<string, User>();
-    groups.forEach((g) => g.members.forEach((m) => map.set(m.userId, m.user)));
+    friends.forEach((f) => map.set(f.id, f));
     return map;
-  }, [groups]);
+  }, [friends]);
 
   const activeGroups = useMemo(() => {
     const groupBalances = groups.map(group => {
@@ -403,14 +425,13 @@ export default function DashboardScreen(): JSX.Element {
 
   const firstName = useMemo(() => currentUser.name.split(" ")[0], [currentUser.name]);
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setTimeout(() => {
-      setRefreshing(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }, 1000);
-  }, []);
+    await queryClient.invalidateQueries();
+    setRefreshing(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [queryClient]);
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
@@ -427,19 +448,30 @@ export default function DashboardScreen(): JSX.Element {
           justifyContent: "space-between",
         }}
       >
-        <Typography
-          style={{
-            fontFamily: "DMSerifDisplay_400Regular",
-            fontSize: 36,
-            color: TEXT_PRIMARY,
-            lineHeight: 44,
-            flex: 1,
-            letterSpacing: -0.5,
-          }}
-          numberOfLines={1}
-        >
-          {firstName}.
-        </Typography>
+        <View style={{ flex: 1 }}>
+          <Typography
+            style={{
+              fontSize: 14,
+              color: TEXT_SECONDARY,
+              fontFamily: "PlusJakartaSans_500Medium",
+              marginBottom: 4,
+            }}
+          >
+            {getGreeting()},
+          </Typography>
+          <Typography
+            style={{
+              fontFamily: "DMSerifDisplay_400Regular",
+              fontSize: 36,
+              color: TEXT_PRIMARY,
+              lineHeight: 44,
+              letterSpacing: -0.5,
+            }}
+            numberOfLines={1}
+          >
+            {firstName}.
+          </Typography>
+        </View>
 
         <Pressable
           accessibilityRole="button"
@@ -478,6 +510,7 @@ export default function DashboardScreen(): JSX.Element {
             owedUsers={owedUsers}
             onOwePress={() => router.push("/(tabs)/friends")}
             onOwedPress={() => router.push("/(tabs)/friends")}
+            onSettlePress={() => oweUsers.length > 0 && router.push(`/settle/${oweUsers[0].id}`)}
           />
         </FocusAwareView>
 
@@ -502,7 +535,10 @@ export default function DashboardScreen(): JSX.Element {
 
           <View>
             {isLoadingGroups ? (
-              <View style={{ paddingVertical: 16 }}><Typography style={{ color: TEXT_SECONDARY }}>Loading...</Typography></View>
+              <View style={{ gap: 16 }}>
+                <Skeleton className="w-full h-[80px] rounded-none bg-[#E8E4DF]" />
+                <Skeleton className="w-full h-[80px] rounded-none bg-[#E8E4DF]" />
+              </View>
             ) : activeGroups.length > 0 ? (
               <>
                 {activeGroups.map(({ group, netBalance }, idx) => (
@@ -529,23 +565,52 @@ export default function DashboardScreen(): JSX.Element {
           </View>
         </FocusAwareView>
 
-        {/* ── D. Transactions ─────────────────────────────────────────────── */}
-        {recentExpenses.length > 0 && (
-          <FocusAwareView delay={100} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
-            <SectionLabel
-              rightAction={
-                <Pressable onPress={() => router.push("/(tabs)/friends")}>
-                  <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
-                    View all
-                  </Typography>
-                </Pressable>
-              }
-            >
-              Activity
-            </SectionLabel>
+        <FocusAwareView delay={100} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
+          <SectionLabel
+            rightAction={
+              <Pressable onPress={() => router.push("/(tabs)/friends")}>
+                <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                  View all
+                </Typography>
+              </Pressable>
+            }
+          >
+            Activity
+          </SectionLabel>
 
-            <View style={{ backgroundColor: "transparent" }}>
-              {recentExpenses.map((expense, idx) => {
+          <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
+            {(["all", "paid", "owe"] as const).map((filter) => (
+              <Pressable
+                key={filter}
+                onPress={() => setActivityFilter(filter)}
+                style={({ pressed }) => ({
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  borderRadius: 0,
+                  backgroundColor: activityFilter === filter ? "#8C7A6B" : "transparent",
+                  borderWidth: 1,
+                  borderColor: activityFilter === filter ? "#8C7A6B" : SEPARATOR,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    fontWeight: "700",
+                    fontFamily: "PlusJakartaSans_700Bold",
+                    color: activityFilter === filter ? "#FFFFFF" : TEXT_SECONDARY,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {filter}
+                </Typography>
+              </Pressable>
+            ))}
+          </View>
+
+          <View style={{ backgroundColor: "transparent" }}>
+            {recentExpenses.length > 0 ? (
+              recentExpenses.map((expense, idx) => {
                 const mySplit = expense.splits.find((s) => s.userId === currentUser.id);
                 const paidByUser = userById.get(expense.paidBy);
                 return (
@@ -564,10 +629,36 @@ export default function DashboardScreen(): JSX.Element {
                     />
                   </Animated.View>
                 );
-              })}
-            </View>
-          </FocusAwareView>
-        )}
+              })
+            ) : (
+              <Animated.View 
+                entering={FadeInDown.duration(400).easing(Easing.out(Easing.quad))} 
+                layout={LinearTransition}
+                style={{ paddingVertical: 32, alignItems: "center", justifyContent: "center" }}
+              >
+                <icons.PackageOpen size={48} color={TEXT_SECONDARY} strokeWidth={1} style={{ marginBottom: 16 }} />
+                <Typography style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>
+                  No recent activity found.
+                </Typography>
+                <Pressable
+                  onPress={() => router.push("/expense/new")}
+                  style={({ pressed }) => ({
+                    marginTop: 16,
+                    paddingHorizontal: 24,
+                    paddingVertical: 12,
+                    backgroundColor: "#8C7A6B",
+                    borderRadius: 0,
+                    opacity: pressed ? 0.8 : 1,
+                  })}
+                >
+                  <Typography style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
+                    Log your first expense
+                  </Typography>
+                </Pressable>
+              </Animated.View>
+            )}
+          </View>
+        </FocusAwareView>
       </ScrollView>
     </View>
   );

@@ -1,52 +1,84 @@
-import { Typography, Spinner } from "heroui-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import type { SettleRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
+import {
+  View,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  TextInput,
+} from "react-native";
+import { Typography, Spinner } from "heroui-native";
+import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, Pressable, TextInput } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, {
+  FadeInDown,
+  FadeIn,
+  FadeOut,
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  LinearTransition,
+} from "react-native-reanimated";
+import * as icons from "lucide-react-native";
+import * as Haptics from "expo-haptics";
+
+import type { SettleRouteParams } from "@/types/navigation";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements, useAddSettlement } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
-
+import { useFriends } from "@/features/friends/queries/useFriends";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { CurrencySelector } from "@/components/forms/CurrencySelector";
-import * as icons from "lucide-react-native";
-import * as Haptics from "expo-haptics";
 import { useAppToast } from "@/hooks/useAppToast";
 
+// --- Design Tokens ---
 const BG = "#F5F0EB";
+const BRAND = "#8C7A6B";
 const SURFACE = "#FFFFFF";
 const BORDER = "#E8E4DF";
 const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_SECONDARY = "#8E8E93";
-const SECTION_PAD = 20;
-const CARD_RADIUS = 16;
+const TEXT_SECONDARY = "#8A8782";
+const KEYPAD_ACTIVE = "#EAE5E0";
 
-function SectionLabel({ children }: { children: string }): JSX.Element {
+// --- Custom Keypad Component ---
+function KeypadButton({ val, onPress, isAction = false }: { val: string | JSX.Element, onPress: () => void, isAction?: boolean }) {
   return (
-    <Typography
-      style={{
-        fontSize: 10,
-        fontWeight: "700",
-        letterSpacing: 1.4,
-        color: TEXT_SECONDARY,
-        fontFamily: "PlusJakartaSans_700Bold",
-        textTransform: "uppercase",
-        marginBottom: 8,
-        marginLeft: 4,
+    <Pressable
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
       }}
+      style={({ pressed }) => ({
+        flex: 1,
+        height: 64,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: pressed ? KEYPAD_ACTIVE : "transparent",
+      })}
     >
-      {children}
-    </Typography>
+      {typeof val === "string" ? (
+        <Typography
+          style={{
+            fontSize: isAction ? 24 : 28,
+            fontWeight: "500",
+            color: TEXT_PRIMARY,
+            fontFamily: "PlusJakartaSans_500Medium",
+          }}
+        >
+          {val}
+        </Typography>
+      ) : (
+        val
+      )}
+    </Pressable>
   );
 }
 
+// --- Main Screen ---
 export default function SettleUpScreen(): JSX.Element {
   const {
     id,
@@ -55,87 +87,169 @@ export default function SettleUpScreen(): JSX.Element {
     direction: initialDirection,
   } = useLocalSearchParams<SettleRouteParams>();
   const router = useRouter();
+  const pathname = usePathname();
   const insets = useSafeAreaInsets();
   const { toast } = useAppToast();
   const { currentUser } = useAuth();
+  
+  const isGroupRoute = pathname.includes("/group/");
+  const routeGroupId = isGroupRoute ? id : groupId;
+  
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+  const { data: combinedFriends = [] } = useFriends(currentUser?.id);
+  
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
-
-  const balances = balancesUtil.getUserBalances(
-    currentUser.id,
-    undefined,
-    groups,
-    expenses,
-    settlements,
-    preferredCurrency,
-    convertCurrency
-  );
   const { mutateAsync: addSettlement, isPending: isAddingSettlement } = useAddSettlement();
-  const setCurrency = useUIStore((s) => s.setCurrency);
 
-  const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
-  const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
-  const friend = uniqueFriends.find((f) => f.id === id);
+  const targetGroup = groups.find((g) => g.id === routeGroupId);
 
-  const netBalance = balances.get(id ?? "") || 0; // Negative means you owe them
+  // Group-specific debt calculation
+  const debtOptions = useMemo(() => {
+    if (!isGroupRoute || !targetGroup) return [];
+    
+    const pairwiseDebts = targetGroup.simplifyDebts
+      ? balancesUtil.getSimplifiedDebts(targetGroup.id, expenses, settlements, targetGroup, preferredCurrency, convertCurrency)
+      : balancesUtil.getExactPairwiseDebts(targetGroup.id, expenses, settlements, targetGroup, preferredCurrency, convertCurrency);
 
-  // "you" means you paid them (so they owe you less, or you owe them less)
-  // "them" means they paid you
-  const [direction, setDirection] = useState<"you" | "them">(
-    (initialDirection as "you" | "them") || (netBalance < 0 ? "you" : "them")
-  );
-
-  const [amount, setAmount] = useState(initialAmount || Math.abs(netBalance).toString());
-  const [note, setNote] = useState("");
-  
-  const sharedGroups = useMemo(() => {
-    return groups.filter(
-      (g) =>
-        g.members.some((m) => m.userId === currentUser.id) && g.members.some((m) => m.userId === id)
+    const relevantDebts = pairwiseDebts.filter(
+      (p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id
     );
-  }, [groups, currentUser.id, id]);
+    
+    return relevantDebts.map(d => ({
+      friendId: d.fromUserId === currentUser.id ? d.toUserId : d.fromUserId,
+      amount: d.amount,
+      direction: (d.fromUserId === currentUser.id ? "you" : "them") as "you" | "them"
+    }));
+  }, [isGroupRoute, targetGroup, expenses, settlements, currentUser.id, preferredCurrency, convertCurrency]);
+
+  const defaultFriendId = isGroupRoute 
+    ? (debtOptions.length > 0 ? debtOptions.reduce((prev, curr) => (curr.amount > prev.amount ? curr : prev)).friendId : undefined)
+    : id;
+
+  const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>(defaultFriendId);
+  const [showRecipientSelector, setShowRecipientSelector] = useState(false);
+  
+  // Keep selectedFriendId synced if defaultFriendId changes (e.g. data loaded late)
+  useEffect(() => {
+    if (!selectedFriendId && defaultFriendId) {
+      setSelectedFriendId(defaultFriendId);
+    }
+  }, [defaultFriendId, selectedFriendId]);
+
+  const friend = combinedFriends.find((f) => f.id === selectedFriendId);
+
+  // Calculate overall net balance for non-group route
+  const overallBalances = useMemo(() => {
+    if (isGroupRoute) return new Map<string, number>();
+    return balancesUtil.getUserBalances(
+      currentUser.id,
+      undefined,
+      groups,
+      expenses,
+      settlements,
+      preferredCurrency,
+      convertCurrency
+    );
+  }, [isGroupRoute, currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]);
+
+  const activeDebtOption = debtOptions.find(d => d.friendId === selectedFriendId);
+  const netBalance = isGroupRoute 
+    ? (activeDebtOption ? (activeDebtOption.direction === "you" ? -activeDebtOption.amount : activeDebtOption.amount) : 0)
+    : (overallBalances.get(selectedFriendId ?? "") || 0);
+
+  const defaultDirection = (initialDirection as "you" | "them") || (netBalance < 0 ? "you" : "them");
+  const [direction, setDirection] = useState<"you" | "them">(defaultDirection);
+  
+  // Sync direction when recipient changes
+  useEffect(() => {
+    if (!initialDirection) {
+      setDirection(netBalance < 0 ? "you" : "them");
+    }
+  }, [netBalance, initialDirection]);
+
+  const initialAmtStr = initialAmount ? initialAmount : (Math.abs(netBalance) > 0 ? Math.abs(netBalance).toFixed(2) : "");
+  const [amountStr, setAmountStr] = useState(initialAmtStr === "0.00" ? "" : initialAmtStr);
+  const [note, setNote] = useState("");
+  const [showOptional, setShowOptional] = useState(false);
+
+  // Keep amount synced if initial amount/balance changes and user hasn't typed
+  useEffect(() => {
+    if (!initialAmount && amountStr === "") {
+      const amt = Math.abs(netBalance).toFixed(2);
+      if (amt !== "0.00") setAmountStr(amt);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [netBalance]);
+
+  const sharedGroups = useMemo(() => {
+    if (!friend) return [];
+    return groups.filter(
+      (g) => g.members.some((m) => m.userId === currentUser.id) && g.members.some((m) => m.userId === friend.id)
+    );
+  }, [groups, currentUser.id, friend]);
 
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(
-    groupId || (sharedGroups.length === 1 ? sharedGroups[0].id : undefined)
+    routeGroupId || (sharedGroups.length === 1 ? sharedGroups[0].id : undefined)
   );
 
-  const selectedGroup = groups.find((g) => g.id === selectedGroupId);
-  const initialCurrency = selectedGroup ? selectedGroup.currency : preferredCurrency.code;
-  const [settleCurrency, setSettleCurrency] = useState(initialCurrency);
-
-  const [loading, setLoading] = useState(false);
-
-  if (!friend) {
+  if (!friend && (!isGroupRoute || debtOptions.length === 0)) {
     return (
       <View style={{ flex: 1, backgroundColor: BG, alignItems: "center", justifyContent: "center" }}>
-        <Typography style={{ fontSize: 18, color: TEXT_PRIMARY }}>Friend not found</Typography>
-        <Pressable onPress={() => router.back()} style={{ marginTop: 16, padding: 12, backgroundColor: "#8C7A6B", borderRadius: 12 }}>
+        <Typography style={{ fontSize: 18, color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_600SemiBold" }}>
+          {isGroupRoute ? "All settled up!" : "Friend not found"}
+        </Typography>
+        <Pressable onPress={() => router.back()} style={{ marginTop: 16, padding: 12, backgroundColor: BRAND, borderRadius: 0 }}>
           <Typography style={{ color: "#FFF", fontWeight: "700" }}>Go Back</Typography>
         </Pressable>
       </View>
     );
   }
 
-  const parsedAmount = parseFloat(amount.replace(",", ".")) || 0;
+  if (!friend) return <View />; // loading state
+
+  // Handle Keypad
+  const handleKeypad = (val: string) => {
+    if (val === "C") {
+      setAmountStr("");
+      return;
+    }
+    if (val === "<") {
+      setAmountStr((prev) => prev.slice(0, -1));
+      return;
+    }
+    if (val === ".") {
+      if (amountStr.includes(".")) return;
+      setAmountStr((prev) => (prev ? prev + "." : "0."));
+      return;
+    }
+    if (amountStr.includes(".")) {
+      const parts = amountStr.split(".");
+      if (parts[1] && parts[1].length >= 2) return;
+    }
+    if (amountStr === "0" && val !== ".") {
+      setAmountStr(val);
+      return;
+    }
+    setAmountStr((prev) => prev + val);
+  };
+
+  const parsedAmount = parseFloat(amountStr) || 0;
 
   async function handleSubmit() {
     if (!parsedAmount || parsedAmount <= 0) {
       toast.show({ label: "Error", description: "Please enter a valid amount.", variant: "danger", placement: "top" });
       return;
     }
-
-    setLoading(true);
-
     try {
       await addSettlement({
         groupId: selectedGroupId,
         fromUserId: direction === "you" ? currentUser.id : friend!.id,
         toUserId: direction === "you" ? friend!.id : currentUser.id,
         amount: parsedAmount,
-        currency: settleCurrency,
+        currency: preferredCurrency.code, 
         date: new Date(),
         note: note.trim(),
       });
@@ -143,284 +257,300 @@ export default function SettleUpScreen(): JSX.Element {
       router.back();
     } catch (e: any) {
       toast.show({ label: "Error", description: e.message || "Failed to record settlement.", variant: "danger", placement: "top" });
-    } finally {
-      setLoading(false);
     }
   }
+
+  const isYouDirection = direction === "you";
+  const leftUser = isYouDirection ? currentUser : friend;
+  const rightUser = isYouDirection ? friend : currentUser;
+  const leftName = isYouDirection ? "You" : friend.name.split(" ")[0];
+  const rightName = isYouDirection ? friend.name.split(" ")[0] : "You";
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <View style={{ paddingTop: insets.top + 16, paddingHorizontal: 24, paddingBottom: 16, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+        <Typography style={{ fontFamily: "DMSerifDisplay_400Regular", fontSize: 28, color: TEXT_PRIMARY }}>
+          Settle Up
+        </Typography>
+        <Pressable onPress={() => router.back()} hitSlop={20}>
+          <icons.X size={24} color={TEXT_PRIMARY} />
+        </Pressable>
+      </View>
+
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
         
-        {/* ── Header ───────────────────────────────── */}
-        <View style={{ paddingTop: insets.top + 16, paddingBottom: 24, paddingHorizontal: SECTION_PAD, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Typography style={{ fontFamily: "DMSerifDisplay_400Regular", fontSize: 32, color: TEXT_PRIMARY, lineHeight: 40 }}>
-            Settle Up
+        {/* ── Direction Flow Visual ── */}
+        <Animated.View entering={FadeInDown.duration(400)} style={{ paddingHorizontal: 24, paddingVertical: 24 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+            
+            <Animated.View style={{ alignItems: "center", width: 80 }} layout={LinearTransition.springify()}>
+              <AppUserAvatar user={leftUser} size="lg" />
+              <Typography style={{ fontSize: 13, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold", marginTop: 8, color: TEXT_PRIMARY }}>
+                {leftName}
+              </Typography>
+            </Animated.View>
+
+            <View style={{ flex: 1, alignItems: "center", paddingHorizontal: 16 }}>
+              <View style={{ height: 1, backgroundColor: BORDER, width: "100%", position: "absolute", top: "50%", zIndex: -1 }} />
+              <Pressable
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setDirection((prev) => (prev === "you" ? "them" : "you"));
+                }}
+                style={({ pressed }) => ({
+                  backgroundColor: SURFACE,
+                  paddingHorizontal: 12,
+                  paddingVertical: 8,
+                  opacity: pressed ? 0.6 : 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 6,
+                })}
+              >
+                <icons.ArrowRightLeft size={16} color={TEXT_SECONDARY} strokeWidth={2.5} />
+                <Typography style={{ fontSize: 11, fontWeight: "800", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_800ExtraBold", textTransform: "uppercase", letterSpacing: 1 }}>
+                  Swap
+                </Typography>
+              </Pressable>
+            </View>
+
+            <Animated.View style={{ alignItems: "center", width: 80 }} layout={LinearTransition.springify()}>
+              {isGroupRoute && debtOptions.length > 1 ? (
+                <Pressable
+                  onPress={() => { Haptics.selectionAsync(); setShowRecipientSelector(!showRecipientSelector); }}
+                  style={{ alignItems: "center", opacity: showRecipientSelector ? 0.7 : 1 }}
+                >
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                    <AppUserAvatar user={rightUser} size="lg" />
+                    <icons.ChevronDown size={16} color={TEXT_PRIMARY} />
+                  </View>
+                  <Typography style={{ fontSize: 13, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold", marginTop: 8, color: TEXT_PRIMARY }}>
+                    {rightName}
+                  </Typography>
+                </Pressable>
+              ) : (
+                <View style={{ alignItems: "center" }}>
+                  <AppUserAvatar user={rightUser} size="lg" />
+                  <Typography style={{ fontSize: 13, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold", marginTop: 8, color: TEXT_PRIMARY }}>
+                    {rightName}
+                  </Typography>
+                </View>
+              )}
+            </Animated.View>
+
+          </View>
+        </Animated.View>
+
+        {/* ── Recipient Selector (Groups Only) ── */}
+        {showRecipientSelector && debtOptions.length > 1 && (
+          <Animated.View entering={FadeInDown.duration(300)} exiting={FadeOut.duration(200)} style={{ paddingHorizontal: 24, paddingBottom: 16 }}>
+            <Typography style={{ fontSize: 12, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_600SemiBold", marginBottom: 8 }}>
+              Select who you are settling with
+            </Typography>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+              {debtOptions.map(opt => {
+                const optFriend = combinedFriends.find(f => f.id === opt.friendId);
+                if (!optFriend) return null;
+                const isSelected = selectedFriendId === opt.friendId;
+                return (
+                  <Pressable
+                    key={opt.friendId}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setSelectedFriendId(opt.friendId);
+                      setShowRecipientSelector(false);
+                      setAmountStr(opt.amount.toFixed(2));
+                    }}
+                    style={{
+                      alignItems: "center",
+                      padding: 12,
+                      borderWidth: 1,
+                      borderColor: isSelected ? BRAND : BORDER,
+                      backgroundColor: isSelected ? BRAND : SURFACE,
+                      opacity: isSelected ? 1 : 0.7,
+                      width: 80,
+                    }}
+                  >
+                    <AppUserAvatar user={optFriend} size="sm" />
+                    <Typography style={{ fontSize: 11, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold", marginTop: 8, color: isSelected ? "#FFF" : TEXT_PRIMARY }} numberOfLines={1}>
+                      {optFriend.name.split(" ")[0]}
+                    </Typography>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </Animated.View>
+        )}
+
+        {/* ── Large Amount Display ── */}
+        <Animated.View entering={FadeInDown.duration(400)} style={{ alignItems: "center", marginVertical: 32 }}>
+          <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_600SemiBold", marginBottom: 8 }}>
+            Amount ({preferredCurrency.code})
           </Typography>
-          <Pressable onPress={() => router.back()} accessibilityRole="button" style={{ padding: 8 }}>
-            <Typography style={{ fontSize: 15, fontWeight: "600", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_600SemiBold" }}>
-              ✕ Cancel
+          <Typography
+            style={{
+              fontSize: 64,
+              fontWeight: "800",
+              fontFamily: "PlusJakartaSans_800ExtraBold",
+              color: amountStr ? TEXT_PRIMARY : TEXT_SECONDARY,
+              letterSpacing: -2,
+              lineHeight: 72,
+            }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {amountStr || "0"}
+          </Typography>
+          
+          {/* Quick Amount Pills */}
+          {Math.abs(netBalance) > 0 && (
+            <View style={{ flexDirection: "row", gap: 12, marginTop: 24 }}>
+              <Pressable
+                onPress={() => { Haptics.selectionAsync(); setAmountStr(Math.abs(netBalance).toFixed(2)); }}
+                style={({ pressed }) => ({
+                  paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: BORDER, borderRadius: 0,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Typography style={{ fontSize: 13, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                  Full: {Math.abs(netBalance).toFixed(2)}
+                </Typography>
+              </Pressable>
+              <Pressable
+                onPress={() => { Haptics.selectionAsync(); setAmountStr((Math.abs(netBalance) / 2).toFixed(2)); }}
+                style={({ pressed }) => ({
+                  paddingHorizontal: 16, paddingVertical: 8, borderWidth: 1, borderColor: BORDER, borderRadius: 0,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <Typography style={{ fontSize: 13, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                  Half: {(Math.abs(netBalance) / 2).toFixed(2)}
+                </Typography>
+              </Pressable>
+            </View>
+          )}
+        </Animated.View>
+
+        {/* ── Optional Note/Group Toggle ── */}
+        <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
+          <Pressable onPress={() => setShowOptional(!showOptional)} style={{ padding: 8 }}>
+            <Typography style={{ fontSize: 13, color: BRAND, fontWeight: "600", fontFamily: "PlusJakartaSans_600SemiBold" }}>
+              {showOptional ? "Hide Options" : "+ Add Note or Group"}
             </Typography>
           </Pressable>
+          
+          {showOptional && (
+            <Animated.View entering={FadeIn} exiting={FadeOut} style={{ width: "100%", marginTop: 16, gap: 16 }}>
+              <TextInput
+                placeholder="Add a note..."
+                placeholderTextColor={TEXT_SECONDARY}
+                value={note}
+                onChangeText={setNote}
+                style={{
+                  borderWidth: 1,
+                  borderColor: BORDER,
+                  padding: 16,
+                  borderRadius: 0,
+                  fontSize: 15,
+                  fontFamily: "PlusJakartaSans_500Medium",
+                  backgroundColor: SURFACE,
+                }}
+              />
+              
+              {sharedGroups.length > 0 && !isGroupRoute && (
+                <View>
+                  <Typography style={{ fontSize: 12, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_600SemiBold", marginBottom: 8, marginLeft: 4 }}>
+                    Link to Group
+                  </Typography>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                    <Pressable
+                      onPress={() => setSelectedGroupId(undefined)}
+                      style={{
+                        paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1,
+                        borderColor: !selectedGroupId ? BRAND : BORDER,
+                        backgroundColor: !selectedGroupId ? BRAND : SURFACE,
+                      }}
+                    >
+                      <Typography style={{ fontSize: 13, fontWeight: "700", color: !selectedGroupId ? "#FFF" : TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                        None
+                      </Typography>
+                    </Pressable>
+                    {sharedGroups.map((g) => {
+                      const isSelected = selectedGroupId === g.id;
+                      return (
+                        <Pressable
+                          key={g.id}
+                          onPress={() => setSelectedGroupId(g.id)}
+                          style={{
+                            paddingHorizontal: 16, paddingVertical: 10, borderWidth: 1,
+                            borderColor: isSelected ? BRAND : BORDER,
+                            backgroundColor: isSelected ? BRAND : SURFACE,
+                          }}
+                        >
+                          <Typography style={{ fontSize: 13, fontWeight: "700", color: isSelected ? "#FFF" : TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                            {g.name}
+                          </Typography>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              )}
+            </Animated.View>
+          )}
         </View>
 
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <Animated.View entering={FadeInDown.duration(300)}>
-            {/* ── Group Selection ──────────────────────────── */}
-            {sharedGroups.length > 0 && (
-              <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
-                <SectionLabel>Associate with Group (Optional)</SectionLabel>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => {
-                      Haptics.selectionAsync();
-                      setSelectedGroupId(undefined);
-                    }}
-                    style={{
-                      paddingHorizontal: 16,
-                      paddingVertical: 10,
-                      borderRadius: 0,
-                      borderWidth: 1,
-                      borderColor: !selectedGroupId ? TEXT_PRIMARY : BORDER,
-                      backgroundColor: !selectedGroupId ? TEXT_PRIMARY : SURFACE,
-                    }}
-                  >
-                    <Typography style={{ fontSize: 14, fontWeight: "700", color: !selectedGroupId ? "#FFF" : TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
-                      No Group
-                    </Typography>
-                  </Pressable>
-                  
-                  {sharedGroups.map((g) => {
-                    const isSelected = selectedGroupId === g.id;
-                    const IconComp = (icons as any)[g.icon] || icons.HelpCircle;
-                    return (
-                      <Pressable
-                        key={g.id}
-                        accessibilityRole="button"
-                        onPress={() => {
-                          Haptics.selectionAsync();
-                          setSelectedGroupId(g.id);
-                        }}
-                        style={{
-                          paddingHorizontal: 16,
-                          paddingVertical: 10,
-                          borderRadius: 0,
-                          borderWidth: 1,
-                          borderColor: isSelected ? "#8C7A6B" : BORDER,
-                          backgroundColor: isSelected ? "#8C7A6B" : SURFACE,
-                          flexDirection: "row",
-                          alignItems: "center",
-                          gap: 8,
-                        }}
-                      >
-                        <IconComp size={16} color={isSelected ? "#FFF" : TEXT_SECONDARY} />
-                        <Typography style={{ fontSize: 14, fontWeight: "700", color: isSelected ? "#FFF" : TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
-                          {g.name}
-                        </Typography>
-                      </Pressable>
-                    );
-                  })}
-                </ScrollView>
-              </View>
-            )}
+        <View style={{ flex: 1 }} />
 
-            {/* ── Direction Toggle ───────────────────────── */}
-            <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
-              <View style={{ backgroundColor: SURFACE, borderRadius: CARD_RADIUS, padding: 24, borderWidth: 1, borderColor: BORDER, alignItems: "center" }}>
-                
-                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 32, marginBottom: 24 }}>
-                  <View style={{ alignItems: "center", gap: 8, opacity: direction === "you" ? 1 : 0.4 }}>
-                    <View style={{ borderRadius: 0, borderWidth: direction === "you" ? 2 : 0, borderColor: TEXT_PRIMARY, padding: 2 }}>
-                      <AppUserAvatar user={currentUser} size="lg" />
-                    </View>
-                    <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
-                      You
-                    </Typography>
-                  </View>
+        {/* ── Custom Keypad ── */}
+        <Animated.View entering={FadeInDown.duration(400).delay(200)} style={{ backgroundColor: SURFACE, borderTopWidth: 1, borderTopColor: BORDER }}>
+          <View style={{ flexDirection: "row" }}>
+            <KeypadButton val="1" onPress={() => handleKeypad("1")} />
+            <KeypadButton val="2" onPress={() => handleKeypad("2")} />
+            <KeypadButton val="3" onPress={() => handleKeypad("3")} />
+          </View>
+          <View style={{ flexDirection: "row" }}>
+            <KeypadButton val="4" onPress={() => handleKeypad("4")} />
+            <KeypadButton val="5" onPress={() => handleKeypad("5")} />
+            <KeypadButton val="6" onPress={() => handleKeypad("6")} />
+          </View>
+          <View style={{ flexDirection: "row" }}>
+            <KeypadButton val="7" onPress={() => handleKeypad("7")} />
+            <KeypadButton val="8" onPress={() => handleKeypad("8")} />
+            <KeypadButton val="9" onPress={() => handleKeypad("9")} />
+          </View>
+          <View style={{ flexDirection: "row" }}>
+            <KeypadButton val="." onPress={() => handleKeypad(".")} />
+            <KeypadButton val="0" onPress={() => handleKeypad("0")} />
+            <KeypadButton val={<icons.Delete size={24} color={TEXT_PRIMARY} />} onPress={() => handleKeypad("<")} />
+          </View>
+        </Animated.View>
 
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => {
-                      Haptics.selectionAsync();
-                      setDirection((prev) => (prev === "you" ? "them" : "you"));
-                    }}
-                    style={({ pressed }) => ({
-                      width: 48,
-                      height: 48,
-                      borderRadius: 0,
-                      backgroundColor: "#F9F6F2",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: pressed ? 0.7 : 1,
-                    })}
-                  >
-                    <icons.ArrowRightLeft size={24} color={TEXT_PRIMARY} />
-                  </Pressable>
-
-                  <View style={{ alignItems: "center", gap: 8, opacity: direction === "them" ? 1 : 0.4 }}>
-                    <View style={{ borderRadius: 0, borderWidth: direction === "them" ? 2 : 0, borderColor: TEXT_PRIMARY, padding: 2 }}>
-                      <AppUserAvatar user={friend} size="lg" />
-                    </View>
-                    <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
-                      {friend.name.split(" ")[0]}
-                    </Typography>
-                  </View>
-                </View>
-
-                {/* Segmented Control */}
-                <View style={{ flexDirection: "row", backgroundColor: "#F9F6F2", borderRadius: 12, padding: 4, width: "100%" }}>
-                  <Pressable
-                    onPress={() => { Haptics.selectionAsync(); setDirection("you"); }}
-                    style={{
-                      flex: 1,
-                      paddingVertical: 10,
-                      borderRadius: 10,
-                      backgroundColor: direction === "you" ? SURFACE : "transparent",
-                      alignItems: "center",
-                      shadowColor: direction === "you" ? "#000" : "transparent",
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.05,
-                      shadowRadius: 2,
-                      elevation: direction === "you" ? 2 : 0,
-                    }}
-                  >
-                    <Typography style={{ fontSize: 14, fontWeight: "700", color: direction === "you" ? TEXT_PRIMARY : TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
-                      You paid
-                    </Typography>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => { Haptics.selectionAsync(); setDirection("them"); }}
-                    style={{
-                      flex: 1,
-                      paddingVertical: 10,
-                      borderRadius: 10,
-                      backgroundColor: direction === "them" ? SURFACE : "transparent",
-                      alignItems: "center",
-                      shadowColor: direction === "them" ? "#000" : "transparent",
-                      shadowOffset: { width: 0, height: 1 },
-                      shadowOpacity: 0.05,
-                      shadowRadius: 2,
-                      elevation: direction === "them" ? 2 : 0,
-                    }}
-                  >
-                    <Typography style={{ fontSize: 14, fontWeight: "700", color: direction === "them" ? TEXT_PRIMARY : TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
-                      They paid
-                    </Typography>
-                  </Pressable>
-                </View>
-
-              </View>
-            </View>
-
-            {/* ── Inputs ────────────────────────────── */}
-            <View style={{ paddingHorizontal: SECTION_PAD, gap: 20, marginBottom: 32 }}>
-              <View style={{ backgroundColor: SURFACE, borderRadius: CARD_RADIUS, borderWidth: 1, borderColor: BORDER, padding: 16, paddingVertical: 12 }}>
-                <CurrencySelector
-                  label="Currency"
-                  value={settleCurrency}
-                  onChange={(c) => {
-                    setSettleCurrency(c.code);
-                    setCurrency(c);
-                  }}
-                />
-              </View>
-
-              <View>
-                <SectionLabel>{`Amount (${settleCurrency})`}</SectionLabel>
-                <TextInput
-                  placeholder="0.00"
-                  placeholderTextColor={TEXT_SECONDARY}
-                  value={amount}
-                  onChangeText={setAmount}
-                  keyboardType="decimal-pad"
-                  style={{
-                    backgroundColor: SURFACE,
-                    height: 64,
-                    borderRadius: CARD_RADIUS,
-                    paddingHorizontal: 16,
-                    borderWidth: 1,
-                    borderColor: BORDER,
-                    fontSize: 24,
-                    fontWeight: "800",
-                    color: TEXT_PRIMARY,
-                    fontFamily: "PlusJakartaSans_800ExtraBold"
-                  }}
-                />
-                {netBalance !== 0 && (
-                  <Typography style={{ fontSize: 13, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 8, marginLeft: 4 }}>
-                    Current balance: {Math.abs(netBalance).toFixed(2)} {preferredCurrency.code}
-                  </Typography>
-                )}
-              </View>
-
-              <View>
-                <SectionLabel>Note (Optional)</SectionLabel>
-                <TextInput
-                  placeholder="e.g. Venmo, Cash..."
-                  placeholderTextColor={TEXT_SECONDARY}
-                  value={note}
-                  onChangeText={setNote}
-                  autoCapitalize="sentences"
-                  style={{
-                    backgroundColor: SURFACE,
-                    height: 56,
-                    borderRadius: CARD_RADIUS,
-                    paddingHorizontal: 16,
-                    borderWidth: 1,
-                    borderColor: BORDER,
-                    fontSize: 16,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "PlusJakartaSans_500Medium"
-                  }}
-                />
-              </View>
-            </View>
-          </Animated.View>
-        </ScrollView>
-
-        {/* ── Fixed Submit Button ─────────────────────────────── */}
-        <View
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            paddingHorizontal: SECTION_PAD,
-            paddingTop: 16,
-            paddingBottom: insets.bottom + 16,
-            backgroundColor: BG,
-            borderTopWidth: 1,
-            borderTopColor: "rgba(0,0,0,0.05)",
-          }}
-        >
+        {/* ── Submit Button ── */}
+        <View style={{ backgroundColor: SURFACE, paddingBottom: insets.bottom }}>
           <Pressable
-            accessibilityRole="button"
             onPress={handleSubmit}
-            disabled={loading}
+            disabled={isAddingSettlement}
             style={({ pressed }) => ({
-              height: 56,
-              borderRadius: 0,
-              backgroundColor: "#8C7A6B",
-              alignItems: "center",
+              backgroundColor: BRAND,
+              height: 64,
               justifyContent: "center",
-              flexDirection: "row",
-              opacity: pressed || loading ? 0.8 : 1,
+              alignItems: "center",
+              opacity: pressed || isAddingSettlement ? 0.8 : 1,
             })}
           >
-            {loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
-            <Typography style={{ fontSize: 16, fontWeight: "700", color: "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
-              Record Payment
-            </Typography>
+            {isAddingSettlement ? (
+              <Spinner color="white" size="sm" />
+            ) : (
+              <Typography style={{ fontSize: 18, fontWeight: "700", color: "#FFF", fontFamily: "PlusJakartaSans_700Bold", letterSpacing: 1 }}>
+                PAY {preferredCurrency.symbol}{parsedAmount.toFixed(2)}
+              </Typography>
+            )}
           </Pressable>
         </View>
-      </KeyboardAvoidingView>
+
+      </ScrollView>
     </View>
   );
 }

@@ -1,2 +1,2 @@
-import GroupSettleScreen from "@/features/groups/screens/GroupSettleScreen";
-export default GroupSettleScreen;
+import SettlementScreen from "@/features/settlements/screens/SettlementScreen";
+export default SettlementScreen;
