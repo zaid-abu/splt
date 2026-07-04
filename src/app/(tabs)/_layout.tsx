@@ -43,7 +43,7 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
   };
 
   return (
-    <PressableFeedback onPress={handlePress}>
+    <PressableFeedback accessibilityRole="button" onPress={handlePress}>
       <View className="flex-1 items-center justify-center h-14 w-16 relative">
         <Animated.View style={iconAnimatedStyle}>
           <Icon
@@ -126,6 +126,7 @@ export default function TabsLayout(): JSX.Element | null {
                 }}
               >
                 <PressableFeedback
+                  accessibilityRole="button"
                   onPress={() => {
                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                     router.push("/expense/new");

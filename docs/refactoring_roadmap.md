@@ -426,11 +426,11 @@ Recommend only one next phase. Wait for approval before continuing.
   - Apply `FadeIn`, `FadeOut`, or Layout animations uniformly to lists and modals.
   - Ensure `expo-haptics` are used correctly on button presses and success states.
 
-### ⏳ Phase 18: Accessibility
+### ✅ Phase 18: Accessibility (COMPLETED)
 
 - **Objective:** Improve screen reader support and keyboard navigation.
 - **Implementation:**
-  - Audit custom components (like tabs and custom pills) to ensure `accessibilityRole` and `accessibilityLabel` are present.
+  - `[x]` Audit custom components (like tabs and custom pills) to ensure `accessibilityRole` and `accessibilityLabel` are present.
 
 ### ⏳ Phase 19: Error Handling
 

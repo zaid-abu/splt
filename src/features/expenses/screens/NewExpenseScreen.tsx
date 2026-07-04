@@ -392,7 +392,11 @@ export default function AddExpenseScreen(): JSX.Element {
                         className="flex-1 ml-2 font-medium text-foreground text-[16px]"
                       />
                       {searchQuery.length > 0 && (
-                        <PressableFeedback onPress={() => setSearchQuery("")} hitSlop={8}>
+                        <PressableFeedback
+                          accessibilityRole="button"
+                          onPress={() => setSearchQuery("")}
+                          hitSlop={8}
+                        >
                           <icons.XCircle size={18} color="#8A8798" />
                         </PressableFeedback>
                       )}
@@ -416,6 +420,7 @@ export default function AddExpenseScreen(): JSX.Element {
                               {f.name.split(" ")[0]}
                             </Typography>
                             <PressableFeedback
+                              accessibilityRole="button"
                               onPress={() =>
                                 setSelectedFriendIds((prev) => prev.filter((id) => id !== f.id))
                               }
@@ -467,6 +472,7 @@ export default function AddExpenseScreen(): JSX.Element {
                               const isSelected = selectedFriendIds.includes(f.id);
                               return (
                                 <PressableFeedback
+                                  accessibilityRole="button"
                                   key={f.id}
                                   onPress={() => {
                                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -519,6 +525,7 @@ export default function AddExpenseScreen(): JSX.Element {
                               const isSelected = selectedGroupId === g.id;
                               return (
                                 <PressableFeedback
+                                  accessibilityRole="button"
                                   key={g.id}
                                   onPress={() => {
                                     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -703,7 +710,11 @@ export default function AddExpenseScreen(): JSX.Element {
 
                     {/* ── Attach Receipt ───────────────────────── */}
                     <View className="flex-row items-center gap-3 mt-2">
-                      <PressableFeedback className="flex-1" onPress={() => {}}>
+                      <PressableFeedback
+                        accessibilityRole="button"
+                        className="flex-1"
+                        onPress={() => {}}
+                      >
                         <View className="h-[48px] rounded-[16px] border border-border border-dashed items-center justify-center flex-row gap-2 bg-white">
                           <icons.Camera size={18} className="text-primary" />
                           <Typography type="body-sm" className="font-bold text-foreground">
@@ -725,7 +736,7 @@ export default function AddExpenseScreen(): JSX.Element {
 
                     <Popover isOpen={showDatePicker} onOpenChange={setShowDatePicker}>
                       <Popover.Trigger asChild>
-                        <PressableFeedback>
+                        <PressableFeedback accessibilityRole="button">
                           <View className="bg-white h-[56px] rounded-[20px] px-4 border border-border flex-row items-center gap-3">
                             <icons.Calendar size={20} color="#8A8798" />
                             <Typography type="body" className="font-medium text-foreground">
@@ -793,6 +804,7 @@ export default function AddExpenseScreen(): JSX.Element {
                         const isSelected = category === cat.key;
                         return (
                           <PressableFeedback
+                            accessibilityRole="button"
                             key={cat.key}
                             onPress={() => {
                               Haptics.selectionAsync();
@@ -837,6 +849,7 @@ export default function AddExpenseScreen(): JSX.Element {
                         const isSelected = paidBy === u.id;
                         return (
                           <PressableFeedback
+                            accessibilityRole="button"
                             key={u.id}
                             onPress={() => {
                               Haptics.selectionAsync();
@@ -874,6 +887,7 @@ export default function AddExpenseScreen(): JSX.Element {
                         return (
                           <View key={method.key} className="flex-1">
                             <PressableFeedback
+                              accessibilityRole="button"
                               onPress={() => {
                                 Haptics.selectionAsync();
                                 setSplitMethod(method.key);

@@ -152,6 +152,7 @@ export default function FriendDetailScreen(): JSX.Element {
           {/* ── Header ─────────────────────────────────── */}
           <View className="px-4 pt-2 flex-row items-center justify-between z-10">
             <PressableFeedback
+              accessibilityRole="button"
               className="w-12 h-12 rounded-full bg-white/50 items-center justify-center backdrop-blur-md"
               onPress={() => router.back()}
             >
@@ -202,7 +203,10 @@ export default function FriendDetailScreen(): JSX.Element {
           {/* ── Actions ────────────────────────────────── */}
           <View className="px-6 flex-row gap-3 mb-6">
             <View className="flex-1">
-              <PressableFeedback onPress={() => router.push(`/settle/${id}`)}>
+              <PressableFeedback
+                accessibilityRole="button"
+                onPress={() => router.push(`/settle/${id}`)}
+              >
                 <View className="w-full h-[56px] rounded-full items-center justify-center border-2 border-border flex-row gap-2">
                   <icons.Send size={20} className="text-foreground" />
                   <Typography type="body" className="font-bold text-foreground">
@@ -212,7 +216,10 @@ export default function FriendDetailScreen(): JSX.Element {
               </PressableFeedback>
             </View>
             <View className="flex-1">
-              <PressableFeedback onPress={() => router.push(`/expense/new?friendId=${id}`)}>
+              <PressableFeedback
+                accessibilityRole="button"
+                onPress={() => router.push(`/expense/new?friendId=${id}`)}
+              >
                 <View className="w-full h-[56px] rounded-full items-center justify-center bg-primary flex-row gap-2">
                   <icons.Plus size={20} color="white" />
                   <Typography type="body" className="font-bold text-white">

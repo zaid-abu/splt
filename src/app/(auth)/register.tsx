@@ -166,6 +166,7 @@ export default function RegisterScreen(): JSX.Element {
                   leftElement={<icons.Lock size={20} color={mutedForeground} />}
                   rightElement={
                     <PressableFeedback
+                      accessibilityRole="button"
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setShowPassword(!showPassword);
@@ -209,6 +210,7 @@ export default function RegisterScreen(): JSX.Element {
 
               {/* Terms checkbox */}
               <PressableFeedback
+                accessibilityRole="button"
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setAgreed(!agreed);
@@ -266,6 +268,7 @@ export default function RegisterScreen(): JSX.Element {
               Already have an account?
             </Typography>
             <PressableFeedback
+              accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push("/(auth)/login");

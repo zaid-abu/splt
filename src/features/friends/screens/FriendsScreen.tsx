@@ -82,7 +82,7 @@ export default function FriendsScreen(): JSX.Element {
             className="flex-1 ml-2 font-medium text-foreground text-[16px]"
           />
           {search.length > 0 && (
-            <PressableFeedback onPress={() => setSearch("")} hitSlop={8}>
+            <PressableFeedback accessibilityRole="button" onPress={() => setSearch("")} hitSlop={8}>
               <icons.XCircle size={18} color="#8A8798" />
             </PressableFeedback>
           )}
@@ -154,6 +154,7 @@ export default function FriendsScreen(): JSX.Element {
             onSettle={bal !== 0 ? () => console.log("Settle up with", item.id) : undefined}
           >
             <PressableFeedback
+              accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push(`/friend/${item.id}`);

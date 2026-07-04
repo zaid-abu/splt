@@ -104,6 +104,7 @@ export default function LoginScreen(): JSX.Element {
                 <View className="flex-row justify-between items-center mb-2 z-10">
                   <View />
                   <PressableFeedback
+                    accessibilityRole="button"
                     onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
                     className="absolute right-0 top-1"
                   >
@@ -122,6 +123,7 @@ export default function LoginScreen(): JSX.Element {
                   leftElement={<icons.Lock size={20} color={mutedForeground} />}
                   rightElement={
                     <PressableFeedback
+                      accessibilityRole="button"
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setShowPassword(!showPassword);
@@ -198,6 +200,7 @@ export default function LoginScreen(): JSX.Element {
               Don&apos;t have an account?
             </Typography>
             <PressableFeedback
+              accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push("/(auth)/register");

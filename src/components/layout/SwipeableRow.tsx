@@ -42,6 +42,7 @@ export function SwipeableRow({ children, onDelete, onSettle }: SwipeableRowProps
             ]}
           >
             <PressableFeedback
+              accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 swipeableRef.current?.close();
@@ -65,6 +66,7 @@ export function SwipeableRow({ children, onDelete, onSettle }: SwipeableRowProps
             ]}
           >
             <PressableFeedback
+              accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                 swipeableRef.current?.close();

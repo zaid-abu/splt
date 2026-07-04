@@ -195,6 +195,7 @@ export default function SettleUpScreen(): JSX.Element {
                 </Typography>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                   <PressableFeedback
+                    accessibilityRole="button"
                     onPress={() => {
                       Haptics.selectionAsync();
                       setSelectedGroupId(undefined);
@@ -215,6 +216,7 @@ export default function SettleUpScreen(): JSX.Element {
                     const isSelected = selectedGroupId === g.id;
                     return (
                       <PressableFeedback
+                        accessibilityRole="button"
                         key={g.id}
                         onPress={() => {
                           Haptics.selectionAsync();
@@ -265,6 +267,7 @@ export default function SettleUpScreen(): JSX.Element {
                   </View>
 
                   <PressableFeedback
+                    accessibilityRole="button"
                     onPress={() => {
                       Haptics.selectionAsync();
                       setDirection((prev) => (prev === "you" ? "them" : "you"));

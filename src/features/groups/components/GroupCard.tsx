@@ -84,7 +84,7 @@ export function GroupCard({
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
       <SwipeableRow onDelete={() => deleteGroup(group.id)}>
-        <PressableFeedback onPress={onPress}>
+        <PressableFeedback accessibilityRole="button" onPress={onPress}>
           <View
             className={`bg-white p-4 flex-row items-center justify-between ${!isLast ? "border-b border-border/50" : ""}`}
           >

@@ -237,6 +237,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                 const isSelected = icon === i;
                 return (
                   <PressableFeedback
+                    accessibilityRole="button"
                     key={i}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);

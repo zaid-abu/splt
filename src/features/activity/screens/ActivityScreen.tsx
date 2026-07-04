@@ -168,7 +168,11 @@ export default function ActivityScreen(): JSX.Element {
                   className="flex-1 ml-2 font-medium text-foreground text-[15px]"
                 />
                 {searchQuery.length > 0 && (
-                  <PressableFeedback onPress={() => setSearchQuery("")} hitSlop={8}>
+                  <PressableFeedback
+                    accessibilityRole="button"
+                    onPress={() => setSearchQuery("")}
+                    hitSlop={8}
+                  >
                     <icons.XCircle size={18} color="#8A8798" />
                   </PressableFeedback>
                 )}
@@ -304,7 +308,7 @@ export default function ActivityScreen(): JSX.Element {
           <Typography type="h1" className="font-black tracking-tight text-foreground text-[32px]">
             Activity
           </Typography>
-          <PressableFeedback onPress={() => router.push("/profile")}>
+          <PressableFeedback accessibilityRole="button" onPress={() => router.push("/profile")}>
             <View className="border-2 border-transparent rounded-full">
               <AppUserAvatar user={currentUser} size="md" />
             </View>

@@ -73,7 +73,7 @@ export function CurrencySelector({
         </Typography>
       )}
 
-      <PressableFeedback onPress={handlePresentModalPress}>
+      <PressableFeedback accessibilityRole="button" onPress={handlePresentModalPress}>
         <View className="bg-white h-[56px] rounded-[20px] px-4 flex-row items-center justify-between border border-border">
           <View className="flex-row items-center gap-3">
             <View className="w-10 h-10 rounded-full bg-secondary items-center justify-center px-1">
@@ -123,7 +123,11 @@ export function CurrencySelector({
                 autoCorrect={false}
               />
               {search.length > 0 && (
-                <PressableFeedback onPress={() => setSearch("")} hitSlop={8}>
+                <PressableFeedback
+                  accessibilityRole="button"
+                  onPress={() => setSearch("")}
+                  hitSlop={8}
+                >
                   <icons.XCircle size={18} color={mutedForeground} />
                 </PressableFeedback>
               )}
@@ -140,6 +144,7 @@ export function CurrencySelector({
                 const isSelected = currency.code === value;
                 return (
                   <PressableFeedback
+                    accessibilityRole="button"
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       onChange(currency);

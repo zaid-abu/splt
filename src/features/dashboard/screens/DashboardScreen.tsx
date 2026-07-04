@@ -159,6 +159,7 @@ export default function DashboardScreen(): JSX.Element {
           </Typography>
         </View>
         <PressableFeedback
+          accessibilityRole="button"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push("/profile");
@@ -281,6 +282,7 @@ export default function DashboardScreen(): JSX.Element {
             {/* Quick Actions inside Card */}
             <View className="flex-row gap-3 z-10">
               <PressableFeedback
+                accessibilityRole="button"
                 className="flex-1 bg-white rounded-[16px] h-12 items-center justify-center"
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -295,6 +297,7 @@ export default function DashboardScreen(): JSX.Element {
                 </View>
               </PressableFeedback>
               <PressableFeedback
+                accessibilityRole="button"
                 className="flex-1 border border-white/30 rounded-[16px] h-12 items-center justify-center"
                 onPress={openQuickActions}
               >
@@ -343,6 +346,7 @@ export default function DashboardScreen(): JSX.Element {
               },
             ].map((action, index) => (
               <PressableFeedback
+                accessibilityRole="button"
                 key={index}
                 className="items-center gap-2"
                 onPress={() => {
@@ -371,6 +375,7 @@ export default function DashboardScreen(): JSX.Element {
               Needs Attention
             </Typography>
             <PressableFeedback
+              accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push("/(tabs)/friends");
@@ -393,6 +398,7 @@ export default function DashboardScreen(): JSX.Element {
                     layout={LinearTransition.springify()}
                   >
                     <PressableFeedback
+                      accessibilityRole="button"
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         router.push(`/friend/${f.user.id}`);
@@ -449,6 +455,7 @@ export default function DashboardScreen(): JSX.Element {
                 Recent Activity
               </Typography>
               <PressableFeedback
+                accessibilityRole="button"
                 onPress={() => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   router.push("/(tabs)/activity");
@@ -492,6 +499,7 @@ export default function DashboardScreen(): JSX.Element {
           </Typography>
           <View className="flex-row justify-around">
             <PressableFeedback
+              accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 bottomSheetModalRef.current?.dismiss();
@@ -509,6 +517,7 @@ export default function DashboardScreen(): JSX.Element {
             </PressableFeedback>
 
             <PressableFeedback
+              accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 bottomSheetModalRef.current?.dismiss();
@@ -526,6 +535,7 @@ export default function DashboardScreen(): JSX.Element {
             </PressableFeedback>
 
             <PressableFeedback
+              accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                 bottomSheetModalRef.current?.dismiss();

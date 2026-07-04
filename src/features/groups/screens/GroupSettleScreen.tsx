@@ -120,7 +120,7 @@ export default function GroupSettleScreen(): JSX.Element {
       >
         {/* Header */}
         <View className="flex-row items-center px-4 pt-4 mb-8">
-          <PressableFeedback onPress={() => router.back()}>
+          <PressableFeedback accessibilityRole="button" onPress={() => router.back()}>
             <View className="w-10 h-10 rounded-full bg-white items-center justify-center border border-border mr-4">
               <icons.ChevronLeft size={24} color="#1E1A34" />
             </View>

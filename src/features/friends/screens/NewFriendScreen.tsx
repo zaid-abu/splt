@@ -96,6 +96,7 @@ export default function NewFriendScreen(): JSX.Element {
       {/* Header */}
       <View className="flex-row items-center justify-between px-6 py-4">
         <PressableFeedback
+          accessibilityRole="button"
           onPress={() => router.back()}
           hitSlop={8}
           className="w-10 h-10 items-center justify-center bg-white rounded-full border border-border/50"

@@ -187,6 +187,7 @@ export default function NewGroupScreen(): JSX.Element {
                 const isSelected = icon === i;
                 return (
                   <PressableFeedback
+                    accessibilityRole="button"
                     key={i}
                     onPress={() => {
                       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -329,6 +330,7 @@ export default function NewGroupScreen(): JSX.Element {
                       {email}
                     </Typography>
                     <PressableFeedback
+                      accessibilityRole="button"
                       onPress={() => handleRemoveEmail(email)}
                       className="p-1 rounded-full bg-primary/20 ml-1"
                     >

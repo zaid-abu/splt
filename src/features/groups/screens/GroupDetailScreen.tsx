@@ -110,7 +110,7 @@ export default function GroupDetailScreen(): JSX.Element {
       <View>
         {/* ── Back ───────────────────────────────────── */}
         <View className="pt-4 mb-4 px-4">
-          <PressableFeedback onPress={() => router.back()}>
+          <PressableFeedback accessibilityRole="button" onPress={() => router.back()}>
             <View className="w-10 h-10 rounded-full bg-white items-center justify-center border border-border">
               <icons.ChevronLeft size={24} color="#1E1A34" />
             </View>
@@ -139,7 +139,10 @@ export default function GroupDetailScreen(): JSX.Element {
               </View>
             </View>
 
-            <PressableFeedback onPress={() => router.push(`/group/${group.id}/settings`)}>
+            <PressableFeedback
+              accessibilityRole="button"
+              onPress={() => router.push(`/group/${group.id}/settings`)}
+            >
               <View className="flex-row items-center justify-between bg-background rounded-[20px] p-3 mb-5 border border-border/50">
                 <View className="flex-row items-center gap-2">
                   <AvatarStack users={group.members.map((m) => m.user)} max={5} />
@@ -254,7 +257,11 @@ export default function GroupDetailScreen(): JSX.Element {
                 if (!fromUser || !toUser) return null;
 
                 return (
-                  <PressableFeedback key={`${debt.fromUserId}-${debt.toUserId}`} onPress={() => {}}>
+                  <PressableFeedback
+                    accessibilityRole="button"
+                    key={`${debt.fromUserId}-${debt.toUserId}`}
+                    onPress={() => {}}
+                  >
                     <View
                       className={`flex-row items-center justify-between p-4 ${idx < groupDebts.length - 1 ? "border-b border-border/50" : ""}`}
                     >
@@ -404,7 +411,10 @@ export default function GroupDetailScreen(): JSX.Element {
       {/* ── Bottom Action Bar ──────────────────────── */}
       <View className="bg-white border-t border-border/30 px-6 pt-4 pb-8 flex-row gap-4">
         <View className="flex-1">
-          <PressableFeedback onPress={() => router.push(`/group/${group.id}/settle`)}>
+          <PressableFeedback
+            accessibilityRole="button"
+            onPress={() => router.push(`/group/${group.id}/settle`)}
+          >
             <View className="w-full h-[56px] rounded-full items-center justify-center bg-secondary flex-row gap-2">
               <icons.Handshake size={20} className="text-primary" />
               <Typography type="body" className="font-bold text-primary">
@@ -415,7 +425,10 @@ export default function GroupDetailScreen(): JSX.Element {
         </View>
 
         <View className="flex-1">
-          <PressableFeedback onPress={() => router.push(`/expense/new?groupId=${group.id}`)}>
+          <PressableFeedback
+            accessibilityRole="button"
+            onPress={() => router.push(`/expense/new?groupId=${group.id}`)}
+          >
             <View className="w-full h-[56px] rounded-full items-center justify-center bg-primary flex-row gap-2">
               <icons.Plus size={20} color="white" />
               <Typography type="body" className="font-bold text-white">

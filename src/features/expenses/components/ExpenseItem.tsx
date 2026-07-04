@@ -39,7 +39,7 @@ export function ExpenseItem({
 
   return (
     <View className="mb-3">
-      <PressableFeedback onPress={onPress}>
+      <PressableFeedback accessibilityRole="button" onPress={onPress}>
         <View className="bg-white rounded-[24px] p-4 border border-border flex-row items-center gap-4">
           {/* Category icon badge */}
           <View className="w-12 h-12 rounded-[16px] bg-secondary items-center justify-center">
