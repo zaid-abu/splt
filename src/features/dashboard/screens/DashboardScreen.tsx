@@ -25,7 +25,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
-import Animated, { FadeInDown } from "react-native-reanimated";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 
 export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
@@ -390,6 +390,7 @@ export default function DashboardScreen(): JSX.Element {
                   <Animated.View
                     key={f.user.id}
                     entering={FadeInDown.delay(300 + idx * 100).springify()}
+                    layout={LinearTransition.springify()}
                   >
                     <PressableFeedback
                       onPress={() => {
@@ -461,12 +462,13 @@ export default function DashboardScreen(): JSX.Element {
 
             <View className="bg-white rounded-[24px] overflow-hidden border border-border">
               {recentActivities.map((activity, idx) => (
-                <ActivityItem
-                  key={activity.id}
-                  activity={activity}
-                  index={idx}
-                  isLast={idx === recentActivities.length - 1}
-                />
+                <Animated.View key={activity.id} layout={LinearTransition.springify()}>
+                  <ActivityItem
+                    activity={activity}
+                    index={idx}
+                    isLast={idx === recentActivities.length - 1}
+                  />
+                </Animated.View>
               ))}
             </View>
           </FocusAwareView>

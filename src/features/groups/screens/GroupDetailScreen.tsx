@@ -12,7 +12,9 @@ import Animated, {
   useAnimatedStyle,
   interpolate,
   Extrapolation,
+  FadeIn,
   FadeInDown,
+  LinearTransition,
 } from "react-native-reanimated";
 import { FlashList } from "@shopify/flash-list";
 
@@ -352,7 +354,7 @@ export default function GroupDetailScreen(): JSX.Element {
   const renderItem = useCallback(
     ({ item, index }: { item: Expense; index: number }) => (
       <View className="px-4 pb-2">
-        <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
+        <Animated.View layout={LinearTransition.springify()}>
           <ExpenseItem
             expense={item}
             currentUserId={currentUser.id}
@@ -386,7 +388,7 @@ export default function GroupDetailScreen(): JSX.Element {
   return (
     <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
       <StatusBar style="dark" />
-      <View className="flex-1 bg-background">
+      <Animated.View entering={FadeIn.duration(300)} className="flex-1 bg-background">
         <AnimatedFlashList
           data={expenses}
           onScroll={scrollHandler}
@@ -397,7 +399,7 @@ export default function GroupDetailScreen(): JSX.Element {
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 120 }}
         />
-      </View>
+      </Animated.View>
 
       {/* ── Bottom Action Bar ──────────────────────── */}
       <View className="bg-white border-t border-border/30 px-6 pt-4 pb-8 flex-row gap-4">

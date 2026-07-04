@@ -9,6 +9,7 @@ import { BlurView } from "expo-blur";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import * as icons from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
+import Animated, { FadeIn } from "react-native-reanimated";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserActivities } from "@/features/activity/queries/useActivities";
@@ -310,7 +311,7 @@ export default function ActivityScreen(): JSX.Element {
           </PressableFeedback>
         </BlurView>
 
-        <View className="flex-1 bg-background">
+        <Animated.View entering={FadeIn.duration(300)} className="flex-1 bg-background">
           <FlashList
             data={listData}
             renderItem={renderItem}
@@ -321,7 +322,7 @@ export default function ActivityScreen(): JSX.Element {
             showsVerticalScrollIndicator={false}
             getItemType={(item) => item.type}
           />
-        </View>
+        </Animated.View>
       </View>
     </FocusAwareView>
   );

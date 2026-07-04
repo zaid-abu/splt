@@ -5,6 +5,7 @@ import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import {
   useGroups,
   useCreateGroup,
@@ -103,6 +104,7 @@ export default function GroupSettleScreen(): JSX.Element {
     const direction = suggestion.fromUserId === currentUser.id ? "you" : "them";
     const amountStr = suggestion.amount.toString();
 
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     router.push(
       `/settle/${friendId}?groupId=${group.id}&amount=${amountStr}&direction=${direction}`
     );

@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useRef, useState } from "react";
 import { View, TextInput } from "react-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import * as icons from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 import { Typography, PressableFeedback, useThemeColor } from "heroui-native";
 
 import type { Currency } from "@/types";
@@ -39,6 +40,7 @@ export function CurrencySelector({
   );
 
   const handlePresentModalPress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     bottomSheetModalRef.current?.present();
   }, []);
 
@@ -139,6 +141,7 @@ export function CurrencySelector({
                 return (
                   <PressableFeedback
                     onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                       onChange(currency);
                       bottomSheetModalRef.current?.dismiss();
                     }}

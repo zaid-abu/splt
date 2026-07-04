@@ -11,6 +11,7 @@ import * as Haptics from "expo-haptics";
 import LottieView from "lottie-react-native";
 import { SwipeableRow } from "@/components/layout/SwipeableRow";
 import { FlashList } from "@shopify/flash-list";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserActivities } from "@/features/activity/queries/useActivities";
@@ -147,44 +148,42 @@ export default function FriendsScreen(): JSX.Element {
       const isNegative = bal < 0;
 
       return (
-        <View className="px-6">
-          <FocusAwareView delay={100 + index * 50}>
-            <SwipeableRow
-              onDelete={() => console.log("Delete friend", item.id)}
-              onSettle={bal !== 0 ? () => console.log("Settle up with", item.id) : undefined}
+        <Animated.View layout={LinearTransition.springify()} className="px-6">
+          <SwipeableRow
+            onDelete={() => console.log("Delete friend", item.id)}
+            onSettle={bal !== 0 ? () => console.log("Settle up with", item.id) : undefined}
+          >
+            <PressableFeedback
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push(`/friend/${item.id}`);
+              }}
             >
-              <PressableFeedback
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push(`/friend/${item.id}`);
-                }}
-              >
-                <View className="flex-row items-center bg-white rounded-[24px] p-4 border border-border">
-                  <AppUserAvatar user={item} size="lg" />
-                  <View className="flex-1 ml-4">
-                    <Typography type="h3" className="font-bold text-[18px] text-foreground mb-1">
-                      {item.name}
+              <View className="flex-row items-center bg-white rounded-[24px] p-4 border border-border">
+                <AppUserAvatar user={item} size="lg" />
+                <View className="flex-1 ml-4">
+                  <Typography type="h3" className="font-bold text-[18px] text-foreground mb-1">
+                    {item.name}
+                  </Typography>
+                  {bal === 0 ? (
+                    <Typography type="body-sm" className="text-muted-foreground font-medium">
+                      Settled up
                     </Typography>
-                    {bal === 0 ? (
-                      <Typography type="body-sm" className="text-muted-foreground font-medium">
-                        Settled up
-                      </Typography>
-                    ) : (
-                      <Typography
-                        type="body-sm"
-                        className={`font-bold ${isPositive ? "text-success" : "text-danger"}`}
-                      >
-                        {isPositive ? "Owes you " : "You owe "}
-                        {formatAmount(Math.abs(bal), preferredCurrency.code)}
-                      </Typography>
-                    )}
-                  </View>
-                  <icons.ChevronRight size={20} color="#8A8798" />
+                  ) : (
+                    <Typography
+                      type="body-sm"
+                      className={`font-bold ${isPositive ? "text-success" : "text-danger"}`}
+                    >
+                      {isPositive ? "Owes you " : "You owe "}
+                      {formatAmount(Math.abs(bal), preferredCurrency.code)}
+                    </Typography>
+                  )}
                 </View>
-              </PressableFeedback>
-            </SwipeableRow>
-          </FocusAwareView>
-        </View>
+                <icons.ChevronRight size={20} color="#8A8798" />
+              </View>
+            </PressableFeedback>
+          </SwipeableRow>
+        </Animated.View>
       );
     },
     [balances, preferredCurrency.code, router]
@@ -229,7 +228,11 @@ export default function FriendsScreen(): JSX.Element {
         </Button>
       </BlurView>
 
-      <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 90 }}>
+      <Animated.View
+        entering={FadeInDown.duration(400).springify()}
+        className="flex-1 bg-background"
+        style={{ paddingTop: insets.top + 90 }}
+      >
         <FlashList
           data={filtered}
           renderItem={renderItem}
@@ -247,7 +250,7 @@ export default function FriendsScreen(): JSX.Element {
             />
           }
         />
-      </View>
+      </Animated.View>
     </FocusAwareView>
   );
 }

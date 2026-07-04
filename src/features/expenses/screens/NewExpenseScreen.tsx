@@ -469,6 +469,7 @@ export default function AddExpenseScreen(): JSX.Element {
                                 <PressableFeedback
                                   key={f.id}
                                   onPress={() => {
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                                     setSelectedGroupId(""); // Auto-deselect group
                                     setSelectedFriendIds((prev) =>
                                       prev.includes(f.id)
@@ -520,6 +521,7 @@ export default function AddExpenseScreen(): JSX.Element {
                                 <PressableFeedback
                                   key={g.id}
                                   onPress={() => {
+                                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                                     setSelectedFriendIds([]); // Auto-deselect friends
                                     setSelectedGroupId((prev) => (prev === g.id ? "" : g.id));
                                   }}

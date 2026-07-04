@@ -412,12 +412,12 @@ Recommend only one next phase. Wait for approval before continuing.
 - **Implementation:**
   - `[x]` Extract complex calculations (e.g., custom split logic, balance settlement math) into pure utility functions inside `src/utils/math.ts` or feature-specific `utils/`.
 
-### ⏳ Phase 16: Performance Optimization
+### ✅ Phase 16: Performance Optimization
 
 - **Objective:** Optimize rendering and memory usage.
 - **Implementation:**
-  - Convert `ScrollView` or basic `FlatList` implementations to `@shopify/flash-list` where appropriate (e.g., long activity feeds).
-  - Add `useMemo` and `useCallback` to prevent re-rendering in heavy screens.
+  - `[x]` Convert `ScrollView` or basic `FlatList` implementations to `@shopify/flash-list` where appropriate (e.g., long activity feeds).
+  - `[x]` Add `useMemo` and `useCallback` to prevent re-rendering in heavy screens.
 
 ### ⏳ Phase 17: Animation Polish
 

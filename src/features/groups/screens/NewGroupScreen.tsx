@@ -31,6 +31,7 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import {
   useGroups,
   useCreateGroup,
@@ -100,12 +101,14 @@ export default function NewGroupScreen(): JSX.Element {
   const handleAddEmail = () => {
     const trimmed = emailInput.trim().toLowerCase();
     if (trimmed && trimmed.includes("@") && !memberEmails.includes(trimmed)) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       setMemberEmails([...memberEmails, trimmed]);
       setEmailInput("");
     }
   };
 
   const handleRemoveEmail = (emailToRemove: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setMemberEmails(memberEmails.filter((email) => email !== emailToRemove));
   };
 
@@ -130,6 +133,7 @@ export default function NewGroupScreen(): JSX.Element {
         createdBy: currentUser.id,
         members: [{ userId: currentUser.id, user: currentUser, balance: 0 }],
       });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.replace(`/group/${group.id}`);
     } catch {
       toast.show({
@@ -182,7 +186,13 @@ export default function NewGroupScreen(): JSX.Element {
                 const IconComponent = (icons as any)[i] || icons.HelpCircle;
                 const isSelected = icon === i;
                 return (
-                  <PressableFeedback key={i} onPress={() => setIcon(i)}>
+                  <PressableFeedback
+                    key={i}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setIcon(i);
+                    }}
+                  >
                     <View
                       className={`w-14 h-14 rounded-full items-center justify-center border-2 ${isSelected ? "bg-primary border-primary" : "bg-white border-transparent"}`}
                     >

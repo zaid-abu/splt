@@ -19,6 +19,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import * as icons from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 
 import { GroupCard } from "@/features/groups/components/GroupCard";
 import { useAuth } from "@/context/AppContext";
@@ -120,7 +121,7 @@ export default function GroupsScreen(): JSX.Element {
       const isLast = index === filtered.length - 1;
 
       return (
-        <View className="px-6">
+        <Animated.View layout={LinearTransition.springify()} className="px-6">
           <View
             className={`bg-white border-x border-border/50 overflow-hidden ${
               isFirst ? "rounded-t-[24px] border-t" : ""
@@ -134,7 +135,7 @@ export default function GroupsScreen(): JSX.Element {
               onPress={() => router.push(`/group/${item.id}`)}
             />
           </View>
-        </View>
+        </Animated.View>
       );
     },
     [currentUser.id, filtered.length, router]
@@ -177,7 +178,11 @@ export default function GroupsScreen(): JSX.Element {
           </Button>
         </BlurView>
 
-        <View className="flex-1 bg-background" style={{ paddingTop: insets.top + 90 }}>
+        <Animated.View
+          entering={FadeInDown.duration(400).springify()}
+          className="flex-1 bg-background"
+          style={{ paddingTop: insets.top + 90 }}
+        >
           <FlashList
             data={filtered}
             renderItem={renderItem}
@@ -187,7 +192,7 @@ export default function GroupsScreen(): JSX.Element {
             showsVerticalScrollIndicator={false}
             extraData={{ filteredLength: filtered.length }}
           />
-        </View>
+        </Animated.View>
       </View>
     </FocusAwareView>
   );

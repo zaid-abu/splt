@@ -14,6 +14,7 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import {
   useGroups,
   useCreateGroup,
@@ -70,6 +71,7 @@ export default function NewFriendScreen(): JSX.Element {
         simplifyDebts: true,
       });
 
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show({
         label: "Friend added",
         description: `${name} has been added to your friends.`,
