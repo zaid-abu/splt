@@ -5,7 +5,7 @@ import { PressableFeedback, Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import type { JSX } from "react";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,28 +14,10 @@ import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { PieChart } from "react-native-gifted-charts";
-import {
-  useGroups,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
-} from "@/features/groups/queries/useGroups";
-import {
-  useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
-import {
-  useUserActivities,
-  useLogActivity,
-  useDeleteActivity,
-} from "@/features/activity/queries/useActivities";
-import {
-  useUserSettlements,
-  useAddSettlement,
-} from "@/features/settlements/queries/useSettlements";
+import { useGroups } from "@/features/groups/queries/useGroups";
+import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
+import { useUserActivities } from "@/features/activity/queries/useActivities";
+import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 
 import { useAuth } from "@/context/AppContext";
@@ -63,57 +45,73 @@ export default function DashboardScreen(): JSX.Element {
   const [selectedSlice, setSelectedSlice] = useState<"owed" | "owe" | null>(null);
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const owedToYou = balancesUtil.getTotalOwedToMe(
-    currentUser.id,
-    groups,
-    expenses,
-    settlements,
-    preferredCurrency,
-    convertCurrency
-  );
-  const youOwe = Math.abs(
-    balancesUtil.getTotalIOwe(
-      currentUser.id,
-      groups,
-      expenses,
-      settlements,
-      preferredCurrency,
-      convertCurrency
-    )
-  );
-  const netBalance = owedToYou - youOwe;
-
-  const balances = balancesUtil.getUserBalances(
-    currentUser.id,
-    undefined,
-    groups,
-    expenses,
-    settlements,
-    preferredCurrency,
-    convertCurrency
+  const owedToYou = useMemo(
+    () =>
+      balancesUtil.getTotalOwedToMe(
+        currentUser.id,
+        groups,
+        expenses,
+        settlements,
+        preferredCurrency,
+        convertCurrency
+      ),
+    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
   );
 
-  // Find top outstanding balances (up to 3)
-  const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
-  const uniqueUsers = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
+  const youOwe = useMemo(
+    () =>
+      Math.abs(
+        balancesUtil.getTotalIOwe(
+          currentUser.id,
+          groups,
+          expenses,
+          settlements,
+          preferredCurrency,
+          convertCurrency
+        )
+      ),
+    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
+  );
 
-  const outstandingFriends = uniqueUsers
-    .filter((u) => u.id !== currentUser.id && (balances.get(u.id) || 0) !== 0)
-    .map((u) => ({ user: u, balance: balances.get(u.id) || 0 }))
-    .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance))
-    .slice(0, 3);
+  const netBalance = useMemo(() => owedToYou - youOwe, [owedToYou, youOwe]);
 
-  const recentActivities = [...activities]
-    .sort((a, b) => b.date.getTime() - a.date.getTime())
-    .slice(0, 3);
+  const balances = useMemo(
+    () =>
+      balancesUtil.getUserBalances(
+        currentUser.id,
+        undefined,
+        groups,
+        expenses,
+        settlements,
+        preferredCurrency,
+        convertCurrency
+      ),
+    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
+  );
 
-  const greeting =
-    new Date().getHours() < 12
-      ? "Good morning"
-      : new Date().getHours() < 18
-        ? "Good afternoon"
-        : "Good evening";
-  const firstName = currentUser.name.split(" ")[0];
+  const outstandingFriends = useMemo(() => {
+    const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
+    const uniqueUsers = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
+
+    return uniqueUsers
+      .filter((u) => u.id !== currentUser.id && (balances.get(u.id) || 0) !== 0)
+      .map((u) => ({ user: u, balance: balances.get(u.id) || 0 }))
+      .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance))
+      .slice(0, 3);
+  }, [groups, currentUser.id, balances]);
+
+  const recentActivities = useMemo(() => {
+    return [...activities].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 3);
+  }, [activities]);
+
+  const greeting = useMemo(() => {
+    const hours = new Date().getHours();
+    if (hours < 12) return "Good morning";
+    if (hours < 18) return "Good afternoon";
+    return "Good evening";
+  }, []);
+
+  const firstName = useMemo(() => currentUser.name.split(" ")[0], [currentUser.name]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);

@@ -1,21 +1,8 @@
-/**
- * Group Detail Screen
- *
- * HeroUI components used:
- * - Button
- * - Card, Card.Body, Card.Title, Card.Description, Card.Header, Card.Footer
- * - Chip
- * - ListGroup + all sub-components
- * - Avatar, Avatar.Fallback
- * - Separator
- * - Typography
- * - Alert, Alert.Indicator, Alert.Content, Alert.Title, Alert.Description
- * - Skeleton
- */
 import { Alert, Typography, PressableFeedback, Button, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
+import { useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -27,6 +14,7 @@ import Animated, {
   Extrapolation,
   FadeInDown,
 } from "react-native-reanimated";
+import { FlashList } from "@shopify/flash-list";
 
 import { ExpenseItem } from "@/features/expenses/components/ExpenseItem";
 import { AvatarStack, AppUserAvatar } from "@/components/ui/MemberAvatar";
@@ -34,30 +22,14 @@ import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import {
-  useGroups,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
-} from "@/features/groups/queries/useGroups";
-import {
-  useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
-import {
-  useUserActivities,
-  useLogActivity,
-  useDeleteActivity,
-} from "@/features/activity/queries/useActivities";
-import {
-  useUserSettlements,
-  useAddSettlement,
-} from "@/features/settlements/queries/useSettlements";
+import { useGroups } from "@/features/groups/queries/useGroups";
+import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
+import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 import { calculateTotalGroupExpenses } from "@/features/groups/utils/calculations";
+import type { Expense } from "@/types";
+
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList<Expense>);
 
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<GroupRouteParams>();
@@ -94,71 +66,46 @@ export default function GroupDetailScreen(): JSX.Element {
     };
   });
 
-  if (!group) {
-    return (
-      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
-        <View className="flex-1 items-center justify-center px-5 gap-4">
-          <Alert status="danger" className="rounded-[20px]">
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>Group not found</Alert.Title>
-              <Alert.Description>This group may have been deleted.</Alert.Description>
-            </Alert.Content>
-          </Alert>
-          <Button onPress={() => router.back()} className="rounded-full">
-            Go back
-          </Button>{" "}
-        </View>
-      </SafeAreaView>
+  const ListHeaderComponent = useCallback(() => {
+    if (!group) return null;
+
+    const sym = getCurrencySymbol(group.currency);
+    const balances = balancesUtil.getGroupBalances(
+      group.id,
+      expenses,
+      settlements,
+      group,
+      preferredCurrency,
+      convertCurrency
     );
-  }
+    const myBalance = balances.get(currentUser.id) ?? 0;
 
-  const sym = getCurrencySymbol(group.currency);
-  const balances = balancesUtil.getGroupBalances(
-    group.id,
-    expenses,
-    settlements,
-    group,
-    preferredCurrency,
-    convertCurrency
-  );
-  const myBalance = balances.get(currentUser.id) ?? 0;
+    const groupDebts = group.simplifyDebts
+      ? balancesUtil.getSimplifiedDebts(
+          group.id,
+          expenses,
+          settlements,
+          group,
+          preferredCurrency,
+          convertCurrency
+        )
+      : balancesUtil.getExactPairwiseDebts(
+          group.id,
+          expenses,
+          settlements,
+          group,
+          preferredCurrency,
+          convertCurrency
+        );
 
-  const groupDebts = group.simplifyDebts
-    ? balancesUtil.getSimplifiedDebts(
-        group.id,
-        expenses,
-        settlements,
-        group,
-        preferredCurrency,
-        convertCurrency
-      )
-    : balancesUtil.getExactPairwiseDebts(
-        group.id,
-        expenses,
-        settlements,
-        group,
-        preferredCurrency,
-        convertCurrency
-      );
+    const totalExpensesInGroupCurrency = calculateTotalGroupExpenses(
+      expenses,
+      group.currency,
+      convertCurrency
+    );
 
-  // Calculate total expenses in group currency
-  const totalExpensesInGroupCurrency = calculateTotalGroupExpenses(
-    expenses,
-    group.currency,
-    convertCurrency
-  );
-
-  return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
-      <StatusBar style="dark" />
-      <Animated.ScrollView
-        onScroll={scrollHandler}
-        scrollEventThrottle={16}
-        className="flex-1 bg-background"
-        contentContainerStyle={{ paddingBottom: 120 }}
-        showsVerticalScrollIndicator={false}
-      >
+    return (
+      <View>
         {/* ── Back ───────────────────────────────────── */}
         <View className="pt-4 mb-4 px-4">
           <PressableFeedback onPress={() => router.back()}>
@@ -360,44 +307,97 @@ export default function GroupDetailScreen(): JSX.Element {
             })}
           </Typography>
         </View>
+      </View>
+    );
+  }, [
+    group,
+    expenses,
+    settlements,
+    currentUser.id,
+    preferredCurrency,
+    convertCurrency,
+    isAppLoading,
+    router,
+    heroStyle,
+  ]);
 
-        {isAppLoading ? (
-          <View className="px-4 gap-3">
-            <Skeleton className="w-full h-[72px] rounded-[24px]" />
-            <Skeleton className="w-full h-[72px] rounded-[24px]" />
-            <Skeleton className="w-full h-[72px] rounded-[24px]" />
+  const ListEmptyComponent = useCallback(() => {
+    if (isAppLoading) {
+      return (
+        <View className="px-4 gap-3">
+          <Skeleton className="w-full h-[72px] rounded-[24px]" />
+          <Skeleton className="w-full h-[72px] rounded-[24px]" />
+          <Skeleton className="w-full h-[72px] rounded-[24px]" />
+        </View>
+      );
+    }
+
+    return (
+      <View className="px-6">
+        <View className="bg-white rounded-[24px] items-center p-8 border border-border">
+          <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
+            <Text style={{ fontSize: 32 }}>💸</Text>
           </View>
-        ) : expenses.length === 0 ? (
-          <View className="px-6">
-            <View className="bg-white rounded-[24px] items-center p-8 border border-border">
-              <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
-                <Text style={{ fontSize: 32 }}>💸</Text>
-              </View>
-              <Typography type="h3" className="font-black text-center mb-1">
-                No expenses yet
-              </Typography>
-              <Typography type="body" className="text-muted-foreground text-center">
-                Add the first expense for this group
-              </Typography>
-            </View>
-          </View>
-        ) : (
-          <View className="px-4 gap-2">
-            {expenses.map((expense, idx) => (
-              <Animated.View
-                key={expense.id}
-                entering={FadeInDown.delay(100 + idx * 50).springify()}
-              >
-                <ExpenseItem
-                  expense={expense}
-                  currentUserId={currentUser.id}
-                  onPress={() => router.push(`/expense/${expense.id}`)}
-                />
-              </Animated.View>
-            ))}
-          </View>
-        )}
-      </Animated.ScrollView>
+          <Typography type="h3" className="font-black text-center mb-1">
+            No expenses yet
+          </Typography>
+          <Typography type="body" className="text-muted-foreground text-center">
+            Add the first expense for this group
+          </Typography>
+        </View>
+      </View>
+    );
+  }, [isAppLoading]);
+
+  const renderItem = useCallback(
+    ({ item, index }: { item: Expense; index: number }) => (
+      <View className="px-4 pb-2">
+        <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
+          <ExpenseItem
+            expense={item}
+            currentUserId={currentUser.id}
+            onPress={() => router.push(`/expense/${item.id}`)}
+          />
+        </Animated.View>
+      </View>
+    ),
+    [currentUser.id, router]
+  );
+
+  if (!group) {
+    return (
+      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
+        <View className="flex-1 items-center justify-center px-5 gap-4">
+          <Alert status="danger" className="rounded-[20px]">
+            <Alert.Indicator />
+            <Alert.Content>
+              <Alert.Title>Group not found</Alert.Title>
+              <Alert.Description>This group may have been deleted.</Alert.Description>
+            </Alert.Content>
+          </Alert>
+          <Button onPress={() => router.back()} className="rounded-full">
+            Go back
+          </Button>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  return (
+    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
+      <StatusBar style="dark" />
+      <View className="flex-1 bg-background">
+        <AnimatedFlashList
+          data={expenses}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
+          showsVerticalScrollIndicator={false}
+          ListHeaderComponent={ListHeaderComponent}
+          ListEmptyComponent={ListEmptyComponent}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 120 }}
+        />
+      </View>
 
       {/* ── Bottom Action Bar ──────────────────────── */}
       <View className="bg-white border-t border-border/30 px-6 pt-4 pb-8 flex-row gap-4">

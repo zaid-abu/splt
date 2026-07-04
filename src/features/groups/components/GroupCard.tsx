@@ -39,6 +39,7 @@ interface GroupCardProps {
   group: Group;
   currentUserId: string;
   index?: number;
+  isLast?: boolean;
   onPress?: () => void;
 }
 
@@ -46,6 +47,7 @@ export function GroupCard({
   group,
   currentUserId,
   index = 0,
+  isLast = false,
   onPress,
 }: GroupCardProps): JSX.Element {
   const { currentUser } = useAuth();
@@ -83,7 +85,9 @@ export function GroupCard({
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
       <SwipeableRow onDelete={() => deleteGroup(group.id)}>
         <PressableFeedback onPress={onPress}>
-          <View className="bg-white p-4 border-b border-border/50 flex-row items-center justify-between">
+          <View
+            className={`bg-white p-4 flex-row items-center justify-between ${!isLast ? "border-b border-border/50" : ""}`}
+          >
             <View className="flex-row items-center gap-4 flex-1 pr-4">
               <View
                 className="w-12 h-12 rounded-[16px] items-center justify-center"

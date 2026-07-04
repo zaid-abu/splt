@@ -4,10 +4,7 @@ export interface SplitUser {
   id: string;
 }
 
-export function calculateEqualShare(
-  includedMembers: SplitUser[],
-  parsedAmount: number
-): number {
+export function calculateEqualShare(includedMembers: SplitUser[], parsedAmount: number): number {
   return includedMembers.length > 0 ? parsedAmount / includedMembers.length : 0;
 }
 
@@ -15,10 +12,7 @@ export function calculateCustomSum(
   includedMembers: SplitUser[],
   customAmounts: Record<string, string>
 ): number {
-  return includedMembers.reduce(
-    (sum, u) => sum + (parseFloat(customAmounts[u.id] ?? "0") || 0),
-    0
-  );
+  return includedMembers.reduce((sum, u) => sum + (parseFloat(customAmounts[u.id] ?? "0") || 0), 0);
 }
 
 export function calculatePercentSum(
