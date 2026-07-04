@@ -439,12 +439,12 @@ Recommend only one next phase. Wait for approval before continuing.
   - `[x]` Implement a global error boundary.
   - `[x]` Create a unified `Toast` notification system for mutation failures.
 
-### ⏳ Phase 20: Testing Preparation
+### ✅ Phase 20: Testing Preparation (COMPLETED)
 
 - **Objective:** Ensure the codebase is modular enough for unit testing.
 - **Implementation:**
-  - Verify that the service layer can be easily mocked.
-  - Separate all side-effects from pure components.
+  - `[x]` Verify that the service layer can be easily mocked.
+  - `[x]` Separate all side-effects from pure components.
 
 ### ⏳ Phase 21: Security Review
 
