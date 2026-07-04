@@ -43,7 +43,7 @@ export default function LoginScreen(): JSX.Element {
       });
       return;
     }
-    
+
     try {
       await signIn({ email, password });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
