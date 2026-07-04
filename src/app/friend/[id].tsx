@@ -1,5 +1,6 @@
 import { Typography, PressableFeedback, Button, Alert, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import type { FriendRouteParams } from "@/types/navigation";
 import Animated, {
   FadeInDown,
   useSharedValue,
@@ -38,7 +39,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 
 export default function FriendDetailScreen(): JSX.Element {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<FriendRouteParams>();
   const router = useRouter();
   const { currentUser } = useAuth();
   const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(

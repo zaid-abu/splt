@@ -378,12 +378,12 @@ Recommend only one next phase. Wait for approval before continuing.
   - `[x]` Standardize login/signup logic in `src/features/auth/`.
   - `[x]` Securely manage sessions via React Query rather than local state.
 
-### ⏳ Phase 11: Navigation Refactor
+### ✅ Phase 11: Navigation Refactor (COMPLETED)
 
 - **Objective:** Clean up Expo Router configurations and standardize route types.
 - **Implementation:**
-  - Define typed route parameters.
-  - Standardize screen transitions in `_layout.tsx`.
+  - `[x]` Define typed route parameters.
+  - `[x]` Standardize screen transitions in `_layout.tsx`.
 
 ### ⏳ Phase 12: Reusable UI Components
 

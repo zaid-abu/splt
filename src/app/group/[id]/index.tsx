@@ -14,6 +14,7 @@
  */
 import { Alert, Typography, PressableFeedback, Button, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import type { GroupRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Text, View } from "react-native";
@@ -51,7 +52,7 @@ import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
 
 export default function GroupDetailScreen(): JSX.Element {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<GroupRouteParams>();
   const router = useRouter();
   const { currentUser } = useAuth();
   const { data: groups = [] } = useGroups(currentUser?.id);

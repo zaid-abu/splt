@@ -1,5 +1,6 @@
 import { Button, Typography, PressableFeedback } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import type { GroupSettleRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
@@ -34,7 +35,7 @@ interface SettlementSuggestion {
 }
 
 export default function GroupSettleScreen(): JSX.Element {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<GroupSettleRouteParams>();
   const router = useRouter();
   const { currentUser } = useAuth();
   const { data: groups = [] } = useGroups(currentUser?.id);

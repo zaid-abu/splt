@@ -10,6 +10,7 @@ import {
   useToast,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import type { SettleRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -46,7 +47,7 @@ export default function SettleUpScreen(): JSX.Element {
     groupId,
     amount: initialAmount,
     direction: initialDirection,
-  } = useLocalSearchParams<{ id: string; groupId?: string; amount?: string; direction?: string }>();
+  } = useLocalSearchParams<SettleRouteParams>();
   const router = useRouter();
   const { toast } = useToast();
   const { currentUser } = useAuth();

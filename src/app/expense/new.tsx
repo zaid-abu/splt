@@ -30,6 +30,7 @@ import {
   Popover,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import type { ExpenseNewRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useState, useMemo, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -81,11 +82,7 @@ export default function AddExpenseScreen(): JSX.Element {
     groupId: initialGroupId,
     friendId: initialFriendId,
     expenseId,
-  } = useLocalSearchParams<{
-    groupId?: string;
-    friendId?: string;
-    expenseId?: string;
-  }>();
+  } = useLocalSearchParams<ExpenseNewRouteParams>();
   const router = useRouter();
   const { currentUser } = useAuth();
   const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);

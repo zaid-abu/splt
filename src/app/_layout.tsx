@@ -34,7 +34,7 @@ export default function RootLayout(): JSX.Element | null {
 
   return (
     <AppProvider>
-      <Stack screenOptions={{ headerShown: false, animation: "fade_from_bottom" }}>
+      <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen

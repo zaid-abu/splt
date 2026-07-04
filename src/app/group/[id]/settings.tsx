@@ -13,6 +13,7 @@ import {
   useToast,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import type { GroupSettingsRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -68,7 +69,7 @@ const GROUP_ICONS = [
 ];
 
 export default function GroupSettingsScreen(): JSX.Element {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<GroupSettingsRouteParams>();
   const router = useRouter();
   const { currentUser } = useAuth();
   const { mutateAsync: updateGroup, isPending: isUpdatingGroup } = useUpdateGroup();

@@ -1,5 +1,6 @@
 import { Button, Dialog, Typography, Skeleton } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import type { ExpenseRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
@@ -30,7 +31,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { EXPENSE_CATEGORIES } from "@/types";
 
 export default function ExpenseDetailScreen(): JSX.Element {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useLocalSearchParams<ExpenseRouteParams>();
   const router = useRouter();
   const { currentUser } = useAuth();
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
