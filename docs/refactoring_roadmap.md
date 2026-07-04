@@ -371,12 +371,12 @@ Recommend only one next phase. Wait for approval before continuing.
   - `[x]` Migrate raw `.from('table').select()` logic out of UI components and into `src/services/api/`.
   - `[x]` Generate Supabase migration scripts for initial schema, indexes, triggers, profile bootstrapping, and RLS policies.
 
-### ⏳ Phase 10: Authentication Cleanup
+### ✅ Phase 10: Authentication Cleanup (COMPLETED)
 
 - **Objective:** Refactor the auth flow to use the new service layer and React Query mutations.
 - **Implementation:**
-  - Standardize login/signup logic in `src/features/auth/`.
-  - Securely manage sessions via React Query rather than local state.
+  - `[x]` Standardize login/signup logic in `src/features/auth/`.
+  - `[x]` Securely manage sessions via React Query rather than local state.
 
 ### ⏳ Phase 11: Navigation Refactor
 
