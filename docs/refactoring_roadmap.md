@@ -446,12 +446,12 @@ Recommend only one next phase. Wait for approval before continuing.
   - `[x]` Verify that the service layer can be easily mocked.
   - `[x]` Separate all side-effects from pure components.
 
-### ⏳ Phase 21: Security Review
+### ✅ Phase 21: Security Review (COMPLETED)
 
 - **Objective:** Audit environment variables and input validation.
 - **Implementation:**
-  - Ensure `EXPO_PUBLIC_` keys are properly loaded.
-  - Double-check Zod schemas against injection or bad data.
+  - `[x]` Ensure `EXPO_PUBLIC_` keys are properly loaded.
+  - `[x]` Double-check Zod schemas against injection or bad data.
 
 ### ⏳ Phase 22: Production Readiness Audit
 

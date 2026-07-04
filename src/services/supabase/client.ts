@@ -5,8 +5,10 @@ import { createClient } from "@supabase/supabase-js";
 
 import type { Database } from "./database.types";
 
-const supabaseUrl = process.env["EXPO_PUBLIC_SUPABASE_URL"] ?? "https://placeholder.supabase.co";
-const supabaseAnonKey = process.env["EXPO_PUBLIC_SUPABASE_ANON_KEY"] ?? "placeholder-key";
+import { env } from "@/config/env";
+
+const supabaseUrl = env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
