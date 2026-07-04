@@ -32,23 +32,28 @@ import { AvatarStack, AppUserAvatar } from "@/components/MemberAvatar";
 import { getCurrencySymbol } from "@/components/AmountDisplay";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const getGroup = useDataStore((s) => s.getGroup);
-  const getGroupExpenses = useDataStore((s) => s.getGroupExpenses);
-  const getGroupBalances = useDataStore((s) => s.getGroupBalances);
+  const { data: groups = [] } = useGroups(currentUser?.id);
+  const { data: allExpenses = [] } = useUserExpenses(currentUser?.id);
+  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+  
   const convertCurrency = useUIStore((s) => s.convertCurrency);
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const isAppLoading = useUIStore((s) => s.isAppLoading);
-  const getSimplifiedDebts = useDataStore((s) => s.getSimplifiedDebts);
-  const getExactPairwiseDebts = useDataStore((s) => s.getExactPairwiseDebts);
 
-  const group = getGroup(id ?? "");
-  const expenses = getGroupExpenses(id ?? "");
+  const group = groups.find((g) => g.id === id);
+  const expenses = allExpenses.filter((e) => e.groupId === id);
 
   const scrollY = useSharedValue(0);
   const scrollHandler = useAnimatedScrollHandler({
@@ -90,12 +95,12 @@ export default function GroupDetailScreen(): JSX.Element {
   }
 
   const sym = getCurrencySymbol(group.currency);
-  const balances = getGroupBalances(group.id);
+  const balances = balancesUtil.getGroupBalances(group.id, expenses, settlements, group, preferredCurrency, convertCurrency);
   const myBalance = balances.get(currentUser.id) ?? 0;
 
   const groupDebts = group.simplifyDebts
-    ? getSimplifiedDebts(group.id)
-    : getExactPairwiseDebts(group.id);
+    ? balancesUtil.getSimplifiedDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency)
+    : balancesUtil.getExactPairwiseDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency);
 
   // Calculate total expenses in group currency
   const totalExpensesInGroupCurrency = expenses.reduce(

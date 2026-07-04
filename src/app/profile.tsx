@@ -21,9 +21,14 @@ import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/MemberAvatar";
@@ -60,17 +65,21 @@ function SettingItem({ icon: Icon, title, subtitle, color, onPress, rightElement
 
 export default function ProfileScreen(): JSX.Element {
   const { currentUser } = useAuth();
-  const groups = useDataStore((s) => s.groups);
-  const getTotalOwedToMe = useDataStore((s) => s.getTotalOwedToMe);
-  const getTotalIOwe = useDataStore((s) => s.getTotalIOwe);
+  const { data: groups = [] } = useGroups(currentUser?.id);
+  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
+  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
   const setCurrency = useUIStore((s) => s.setCurrency);
+
+  const owedToYou = balancesUtil.getTotalOwedToMe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency);
+  const youOwe = Math.abs(balancesUtil.getTotalIOwe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency));
+  const netBalance = owedToYou - youOwe;
+
   const router = useRouter();
   const [darkMode, setDarkMode] = useState(true);
   const [notifs, setNotifs] = useState(true);
-
-  const owedToMe = getTotalOwedToMe(currentUser.id);
-  const iOwe = getTotalIOwe(currentUser.id);
 
   const accentColor = useThemeColor("accent" as any) as unknown as string;
   const warningColor = useThemeColor("warning" as any) as unknown as string;
@@ -133,17 +142,17 @@ export default function ProfileScreen(): JSX.Element {
                   </Typography>
                   <Typography type="body" className="font-black text-success">
                     +{preferredCurrency.symbol}
-                    {owedToMe.toFixed(0)}
+                    {owedToYou.toFixed(0)}
                   </Typography>
                 </View>
-                {iOwe > 0 && (
+                {youOwe > 0 && (
                   <View className="flex-1 bg-danger/10 rounded-[16px] py-3 items-center">
                     <Typography type="body-sm" className="text-danger font-medium mb-0.5">
                       Owe
                     </Typography>
                     <Typography type="body" className="font-black text-danger">
                       -{preferredCurrency.symbol}
-                      {iOwe.toFixed(0)}
+                      {youOwe.toFixed(0)}
                     </Typography>
                   </View>
                 )}

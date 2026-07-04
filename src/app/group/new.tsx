@@ -31,11 +31,16 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import { CurrencySelector } from "@/components/CurrencySelector";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
 
@@ -60,7 +65,7 @@ const GROUP_ICONS = [
 export default function NewGroupScreen(): JSX.Element {
   const router = useRouter();
   const { currentUser } = useAuth();
-  const createGroup = useDataStore((s) => s.createGroup);
+  const { mutateAsync: createGroup, isPending: isCreatingGroup } = useCreateGroup();
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -106,9 +111,9 @@ export default function NewGroupScreen(): JSX.Element {
           description: description.trim() || undefined,
           icon,
           currency: currency.code,
-          memberEmails: memberEmails,
-        },
-        currentUser
+          createdBy: currentUser.id,
+          members: [{ userId: currentUser.id, user: currentUser, balance: 0 }],
+        }
       );
       router.replace(`/group/${group.id}`);
     } catch {

@@ -16,9 +16,14 @@ import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { CurrencySelector } from "@/components/CurrencySelector";
@@ -35,17 +40,22 @@ export default function SettleUpScreen(): JSX.Element {
   const router = useRouter();
   const { toast } = useToast();
   const { currentUser } = useAuth();
-  const groups = useDataStore((s) => s.groups);
+  const { data: groups = [] } = useGroups(currentUser?.id);
+  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
+  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
+
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
-  const getUserBalances = useDataStore((s) => s.getUserBalances);
-  const addSettlement = useDataStore((s) => s.addSettlement);
+
+  const balances = balancesUtil.getUserBalances(currentUser.id, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency);
+  const { mutateAsync: addSettlement, isPending: isAddingSettlement } = useAddSettlement();
   const setCurrency = useUIStore((s) => s.setCurrency);
 
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
   const uniqueFriends = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
   const friend = uniqueFriends.find((f) => f.id === id);
 
-  const balances = getUserBalances(currentUser.id);
+
   const netBalance = balances.get(id ?? "") || 0; // Negative means you owe them
 
   // "you" means you paid them (so they owe you less, or you owe them less)
@@ -111,8 +121,7 @@ export default function SettleUpScreen(): JSX.Element {
           currency: settleCurrency,
           date: new Date(),
           note: note.trim(),
-        },
-        currentUser
+        }
       );
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();

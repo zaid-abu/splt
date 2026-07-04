@@ -359,13 +359,17 @@ Recommend only one next phase. Wait for approval before continuing.
 - [x] Create `src/queries/keys.ts` for consistent query key management (e.g., `['expenses', groupId]`).
 - [x] Integrate `QueryClientProvider` into `src/providers/AppProvider.tsx`.
 
-### ⏳ Phase 9: Supabase Service Layer
+### ✅ Phase 9: Supabase Service Layer
 
 - **Objective:** Abstract all direct Supabase calls from screens into dedicated service classes.
 - **Implementation:**
-  - Create `src/services/supabase/client.ts`.
-  - Create API modules like `src/services/api/expenses.ts` and `src/services/api/groups.ts`.
-  - Migrate all raw `.from('table').select()` logic out of UI components.
+  - `[x]` Create `src/services/supabase/client.ts` with typed Supabase client configuration.
+  - `[x]` Add `src/services/supabase/database.types.ts` for local table type safety.
+  - `[x]` Keep `src/lib/supabase.ts` as a compatibility re-export while the app transitions.
+  - `[x]` Create API modules for groups, expenses, settlements, and activities.
+  - `[x]` Add service-layer mappers to translate Supabase snake_case rows into app camelCase types.
+  - `[x]` Migrate raw `.from('table').select()` logic out of UI components and into `src/services/api/`.
+  - `[x]` Generate Supabase migration scripts for initial schema, indexes, triggers, profile bootstrapping, and RLS policies.
 
 ### ⏳ Phase 10: Authentication Cleanup
 

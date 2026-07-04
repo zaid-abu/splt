@@ -21,15 +21,14 @@ import * as icons from "lucide-react-native";
 
 import { GroupCard } from "@/components/GroupCard";
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
-import { useUIStore } from "@/store/useUIStore";
+import { useGroups } from "@/queries/useGroups";
 
 export default function GroupsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const groups = useDataStore((s) => s.groups);
-  const isAppLoading = useUIStore((s) => s.isAppLoading);
+  
+  const { data: groups = [], isLoading } = useGroups(currentUser?.id);
   const [search, setSearch] = useState("");
 
   const filtered = search.trim()
@@ -125,7 +124,7 @@ export default function GroupsScreen(): JSX.Element {
               </View>
             ) : (
               <View className="bg-white rounded-[24px] border border-border/50 overflow-hidden">
-                {isAppLoading ? (
+                {isLoading ? (
                   <>
                     <View className="p-4 border-b border-border/50 flex-row items-center justify-between">
                       <View className="flex-row items-center gap-4 flex-1">

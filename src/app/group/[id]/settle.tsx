@@ -4,9 +4,14 @@ import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { getCurrencySymbol } from "@/components/AmountDisplay";
@@ -22,23 +27,26 @@ export default function GroupSettleScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const getGroup = useDataStore((s) => s.getGroup);
-  const getSimplifiedDebts = useDataStore((s) => s.getSimplifiedDebts);
-  const getExactPairwiseDebts = useDataStore((s) => s.getExactPairwiseDebts);
+  const { data: groups = [] } = useGroups(currentUser?.id);
+  const { data: allExpenses = [] } = useUserExpenses(currentUser?.id);
+  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
 
-  const group = getGroup(id ?? "");
+  const group = groups.find((g) => g.id === id);
+  const expenses = allExpenses.filter((e) => e.groupId === id);
+
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
+
   const sym = group ? getCurrencySymbol(group.currency) : "$";
 
   const suggestions = (() => {
     if (!group) return [];
 
-    if (!group.simplifyDebts) {
-      const exact = getExactPairwiseDebts(group.id);
-      return exact.filter((p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id);
-    }
+    const pairwiseDebts = group?.simplifyDebts
+      ? balancesUtil.getSimplifiedDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency)
+      : balancesUtil.getExactPairwiseDebts(group?.id ?? "", expenses, settlements, group, preferredCurrency, convertCurrency);
 
-    const simplified = getSimplifiedDebts(group.id);
-    return simplified.filter(
+    return pairwiseDebts.filter(
       (p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id
     );
   })();

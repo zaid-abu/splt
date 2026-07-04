@@ -8,9 +8,14 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { BlurView } from "expo-blur";
 import { FocusAwareView } from "@/components/PageAnimator";
 import * as icons from "lucide-react-native";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { formatAmount } from "@/components/AmountDisplay";
@@ -21,17 +26,21 @@ export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const activities = useDataStore((s) => s.activities);
-  const getTotalOwedToMe = useDataStore((s) => s.getTotalOwedToMe);
-  const getTotalIOwe = useDataStore((s) => s.getTotalIOwe);
+  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(currentUser?.id);
+  const { data: groups = [] } = useGroups(currentUser?.id);
+  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
+  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+  
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
   const isAppLoading = useUIStore((s) => s.isAppLoading);
 
   const [isSearching, setIsSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const owedToMe = getTotalOwedToMe(currentUser.id);
-  const iOwe = Math.abs(getTotalIOwe(currentUser.id));
+  const owedToYou = balancesUtil.getTotalOwedToMe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency);
+  const youOwe = Math.abs(balancesUtil.getTotalIOwe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency));
+  const netBalance = owedToYou - youOwe;
 
   // Sort activities by date descending
   const sortedActivities = useMemo(() => {
@@ -112,7 +121,7 @@ export default function ActivityScreen(): JSX.Element {
                   Owed To You
                 </Typography>
                 <Typography type="h2" className="font-black text-foreground text-[22px]">
-                  {formatAmount(owedToMe, preferredCurrency.code)}
+                  {formatAmount(owedToYou, preferredCurrency.code)}
                 </Typography>
               </View>
 
@@ -127,7 +136,7 @@ export default function ActivityScreen(): JSX.Element {
                   You Owe
                 </Typography>
                 <Typography type="h2" className="font-black text-foreground text-[22px]">
-                  {formatAmount(iOwe, preferredCurrency.code)}
+                  {formatAmount(youOwe, preferredCurrency.code)}
                 </Typography>
               </View>
             </View>

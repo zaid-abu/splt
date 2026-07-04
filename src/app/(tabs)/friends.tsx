@@ -10,11 +10,16 @@ import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import LottieView from "lottie-react-native";
 import { SwipeableRow } from "@/components/SwipeableRow";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import { FocusAwareView } from "@/components/PageAnimator";
 import { formatAmount } from "@/components/AmountDisplay";
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 
@@ -22,15 +27,17 @@ export default function FriendsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const groups = useDataStore((s) => s.groups);
-  const getUserBalances = useDataStore((s) => s.getUserBalances);
+  const { data: groups = [], isLoading } = useGroups(currentUser?.id);
+  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
+  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+  
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
-  const isAppLoading = useUIStore((s) => s.isAppLoading);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
 
   const [search, setSearch] = useState("");
   const [refreshing, setRefreshing] = useState(false);
 
-  const balances = getUserBalances(currentUser.id);
+  const balances = balancesUtil.getUserBalances(currentUser.id, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency);
 
   const uniqueFriends = useMemo(() => {
     const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
@@ -159,7 +166,7 @@ export default function FriendsScreen(): JSX.Element {
             </View>
           ) : (
             <View className="gap-2">
-              {isAppLoading ? (
+              {isLoading ? (
                 <>
                   <Skeleton className="w-full h-[88px] rounded-[24px]" />
                   <Skeleton className="w-full h-[88px] rounded-[24px]" />

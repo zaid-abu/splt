@@ -4,10 +4,15 @@ import { Typography, ListGroup } from "heroui-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { formatAmount } from "@/components/AmountDisplay";
 import { SwipeableRow } from "@/components/SwipeableRow";
@@ -20,7 +25,7 @@ interface ActivityItemProps {
 
 export function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
   const { currentUser } = useAuth();
-  const deleteActivity = useDataStore((s) => s.deleteActivity);
+  const { mutateAsync: deleteActivity } = useDeleteActivity();
   const router = useRouter();
 
   // Determine financial involvement

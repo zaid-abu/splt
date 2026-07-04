@@ -14,9 +14,14 @@ import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
 import { PieChart } from "react-native-gifted-charts";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { formatAmount } from "@/components/AmountDisplay";
 import { AppUserAvatar } from "@/components/MemberAvatar";
@@ -27,22 +32,23 @@ export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const groups = useDataStore((s) => s.groups);
-  const activities = useDataStore((s) => s.activities);
-  const getTotalOwedToMe = useDataStore((s) => s.getTotalOwedToMe);
-  const getTotalIOwe = useDataStore((s) => s.getTotalIOwe);
-  const getUserBalances = useDataStore((s) => s.getUserBalances);
+  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
+  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(currentUser?.id);
+  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
+  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+  
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
 
   const [refreshing, setRefreshing] = useState(false);
   const [selectedSlice, setSelectedSlice] = useState<"owed" | "owe" | null>(null);
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const owedToYou = getTotalOwedToMe(currentUser.id);
-  const youOwe = Math.abs(getTotalIOwe(currentUser.id));
+  const owedToYou = balancesUtil.getTotalOwedToMe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency);
+  const youOwe = Math.abs(balancesUtil.getTotalIOwe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency));
   const netBalance = owedToYou - youOwe;
 
-  const balances = getUserBalances(currentUser.id);
+  const balances = balancesUtil.getUserBalances(currentUser.id, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency);
 
   // Find top outstanding balances (up to 3)
   const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));

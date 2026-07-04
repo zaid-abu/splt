@@ -14,16 +14,21 @@ import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 
 export default function NewFriendScreen(): JSX.Element {
   const router = useRouter();
   const { currentUser } = useAuth();
-  const createGroup = useDataStore((s) => s.createGroup);
+  const { mutateAsync: createGroup, isPending: isCreatingGroup } = useCreateGroup();
   const { toast } = useToast();
 
   const [name, setName] = useState("");
@@ -44,10 +49,10 @@ export default function NewFriendScreen(): JSX.Element {
           name: `Non-group expenses with ${name.trim()}`,
           icon: "User", // Using a fallback string icon
           currency: currentUser.defaultCurrency || "USD",
-          memberEmails: [currentUser.email, email.trim()],
+          createdBy: currentUser.id,
+          members: [{ userId: currentUser.id, user: currentUser, balance: 0 }],
           simplifyDebts: true,
-        },
-        currentUser
+        }
       );
 
       toast.show({

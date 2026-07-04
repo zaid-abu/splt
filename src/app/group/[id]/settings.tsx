@@ -18,6 +18,12 @@ import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useGroupExpenses, useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useGroupSettlements, useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import { CurrencySelector } from "@/components/CurrencySelector";
 import { AppUserAvatar } from "@/components/MemberAvatar";
@@ -50,16 +56,19 @@ export default function GroupSettingsScreen(): JSX.Element {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const getGroup = useDataStore((s) => s.getGroup);
-  const updateGroup = useDataStore((s) => s.updateGroup);
-  const deleteGroup = useDataStore((s) => s.deleteGroup);
+  const { mutateAsync: updateGroup, isPending: isUpdatingGroup } = useUpdateGroup();
+  const { mutateAsync: deleteGroup } = useDeleteGroup();
   const removeGroupMember = useDataStore((s) => s.removeGroupMember);
-  const addGroupMembers = useDataStore((s) => s.addGroupMembers);
-  const groups = useDataStore((s) => s.groups);
-  const getGroupBalances = useDataStore((s) => s.getGroupBalances);
+  const { mutateAsync: addGroupMembers } = useAddGroupMembers();
+  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
+  const { data: expenses = [] } = useGroupExpenses(id);
+  const { data: settlements = [] } = useGroupSettlements(id);
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
+  
   const { toast } = useToast();
 
-  const group = getGroup(id ?? "");
+  const group = groups.find((item) => item.id === id);
 
   const [name, setName] = useState(group?.name ?? "");
   const [description, setDescription] = useState(group?.description ?? "");
@@ -70,7 +79,18 @@ export default function GroupSettingsScreen(): JSX.Element {
 
   const [loading, setLoading] = useState(false);
 
-  const balances = getGroupBalances(id ?? "");
+  const balances = useMemo(
+    () =>
+      balancesUtil.getGroupBalances(
+        id ?? "",
+        expenses,
+        settlements,
+        group,
+        preferredCurrency,
+        convertCurrency
+      ),
+    [id, expenses, settlements, group, preferredCurrency, convertCurrency]
+  );
 
   // Available friends to add (not in the group)
   const availableFriends = useMemo(() => {
@@ -106,12 +126,15 @@ export default function GroupSettingsScreen(): JSX.Element {
     }
     setLoading(true);
     try {
-      await updateGroup(group!.id, {
-        name: name.trim(),
-        description: description.trim() || undefined,
-        icon,
-        currency: currency.code,
-        simplifyDebts,
+      await updateGroup({
+        id: group!.id,
+        updates: {
+          name: name.trim(),
+          description: description.trim() || undefined,
+          icon,
+          currency: currency.code,
+          simplifyDebts,
+        },
       });
       router.back();
     } catch {
@@ -140,7 +163,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   }
 
   function handleAddFriend(friend: any) {
-    addGroupMembers(group!.id, [friend]);
+    addGroupMembers({ groupId: group!.id, userIds: [friend.id] });
   }
 
   function handleDeleteGroup() {

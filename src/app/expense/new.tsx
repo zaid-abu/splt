@@ -44,9 +44,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeInUp, FadeIn, FadeOut, Layout } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
+import { useGroups, useCreateGroup, useUpdateGroup, useDeleteGroup, useAddGroupMembers } from "@/queries/useGroups";
+import { useUserExpenses, useAddExpense, useUpdateExpense, useDeleteExpense } from "@/queries/useExpenses";
+import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
+import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
+import * as balancesUtil from "@/utils/balances";
+
 
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/MemberAvatar";
 import { formatAmount } from "@/components/AmountDisplay";
@@ -73,11 +78,12 @@ export default function AddExpenseScreen(): JSX.Element {
   }>();
   const router = useRouter();
   const { currentUser } = useAuth();
-  const getGroup = useDataStore((s) => s.getGroup);
-  const getExpense = useDataStore((s) => s.getExpense);
-  const addExpense = useDataStore((s) => s.addExpense);
-  const updateExpense = useDataStore((s) => s.updateExpense);
-  const groups = useDataStore((s) => s.groups);
+  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
+  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
+  const getGroup = (id: string) => groups.find((g: any) => g.id === id);
+  const getExpense = (id: string) => expenses.find((e: any) => e.id === id);
+  const { mutateAsync: addExpense, isPending: isAddingExpense } = useAddExpense();
+  const { mutateAsync: updateExpense, isPending: isUpdatingExpense } = useUpdateExpense();
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const setCurrency = useUIStore((s) => s.setCurrency);
 
@@ -90,7 +96,7 @@ export default function AddExpenseScreen(): JSX.Element {
   const initialGroup = existingExpense?.groupId || initialGroupId || "";
   const initialFriends = (() => {
     if (existingExpense && !existingExpense.groupId) {
-      const other = existingExpense.splits.find((s) => s.userId !== currentUser.id);
+      const other = existingExpense.splits.find((s: any) => s.userId !== currentUser.id);
       if (other) return [other.userId];
     }
     return initialFriendId ? [initialFriendId] : [];
@@ -162,7 +168,7 @@ export default function AddExpenseScreen(): JSX.Element {
   const [included, setIncluded] = useState<Record<string, boolean>>(() => {
     if (!existingExpense) return {};
     const map: Record<string, boolean> = {};
-    existingExpense.splits.forEach((s) => {
+    existingExpense.splits.forEach((s: any) => {
       map[s.userId] = true;
     });
     return map;
@@ -171,7 +177,7 @@ export default function AddExpenseScreen(): JSX.Element {
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>(() => {
     if (existingExpense?.splitMethod !== "custom") return {};
     const map: Record<string, string> = {};
-    existingExpense.splits.forEach((s) => {
+    existingExpense.splits.forEach((s: any) => {
       map[s.userId] = s.amount.toString();
     });
     return map;
@@ -180,7 +186,7 @@ export default function AddExpenseScreen(): JSX.Element {
   const [customPercentages, setCustomPercentages] = useState<Record<string, string>>(() => {
     if (existingExpense?.splitMethod !== "percentage") return {};
     const map: Record<string, string> = {};
-    existingExpense.splits.forEach((s) => {
+    existingExpense.splits.forEach((s: any) => {
       map[s.userId] = ((s.amount / existingExpense.amount) * 100).toString();
     });
     return map;
@@ -290,20 +296,19 @@ export default function AddExpenseScreen(): JSX.Element {
       });
 
       if (existingExpense) {
-        await updateExpense(
-          existingExpense.id,
-          {
+        await updateExpense({
+          id: existingExpense.id,
+          updates: {
             title: title.trim(),
             amount: parsedAmount,
             currency: expenseCurrency,
             category,
             paidBy,
-            splits,
+            splits: splits.map(s => ({ ...s, paid: s.userId === paidBy })),
             splitMethod,
             date: expenseDate,
-          },
-          currentUser
-        );
+          }
+        });
       } else {
         await addExpense(
           {
@@ -313,11 +318,10 @@ export default function AddExpenseScreen(): JSX.Element {
             currency: expenseCurrency,
             category,
             paidBy,
-            splits,
+            splits: splits.map(s => ({ ...s, paid: s.userId === paidBy })),
             splitMethod,
             date: expenseDate,
-          },
-          currentUser
+          }
         );
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
