@@ -1,6 +1,6 @@
 import { supabase } from "@/services/supabase/client";
 import type { Settlement } from "@/types";
-import { mapSettlement, toSettlementInsert, type SettlementRow } from "./mappers";
+import { mapSettlement, toSettlementInsert, type SettlementRow } from "@/services/api/mappers";
 
 const settlementSelect = "*, fromUser:users!from_user_id(*), toUser:users!to_user_id(*)";
 

@@ -1,6 +1,6 @@
 import { supabase } from "@/services/supabase/client";
 import type { Group } from "@/types";
-import { mapGroup, toGroupInsert, toGroupUpdate, type GroupRow } from "./mappers";
+import { mapGroup, toGroupInsert, toGroupUpdate, type GroupRow } from "@/services/api/mappers";
 
 export const groupsApi = {
   async fetchGroups(userId: string): Promise<Group[]> {

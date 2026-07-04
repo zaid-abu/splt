@@ -1,6 +1,6 @@
 import { supabase } from "@/services/supabase/client";
 import type { Activity } from "@/types";
-import { mapActivity, toActivityInsert, type ActivityRow } from "./mappers";
+import { mapActivity, toActivityInsert, type ActivityRow } from "@/services/api/mappers";
 
 const activitySelect =
   "*, user:users(*), group:groups(*), expense:expenses(*), settlement:settlements(*)";

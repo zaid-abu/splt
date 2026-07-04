@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "./keys";
-import { settlementsApi } from "@/services/api/settlements";
+import { queryKeys } from "@/queries/keys";
+import { settlementsApi } from "@/features/settlements/services/api";
 import type { Settlement } from "@/types";
 
 export function useGroupSettlements(groupId: string | undefined) {

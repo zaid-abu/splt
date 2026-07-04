@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "./keys";
-import { expensesApi } from "@/services/api/expenses";
+import { queryKeys } from "@/queries/keys";
+import { expensesApi } from "@/features/expenses/services/api";
 import type { Expense } from "@/types";
 
 export function useGroupExpenses(groupId: string | undefined) {

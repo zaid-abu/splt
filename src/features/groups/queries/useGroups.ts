@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "./keys";
-import { groupsApi } from "@/services/api/groups";
+import { queryKeys } from "@/queries/keys";
+import { groupsApi } from "@/features/groups/services/api";
 import type { Group } from "@/types";
 
 export function useGroups(userId: string | undefined) {

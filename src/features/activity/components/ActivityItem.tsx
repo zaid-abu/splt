@@ -10,16 +10,23 @@ import {
   useUpdateGroup,
   useDeleteGroup,
   useAddGroupMembers,
-} from "@/queries/useGroups";
+} from "@/features/groups/queries/useGroups";
 import {
   useUserExpenses,
   useAddExpense,
   useUpdateExpense,
   useDeleteExpense,
-} from "@/queries/useExpenses";
-import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/useActivities";
-import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
-import * as balancesUtil from "@/utils/balances";
+} from "@/features/expenses/queries/useExpenses";
+import {
+  useUserActivities,
+  useLogActivity,
+  useDeleteActivity,
+} from "@/features/activity/queries/useActivities";
+import {
+  useUserSettlements,
+  useAddSettlement,
+} from "@/features/settlements/queries/useSettlements";
+import * as balancesUtil from "@/features/settlements/utils/balances";
 
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";

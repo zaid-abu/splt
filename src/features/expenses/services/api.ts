@@ -6,7 +6,7 @@ import {
   toExpenseSplitInsert,
   toExpenseUpdate,
   type ExpenseRow,
-} from "./mappers";
+} from "@/services/api/mappers";
 
 const expenseSelect = "*, paidByUser:users!paid_by(*), splits:expense_splits(*, user:users(*))";
 

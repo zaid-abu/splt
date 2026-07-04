@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { queryKeys } from "./keys";
-import { activitiesApi } from "@/services/api/activities";
+import { queryKeys } from "@/queries/keys";
+import { activitiesApi } from "@/features/activity/services/api";
 import type { Activity } from "@/types";
 
 export function useUserActivities(userId: string | undefined) {
