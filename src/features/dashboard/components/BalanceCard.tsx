@@ -1,10 +1,10 @@
 /**
- * BalanceCard — Reference design: two side-by-side white cards
+ * BalanceCard — Edge-to-Edge Editorial Design
  *
- * Left card:  "YOU OWE"      — amount in danger red, avatars of people you owe
- * Right card: "YOU ARE OWED" — amount in success green, avatars of people who owe you
- *
- * Each card: white bg, subtle shadow, label → amount → avatar stack → arrow
+ * Left column:  "YOU OWE"      — amount in danger red
+ * Right column: "YOU ARE OWED" — amount in success green
+ * 
+ * Separated by a thin vertical line instead of boxed in cards.
  */
 import type { JSX } from "react";
 import { View, Pressable } from "react-native";
@@ -21,10 +21,10 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
         fontSize: 10,
         fontWeight: "700",
         letterSpacing: 1.2,
-        color: "#8E8E93",
+        color: "#999999",
         fontFamily: "PlusJakartaSans_700Bold",
         textTransform: "uppercase",
-        marginBottom: 8,
+        marginBottom: 4,
       }}
     >
       {children}
@@ -32,7 +32,7 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
   );
 }
 
-// ─── Single balance half-card ─────────────────────────────────────────────────
+// ─── Single balance half-column ───────────────────────────────────────────────
 interface HalfCardProps {
   label: string;
   amount: number;
@@ -64,11 +64,11 @@ function HalfCard({
       onPress={onPress}
       style={({ pressed }) => ({
         flex: 1,
-        backgroundColor: "#FFFFFF",
-        borderRadius: 20,
-        padding: 16,
-        borderWidth: 0,
-        opacity: pressed ? 0.85 : 1,
+        backgroundColor: "transparent",
+        opacity: pressed ? 0.5 : 1,
+        paddingVertical: 12,
+        paddingHorizontal: 8,
+        borderRadius: 8,
       })}
     >
       <SectionLabel>{label}</SectionLabel>
@@ -77,11 +77,12 @@ function HalfCard({
       <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 12 }}>
         <Typography
           style={{
-            fontSize: 28,
+            fontSize: 32,
             fontWeight: "800",
             color: amountColor,
             fontFamily: "PlusJakartaSans_800ExtraBold",
-            lineHeight: 34,
+            lineHeight: 40,
+            letterSpacing: -1,
           }}
           numberOfLines={1}
           adjustsFontSizeToFit
@@ -90,9 +91,9 @@ function HalfCard({
         </Typography>
         <Typography
           style={{
-            fontSize: 12,
+            fontSize: 14,
             fontWeight: "600",
-            color: "#8E8E93",
+            color: "#999999",
             fontFamily: "PlusJakartaSans_600SemiBold",
             marginLeft: 4,
           }}
@@ -119,9 +120,7 @@ export interface BalanceCardProps {
   youOwe: number;
   owedToYou: number;
   currencyCode: string;
-  /** Users YOU owe money to */
   oweUsers: User[];
-  /** Users who OWE YOU money */
   owedUsers: User[];
   onOwePress: () => void;
   onOwedPress: () => void;
@@ -137,16 +136,19 @@ export function BalanceCard({
   onOwedPress,
 }: BalanceCardProps): JSX.Element {
   return (
-    <View style={{ flexDirection: "row", gap: 12 }}>
+    <View style={{ flexDirection: "row", alignItems: "stretch", paddingVertical: 12 }}>
       <HalfCard
         label="YOU OWE"
         amount={youOwe}
         currencyCode={currencyCode}
-        amountColor="#E85D5D"
+        amountColor="#000000"
         users={oweUsers}
         onPress={onOwePress}
         accessibilityLabel={`You owe ${youOwe} ${currencyCode}`}
       />
+      
+      <View style={{ width: 1, backgroundColor: "#F3F3F3", marginHorizontal: 12, marginVertical: 12 }} />
+      
       <HalfCard
         label="YOU ARE OWED"
         amount={owedToYou}

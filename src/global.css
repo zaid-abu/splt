@@ -78,6 +78,10 @@
   --color-border-light: var(--color-border-light);
   --color-border-main: var(--color-border-main);
 
+  /* New Input variables */
+  --color-input: var(--color-input);
+  --color-input-foreground: var(--color-input-foreground);
+
   /* Aliases for backwards compatibility */
   --color-foreground: var(--color-text-primary);
   --color-surface-tertiary: var(--color-border-light);
@@ -88,6 +92,7 @@
   --color-danger: var(--color-accent-red);
   --color-muted: var(--color-border-main);
   --color-muted-foreground: var(--color-text-secondary);
+  --color-tertiary-foreground: var(--color-text-tertiary);
   --color-border: var(--color-border-main);
 
   --font-family-heading: var(--font-family-heading);
@@ -121,16 +126,16 @@
 @layer base {
   :root {
     /* ── Primary — dark charcoal CTA (replaces purple) */
-    --color-primary: #1a1a1a;
+    --color-primary: #1A1A1A;
     --color-primary-light: #3a3a3a;
     --color-primary-dark: #000000;
-    --color-primary-foreground: #ffffff;
+    --color-primary-foreground: #FFFFFF;
 
     /* ── Secondary — soft warm off-white */
-    --color-secondary: #f0ebe4;
+    --color-secondary: #EFEEE9;
     --color-secondary-light: #f9f6f2;
     --color-secondary-dark: #e0d9d0;
-    --color-secondary-foreground: #1a1a1a;
+    --color-secondary-foreground: #1A1A1A;
 
     /* ── Accent palette */
     --color-accent-red: #e85d5d;      /* Debt / "you owe" indicator */
@@ -140,19 +145,24 @@
     --color-accent-orange: #f5a623;   /* Warning highlights */
 
     /* ── Backgrounds */
-    --color-background: #f5f0eb;      /* Warm cream app background */
-    --color-surface: #ffffff;         /* White cards */
-    --color-surface-secondary: #f9f6f2; /* Slightly warmer off-white */
+    --color-background: #F7F6F1;      /* Warm cream app background */
+    --color-surface: #FEFDFA;         /* White cards */
+    --color-surface-secondary: #F4F3EE; /* Slightly warmer off-white (cardAlt) */
+
+    /* ── Input Fields */
+    --color-input: #5D5C5A;
+    --color-input-foreground: #FFFFFF;
 
     /* ── Text */
-    --color-text-primary: #1a1a1a;
-    --color-text-secondary: #8e8e93;
-    --color-text-disabled: #c7c7cc;
-    --color-text-inverse: #ffffff;
+    --color-text-primary: #1A1A1A;
+    --color-text-secondary: #6E6D68;
+    --color-text-tertiary: #9B9A94;
+    --color-text-disabled: #B7B6B0;
+    --color-text-inverse: #FFFFFF;
 
     /* ── Borders */
-    --color-border-light: #e8e4df;    /* Warm border */
-    --color-border-main: #d6d2cd;
+    --color-border-light: #EDEBE4;    /* Warm border (subtle) */
+    --color-border-main: #E7E5DE;     /* Default border */
 
     /* ── Semantic */
     --color-success: #4caf82;

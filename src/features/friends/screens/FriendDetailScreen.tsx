@@ -124,14 +124,14 @@ export default function FriendDetailScreen(): JSX.Element {
     return (
       <SafeAreaView style={{ flex: 1 }} className="bg-background">
         <View className="flex-1 items-center justify-center p-6">
-          <Alert status="danger" className="mb-4 rounded-[20px]">
+          <Alert status="danger" className="mb-4 rounded-none">
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>Friend not found</Alert.Title>
               <Alert.Description>We couldn&apos;t find this friend.</Alert.Description>
             </Alert.Content>
           </Alert>
-          <Button onPress={() => router.back()} className="rounded-full mt-4">
+          <Button onPress={() => router.back()} className="rounded-none mt-4">
             Go back
           </Button>
         </View>
@@ -153,7 +153,7 @@ export default function FriendDetailScreen(): JSX.Element {
           <View className="px-4 pt-2 flex-row items-center justify-between z-10">
             <PressableFeedback
               accessibilityRole="button"
-              className="w-12 h-12 rounded-full bg-white/50 items-center justify-center backdrop-blur-md"
+              className="w-12 h-12 rounded-none bg-white/50 items-center justify-center backdrop-blur-md"
               onPress={() => router.back()}
             >
               <icons.ArrowLeft size={24} color="#000" />
@@ -173,7 +173,7 @@ export default function FriendDetailScreen(): JSX.Element {
             </Typography>
 
             <View
-              className={`px-4 py-2 rounded-full mt-2 border ${
+              className={`px-4 py-2 rounded-none mt-2 border ${
                 netBalance === 0
                   ? "bg-secondary border-border"
                   : isPositive
@@ -207,7 +207,7 @@ export default function FriendDetailScreen(): JSX.Element {
                 accessibilityRole="button"
                 onPress={() => router.push(`/settle/${id}`)}
               >
-                <View className="w-full h-[56px] rounded-full items-center justify-center border-2 border-border flex-row gap-2">
+                <View className="w-full h-[56px] rounded-none items-center justify-center border-2 border-border flex-row gap-2">
                   <icons.Send size={20} className="text-foreground" />
                   <Typography type="body" className="font-bold text-foreground">
                     Settle up
@@ -220,7 +220,7 @@ export default function FriendDetailScreen(): JSX.Element {
                 accessibilityRole="button"
                 onPress={() => router.push(`/expense/new?friendId=${id}`)}
               >
-                <View className="w-full h-[56px] rounded-full items-center justify-center bg-primary flex-row gap-2">
+                <View className="w-full h-[56px] rounded-none items-center justify-center bg-primary flex-row gap-2">
                   <icons.Plus size={20} color="white" />
                   <Typography type="body" className="font-bold text-white">
                     Expense
@@ -242,27 +242,27 @@ export default function FriendDetailScreen(): JSX.Element {
 
           {isAppLoading ? (
             <View className="px-6">
-              <View className="bg-white rounded-[24px] overflow-hidden border border-border p-4 gap-4">
+              <View className="bg-white rounded-[12px] overflow-hidden border border-border p-4 gap-4">
                 <View className="flex-row items-center gap-4">
                   <Skeleton className="w-12 h-12 rounded-[16px]" />
                   <View className="flex-1 gap-2">
-                    <Skeleton className="w-3/4 h-4 rounded-full" />
-                    <Skeleton className="w-1/3 h-3 rounded-full" />
+                    <Skeleton className="w-3/4 h-4 rounded-none" />
+                    <Skeleton className="w-1/3 h-3 rounded-none" />
                   </View>
                 </View>
                 <View className="flex-row items-center gap-4">
                   <Skeleton className="w-12 h-12 rounded-[16px]" />
                   <View className="flex-1 gap-2">
-                    <Skeleton className="w-1/2 h-4 rounded-full" />
-                    <Skeleton className="w-1/4 h-3 rounded-full" />
+                    <Skeleton className="w-1/2 h-4 rounded-none" />
+                    <Skeleton className="w-1/4 h-3 rounded-none" />
                   </View>
                 </View>
               </View>
             </View>
           ) : sharedActivities.length === 0 ? (
             <View className="px-6">
-              <View className="bg-white rounded-[24px] items-center p-8 border border-border">
-                <View className="w-16 h-16 rounded-full bg-secondary items-center justify-center mb-4">
+              <View className="bg-white rounded-[12px] items-center p-8 border border-border">
+                <View className="w-16 h-16 rounded-none bg-secondary items-center justify-center mb-4">
                   <Text style={{ fontSize: 32 }}>💸</Text>
                 </View>
                 <Typography type="h3" className="font-black text-center mb-1">
@@ -275,7 +275,7 @@ export default function FriendDetailScreen(): JSX.Element {
             </View>
           ) : (
             <View className="px-6">
-              <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+              <View className="bg-white rounded-[12px] overflow-hidden border border-border">
                 {sharedActivities.map((activity, idx) => (
                   <ActivityItem
                     key={activity.id}

@@ -29,7 +29,7 @@ export default function StatsPlaceholderScreen(): JSX.Element {
         <View className="flex-1 items-center justify-center px-8 pb-24">
           <View
             style={{ backgroundColor: "#F5F0EB" }}
-            className="w-20 h-20 rounded-full items-center justify-center mb-6 border border-border-light"
+            className="w-20 h-20 rounded-none items-center justify-center mb-6 border border-border-light"
           >
             <icons.BarChart2 size={36} color="#1A1A1A" strokeWidth={1.5} />
           </View>

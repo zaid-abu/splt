@@ -1,44 +1,15 @@
-import {
-  Button,
-  Typography,
-  PressableFeedback,
-  Tabs,
-  Spinner,
-  TextField,
-  Label,
-  Input,
-  useToast,
-} from "heroui-native";
+import { Typography, Spinner, useToast } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { SettleRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAvoidingView, Platform, ScrollView, View, Pressable, TextInput } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import {
-  useGroups,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
-} from "@/features/groups/queries/useGroups";
-import {
-  useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
-import {
-  useUserActivities,
-  useLogActivity,
-  useDeleteActivity,
-} from "@/features/activity/queries/useActivities";
-import {
-  useUserSettlements,
-  useAddSettlement,
-} from "@/features/settlements/queries/useSettlements";
+import { useGroups } from "@/features/groups/queries/useGroups";
+import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
+import { useUserSettlements, useAddSettlement } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 
 import { useAuth } from "@/context/AppContext";
@@ -48,6 +19,33 @@ import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 
+const BG = "#F5F0EB";
+const SURFACE = "#FFFFFF";
+const BORDER = "#E8E4DF";
+const TEXT_PRIMARY = "#1A1A1A";
+const TEXT_SECONDARY = "#8E8E93";
+const SECTION_PAD = 20;
+const CARD_RADIUS = 16;
+
+function SectionLabel({ children }: { children: string }): JSX.Element {
+  return (
+    <Typography
+      style={{
+        fontSize: 10,
+        fontWeight: "700",
+        letterSpacing: 1.4,
+        color: TEXT_SECONDARY,
+        fontFamily: "PlusJakartaSans_700Bold",
+        textTransform: "uppercase",
+        marginBottom: 8,
+        marginLeft: 4,
+      }}
+    >
+      {children}
+    </Typography>
+  );
+}
+
 export default function SettleUpScreen(): JSX.Element {
   const {
     id,
@@ -56,13 +54,13 @@ export default function SettleUpScreen(): JSX.Element {
     direction: initialDirection,
   } = useLocalSearchParams<SettleRouteParams>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { toast } = useToast();
   const { currentUser } = useAuth();
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
-
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
 
   const balances = balancesUtil.getUserBalances(
@@ -91,6 +89,7 @@ export default function SettleUpScreen(): JSX.Element {
 
   const [amount, setAmount] = useState(initialAmount || Math.abs(netBalance).toString());
   const [note, setNote] = useState("");
+  
   const sharedGroups = useMemo(() => {
     return groups.filter(
       (g) =>
@@ -110,14 +109,12 @@ export default function SettleUpScreen(): JSX.Element {
 
   if (!friend) {
     return (
-      <SafeAreaView style={{ flex: 1 }} className="bg-background">
-        <View className="flex-1 items-center justify-center p-6">
-          <Typography className="text-muted-foreground">Friend not found</Typography>
-          <Button onPress={() => router.back()} className="rounded-full mt-4">
-            Go back
-          </Button>
-        </View>
-      </SafeAreaView>
+      <View style={{ flex: 1, backgroundColor: BG, alignItems: "center", justifyContent: "center" }}>
+        <Typography style={{ fontSize: 18, color: TEXT_PRIMARY }}>Friend not found</Typography>
+        <Pressable onPress={() => router.back()} style={{ marginTop: 16, padding: 12, backgroundColor: "#8C7A6B", borderRadius: 12 }}>
+          <Typography style={{ color: "#FFF", fontWeight: "700" }}>Go Back</Typography>
+        </Pressable>
+      </View>
     );
   }
 
@@ -125,12 +122,7 @@ export default function SettleUpScreen(): JSX.Element {
 
   async function handleSubmit() {
     if (!parsedAmount || parsedAmount <= 0) {
-      toast.show({
-        label: "Error",
-        description: "Please enter a valid amount.",
-        variant: "danger",
-        placement: "top",
-      });
+      toast.show({ label: "Error", description: "Please enter a valid amount.", variant: "danger", placement: "top" });
       return;
     }
 
@@ -149,95 +141,89 @@ export default function SettleUpScreen(): JSX.Element {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch (e: any) {
-      toast.show({
-        label: "Error",
-        description: e.message || "Failed to record settlement.",
-        variant: "danger",
-        placement: "top",
-      });
+      toast.show({ label: "Error", description: e.message || "Failed to record settlement.", variant: "danger", placement: "top" });
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top", "bottom"]}>
+    <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        
+        {/* ── Header ───────────────────────────────── */}
+        <View style={{ paddingTop: insets.top + 16, paddingBottom: 24, paddingHorizontal: SECTION_PAD, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+          <Typography style={{ fontFamily: "DMSerifDisplay_400Regular", fontSize: 32, color: TEXT_PRIMARY, lineHeight: 40 }}>
+            Settle Up
+          </Typography>
+          <Pressable onPress={() => router.back()} accessibilityRole="button" style={{ padding: 8 }}>
+            <Typography style={{ fontSize: 15, fontWeight: "600", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_600SemiBold" }}>
+              ✕ Cancel
+            </Typography>
+          </Pressable>
+        </View>
+
         <ScrollView
-          className="flex-1 bg-background"
-          contentContainerStyle={{ paddingBottom: 40 }}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 100 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Header ───────────────────────────────── */}
-          <View className="flex-row items-center justify-between px-6 pt-4 mb-8">
-            <Typography type="h3" className="font-black tracking-tight text-[28px]">
-              Settle Up
-            </Typography>
-            <Button variant="ghost" size="sm" onPress={() => router.back()}>
-              ✕ Cancel
-            </Button>
-          </View>
-
           <Animated.View entering={FadeInDown.duration(300)}>
             {/* ── Group Selection ──────────────────────────── */}
             {sharedGroups.length > 0 && (
-              <View className="px-6 mb-8">
-                <Typography
-                  type="body-sm"
-                  className="font-bold text-muted-foreground tracking-widest mb-3 ml-2"
-                >
-                  ASSOCIATE WITH GROUP (OPTIONAL)
-                </Typography>
-                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                  <PressableFeedback
+              <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
+                <SectionLabel>Associate with Group (Optional)</SectionLabel>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+                  <Pressable
                     accessibilityRole="button"
                     onPress={() => {
                       Haptics.selectionAsync();
                       setSelectedGroupId(undefined);
                     }}
+                    style={{
+                      paddingHorizontal: 16,
+                      paddingVertical: 10,
+                      borderRadius: 0,
+                      borderWidth: 1,
+                      borderColor: !selectedGroupId ? TEXT_PRIMARY : BORDER,
+                      backgroundColor: !selectedGroupId ? TEXT_PRIMARY : SURFACE,
+                    }}
                   >
-                    <View
-                      className={`px-4 py-2 rounded-full border mr-2 ${!selectedGroupId ? "bg-primary border-primary" : "bg-white border-border"}`}
-                    >
-                      <Typography
-                        type="body-sm"
-                        className={`font-bold ${!selectedGroupId ? "text-white" : "text-foreground"}`}
-                      >
-                        No Group
-                      </Typography>
-                    </View>
-                  </PressableFeedback>
+                    <Typography style={{ fontSize: 14, fontWeight: "700", color: !selectedGroupId ? "#FFF" : TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                      No Group
+                    </Typography>
+                  </Pressable>
+                  
                   {sharedGroups.map((g) => {
                     const isSelected = selectedGroupId === g.id;
+                    const IconComp = (icons as any)[g.icon] || icons.HelpCircle;
                     return (
-                      <PressableFeedback
-                        accessibilityRole="button"
+                      <Pressable
                         key={g.id}
+                        accessibilityRole="button"
                         onPress={() => {
                           Haptics.selectionAsync();
                           setSelectedGroupId(g.id);
                         }}
+                        style={{
+                          paddingHorizontal: 16,
+                          paddingVertical: 10,
+                          borderRadius: 0,
+                          borderWidth: 1,
+                          borderColor: isSelected ? "#8C7A6B" : BORDER,
+                          backgroundColor: isSelected ? "#8C7A6B" : SURFACE,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 8,
+                        }}
                       >
-                        <View
-                          className={`px-4 py-2 rounded-full border mr-2 flex-row items-center gap-2 ${isSelected ? "bg-primary border-primary" : "bg-white border-border"}`}
-                        >
-                          {(() => {
-                            const IconComp = (icons as any)[g.icon] || icons.HelpCircle;
-                            return <IconComp size={16} color={isSelected ? "white" : "#8A8798"} />;
-                          })()}
-                          <Typography
-                            type="body-sm"
-                            className={`font-bold ${isSelected ? "text-white" : "text-foreground"}`}
-                          >
-                            {g.name}
-                          </Typography>
-                        </View>
-                      </PressableFeedback>
+                        <IconComp size={16} color={isSelected ? "#FFF" : TEXT_SECONDARY} />
+                        <Typography style={{ fontSize: 14, fontWeight: "700", color: isSelected ? "#FFF" : TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                          {g.name}
+                        </Typography>
+                      </Pressable>
                     );
                   })}
                 </ScrollView>
@@ -245,155 +231,195 @@ export default function SettleUpScreen(): JSX.Element {
             )}
 
             {/* ── Direction Toggle ───────────────────────── */}
-            <View className="px-6 mb-8">
-              <View className="bg-white rounded-[24px] p-4 border border-border items-center">
-                <View className="flex-row items-center gap-6 mb-6">
-                  <View className="items-center gap-2">
-                    <View
-                      className={
-                        direction === "you"
-                          ? "ring-2 ring-primary ring-offset-2 rounded-full"
-                          : "opacity-50"
-                      }
-                    >
+            <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
+              <View style={{ backgroundColor: SURFACE, borderRadius: CARD_RADIUS, padding: 24, borderWidth: 1, borderColor: BORDER, alignItems: "center" }}>
+                
+                <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 32, marginBottom: 24 }}>
+                  <View style={{ alignItems: "center", gap: 8, opacity: direction === "you" ? 1 : 0.4 }}>
+                    <View style={{ borderRadius: 0, borderWidth: direction === "you" ? 2 : 0, borderColor: TEXT_PRIMARY, padding: 2 }}>
                       <AppUserAvatar user={currentUser} size="lg" />
                     </View>
-                    <Typography
-                      type="body-sm"
-                      className={`font-bold ${direction === "you" ? "text-primary" : "text-muted-foreground"}`}
-                    >
+                    <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
                       You
                     </Typography>
                   </View>
 
-                  <PressableFeedback
+                  <Pressable
                     accessibilityRole="button"
                     onPress={() => {
                       Haptics.selectionAsync();
                       setDirection((prev) => (prev === "you" ? "them" : "you"));
                     }}
+                    style={({ pressed }) => ({
+                      width: 48,
+                      height: 48,
+                      borderRadius: 0,
+                      backgroundColor: "#F9F6F2",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: pressed ? 0.7 : 1,
+                    })}
                   >
-                    <View className="w-12 h-12 rounded-full bg-secondary items-center justify-center">
-                      <icons.ArrowRightLeft size={20} className="text-foreground" />
-                    </View>
-                  </PressableFeedback>
+                    <icons.ArrowRightLeft size={24} color={TEXT_PRIMARY} />
+                  </Pressable>
 
-                  <View className="items-center gap-2">
-                    <View
-                      className={
-                        direction === "them"
-                          ? "ring-2 ring-primary ring-offset-2 rounded-full"
-                          : "opacity-50"
-                      }
-                    >
+                  <View style={{ alignItems: "center", gap: 8, opacity: direction === "them" ? 1 : 0.4 }}>
+                    <View style={{ borderRadius: 0, borderWidth: direction === "them" ? 2 : 0, borderColor: TEXT_PRIMARY, padding: 2 }}>
                       <AppUserAvatar user={friend} size="lg" />
                     </View>
-                    <Typography
-                      type="body-sm"
-                      className={`font-bold ${direction === "them" ? "text-primary" : "text-muted-foreground"}`}
-                    >
+                    <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
                       {friend.name.split(" ")[0]}
                     </Typography>
                   </View>
                 </View>
 
-                <Tabs
-                  value={direction}
-                  onValueChange={(v) => {
-                    Haptics.selectionAsync();
-                    setDirection(v as any);
-                  }}
-                  variant="primary"
-                  className="w-full"
-                >
-                  <Tabs.List className="w-full bg-secondary rounded-[16px] p-1">
-                    <Tabs.Indicator className="bg-white rounded-[12px] shadow-sm" />
-                    <Tabs.Trigger value="you" className="flex-1 h-[40px]">
-                      {({ isSelected }) => (
-                        <Tabs.Label
-                          className={`font-bold text-sm ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
-                        >
-                          You paid
-                        </Tabs.Label>
-                      )}
-                    </Tabs.Trigger>
-                    <Tabs.Trigger value="them" className="flex-1 h-[40px]">
-                      {({ isSelected }) => (
-                        <Tabs.Label
-                          className={`font-bold text-sm ${isSelected ? "text-foreground" : "text-muted-foreground"}`}
-                        >
-                          They paid
-                        </Tabs.Label>
-                      )}
-                    </Tabs.Trigger>
-                  </Tabs.List>
-                </Tabs>
+                {/* Segmented Control */}
+                <View style={{ flexDirection: "row", backgroundColor: "#F9F6F2", borderRadius: 12, padding: 4, width: "100%" }}>
+                  <Pressable
+                    onPress={() => { Haptics.selectionAsync(); setDirection("you"); }}
+                    style={{
+                      flex: 1,
+                      paddingVertical: 10,
+                      borderRadius: 10,
+                      backgroundColor: direction === "you" ? SURFACE : "transparent",
+                      alignItems: "center",
+                      shadowColor: direction === "you" ? "#000" : "transparent",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.05,
+                      shadowRadius: 2,
+                      elevation: direction === "you" ? 2 : 0,
+                    }}
+                  >
+                    <Typography style={{ fontSize: 14, fontWeight: "700", color: direction === "you" ? TEXT_PRIMARY : TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                      You paid
+                    </Typography>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => { Haptics.selectionAsync(); setDirection("them"); }}
+                    style={{
+                      flex: 1,
+                      paddingVertical: 10,
+                      borderRadius: 10,
+                      backgroundColor: direction === "them" ? SURFACE : "transparent",
+                      alignItems: "center",
+                      shadowColor: direction === "them" ? "#000" : "transparent",
+                      shadowOffset: { width: 0, height: 1 },
+                      shadowOpacity: 0.05,
+                      shadowRadius: 2,
+                      elevation: direction === "them" ? 2 : 0,
+                    }}
+                  >
+                    <Typography style={{ fontSize: 14, fontWeight: "700", color: direction === "them" ? TEXT_PRIMARY : TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                      They paid
+                    </Typography>
+                  </Pressable>
+                </View>
+
               </View>
             </View>
 
             {/* ── Inputs ────────────────────────────── */}
-            <View className="px-6 gap-5 mb-8">
-              <CurrencySelector
-                label="Currency"
-                value={settleCurrency}
-                onChange={(c) => {
-                  setSettleCurrency(c.code);
-                  setCurrency(c); // Update globally for convenience
-                }}
-              />
+            <View style={{ paddingHorizontal: SECTION_PAD, gap: 20, marginBottom: 32 }}>
+              <View style={{ backgroundColor: SURFACE, borderRadius: CARD_RADIUS, borderWidth: 1, borderColor: BORDER, padding: 16, paddingVertical: 12 }}>
+                <CurrencySelector
+                  label="Currency"
+                  value={settleCurrency}
+                  onChange={(c) => {
+                    setSettleCurrency(c.code);
+                    setCurrency(c);
+                  }}
+                />
+              </View>
 
               <View>
-                <TextField>
-                  <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
-                    Amount ({settleCurrency})
-                  </Label>
-                  <Input
-                    placeholder="0.00"
-                    value={amount}
-                    onChangeText={(t) => setAmount(t)}
-                    keyboardType="decimal-pad"
-                    className="bg-white h-[56px] rounded-[20px] px-4 border border-border font-black text-[20px]"
-                  />
-                </TextField>
+                <SectionLabel>{`Amount (${settleCurrency})`}</SectionLabel>
+                <TextInput
+                  placeholder="0.00"
+                  placeholderTextColor={TEXT_SECONDARY}
+                  value={amount}
+                  onChangeText={setAmount}
+                  keyboardType="decimal-pad"
+                  style={{
+                    backgroundColor: SURFACE,
+                    height: 64,
+                    borderRadius: CARD_RADIUS,
+                    paddingHorizontal: 16,
+                    borderWidth: 1,
+                    borderColor: BORDER,
+                    fontSize: 24,
+                    fontWeight: "800",
+                    color: TEXT_PRIMARY,
+                    fontFamily: "PlusJakartaSans_800ExtraBold"
+                  }}
+                />
                 {netBalance !== 0 && (
-                  <Typography
-                    type="body-xs"
-                    className="text-muted-foreground mt-2 ml-2 font-medium"
-                  >
+                  <Typography style={{ fontSize: 13, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 8, marginLeft: 4 }}>
                     Current balance: {Math.abs(netBalance).toFixed(2)} {preferredCurrency.code}
                   </Typography>
                 )}
               </View>
 
-              <TextField>
-                <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
-                  Note (Optional)
-                </Label>
-                <Input
+              <View>
+                <SectionLabel>Note (Optional)</SectionLabel>
+                <TextInput
                   placeholder="e.g. Venmo, Cash..."
+                  placeholderTextColor={TEXT_SECONDARY}
                   value={note}
                   onChangeText={setNote}
                   autoCapitalize="sentences"
-                  className="bg-white h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
+                  style={{
+                    backgroundColor: SURFACE,
+                    height: 56,
+                    borderRadius: CARD_RADIUS,
+                    paddingHorizontal: 16,
+                    borderWidth: 1,
+                    borderColor: BORDER,
+                    fontSize: 16,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "PlusJakartaSans_500Medium"
+                  }}
                 />
-              </TextField>
+              </View>
             </View>
           </Animated.View>
         </ScrollView>
 
         {/* ── Fixed Submit Button ─────────────────────────────── */}
-        <View className="px-6 py-4 bg-background border-t border-border/50">
-          <Button
-            variant="primary"
-            className="w-full h-[56px] rounded-[20px]"
+        <View
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            paddingHorizontal: SECTION_PAD,
+            paddingTop: 16,
+            paddingBottom: insets.bottom + 16,
+            backgroundColor: BG,
+            borderTopWidth: 1,
+            borderTopColor: "rgba(0,0,0,0.05)",
+          }}
+        >
+          <Pressable
+            accessibilityRole="button"
             onPress={handleSubmit}
-            isDisabled={loading}
+            disabled={loading}
+            style={({ pressed }) => ({
+              height: 56,
+              borderRadius: 0,
+              backgroundColor: "#8C7A6B",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "row",
+              opacity: pressed || loading ? 0.8 : 1,
+            })}
           >
-            {loading && <Spinner color="white" size="sm" className="mr-2" />}
-            <Button.Label className="font-bold">Record Payment</Button.Label>
-          </Button>
+            {loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
+            <Typography style={{ fontSize: 16, fontWeight: "700", color: "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
+              Record Payment
+            </Typography>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

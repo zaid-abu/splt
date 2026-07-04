@@ -2,6 +2,10 @@ import React, { useEffect } from "react";
 import type { JSX, ReactNode } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Appearance } from "react-native";
+
+// Force light theme application-wide
+Appearance.setColorScheme("light");
 import { HeroUINativeProvider } from "heroui-native";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClientProvider } from "@tanstack/react-query";

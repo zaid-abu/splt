@@ -1,11 +1,33 @@
 import React from "react";
-import { View, ScrollView } from "react-native";
-import { Typography, PressableFeedback } from "heroui-native";
+import { View, ScrollView, Pressable } from "react-native";
+import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import type { ExpenseCategory, SplitMethod, User } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/types";
+
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const SEPARATOR = "#E8E4DF";
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <Typography
+      style={{
+        fontSize: 11,
+        fontWeight: "700",
+        letterSpacing: 1.4,
+        color: TEXT_SECONDARY,
+        fontFamily: "PlusJakartaSans_700Bold",
+        textTransform: "uppercase",
+        marginBottom: 16,
+      }}
+    >
+      {children}
+    </Typography>
+  );
+}
 
 const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
   { key: "equal", label: "Equal", desc: "Divide equally" },
@@ -37,124 +59,145 @@ export function ExpenseFormSelectors({
   return (
     <>
       {/* ── Category ───────────────────────────── */}
-      <View className="mb-6">
-        <Typography
-          type="body-xs"
-          className="text-muted-foreground font-bold tracking-widest mb-3 ml-8 uppercase"
-        >
-          CATEGORY
-        </Typography>
+      <View style={{ marginBottom: 40 }}>
+        <View style={{ paddingHorizontal: 24 }}>
+          <SectionLabel>Category</SectionLabel>
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 24, gap: 10 }}
+          contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}
         >
           {EXPENSE_CATEGORIES.map((cat) => {
             const CatIcon = (icons as any)[cat.icon] || icons.Package;
             const isSelected = category === cat.key;
             return (
-              <PressableFeedback
+              <Pressable
                 accessibilityRole="button"
                 key={cat.key}
                 onPress={() => {
                   Haptics.selectionAsync();
                   setCategory(cat.key);
                 }}
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 8,
+                  paddingHorizontal: 20,
+                  height: 48,
+                  borderRadius: 0,
+                  backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                  borderWidth: 1,
+                  borderColor: isSelected ? "#8C7A6B" : SEPARATOR,
+                  opacity: pressed ? 0.7 : 1,
+                })}
               >
-                <View
-                  className={`flex-row items-center gap-2 px-4 h-[44px] rounded-full border-2 ${isSelected ? "bg-primary border-primary" : "bg-white border-transparent"}`}
+                <CatIcon
+                  size={18}
+                  color={isSelected ? "#FFFFFF" : TEXT_PRIMARY}
+                  strokeWidth={isSelected ? 2 : 1.5}
+                />
+                <Typography
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "700",
+                    fontFamily: "PlusJakartaSans_700Bold",
+                    color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
+                  }}
                 >
-                  <CatIcon
-                    size={18}
-                    color={isSelected ? "white" : "#8A8798"}
-                    strokeWidth={isSelected ? 2.5 : 2}
-                  />
-                  <Typography
-                    type="body-sm"
-                    className={`font-bold ${isSelected ? "text-white" : "text-foreground"}`}
-                  >
-                    {cat.label}
-                  </Typography>
-                </View>
-              </PressableFeedback>
+                  {cat.label}
+                </Typography>
+              </Pressable>
             );
           })}
         </ScrollView>
       </View>
 
       {/* ── Paid by ────────────────────────────── */}
-      <View className="mb-6">
-        <Typography
-          type="body-xs"
-          className="text-muted-foreground font-bold tracking-widest mb-3 ml-8 uppercase"
-        >
-          PAID BY
-        </Typography>
+      <View style={{ marginBottom: 40 }}>
+        <View style={{ paddingHorizontal: 24 }}>
+          <SectionLabel>Paid By</SectionLabel>
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: 24, gap: 10 }}
+          contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}
         >
           {participants.map((u) => {
             const isSelected = paidBy === u.id;
             return (
-              <PressableFeedback
+              <Pressable
                 accessibilityRole="button"
                 key={u.id}
                 onPress={() => {
                   Haptics.selectionAsync();
                   setPaidBy(u.id);
                 }}
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  paddingLeft: 4,
+                  paddingRight: 20,
+                  height: 48,
+                  borderRadius: 0,
+                  backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                  borderWidth: 1,
+                  borderColor: isSelected ? "#8C7A6B" : SEPARATOR,
+                  opacity: pressed ? 0.7 : 1,
+                })}
               >
-                <View
-                  className={`flex-row items-center gap-2 px-2 pr-4 h-[44px] rounded-full border-2 ${isSelected ? "bg-primary border-primary" : "bg-white border-transparent"}`}
+                <AppUserAvatar user={u} size="md" />
+                <Typography
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "700",
+                    fontFamily: "PlusJakartaSans_700Bold",
+                    color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
+                  }}
                 >
-                  <AppUserAvatar user={u} size="sm" />
-                  <Typography
-                    type="body-sm"
-                    className={`font-bold ${isSelected ? "text-white" : "text-foreground"}`}
-                  >
-                    {u.id === currentUserId ? "You" : u.name.split(" ")[0]}
-                  </Typography>
-                </View>
-              </PressableFeedback>
+                  {u.id === currentUserId ? "You" : u.name.split(" ")[0]}
+                </Typography>
+              </Pressable>
             );
           })}
         </ScrollView>
       </View>
 
       {/* ── Split method ───────────────────────── */}
-      <View className="px-6 mb-6">
-        <Typography
-          type="body-xs"
-          className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase"
-        >
-          SPLIT METHOD
-        </Typography>
-        <View className="flex-row gap-3">
+      <View style={{ paddingHorizontal: 24, marginBottom: 40 }}>
+        <SectionLabel>Split Method</SectionLabel>
+        <View style={{ flexDirection: "row", backgroundColor: "transparent", borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
           {SPLIT_METHODS.map((method) => {
             const isSelected = splitMethod === method.key;
             return (
-              <View key={method.key} className="flex-1">
-                <PressableFeedback
-                  accessibilityRole="button"
-                  onPress={() => {
-                    Haptics.selectionAsync();
-                    setSplitMethod(method.key);
+              <Pressable
+                key={method.key}
+                accessibilityRole="button"
+                onPress={() => {
+                  Haptics.selectionAsync();
+                  setSplitMethod(method.key);
+                }}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 12,
+                  alignItems: "center",
+                  borderBottomWidth: 2,
+                  borderBottomColor: isSelected ? "#8C7A6B" : "transparent",
+                  opacity: pressed ? 0.5 : 1,
+                })}
+              >
+                <Typography
+                  style={{
+                    fontSize: 15,
+                    fontWeight: "700",
+                    fontFamily: "PlusJakartaSans_700Bold",
+                    color: isSelected ? TEXT_PRIMARY : TEXT_SECONDARY,
                   }}
                 >
-                  <View
-                    className={`h-[48px] rounded-[16px] items-center justify-center border-2 ${isSelected ? "bg-primary border-primary" : "bg-white border-transparent"}`}
-                  >
-                    <Typography
-                      type="body-sm"
-                      className={`font-bold ${isSelected ? "text-white" : "text-foreground"}`}
-                    >
-                      {method.label}
-                    </Typography>
-                  </View>
-                </PressableFeedback>
-              </View>
+                  {method.label}
+                </Typography>
+              </Pressable>
             );
           })}
         </View>

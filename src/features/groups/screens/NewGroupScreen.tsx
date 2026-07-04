@@ -11,10 +11,11 @@ import {
 } from "@gorhom/bottom-sheet";
 import { ScrollView } from "react-native-gesture-handler";
 import Animated, { LinearTransition, FadeIn, FadeOut } from "react-native-reanimated";
-import { Button, Typography, PressableFeedback, Spinner, useToast } from "heroui-native";
+import { Button, Typography, Spinner, useToast } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Pressable } from "react-native";
 
 import { useCreateGroup } from "@/features/groups/queries/useGroups";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
@@ -38,6 +39,11 @@ const GROUP_ICONS = [
   "Mountain",
   "Target",
 ];
+
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const SEPARATOR = "#E8E4DF";
 
 export default function NewGroupScreen(): JSX.Element {
   const router = useRouter();
@@ -113,7 +119,7 @@ export default function NewGroupScreen(): JSX.Element {
     try {
       const group = await createGroup({
         name: name.trim(),
-        description: undefined, // Removed description for simplicity based on reference
+        description: undefined,
         icon,
         currency: currency.code,
         createdBy: currentUser.id,
@@ -121,7 +127,6 @@ export default function NewGroupScreen(): JSX.Element {
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       bottomSheetModalRef.current?.dismiss();
-      // small delay to let the sheet dismiss before replacing route
       setTimeout(() => {
         router.replace(`/group/${group.id}`);
       }, 300);
@@ -149,7 +154,7 @@ export default function NewGroupScreen(): JSX.Element {
         onDismiss={handleDismiss}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: "#D6D2CD", width: 40 }}
-        backgroundStyle={{ backgroundColor: "#F5F0EB", borderRadius: 24 }}
+        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
       >
@@ -159,10 +164,10 @@ export default function NewGroupScreen(): JSX.Element {
             style={{
               flexDirection: "row",
               alignItems: "center",
-              paddingHorizontal: 20,
+              paddingHorizontal: 24,
               paddingBottom: 16,
               borderBottomWidth: 1,
-              borderBottomColor: "#E8E4DF",
+              borderBottomColor: SEPARATOR,
             }}
           >
             <View style={{ flex: 1 }} />
@@ -170,16 +175,21 @@ export default function NewGroupScreen(): JSX.Element {
               style={{
                 fontSize: 16,
                 fontWeight: "700",
-                color: "#1A1A1A",
+                color: TEXT_PRIMARY,
                 fontFamily: "PlusJakartaSans_700Bold",
               }}
             >
               Create new group
             </Typography>
             <View style={{ flex: 1, alignItems: "flex-end" }}>
-              <PressableFeedback onPress={() => bottomSheetModalRef.current?.dismiss()} hitSlop={12}>
-                <icons.X size={24} color="#8E8E93" />
-              </PressableFeedback>
+              <Pressable 
+                accessibilityRole="button"
+                onPress={() => bottomSheetModalRef.current?.dismiss()} 
+                hitSlop={12}
+                style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+              >
+                <icons.X size={24} color={TEXT_SECONDARY} />
+              </Pressable>
             </View>
           </View>
 
@@ -188,12 +198,12 @@ export default function NewGroupScreen(): JSX.Element {
             keyboardShouldPersistTaps="handled"
           >
             {/* ── Title Input ────────────────────────────────────────── */}
-            <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+            <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
               <Typography
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: "700",
-                  color: "#8E8E93",
+                  color: TEXT_SECONDARY,
                   marginBottom: 8,
                   letterSpacing: 1.4,
                   fontFamily: "PlusJakartaSans_700Bold",
@@ -206,32 +216,30 @@ export default function NewGroupScreen(): JSX.Element {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: "#FFFFFF",
-                  borderRadius: 12,
-                  paddingHorizontal: 16,
-                  height: 56,
-                  borderWidth: 1,
-                  borderColor: "#E8E4DF",
+                  backgroundColor: "transparent",
+                  paddingVertical: 12,
+                  borderBottomWidth: 1,
+                  borderBottomColor: SEPARATOR,
                 }}
               >
-                <IconComponent size={24} color="#1A1A1A" strokeWidth={1.5} />
+                <IconComponent size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
                 <View
                   style={{
                     width: 1,
                     height: 24,
-                    backgroundColor: "#E8E4DF",
-                    marginHorizontal: 12,
+                    backgroundColor: SEPARATOR,
+                    marginHorizontal: 16,
                   }}
                 />
                 <BottomSheetTextInput
                   style={{
                     flex: 1,
-                    fontSize: 16,
-                    color: "#1A1A1A",
-                    fontFamily: "PlusJakartaSans_500Medium",
+                    fontSize: 20,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "PlusJakartaSans_700Bold",
                   }}
                   placeholder="e.g. Day trip to Warsaw"
-                  placeholderTextColor="#8E8E93"
+                  placeholderTextColor={TEXT_SECONDARY}
                   value={name}
                   onChangeText={setName}
                   autoCapitalize="words"
@@ -240,54 +248,57 @@ export default function NewGroupScreen(): JSX.Element {
             </View>
 
             {/* ── Icon Picker (Horizontal List) ──────────────────────── */}
-            <View style={{ marginBottom: 24 }}>
+            <View style={{ marginBottom: 32 }}>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 20, gap: 12 }}
+                contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}
               >
                 {GROUP_ICONS.map((i) => {
                   const Ico = (icons as any)[i] || icons.HelpCircle;
                   const isSelected = icon === i;
                   
-                  // Generate color for picker like Dashboard does
+                  // Generate color for picker
                   const GROUP_BG_PALETTE = ["#FCE7D0", "#E8E4F9", "#D5EFE2", "#D9EEF8", "#F9E3E3", "#E3EFF9", "#F5F0C0", "#E8D9F9"];
                   const colorIdx = i.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % GROUP_BG_PALETTE.length;
                   const iconBg = GROUP_BG_PALETTE[colorIdx];
 
                   return (
-                    <PressableFeedback
+                    <Pressable
+                      accessibilityRole="button"
                       key={i}
                       onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        setIcon(i);
+                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                         setIcon(i);
                       }}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
                     >
                       <View
                         style={{
-                          width: 48,
-                          height: 48,
-                          borderRadius: 24,
+                          width: 56,
+                          height: 56,
+                          borderRadius: 0,
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor: isSelected ? "#1A1A1A" : iconBg,
-                          borderWidth: isSelected ? 0 : 0,
+                          backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                          borderWidth: 1,
+                          borderColor: isSelected ? "#8C7A6B" : SEPARATOR,
                         }}
                       >
                         <Ico
-                          size={20}
-                          color={isSelected ? "#FFFFFF" : "#1A1A1A"}
+                          size={24}
+                          color={isSelected ? "#FFFFFF" : TEXT_PRIMARY}
                           strokeWidth={isSelected ? 2 : 1.5}
                         />
                       </View>
-                    </PressableFeedback>
+                    </Pressable>
                   );
                 })}
               </ScrollView>
             </View>
 
             {/* ── Participants ───────────────────────────────────────── */}
-            <View style={{ paddingHorizontal: 20, marginBottom: 24 }}>
+            <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
               <View
                 style={{
                   flexDirection: "row",
@@ -298,9 +309,9 @@ export default function NewGroupScreen(): JSX.Element {
               >
                 <Typography
                   style={{
-                    fontSize: 10,
+                    fontSize: 11,
                     fontWeight: "700",
-                    color: "#8E8E93",
+                    color: TEXT_SECONDARY,
                     letterSpacing: 1.4,
                     fontFamily: "PlusJakartaSans_700Bold",
                     textTransform: "uppercase",
@@ -308,18 +319,22 @@ export default function NewGroupScreen(): JSX.Element {
                 >
                   PARTICIPANTS
                 </Typography>
-                <PressableFeedback onPress={toggleEmailInput}>
+                <Pressable 
+                  accessibilityRole="button"
+                  onPress={toggleEmailInput}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+                >
                   <Typography
                     style={{
-                      fontSize: 14,
-                      fontWeight: "600",
-                      color: "#1A1A1A",
-                      fontFamily: "PlusJakartaSans_600SemiBold",
+                      fontSize: 15,
+                      fontWeight: "700",
+                      color: TEXT_PRIMARY,
+                      fontFamily: "PlusJakartaSans_700Bold",
                     }}
                   >
                     + Add
                   </Typography>
-                </PressableFeedback>
+                </Pressable>
               </View>
 
               {showEmailInput && (
@@ -327,36 +342,43 @@ export default function NewGroupScreen(): JSX.Element {
                   entering={FadeIn.duration(200)} 
                   exiting={FadeOut.duration(200)} 
                   layout={LinearTransition.springify().mass(0.5)}
-                  style={{ flexDirection: "row", gap: 8, marginBottom: 16 }}
+                  style={{ flexDirection: "row", gap: 12, marginBottom: 24, alignItems: "center" }}
                 >
-                  <BottomSheetTextInput
-                    style={{
-                      flex: 1,
-                      height: 48,
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: 12,
-                      paddingHorizontal: 16,
-                      borderWidth: 1,
-                      borderColor: "#E8E4DF",
-                      fontSize: 15,
-                      fontFamily: "PlusJakartaSans_500Medium",
-                    }}
-                    placeholder="friend@example.com"
-                    placeholderTextColor="#8E8E93"
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    value={emailInput}
-                    onChangeText={setEmailInput}
-                    onSubmitEditing={handleAddEmail}
-                  />
-                  <Button
-                    variant="primary"
+                  <View style={{ flex: 1, borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingVertical: 12 }}>
+                    <BottomSheetTextInput
+                      style={{
+                        flex: 1,
+                        fontSize: 16,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "PlusJakartaSans_500Medium",
+                      }}
+                      placeholder="friend@example.com"
+                      placeholderTextColor={TEXT_SECONDARY}
+                      autoCapitalize="none"
+                      keyboardType="email-address"
+                      value={emailInput}
+                      onChangeText={setEmailInput}
+                      onSubmitEditing={handleAddEmail}
+                    />
+                  </View>
+                  <Pressable
+                    accessibilityRole="button"
                     onPress={handleAddEmail}
-                    isDisabled={!emailInput.includes("@")}
-                    style={{ height: 48, borderRadius: 12, paddingHorizontal: 20, backgroundColor: "#1A1A1A" }}
+                    disabled={!emailInput.includes("@")}
+                    style={({ pressed }) => ({
+                      height: 48, 
+                      borderRadius: 0, 
+                      paddingHorizontal: 24, 
+                      backgroundColor: emailInput.includes("@") ? TEXT_PRIMARY : SEPARATOR,
+                      justifyContent: "center",
+                      alignItems: "center",
+                      opacity: pressed ? 0.8 : 1
+                    })}
                   >
-                    <Button.Label style={{ color: "#FFFFFF", fontWeight: "600" }}>Add</Button.Label>
-                  </Button>
+                    <Typography style={{ color: emailInput.includes("@") ? "#FFFFFF" : TEXT_SECONDARY, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold" }}>
+                      Add
+                    </Typography>
+                  </Pressable>
                 </Animated.View>
               )}
 
@@ -366,30 +388,30 @@ export default function NewGroupScreen(): JSX.Element {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  paddingVertical: 12,
+                  paddingVertical: 16,
                   borderBottomWidth: 1,
-                  borderBottomColor: "rgba(0,0,0,0.03)",
+                  borderBottomColor: SEPARATOR,
                 }}
               >
                 <View
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    backgroundColor: "#E8E4DF",
+                    width: 40,
+                    height: 40,
+                    borderRadius: 0,
+                    backgroundColor: SEPARATOR,
                     alignItems: "center",
                     justifyContent: "center",
-                    marginRight: 12,
+                    marginRight: 16,
                   }}
                 >
-                  <icons.User size={16} color="#1A1A1A" strokeWidth={2} />
+                  <icons.User size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
                 </View>
                 <Typography
                   style={{
-                    fontSize: 15,
-                    color: "#1A1A1A",
-                    fontWeight: "600",
-                    fontFamily: "PlusJakartaSans_600SemiBold",
+                    fontSize: 16,
+                    color: TEXT_PRIMARY,
+                    fontWeight: "700",
+                    fontFamily: "PlusJakartaSans_700Bold",
                   }}
                 >
                   You
@@ -406,30 +428,30 @@ export default function NewGroupScreen(): JSX.Element {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    paddingVertical: 12,
+                    paddingVertical: 16,
                     borderBottomWidth: 1,
-                    borderBottomColor: "rgba(0,0,0,0.03)",
+                    borderBottomColor: SEPARATOR,
                   }}
                 >
                   <View
                     style={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: 16,
-                      backgroundColor: "#FFFFFF",
+                      width: 40,
+                      height: 40,
+                      borderRadius: 0,
+                      backgroundColor: "transparent",
                       borderWidth: 1,
-                      borderColor: "#E8E4DF",
+                      borderColor: SEPARATOR,
                       alignItems: "center",
                       justifyContent: "center",
-                      marginRight: 12,
+                      marginRight: 16,
                     }}
                   >
                     <Typography
                       style={{
-                        fontSize: 14,
-                        fontWeight: "600",
-                        color: "#1A1A1A",
-                        fontFamily: "PlusJakartaSans_600SemiBold",
+                        fontSize: 16,
+                        fontWeight: "700",
+                        color: TEXT_PRIMARY,
+                        fontFamily: "PlusJakartaSans_700Bold",
                       }}
                     >
                       {email.charAt(0).toUpperCase()}
@@ -438,29 +460,33 @@ export default function NewGroupScreen(): JSX.Element {
                   <Typography
                     style={{
                       flex: 1,
-                      fontSize: 15,
-                      color: "#1A1A1A",
+                      fontSize: 16,
+                      color: TEXT_PRIMARY,
                       fontWeight: "500",
                       fontFamily: "PlusJakartaSans_500Medium",
                     }}
                   >
                     {email}
                   </Typography>
-                  <PressableFeedback onPress={() => handleRemoveEmail(email)} style={{ padding: 4 }}>
-                    <icons.Trash2 size={18} color="#8E8E93" strokeWidth={1.5} />
-                  </PressableFeedback>
+                  <Pressable 
+                    accessibilityRole="button"
+                    onPress={() => handleRemoveEmail(email)} 
+                    style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
+                  >
+                    <icons.Trash2 size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+                  </Pressable>
                 </Animated.View>
               ))}
             </View>
 
             {/* ── Currency ───────────────────────────────────────────── */}
-            <View style={{ paddingHorizontal: 20, marginBottom: 32 }}>
+            <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
               <Typography
                 style={{
-                  fontSize: 10,
+                  fontSize: 11,
                   fontWeight: "700",
-                  color: "#8E8E93",
-                  marginBottom: 12,
+                  color: TEXT_SECONDARY,
+                  marginBottom: 16,
                   letterSpacing: 1.4,
                   fontFamily: "PlusJakartaSans_700Bold",
                   textTransform: "uppercase",
@@ -468,49 +494,53 @@ export default function NewGroupScreen(): JSX.Element {
               >
                 CURRENCY
               </Typography>
-              <CurrencySelector value={currency.code} onChange={setCurrency} />
+              <View style={{ borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingBottom: 8 }}>
+                <CurrencySelector value={currency.code} onChange={setCurrency} />
+              </View>
             </View>
           </BottomSheetScrollView>
 
           {/* ── Footer Button ──────────────────────────────────────── */}
           <View
             style={{
-              paddingHorizontal: 20,
+              paddingHorizontal: 24,
               paddingTop: 16,
               paddingBottom: Math.max(insets.bottom, 16),
-              backgroundColor: "#F5F0EB",
-              borderTopWidth: 1,
-              borderTopColor: "#E8E4DF",
+              backgroundColor: BG,
             }}
           >
-            <Button
-              variant="primary"
+            <Pressable
+              accessibilityRole="button"
               onPress={handleCreate}
-              isDisabled={loading}
-              style={{
+              disabled={loading}
+              style={({ pressed }) => ({
                 width: "100%",
                 height: 56,
-                borderRadius: 16,
-                backgroundColor: "#1A1A1A",
+                borderRadius: 0,
+                backgroundColor: "#8C7A6B",
                 marginBottom: 12,
-              }}
+                justifyContent: "center",
+                alignItems: "center",
+                flexDirection: "row",
+                opacity: pressed || loading ? 0.8 : 1,
+              })}
             >
               {loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
-              <Button.Label
+              <Typography
                 style={{
-                  color: "white",
+                  color: "#FFFFFF",
                   fontWeight: "700",
                   fontSize: 16,
                   fontFamily: "PlusJakartaSans_700Bold",
                 }}
               >
                 Create group
-              </Button.Label>
-            </Button>
+              </Typography>
+            </Pressable>
             <Typography
               style={{
-                fontSize: 12,
-                color: "#8E8E93",
+                fontSize: 13,
+                color: TEXT_SECONDARY,
                 textAlign: "center",
                 fontFamily: "PlusJakartaSans_500Medium",
               }}

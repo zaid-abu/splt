@@ -5,7 +5,7 @@ import { useState, useMemo, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { BlurView } from "expo-blur";
+
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import * as icons from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
@@ -121,8 +121,8 @@ export default function ActivityScreen(): JSX.Element {
         {/* ── Stats Row ─────────────────────────────── */}
         <FocusAwareView delay={100} className="px-6 mb-8">
           <View className="flex-row gap-4">
-            <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
-              <View className="w-10 h-10 rounded-full bg-success/10 items-center justify-center mb-3">
+            <View className="flex-1 bg-white rounded-[12px] p-5 border border-border">
+              <View className="w-10 h-10 rounded-none bg-success/10 items-center justify-center mb-3">
                 <icons.ArrowDownLeft size={20} className="text-success" />
               </View>
               <Typography
@@ -136,8 +136,8 @@ export default function ActivityScreen(): JSX.Element {
               </Typography>
             </View>
 
-            <View className="flex-1 bg-white rounded-[24px] p-5 border border-border">
-              <View className="w-10 h-10 rounded-full bg-danger/10 items-center justify-center mb-3">
+            <View className="flex-1 bg-white rounded-[12px] p-5 border border-border">
+              <View className="w-10 h-10 rounded-none bg-danger/10 items-center justify-center mb-3">
                 <icons.ArrowUpRight size={20} className="text-danger" />
               </View>
               <Typography
@@ -200,7 +200,7 @@ export default function ActivityScreen(): JSX.Element {
                 variant="ghost"
                 isIconOnly
                 onPress={() => setIsSearching(true)}
-                className="p-0 min-w-0 min-h-0 w-8 h-8 rounded-full"
+                className="p-0 min-w-0 min-h-0 w-8 h-8 rounded-none"
               >
                 <icons.Search size={20} className="text-muted-foreground" />
               </Button>
@@ -210,20 +210,20 @@ export default function ActivityScreen(): JSX.Element {
 
         {isAppLoading && (
           <View className="px-6 mt-4">
-            <Skeleton className="w-24 h-4 rounded-full ml-2 mb-3" />
-            <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+            <Skeleton className="w-24 h-4 rounded-none ml-2 mb-3" />
+            <View className="bg-white rounded-[12px] overflow-hidden border border-border">
               <View className="p-4 flex-row items-center gap-4">
                 <Skeleton className="w-12 h-12 rounded-[16px]" />
                 <View className="flex-1 gap-2">
-                  <Skeleton className="w-3/4 h-4 rounded-full" />
-                  <Skeleton className="w-1/3 h-3 rounded-full" />
+                  <Skeleton className="w-3/4 h-4 rounded-none" />
+                  <Skeleton className="w-1/3 h-3 rounded-none" />
                 </View>
               </View>
               <View className="p-4 flex-row items-center gap-4 border-t border-border/50">
                 <Skeleton className="w-12 h-12 rounded-[16px]" />
                 <View className="flex-1 gap-2">
-                  <Skeleton className="w-1/2 h-4 rounded-full" />
-                  <Skeleton className="w-1/4 h-3 rounded-full" />
+                  <Skeleton className="w-1/2 h-4 rounded-none" />
+                  <Skeleton className="w-1/4 h-3 rounded-none" />
                 </View>
               </View>
             </View>
@@ -238,8 +238,8 @@ export default function ActivityScreen(): JSX.Element {
     () =>
       !isAppLoading ? (
         <View className="px-6">
-          <View className="p-8 bg-white rounded-[24px] items-center justify-center border border-border border-dashed mt-4">
-            <View className="w-12 h-12 rounded-full bg-secondary items-center justify-center mb-3">
+          <View className="p-8 bg-white rounded-[12px] items-center justify-center border border-border border-dashed mt-4">
+            <View className="w-12 h-12 rounded-none bg-secondary items-center justify-center mb-3">
               <icons.Activity size={24} className="text-muted-foreground" />
             </View>
             <Typography type="body" className="font-bold text-foreground">
@@ -287,9 +287,8 @@ export default function ActivityScreen(): JSX.Element {
         <StatusBar style="dark" />
 
         {/* ── Sticky Blurred Header ───────────────────── */}
-        <BlurView
-          intensity={100}
-          tint="light"
+        <View
+          className="bg-background border-b border-border/30"
           style={{
             paddingTop: insets.top + 16,
             paddingBottom: 16,
@@ -302,18 +301,17 @@ export default function ActivityScreen(): JSX.Element {
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            backgroundColor: "rgba(242, 242, 246, 0.90)",
           }}
         >
           <Typography type="h1" className="font-black tracking-tight text-foreground text-[32px]">
             Activity
           </Typography>
           <PressableFeedback accessibilityRole="button" onPress={() => router.push("/profile")}>
-            <View className="border-2 border-transparent rounded-full">
+            <View className="border-2 border-transparent rounded-none">
               <AppUserAvatar user={currentUser} size="md" />
             </View>
           </PressableFeedback>
-        </BlurView>
+        </View>
 
         <Animated.View entering={FadeIn.duration(300)} className="flex-1 bg-background">
           <FlashList

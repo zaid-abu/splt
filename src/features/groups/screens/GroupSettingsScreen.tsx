@@ -1,15 +1,6 @@
-// heroui-native switch classes for uniwind: w-[48px] h-[24px] w-[28px] h-[20px] left-[2px] right-[2px] shadow-field rounded-full justify-center overflow-hidden absolute items-center disabled:opacity-disabled disabled:pointer-events-none
 import {
-  Alert,
-  Button,
   Typography,
-  PressableFeedback,
   Spinner,
-  Switch,
-  TextField,
-  Label,
-  Input,
-  ListGroup,
   useToast,
 } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -17,33 +8,18 @@ import type { GroupSettingsRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useState, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAvoidingView, Platform, ScrollView, View, Pressable, TextInput, Switch as NativeSwitch } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import {
   useGroups,
-  useCreateGroup,
   useUpdateGroup,
   useDeleteGroup,
   useAddGroupMembers,
 } from "@/features/groups/queries/useGroups";
-import {
-  useGroupExpenses,
-  useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
-import {
-  useUserActivities,
-  useLogActivity,
-  useDeleteActivity,
-} from "@/features/activity/queries/useActivities";
-import {
-  useGroupSettlements,
-  useUserSettlements,
-  useAddSettlement,
-} from "@/features/settlements/queries/useSettlements";
+import { useGroupExpenses } from "@/features/expenses/queries/useExpenses";
+import { useGroupSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
@@ -55,35 +31,51 @@ import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const TEXT_DANGER = "#000000";
+const SEPARATOR = "#E8E4DF";
+
+function SectionLabel({ children }: { children: string }): JSX.Element {
+  return (
+    <Typography
+      style={{
+        fontSize: 12,
+        fontWeight: "700",
+        letterSpacing: 2,
+        color: TEXT_SECONDARY,
+        fontFamily: "PlusJakartaSans_700Bold",
+        textTransform: "uppercase",
+        marginBottom: 24,
+      }}
+    >
+      {children}
+    </Typography>
+  );
+}
+
 const GROUP_ICONS = [
-  "Home",
-  "Plane",
-  "Pizza",
-  "PartyPopper",
-  "Tent",
-  "Gamepad2",
-  "Briefcase",
-  "Music",
-  "Dumbbell",
-  "Coffee",
-  "Car",
-  "Film",
-  "ShoppingCart",
-  "Mountain",
-  "Target",
+  "Home", "Plane", "Pizza", "PartyPopper", "Tent", "Gamepad2",
+  "Briefcase", "Music", "Dumbbell", "Coffee", "Car", "Film",
+  "ShoppingCart", "Mountain", "Target",
 ];
 
 export default function GroupSettingsScreen(): JSX.Element {
   const { id } = useLocalSearchParams<GroupSettingsRouteParams>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const { mutateAsync: updateGroup, isPending: isUpdatingGroup } = useUpdateGroup();
+  
+  const { mutateAsync: updateGroup } = useUpdateGroup();
   const { mutateAsync: deleteGroup } = useDeleteGroup();
   const removeGroupMember = useDataStore((s) => s.removeGroupMember);
   const { mutateAsync: addGroupMembers } = useAddGroupMembers();
-  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
+  
+  const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useGroupExpenses(id);
   const { data: settlements = [] } = useGroupSettlements(id);
+  
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
@@ -113,7 +105,6 @@ export default function GroupSettingsScreen(): JSX.Element {
     [id, expenses, settlements, group, preferredCurrency, convertCurrency]
   );
 
-  // Available friends to add (not in the group)
   const availableFriends = useMemo(() => {
     if (!group) return [];
     const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
@@ -124,25 +115,18 @@ export default function GroupSettingsScreen(): JSX.Element {
 
   if (!group) {
     return (
-      <SafeAreaView style={{ flex: 1 }} className="bg-background">
-        <View className="flex-1 items-center justify-center p-6">
-          <Typography type="h3">Group not found</Typography>
-          <Button onPress={() => router.back()} className="mt-4">
-            Go Back
-          </Button>
-        </View>
-      </SafeAreaView>
+      <View style={{ flex: 1, backgroundColor: BG, alignItems: "center", justifyContent: "center" }}>
+        <Typography style={{ fontSize: 18, color: TEXT_PRIMARY }}>Group not found</Typography>
+        <Pressable onPress={() => router.back()} style={{ marginTop: 16, padding: 12, backgroundColor: "#8C7A6B", borderRadius: 12 }}>
+          <Typography style={{ color: "#FFF", fontWeight: "700" }}>Go Back</Typography>
+        </Pressable>
+      </View>
     );
   }
 
   async function handleSave(): Promise<void> {
     if (!name.trim()) {
-      toast.show({
-        label: "Error",
-        description: "Group name is required",
-        variant: "danger",
-        placement: "top",
-      });
+      toast.show({ label: "Error", description: "Group name is required", variant: "danger", placement: "top" });
       return;
     }
     setLoading(true);
@@ -160,12 +144,7 @@ export default function GroupSettingsScreen(): JSX.Element {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       router.back();
     } catch {
-      toast.show({
-        label: "Error",
-        description: "Failed to update group. Please try again.",
-        variant: "danger",
-        placement: "top",
-      });
+      toast.show({ label: "Error", description: "Failed to update group.", variant: "danger", placement: "top" });
       setLoading(false);
     }
   }
@@ -173,12 +152,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   function handleRemoveMember(userId: string) {
     const memBalance = balances.get(userId) ?? 0;
     if (Math.abs(memBalance) > 0.01) {
-      toast.show({
-        label: "Error",
-        description: "Cannot remove member with non-zero balance.",
-        variant: "danger",
-        placement: "top",
-      });
+      toast.show({ label: "Error", description: "Cannot remove member with non-zero balance.", variant: "danger", placement: "top" });
       return;
     }
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -197,239 +171,272 @@ export default function GroupSettingsScreen(): JSX.Element {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top", "bottom"]}>
+    <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+        
+        {/* ── Immersive Header ── */}
+        <View
+          style={{
+            paddingTop: insets.top + 16,
+            paddingBottom: 24,
+            paddingHorizontal: 24,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography style={{ fontFamily: "DMSerifDisplay_400Regular", fontSize: 40, color: TEXT_PRIMARY, lineHeight: 48 }}>
+            Settings
+          </Typography>
+          <Pressable onPress={() => router.back()} accessibilityRole="button" style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}>
+            <icons.X size={32} color={TEXT_PRIMARY} strokeWidth={1} />
+          </Pressable>
+        </View>
+
         <ScrollView
-          className="flex-1 bg-background"
-          contentContainerStyle={{ paddingBottom: 48 }}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 140 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* ── Header ────────────────────────────────── */}
-          <View className="flex-row items-center justify-between px-6 pt-4 mb-8">
-            <Typography type="h3" className="font-black tracking-tight text-[28px]">
-              Settings
-            </Typography>
-            <Button variant="ghost" size="sm" onPress={() => router.back()}>
-              ✕ Cancel
-            </Button>
-          </View>
-
-          {/* ── Icon picker ──────────────────────────── */}
-          <View className="mb-8">
-            <Typography
-              type="body-xs"
-              className="text-muted-foreground font-bold tracking-widest mb-3 ml-8"
-            >
-              CHOOSE ICON
-            </Typography>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}
-            >
-              {GROUP_ICONS.map((i) => {
-                const IconComponent = (icons as any)[i] || icons.HelpCircle;
-                const isSelected = icon === i;
-                return (
-                  <PressableFeedback
-                    accessibilityRole="button"
-                    key={i}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setIcon(i);
-                    }}
-                  >
-                    <View
-                      className={`w-14 h-14 rounded-full items-center justify-center border-2 ${isSelected ? "bg-primary border-primary" : "bg-white border-transparent"}`}
+          {/* ── Icon & Name ── */}
+          <Animated.View entering={FadeInDown.duration(400)} style={{ paddingHorizontal: 24, marginBottom: 48 }}>
+            <SectionLabel>Identity</SectionLabel>
+            
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
+              <View style={{ width: 64, height: 64, borderRadius: 0, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, alignItems: "center", justifyContent: "center", marginRight: 16 }}>
+                {(() => {
+                  const IconComp = (icons as any)[icon] || icons.HelpCircle;
+                  return <IconComp size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />;
+                })()}
+              </View>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 12 }}>
+                {GROUP_ICONS.map((i) => {
+                  const IconComponent = (icons as any)[i] || icons.HelpCircle;
+                  const isSelected = icon === i;
+                  if (isSelected) return null; // hide selected from list to avoid duplication
+                  return (
+                    <Pressable
+                      key={i}
+                      accessibilityRole="button"
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setIcon(i);
+                      }}
+                      style={({ pressed }) => ({
+                        width: 48,
+                        height: 48,
+                        borderRadius: 0,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "transparent",
+                        borderWidth: 1,
+                        borderColor: SEPARATOR,
+                        opacity: pressed ? 0.5 : 1,
+                      })}
                     >
-                      <IconComponent
-                        size={24}
-                        color={isSelected ? "white" : "#8A8798"}
-                        strokeWidth={isSelected ? 2.5 : 2}
-                      />
-                    </View>
-                  </PressableFeedback>
-                );
-              })}
-            </ScrollView>
-          </View>
+                      <IconComponent size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
 
-          {/* ── Form fields ───────────────────────────── */}
-          <View className="px-6 mb-8 gap-5">
-            <TextField>
-              <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
-                GROUP NAME
-              </Label>
-              <Input
-                value={name}
-                onChangeText={(t) => setName(t)}
-                placeholder="e.g. Weekend Trip, Housemates…"
-                autoCapitalize="words"
-                className="bg-white h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
-              />
-            </TextField>
-
-            <TextField>
-              <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
-                DESCRIPTION (OPTIONAL)
-              </Label>
-              <Input
-                value={description}
-                onChangeText={setDescription}
-                placeholder="What is this group for?"
-                multiline
-                numberOfLines={3}
-                style={{ minHeight: 80, textAlignVertical: "top" }}
-                className="bg-white rounded-[20px] px-4 py-3 border border-border text-[16px]"
-              />
-            </TextField>
-
-            <CurrencySelector
-              label="Group Base Currency"
-              value={currency.code}
-              onChange={(c) => setCurrencyCode(c.code)}
+            <TextInput
+              value={name}
+              onChangeText={setName}
+              placeholder="Group Name"
+              placeholderTextColor={TEXT_SECONDARY}
+              autoCapitalize="words"
+              style={{
+                fontSize: 32,
+                color: TEXT_PRIMARY,
+                fontFamily: "DMSerifDisplay_400Regular",
+                borderBottomWidth: 1,
+                borderBottomColor: SEPARATOR,
+                paddingBottom: 16,
+                marginBottom: 24,
+              }}
             />
 
-            <View>
-              <Typography
-                type="body-sm"
-                className="font-bold text-muted-foreground tracking-widest mb-2 ml-2"
-              >
-                SETTLEMENTS
-              </Typography>
-              <View className="bg-white rounded-[20px] px-4 py-4 border border-border flex-row items-center justify-between">
-                <View className="flex-1 mr-4">
-                  <Typography type="body" className="font-bold text-foreground">
-                    Simplify Debts
-                  </Typography>
-                  <Typography type="body-sm" className="text-muted-foreground mt-0.5">
-                    Automatically combine debts to reduce the total number of payments between
-                    members.
-                  </Typography>
-                </View>
-                <Switch
-                  isSelected={simplifyDebts}
-                  onSelectedChange={setSimplifyDebts}
-                  className="accent-zinc-900"
-                />
-              </View>
-            </View>
-          </View>
+            <TextInput
+              value={description}
+              onChangeText={setDescription}
+              placeholder="Description (Optional)"
+              placeholderTextColor={TEXT_SECONDARY}
+              multiline
+              style={{
+                fontSize: 18,
+                color: TEXT_PRIMARY,
+                fontFamily: "PlusJakartaSans_400Regular",
+                borderBottomWidth: 1,
+                borderBottomColor: SEPARATOR,
+                paddingBottom: 16,
+              }}
+            />
+          </Animated.View>
 
-          {/* ── Members ────────────────────────────────── */}
-          <View className="px-6 mb-8">
-            <Typography
-              type="body-xs"
-              className="text-muted-foreground font-bold tracking-widest mb-3 ml-2"
-            >
-              MEMBERS
-            </Typography>
-            <ListGroup className="bg-white rounded-[24px] overflow-hidden border border-border">
+          {/* ── Finance ── */}
+          <Animated.View entering={FadeInDown.duration(400).delay(100)} style={{ paddingHorizontal: 24, marginBottom: 48 }}>
+            <SectionLabel>Finance</SectionLabel>
+            
+            <View style={{ borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingBottom: 24, marginBottom: 24 }}>
+              <CurrencySelector
+                label="Base Currency"
+                value={currency.code}
+                onChange={(c) => setCurrencyCode(c.code)}
+              />
+            </View>
+
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingBottom: 24 }}>
+              <View style={{ flex: 1, marginRight: 24 }}>
+                <Typography style={{ fontSize: 18, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 8 }}>
+                  Simplify Debts
+                </Typography>
+                <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_400Regular", lineHeight: 22 }}>
+                  Automatically combine debts to reduce the total number of payments between members.
+                </Typography>
+              </View>
+              <NativeSwitch
+                value={simplifyDebts}
+                onValueChange={setSimplifyDebts}
+                trackColor={{ false: SEPARATOR, true: TEXT_PRIMARY }}
+                thumbColor="#FFFFFF"
+              />
+            </View>
+          </Animated.View>
+
+          {/* ── Members ── */}
+          <Animated.View entering={FadeInDown.duration(400).delay(200)} style={{ paddingHorizontal: 24, marginBottom: 48 }}>
+            <SectionLabel>Members</SectionLabel>
+            
+            <View>
               {group.members.map((member, idx) => {
                 const memBalance = balances.get(member.userId) ?? 0;
                 return (
-                  <ListGroup.Item
+                  <View
                     key={member.userId}
-                    className={`p-4 ${idx < group.members.length - 1 ? "border-b border-border/50" : ""}`}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingVertical: 16,
+                      borderBottomWidth: 1,
+                      borderBottomColor: SEPARATOR,
+                    }}
                   >
-                    <ListGroup.ItemPrefix className="mr-3">
-                      <AppUserAvatar user={member.user} size="md" />
-                    </ListGroup.ItemPrefix>
-                    <ListGroup.ItemContent>
-                      <ListGroup.ItemTitle className="font-bold text-foreground">
-                        {member.userId === currentUser.id ? "You" : member.user.name}
-                      </ListGroup.ItemTitle>
-                      <ListGroup.ItemDescription className="text-muted-foreground mt-0.5">
-                        Balance: {getCurrencySymbol(currencyCode)}
-                        {Math.abs(memBalance).toLocaleString()}
-                      </ListGroup.ItemDescription>
-                    </ListGroup.ItemContent>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+                      <AppUserAvatar user={member.user} size="lg" />
+                      <View>
+                        <Typography style={{ fontSize: 18, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 4 }}>
+                          {member.userId === currentUser.id ? "You" : member.user.name}
+                        </Typography>
+                        <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>
+                          Balance: {getCurrencySymbol(currencyCode)}{Math.abs(memBalance).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </Typography>
+                      </View>
+                    </View>
                     {member.userId !== currentUser.id && (
-                      <ListGroup.ItemSuffix>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onPress={() => handleRemoveMember(member.userId)}
-                          className="opacity-70"
-                        >
-                          Remove
-                        </Button>
-                      </ListGroup.ItemSuffix>
+                      <Pressable onPress={() => handleRemoveMember(member.userId)} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 8 })}>
+                        <icons.Trash2 size={24} color={TEXT_PRIMARY} strokeWidth={1} />
+                      </Pressable>
                     )}
-                  </ListGroup.Item>
+                  </View>
                 );
               })}
-            </ListGroup>
-          </View>
-
-          {/* ── Add Friends ─────────────────────────────── */}
-          {availableFriends.length > 0 && (
-            <View className="px-6 mb-8">
-              <Typography
-                type="body-xs"
-                className="text-muted-foreground font-bold tracking-widest mb-3 ml-2"
-              >
-                ADD FRIENDS
-              </Typography>
-              <ListGroup className="bg-white rounded-[24px] overflow-hidden border border-border">
-                {availableFriends.map((friend, idx) => (
-                  <ListGroup.Item
-                    key={friend.id}
-                    className={`p-4 ${idx < availableFriends.length - 1 ? "border-b border-border/50" : ""}`}
-                  >
-                    <ListGroup.ItemPrefix className="mr-3">
-                      <AppUserAvatar user={friend} size="md" />
-                    </ListGroup.ItemPrefix>
-                    <ListGroup.ItemContent>
-                      <ListGroup.ItemTitle className="font-bold text-foreground">
-                        {friend.name}
-                      </ListGroup.ItemTitle>
-                    </ListGroup.ItemContent>
-                    <ListGroup.ItemSuffix>
-                      <Button size="sm" onPress={() => handleAddFriend(friend)}>
-                        Add
-                      </Button>
-                    </ListGroup.ItemSuffix>
-                  </ListGroup.Item>
-                ))}
-              </ListGroup>
             </View>
+          </Animated.View>
+
+          {/* ── Add Friends ── */}
+          {availableFriends.length > 0 && (
+            <Animated.View entering={FadeInDown.duration(400).delay(300)} style={{ paddingHorizontal: 24, marginBottom: 64 }}>
+              <SectionLabel>Add Friends</SectionLabel>
+              <View>
+                {availableFriends.map((friend, idx) => (
+                  <View
+                    key={friend.id}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingVertical: 16,
+                      borderBottomWidth: idx < availableFriends.length - 1 ? 1 : 0,
+                      borderBottomColor: SEPARATOR,
+                    }}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+                      <AppUserAvatar user={friend} size="lg" />
+                      <Typography style={{ fontSize: 18, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                        {friend.name}
+                      </Typography>
+                    </View>
+                    <Pressable onPress={() => handleAddFriend(friend)} style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, padding: 8 })}>
+                      <icons.PlusCircle size={28} color={TEXT_PRIMARY} strokeWidth={1} />
+                    </Pressable>
+                  </View>
+                ))}
+              </View>
+            </Animated.View>
           )}
 
-          {/* ── Danger Zone ───────────────────────────── */}
-          <View className="px-6 mb-8 mt-4">
-            <Typography type="body-xs" className="text-danger font-bold tracking-widest mb-3 ml-2">
-              DANGER ZONE
-            </Typography>
-            <View className="bg-danger/10 border border-danger/20 p-4 rounded-[24px]">
-              <Typography type="body-sm" className="text-danger mb-4">
-                Deleting this group will permanently remove it from your groups list.
-              </Typography>
-              <Button onPress={handleDeleteGroup} className="bg-danger text-white rounded-[16px]">
+          {/* ── Danger Zone ── */}
+          <View style={{ paddingHorizontal: 24, paddingBottom: 40 }}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleDeleteGroup}
+              style={({ pressed }) => ({
+                height: 64,
+                borderRadius: 0,
+                backgroundColor: "transparent",
+                borderWidth: 1,
+                borderColor: TEXT_PRIMARY,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <Typography style={{ fontSize: 18, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
                 Delete Group
-              </Button>
-            </View>
+              </Typography>
+            </Pressable>
           </View>
         </ScrollView>
 
-        {/* ── Fixed Submit Button ─────────────────────────────── */}
-        <View className="px-6 py-4 bg-background border-t border-border/50">
-          <Button
-            variant="primary"
-            className="w-full h-[56px] rounded-[20px]"
+        {/* ── Fixed Save Button ── */}
+        <View
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            paddingHorizontal: 24,
+            paddingTop: 16,
+            paddingBottom: insets.bottom + 16,
+            backgroundColor: BG,
+          }}
+        >
+          <Pressable
+            accessibilityRole="button"
             onPress={handleSave}
-            isDisabled={loading}
+            disabled={loading}
+            style={({ pressed }) => ({
+              height: 64,
+              borderRadius: 0,
+              backgroundColor: "#8C7A6B",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "row",
+              opacity: pressed || loading ? 0.8 : 1,
+            })}
           >
-            {loading && <Spinner color="white" size="sm" className="mr-2" />}
-            <Button.Label className="font-bold">Save Changes</Button.Label>
-          </Button>
+            {loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
+            <Typography style={{ fontSize: 18, fontWeight: "700", color: "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
+              Save Changes
+            </Typography>
+          </Pressable>
         </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }

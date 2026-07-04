@@ -357,49 +357,165 @@ CURRENCY
 
 ---
 
-### 🔴 Phase 5: All Other Screens — Design Alignment
+### ✅ Phase 5: All Other Screens — Design Alignment
 **Priority:** P0
 **Effort:** 2 days
+**Status:** COMPLETE — 2026-07-04
 
-**Goal:** Update every remaining screen to use the new warm design language consistently.
+**Goal:** Rewrite every remaining page one by one to use the new warm design language consistently. This will be executed in micro-phases per feature area (e.g., Groups, Friends, Expenses, Settlements, Activity, Auth) to ensure focused, component-level redesign.
+
+#### 1. Groups Micro-Phase
+
+**Groups List Screen**
+```
+Groups                                ⊕
+─────────────────────────────────────────────
+TOTAL BALANCE: 176 PLN (You Owe)
+
+┌──────────────────────────────────────┐
+│ ⚙️  Summer trip         >           │
+│     3 participants                   │
+│──────────────────────────────────────│
+│ 🏠  Flat Rent            >          │
+│     2 participants                   │
+└──────────────────────────────────────┘
+```
+- No blurred sticky header
+- Single white card for list of groups
+- Each group has an icon, name, participant count, and chevron right
+
+**Group Detail Screen**
+```
+< Back    ⚙️ Summer trip              ⚙️
+─────────────────────────────────────────────
+┌──────────────────┐  ┌──────────────────┐
+│ YOU OWE          │  │ YOU ARE OWED     │
+│ 176 PLN          │  │ 0 PLN            │
+└──────────────────┘  └──────────────────┘
+TRANSACTIONS
+│ 🍳  Breakfast    186 zł             │
+│     Paid by you         102 zł      │
+```
+- Clean balance cards (similar to dashboard)
+- Transactions list matching dashboard styling
+- "Settle up" button floats or sits at the bottom
+
+#### 2. Friends Micro-Phase
+
+**Friends Screen**
+```
+Friends                               ⊕
+─────────────────────────────────────────────
+┌──────────────────────────────────────┐
+│ 👤  Maria               >           │
+│     Owes you 150 zł                  │
+│──────────────────────────────────────│
+│ 👤  Daniel              >           │
+│     You owe 45 zł                    │
+└──────────────────────────────────────┘
+```
+- Clean white card list for friends
+- Status text in soft red (you owe) or green (owes you)
+
+#### 3. Expenses Micro-Phase
+
+**New Expense Screen (Bottom Sheet or Full Screen)**
+```
+         Add Expense                    ✕
+─────────────────────────────────────────────
+TITLE
+ 🍽  │ Dinner at Trattoria                │
+─────────────────────────────────────────────
+AMOUNT
+        $ 125.00
+─────────────────────────────────────────────
+PAID BY                  SPLIT
+ 👤 You                   🔀 Equally
+─────────────────────────────────────────────
+    ┌────────────────────────────────────┐
+    │         Save Expense               │
+    └────────────────────────────────────┘
+```
+- Unified layout, single column
+- Large amount input
+- Simple selectors for "Paid by" and "Split"
+
+**Expense Detail Screen (Receipt Style)**
+```
+< Back
+─────────────────────────────────────────────
+       🍽 Dinner at Trattoria
+             $ 125.00
+       Paid by You on Jul 4
+
+SPLIT DETAILS
+  👤 You                     $ 62.50
+  👤 Maria                   $ 62.50
+```
+- Centralized receipt-like card
+- Clean typography and hierarchy
+
+#### 4. Settlements Micro-Phase
+
+**Settlement Screen**
+```
+< Back
+─────────────────────────────────────────────
+        👤 You    →    👤 Maria
+─────────────────────────────────────────────
+AMOUNT
+           $ 62.50
+─────────────────────────────────────────────
+    ┌────────────────────────────────────┐
+    │         Record Payment             │
+    └────────────────────────────────────┘
+```
+- Avatar directional flow (You -> Friend)
+- Large amount input field
+- Full-width primary action button
+
+#### 5. Activity Micro-Phase
+
+**Activity Screen**
+```
+Activity
+─────────────────────────────────────────────
+TODAY
+ 🔵  Maria added "Dinner"            $125
+     10:42 AM
+
+ 🟢  You settled up with Daniel       $45
+     09:15 AM
+```
+- Simple timeline view
+- Circular icons indicating action type
+- Muted secondary text for timestamps
+
+#### 6. Auth Micro-Phase
+
+**Welcome / Auth Screens**
+```
+           [ SPLT Logo ]
+
+          Welcome to SPLT
+     (elegant italic serif)
+
+    ┌────────────────────────────────────┐
+    │         Get Started                │
+    └────────────────────────────────────┘
+```
+- Warm background (`#F5F0EB`)
+- Large, elegant typography for greetings
+- Clean inputs with 12px radius for Login/Register
 
 #### Files to Modify
-
-**Groups:**
-- [GroupsScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/groups/screens/GroupsScreen.tsx) — Warm palette, reduced radius
-- [GroupDetailScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/groups/screens/GroupDetailScreen.tsx) — Clean balance cards, warm accents
-- [GroupSettingsScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/groups/screens/GroupSettingsScreen.tsx) — Consistent styling
-- [GroupSettleScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/groups/screens/GroupSettleScreen.tsx) — Warm styling
-- [GroupCard.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/groups/components/GroupCard.tsx) — Match dashboard group list style
-
-**Friends:**
-- [FriendsScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/friends/screens/FriendsScreen.tsx) — Clean list, warm palette
-- [FriendDetailScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/friends/screens/FriendDetailScreen.tsx) — Warm styling
-- [NewFriendScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/friends/screens/NewFriendScreen.tsx) — Warm inputs
-
-**Expenses:**
-- [NewExpenseScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/expenses/screens/NewExpenseScreen.tsx) — Warm inputs, reduced radius
-- [ExpenseDetailScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/expenses/screens/ExpenseDetailScreen.tsx) — Clean receipt card
-- [ExpenseItem.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/expenses/components/ExpenseItem.tsx) — Match transactions list style
-
-**Settlements:**
-- [SettlementScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/settlements/screens/SettlementScreen.tsx) — Warm styling
-
-**Activity:**
-- [ActivityScreen.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/activity/screens/ActivityScreen.tsx) — Warm palette
-- [ActivityItem.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/features/activity/components/ActivityItem.tsx) — Consistent item styling
-
-**Auth:**
-- [welcome.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/app/(auth)/welcome.tsx) — Warm palette
-- [login.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/app/(auth)/login.tsx) — Warm inputs
-- [register.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/app/(auth)/register.tsx) — Warm inputs
-
-**Shared Components:**
-- [MemberAvatar.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/components/ui/MemberAvatar.tsx) — Warm avatar rings
-- [AmountDisplay.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/components/ui/AmountDisplay.tsx) — New amount formatting
-- [CurrencySelector.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/components/forms/CurrencySelector.tsx) — Warm dropdown style
-- [SwipeableRow.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/components/layout/SwipeableRow.tsx) — Warm swipe colors
-- [ErrorFallback.tsx](file:///Users/abuzaid/Documents/Projects/splt/splt/src/components/feedback/ErrorFallback.tsx) — Warm error state
+- `src/features/groups/screens/*`
+- `src/features/friends/screens/*`
+- `src/features/expenses/screens/*`
+- `src/features/settlements/screens/*`
+- `src/features/activity/screens/*`
+- `src/app/(auth)/*`
+- Shared UI components: `MemberAvatar`, `AmountDisplay`, `CurrencySelector`, `SwipeableRow`, `ErrorFallback`
 
 #### Key Consistent Changes Across All Screens
 1. Replace `bg-primary` (purple) buttons → dark charcoal (`#1A1A1A`)

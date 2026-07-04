@@ -13,7 +13,7 @@
  * - Center "Add" tab: PlusCircle outline icon (not elevated FAB)
  * - Subtle 1px top border: #E8E4DF
  */
-import { Tabs, useRouter } from "expo-router";
+import { Tabs, useRouter, Redirect } from "expo-router";
 import type { JSX } from "react";
 import { View, TouchableOpacity, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -122,7 +122,7 @@ export default function TabsLayout(): JSX.Element | null {
   const router = useRouter();
   const { isAuthenticated } = useAuth();
 
-  if (!isAuthenticated) return null;
+  if (!isAuthenticated) return <Redirect href="/(auth)/welcome" />;
 
   // Height of the custom tab bar (icon area + safe area bottom padding)
   const tabBarHeight = 56 + Math.max(insets.bottom, Platform.OS === "android" ? 8 : 0);

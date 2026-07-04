@@ -74,9 +74,9 @@ export function CurrencySelector({
       )}
 
       <PressableFeedback accessibilityRole="button" onPress={handlePresentModalPress}>
-        <View className="bg-white h-[56px] rounded-[20px] px-4 flex-row items-center justify-between border border-border">
+        <View className="bg-white h-[56px] rounded-none px-4 flex-row items-center justify-between border border-border">
           <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-secondary items-center justify-center px-1">
+            <View className="w-10 h-10 rounded-none bg-secondary items-center justify-center px-1">
               <Typography
                 type="body-sm"
                 numberOfLines={1}
@@ -134,7 +134,7 @@ export function CurrencySelector({
             </View>
           </View>
 
-          <View className="flex-1 bg-white rounded-[24px] overflow-hidden border border-border">
+          <View className="flex-1 bg-white rounded-[12px] overflow-hidden border border-border">
             <BottomSheetFlatList
               data={filtered}
               keyExtractor={(item) => item.code}
@@ -156,13 +156,13 @@ export function CurrencySelector({
                     >
                       <View className="flex-row items-center gap-3 flex-1">
                         <View
-                          className={`w-12 h-12 rounded-full items-center justify-center px-1 ${isSelected ? "bg-primary/10" : "bg-secondary"}`}
+                          className={`w-12 h-12 rounded-none items-center justify-center px-1 ${isSelected ? "bg-primary/10" : "bg-secondary"}`}
                         >
                           <Typography
                             type="body-sm"
                             numberOfLines={1}
                             adjustsFontSizeToFit
-                            className={`font-bold text-center ${isSelected ? "text-primary" : "text-foreground"}`}
+                            className={`font-bold text-center ${isSelected ? "text-foreground" : "text-foreground"}`}
                           >
                             {currency.symbol}
                           </Typography>
@@ -170,7 +170,7 @@ export function CurrencySelector({
                         <View className="flex-1 pr-2">
                           <Typography
                             type="body"
-                            className={`font-bold ${isSelected ? "text-primary" : "text-foreground"}`}
+                            className={`font-bold ${isSelected ? "text-foreground" : "text-foreground"}`}
                           >
                             {currency.code}
                           </Typography>
@@ -179,7 +179,7 @@ export function CurrencySelector({
                           </Typography>
                         </View>
                       </View>
-                      {isSelected && <icons.Check size={20} className="text-primary" />}
+                      {isSelected && <icons.Check size={20} className="text-foreground" />}
                     </View>
                   </PressableFeedback>
                 );

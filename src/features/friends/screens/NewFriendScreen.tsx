@@ -99,7 +99,7 @@ export default function NewFriendScreen(): JSX.Element {
           accessibilityRole="button"
           onPress={() => router.back()}
           hitSlop={8}
-          className="w-10 h-10 items-center justify-center bg-white rounded-full border border-border/50"
+          className="w-10 h-10 items-center justify-center bg-white rounded-none border border-border/50"
         >
           <icons.X size={20} color="#0F172A" />
         </PressableFeedback>
@@ -118,7 +118,7 @@ export default function NewFriendScreen(): JSX.Element {
           contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
           keyboardShouldPersistTaps="handled"
         >
-          <View className="bg-white rounded-[24px] p-6 border border-border/50 shadow-sm mb-6">
+          <View className="bg-white rounded-[12px] p-6 border border-border/50 shadow-sm mb-6">
             <View className="mb-6 gap-2">
               <TextField>
                 <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
@@ -130,7 +130,7 @@ export default function NewFriendScreen(): JSX.Element {
                   placeholder="e.g. John Doe"
                   autoCapitalize="words"
                   autoFocus
-                  className="bg-[#F8F8F9] h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
+                  className="bg-[#F8F8F9] h-[56px] rounded-none px-4 border border-border text-[16px]"
                 />
               </TextField>
             </View>
@@ -146,7 +146,7 @@ export default function NewFriendScreen(): JSX.Element {
                   placeholder="john@example.com"
                   autoCapitalize="none"
                   keyboardType="email-address"
-                  className="bg-[#F8F8F9] h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
+                  className="bg-[#F8F8F9] h-[56px] rounded-none px-4 border border-border text-[16px]"
                 />
               </TextField>
             </View>
