@@ -392,12 +392,12 @@ Recommend only one next phase. Wait for approval before continuing.
   - `[x]` Move standalone items like `AmountDisplay`, `MemberAvatar`, `CurrencySelector` into the unified `components/` hierarchy.
   - `[x]` Ensure all adhere strictly to the Design System.
 
-### ⏳ Phase 13: Reusable Form Components
+### ✅ Phase 13: Reusable Form Components (COMPLETED)
 
 - **Objective:** Integrate React Hook Form and Zod to create robust, typed form inputs.
 - **Implementation:**
-  - Create generic `<FormInput />`, `<FormSelect />` wrappers that combine React Hook Form `Controller` with HeroUI `TextField` and `Label`.
-  - Set up `src/validation/` for shared Zod schemas.
+  - `[x]` Create generic `<FormInput />`, `<FormSelect />` wrappers that combine React Hook Form `Controller` with HeroUI `TextField` and `Label`.
+  - `[x]` Set up `src/validation/` for shared Zod schemas.
 
 ### ⏳ Phase 14: Feature Modularization
 

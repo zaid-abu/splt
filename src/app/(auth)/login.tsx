@@ -5,18 +5,15 @@ import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  TextInput,
-  ActivityIndicator,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useSignIn } from "@/features/auth/hooks/useAuthMutations";
+import { loginSchema, type LoginFormData } from "@/validation/schemas";
+import { FormInput } from "@/components/forms/FormInput";
 
 export default function LoginScreen(): JSX.Element {
   const router = useRouter();
@@ -24,28 +21,21 @@ export default function LoginScreen(): JSX.Element {
   const { toast } = useToast();
   const { mutateAsync: signIn, isPending } = useSignIn();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  const { control, handleSubmit } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
+  });
 
   const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
   const foreground = useThemeColor("foreground" as any) as unknown as string;
 
-  async function handleLogin(): Promise<void> {
+  const onSubmit = async (data: LoginFormData): Promise<void> => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    if (!email.trim() || !password) {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      toast.show({
-        label: "Error",
-        description: "Please fill in all fields",
-        variant: "danger",
-        placement: "top",
-      });
-      return;
-    }
 
     try {
-      await signIn({ email, password });
+      await signIn(data);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       // AppContext will handle routing when authentication state changes
     } catch (err: any) {
@@ -57,7 +47,11 @@ export default function LoginScreen(): JSX.Element {
         placement: "top",
       });
     }
-  }
+  };
+
+  const onInvalid = () => {
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+  };
 
   return (
     <View className="flex-1 bg-white">
@@ -93,70 +87,64 @@ export default function LoginScreen(): JSX.Element {
 
             {/* Form */}
             <Animated.View entering={FadeInDown.delay(200).springify()} className="gap-4">
-              <View>
-                <Typography type="body-sm" className="font-medium text-foreground mb-2">
-                  Email Address
-                </Typography>
-                <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
-                  <icons.Mail size={20} color={mutedForeground} />
-                  <TextInput
-                    placeholder="hello@splt.app"
-                    value={email}
-                    onChangeText={setEmail}
-                    keyboardType="email-address"
-                    autoCapitalize="none"
-                    autoComplete="email"
-                    className="flex-1 ml-3 font-medium text-foreground text-[16px]"
-                    placeholderTextColor={mutedForeground}
-                  />
-                </View>
-              </View>
+              <FormInput
+                control={control}
+                name="email"
+                label="Email Address"
+                placeholder="hello@splt.app"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoComplete="email"
+                leftElement={<icons.Mail size={20} color={mutedForeground} />}
+                inputClassName="font-medium text-foreground text-[16px]"
+                placeholderTextColor={mutedForeground}
+              />
 
               <View>
-                <View className="flex-row justify-between items-center mb-2">
-                  <Typography type="body-sm" className="font-medium text-foreground">
-                    Password
-                  </Typography>
+                <View className="flex-row justify-between items-center mb-2 z-10">
+                  <View />
                   <PressableFeedback
                     onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+                    className="absolute right-0 top-1"
                   >
                     <Typography type="body-sm" className="font-semibold text-primary">
                       Forgot?
                     </Typography>
                   </PressableFeedback>
                 </View>
-                <View className="flex-row items-center bg-surface-secondary border border-border/50 h-14 rounded-2xl px-4">
-                  <icons.Lock size={20} color={mutedForeground} />
-                  <TextInput
-                    placeholder="••••••••"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry={!showPassword}
-                    autoComplete="password"
-                    className="flex-1 ml-3 font-medium text-foreground text-[16px]"
-                    placeholderTextColor={mutedForeground}
-                  />
-                  <PressableFeedback
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setShowPassword(!showPassword);
-                    }}
-                    hitSlop={8}
-                  >
-                    {showPassword ? (
-                      <icons.EyeOff size={20} color={mutedForeground} />
-                    ) : (
-                      <icons.Eye size={20} color={mutedForeground} />
-                    )}
-                  </PressableFeedback>
-                </View>
+                <FormInput
+                  control={control}
+                  name="password"
+                  label="Password"
+                  placeholder="••••••••"
+                  secureTextEntry={!showPassword}
+                  autoComplete="password"
+                  leftElement={<icons.Lock size={20} color={mutedForeground} />}
+                  rightElement={
+                    <PressableFeedback
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                        setShowPassword(!showPassword);
+                      }}
+                      hitSlop={8}
+                    >
+                      {showPassword ? (
+                        <icons.EyeOff size={20} color={mutedForeground} />
+                      ) : (
+                        <icons.Eye size={20} color={mutedForeground} />
+                      )}
+                    </PressableFeedback>
+                  }
+                  inputClassName="font-medium text-foreground text-[16px]"
+                  placeholderTextColor={mutedForeground}
+                />
               </View>
 
               <Button
                 variant="primary"
                 size="lg"
                 className="w-full h-14 rounded-2xl bg-primary mt-2 flex-row items-center justify-center gap-2"
-                onPress={handleLogin}
+                onPress={handleSubmit(onSubmit, onInvalid)}
                 isDisabled={isPending}
               >
                 {isPending && <ActivityIndicator color="white" />}
