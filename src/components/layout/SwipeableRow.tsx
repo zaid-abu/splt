@@ -1,6 +1,8 @@
-import React, { useRef } from "react";
-import { View, StyleSheet, Animated } from "react-native";
+import React, { useRef, useCallback } from "react";
+import { View, StyleSheet, Animated, Pressable } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -13,8 +15,17 @@ interface SwipeableRowProps {
 
 export function SwipeableRow({ children, onDelete, onSettle }: SwipeableRowProps) {
   const swipeableRef = useRef<Swipeable>(null);
+  const deleteSheetRef = useRef<BottomSheetModal>(null);
+  const insets = useSafeAreaInsets();
   const successColor = useThemeColor("success" as any) as unknown as string;
   const dangerColor = useThemeColor("danger" as any) as unknown as string;
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" opacity={0.4} />
+    ),
+    []
+  );
 
   const renderRightActions = (
     progress: Animated.AnimatedInterpolation<number>,
@@ -70,7 +81,7 @@ export function SwipeableRow({ children, onDelete, onSettle }: SwipeableRowProps
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
                 swipeableRef.current?.close();
-                onDelete();
+                deleteSheetRef.current?.present();
               }}
               style={styles.actionInner}
             >
@@ -86,14 +97,67 @@ export function SwipeableRow({ children, onDelete, onSettle }: SwipeableRowProps
   };
 
   return (
-    <Swipeable
-      ref={swipeableRef}
-      renderRightActions={renderRightActions}
-      friction={2}
-      rightThreshold={40}
-    >
-      {children}
-    </Swipeable>
+    <>
+      <Swipeable
+        ref={swipeableRef}
+        renderRightActions={renderRightActions}
+        friction={2}
+        rightThreshold={40}
+      >
+        {children}
+      </Swipeable>
+
+      <BottomSheetModal
+        ref={deleteSheetRef}
+        index={0}
+        enableDynamicSizing={true}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ backgroundColor: "#F5F0EB", borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: "#8A8782", width: 40 }}
+      >
+        <BottomSheetView style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}>
+          <Typography style={{ fontSize: 22, fontFamily: "PlusJakartaSans_700Bold", color: "#000000", marginBottom: 8 }}>
+            Delete Item?
+          </Typography>
+          <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_500Medium", color: "#8A8782", marginBottom: 24 }}>
+            Are you sure you want to delete this? This cannot be undone.
+          </Typography>
+
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Pressable
+              onPress={() => deleteSheetRef.current?.dismiss()}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 48,
+                borderWidth: 1,
+                borderColor: "#E8E4DF",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#000000" }}>Cancel</Typography>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                deleteSheetRef.current?.dismiss();
+                if (onDelete) onDelete();
+              }}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 48,
+                backgroundColor: "#E02424",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#FFFFFF" }}>Delete</Typography>
+            </Pressable>
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
+    </>
   );
 }
 

@@ -5,7 +5,8 @@ import {
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupSettingsRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { StatusBar } from "expo-status-bar";
 import { KeyboardAvoidingView, Platform, ScrollView, View, Pressable, TextInput, Switch as NativeSwitch } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -91,6 +92,14 @@ export default function GroupSettingsScreen(): JSX.Element {
   const currency = CURRENCIES.find((c) => c.code === currencyCode) ?? CURRENCIES[0];
 
   const [loading, setLoading] = useState(false);
+  const deleteSheetRef = useRef<BottomSheetModal>(null);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" opacity={0.4} />
+    ),
+    []
+  );
 
   const balances = useMemo(
     () =>
@@ -392,7 +401,7 @@ export default function GroupSettingsScreen(): JSX.Element {
           <View style={{ paddingHorizontal: 24, paddingBottom: 40 }}>
             <Pressable
               accessibilityRole="button"
-              onPress={handleDeleteGroup}
+              onPress={() => deleteSheetRef.current?.present()}
               style={({ pressed }) => ({
                 height: 64,
                 borderRadius: 0,
@@ -444,6 +453,58 @@ export default function GroupSettingsScreen(): JSX.Element {
             </Typography>
           </Pressable>
         </View>
+
+        {/* ── Delete Confirmation Bottom Sheet ── */}
+        <BottomSheetModal
+          ref={deleteSheetRef}
+          index={0}
+          enableDynamicSizing={true}
+          backdropComponent={renderBackdrop}
+          backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
+          handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+        >
+          <BottomSheetView style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}>
+            <Typography style={{ fontSize: 22, fontFamily: "PlusJakartaSans_700Bold", color: TEXT_PRIMARY, marginBottom: 8 }}>
+              Delete Group?
+            </Typography>
+            <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_500Medium", color: TEXT_SECONDARY, marginBottom: 24 }}>
+              Are you sure you want to delete "{group.name}"? This cannot be undone.
+            </Typography>
+
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <Pressable
+                onPress={() => deleteSheetRef.current?.dismiss()}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  height: 48,
+                  borderWidth: 1,
+                  borderColor: SEPARATOR,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed ? 0.5 : 1,
+                })}
+              >
+                <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: TEXT_PRIMARY }}>Cancel</Typography>
+              </Pressable>
+              <Pressable
+                onPress={() => {
+                  deleteSheetRef.current?.dismiss();
+                  setTimeout(() => handleDeleteGroup(), 300);
+                }}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  height: 48,
+                  backgroundColor: "#E02424",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#FFFFFF" }}>Delete</Typography>
+              </Pressable>
+            </View>
+          </BottomSheetView>
+        </BottomSheetModal>
       </KeyboardAvoidingView>
     </View>
   );

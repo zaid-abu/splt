@@ -44,7 +44,7 @@ export default function NotificationsScreen(): JSX.Element {
 
       return (
         <Animated.View layout={LinearTransition} entering={FadeInDown.duration(400).delay(index * 50)}>
-          <View style={{ padding: 24, borderBottomWidth: 1, borderBottomColor: SEPARATOR, backgroundColor: "#FFFFFF" }}>
+          <View style={{ padding: 24, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
               <AppUserAvatar user={friendship.friendUser!} size="md" />
               <View style={{ flex: 1, marginLeft: 16 }}>

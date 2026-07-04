@@ -1,11 +1,12 @@
-import { Dialog, Typography, Skeleton } from "heroui-native";
+import { Typography, Skeleton } from "heroui-native";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View, Pressable, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useState, useRef, useCallback } from "react";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
@@ -27,6 +28,18 @@ const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
 const SEPARATOR = "#E8E4DF";
 
+const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
+  food: { bg: "#FEF3C7", icon: "#F59E0B" },
+  transport: { bg: "#DBEAFE", icon: "#3B82F6" },
+  accommodation: { bg: "#FCE7F3", icon: "#EC4899" },
+  entertainment: { bg: "#EDE9FE", icon: "#8B5CF6" },
+  shopping: { bg: "#FEE2E2", icon: "#EF4444" },
+  utilities: { bg: "#D1FAE5", icon: "#10B981" },
+  health: { bg: "#CFFAFE", icon: "#06B6D4" },
+  travel: { bg: "#E0E7FF", icon: "#6366F1" },
+  other: { bg: "#F1F5F9", icon: "#64748B" },
+};
+
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 export default function ExpenseDetailScreen(): JSX.Element {
@@ -39,7 +52,14 @@ export default function ExpenseDetailScreen(): JSX.Element {
   const { mutateAsync: deleteExpense } = useDeleteExpense();
 
   const isAppLoading = useUIStore((s) => s.isAppLoading);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const deleteSheetRef = useRef<BottomSheetModal>(null);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" opacity={0.4} />
+    ),
+    []
+  );
 
   const expense = expenses.find((e) => e.id === id);
   const group = groups.find((g) => g.id === expense?.groupId);
@@ -93,6 +113,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
   });
 
   const CategoryIcon = (icons as any)[category?.icon ?? "Package"] || icons.Package;
+  const categoryColor = CATEGORY_COLORS[expense.category ?? "other"] || CATEGORY_COLORS.other;
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
@@ -146,57 +167,23 @@ export default function ExpenseDetailScreen(): JSX.Element {
             <icons.Edit2 size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
           </Pressable>
 
-          <Dialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <Dialog.Trigger asChild>
-              <Pressable
-                accessibilityRole="button"
-                style={({ pressed }) => ({
-                  width: 44,
-                  height: 44,
-                  borderRadius: 0,
-                  backgroundColor: "transparent",
-                  borderWidth: 1,
-                  borderColor: SEPARATOR,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: pressed ? 0.5 : 1,
-                })}
-              >
-                <icons.Trash2 size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
-              </Pressable>
-            </Dialog.Trigger>
-            <Dialog.Portal className="absolute inset-0 justify-center p-5 z-50">
-              <Dialog.Overlay className="absolute inset-0 bg-black/40" />
-              <Dialog.Content className="bg-[#F5F0EB] p-6 rounded-none shadow-lg self-center w-full max-w-[400px]">
-                <Dialog.Title className="text-[22px] font-bold mb-2 font-['PlusJakartaSans_700Bold'] text-[#000]">
-                  Delete Expense?
-                </Dialog.Title>
-                <Dialog.Description className="text-[16px] text-[#8A8782] mb-6 font-['PlusJakartaSans_500Medium']">
-                  Are you sure you want to delete "{expense.title}"? This cannot be undone.
-                </Dialog.Description>
-                <View className="flex-row gap-3">
-                  <Pressable
-                    className="flex-1 rounded-none h-[48px] border border-[#E8E4DF] items-center justify-center"
-                    onPress={() => setIsDialogOpen(false)}
-                  >
-                    <Typography className="font-['PlusJakartaSans_700Bold'] text-[#000]">Cancel</Typography>
-                  </Pressable>
-                  <Pressable
-                    className="flex-1 rounded-none h-[48px] bg-[#8C7A6B] items-center justify-center"
-                    onPress={() => {
-                      setIsDialogOpen(false);
-                      setTimeout(() => {
-                        router.back();
-                        setTimeout(() => deleteExpense(expense.id), 400); 
-                      }, 300); 
-                    }}
-                  >
-                    <Typography className="font-['PlusJakartaSans_700Bold'] text-[#FFF]">Delete</Typography>
-                  </Pressable>
-                </View>
-              </Dialog.Content>
-            </Dialog.Portal>
-          </Dialog>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => deleteSheetRef.current?.present()}
+            style={({ pressed }) => ({
+              width: 44,
+              height: 44,
+              borderRadius: 0,
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <icons.Trash2 size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          </Pressable>
         </View>
       </View>
 
@@ -213,8 +200,8 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 {expense.title}
               </Typography>
             </View>
-            <View style={{ width: 64, height: 64, borderRadius: 0, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, alignItems: "center", justifyContent: "center" }}>
-              <CategoryIcon size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
+            <View style={{ width: 64, height: 64, borderRadius: 0, backgroundColor: categoryColor.bg, alignItems: "center", justifyContent: "center" }}>
+              <CategoryIcon size={32} color={categoryColor.icon} strokeWidth={1.5} />
             </View>
           </View>
 
@@ -285,15 +272,21 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 const isPayer = split.userId === expense.paidBy;
 
                 return (
-                  <View 
+                  <Pressable 
                     key={split.userId}
-                    style={{
+                    onPress={() => {
+                       if (!isMe) {
+                         router.push(`/friend/${split.userId}`);
+                       }
+                    }}
+                    style={({ pressed }) => ({
                       flexDirection: "row",
                       alignItems: "center",
                       paddingVertical: 16,
                       borderBottomWidth: idx < expense.splits.length - 1 ? 1 : 0,
                       borderBottomColor: SEPARATOR,
-                    }}
+                      opacity: !isMe && pressed ? 0.5 : 1
+                    })}
                   >
                     <AppUserAvatar user={split.user} size="lg" />
                     <View style={{ flex: 1, marginLeft: 16, justifyContent: "center" }}>
@@ -307,7 +300,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                     <Typography style={{ fontSize: 20, fontWeight: "800", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_800ExtraBold" }}>
                       {formatAmt(split.amount)}
                     </Typography>
-                  </View>
+                  </Pressable>
                 );
               })
             )}
@@ -329,11 +322,85 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   ? `Your share is ${formatAmt(myShare.amount)}. The rest is owed to you.`
                   : `You owe ${expense.paidByUser.name.split(" ")[0]} to settle up.`}
               </Typography>
+
+              {!paidByMe && !myShare.paid && (
+                 <Pressable
+                   accessibilityRole="button"
+                   onPress={() => router.push(`/settle/${expense.paidBy}`)}
+                   style={({ pressed }) => ({
+                     marginTop: 24,
+                     height: 48,
+                     backgroundColor: "#FFFFFF",
+                     alignItems: "center",
+                     justifyContent: "center",
+                     opacity: pressed ? 0.8 : 1,
+                   })}
+                 >
+                   <Typography style={{ fontSize: 15, fontWeight: "700", color: "#8C7A6B", fontFamily: "PlusJakartaSans_700Bold" }}>
+                     Settle Your Share
+                   </Typography>
+                 </Pressable>
+              )}
             </View>
           </Animated.View>
         )}
 
       </ScrollView>
+
+      {/* ── Delete Confirmation Bottom Sheet ── */}
+      <BottomSheetModal
+        ref={deleteSheetRef}
+        index={0}
+        enableDynamicSizing={true}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+      >
+        <BottomSheetView style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}>
+          <Typography style={{ fontSize: 22, fontFamily: "PlusJakartaSans_700Bold", color: TEXT_PRIMARY, marginBottom: 8 }}>
+            Delete Expense?
+          </Typography>
+          <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_500Medium", color: TEXT_SECONDARY, marginBottom: 24 }}>
+            Are you sure you want to delete "{expense.title}"? This cannot be undone.
+          </Typography>
+
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Pressable
+              onPress={() => deleteSheetRef.current?.dismiss()}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 48,
+                borderWidth: 1,
+                borderColor: SEPARATOR,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: TEXT_PRIMARY }}>Cancel</Typography>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                deleteSheetRef.current?.dismiss();
+                setTimeout(() => {
+                  router.back();
+                  setTimeout(() => deleteExpense(expense.id), 400);
+                }, 300);
+              }}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 48,
+                backgroundColor: "#E02424",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#FFFFFF" }}>Delete</Typography>
+            </Pressable>
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
     </View>
   );
 }
