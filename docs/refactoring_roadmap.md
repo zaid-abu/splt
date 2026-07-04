@@ -399,12 +399,12 @@ Recommend only one next phase. Wait for approval before continuing.
   - `[x]` Create generic `<FormInput />`, `<FormSelect />` wrappers that combine React Hook Form `Controller` with HeroUI `TextField` and `Label`.
   - `[x]` Set up `src/validation/` for shared Zod schemas.
 
-### ⏳ Phase 14: Feature Modularization
+### ✅ Phase 14: Feature Modularization (COMPLETED)
 
 - **Objective:** Move domain-specific logic into `src/features/`.
 - **Implementation:**
-  - Slice the app into `features/expenses`, `features/groups`, etc.
-  - Move screens, hooks, queries, and components into these feature folders.
+  - `[x]` Slice the app into `features/expenses`, `features/groups`, etc.
+  - `[x]` Move screens, hooks, queries, and components into these feature folders.
 
 ### ⏳ Phase 15: Business Logic Extraction
 
