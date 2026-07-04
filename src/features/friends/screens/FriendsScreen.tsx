@@ -150,8 +150,8 @@ export default function FriendsScreen(): JSX.Element {
       return (
         <Animated.View layout={LinearTransition.springify()} className="px-6">
           <SwipeableRow
-            onDelete={() => console.log("Delete friend", item.id)}
-            onSettle={bal !== 0 ? () => console.log("Settle up with", item.id) : undefined}
+            onDelete={() => { /* TODO: implement delete */ }}
+            onSettle={bal !== 0 ? () => { /* TODO: implement settle */ } : undefined}
           >
             <PressableFeedback
               accessibilityRole="button"
