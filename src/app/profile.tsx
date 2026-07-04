@@ -39,6 +39,7 @@ import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
 
 import { useAuth } from "@/context/AppContext";
+import { useSignOut } from "@/features/auth/hooks/useAuthMutations";
 import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/MemberAvatar";
@@ -104,6 +105,7 @@ export default function ProfileScreen(): JSX.Element {
   const netBalance = owedToYou - youOwe;
 
   const router = useRouter();
+  const { mutate: signOut } = useSignOut();
   const [darkMode, setDarkMode] = useState(true);
   const [notifs, setNotifs] = useState(true);
 
@@ -290,7 +292,7 @@ export default function ProfileScreen(): JSX.Element {
               variant="danger-soft"
               size="lg"
               className="rounded-[20px]"
-              onPress={() => router.replace("/(auth)/welcome")}
+              onPress={() => signOut()}
             >
               <Button.Label className="font-bold text-danger">Sign Out</Button.Label>
             </Button>

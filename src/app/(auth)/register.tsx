@@ -28,19 +28,19 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { CurrencySelector } from "@/components/CurrencySelector";
 import * as icons from "lucide-react-native";
+import { useSignUp } from "@/features/auth/hooks/useAuthMutations";
 
 export default function RegisterScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { toast } = useToast();
+  const { mutateAsync: signUp, isPending } = useSignUp();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [currency, setCurrency] = useState("USD");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const dangerColor = useThemeColor("danger" as any) as unknown as string;
@@ -85,10 +85,25 @@ export default function RegisterScreen(): JSX.Element {
       });
       return;
     }
-    setLoading(true);
-    await new Promise((r) => setTimeout(r, 1000));
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    router.replace("/(tabs)");
+
+    try {
+      await signUp({
+        email,
+        password,
+        name,
+        defaultCurrency: currency,
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // AppContext will handle routing when authentication state changes
+    } catch (err: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      toast.show({
+        label: "Registration Failed",
+        description: err.message || "Could not create account",
+        variant: "danger",
+        placement: "top",
+      });
+    }
   }
 
   return (
@@ -254,11 +269,11 @@ export default function RegisterScreen(): JSX.Element {
                 size="lg"
                 className="w-full h-14 rounded-2xl bg-primary mt-4 flex-row items-center justify-center gap-2"
                 onPress={handleRegister}
-                isDisabled={loading}
+                isDisabled={isPending}
               >
-                {loading && <ActivityIndicator color="white" />}
+                {isPending && <ActivityIndicator color="white" />}
                 <Typography type="body" weight="semibold" className="text-white">
-                  {loading ? "Creating account…" : "Create Account"}
+                  {isPending ? "Creating account…" : "Create Account"}
                 </Typography>
               </Button>
             </Animated.View>

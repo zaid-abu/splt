@@ -1,16 +1,17 @@
-import React, { createContext, useCallback, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
+import { useRouter, useSegments } from "expo-router";
 
-import { MOCK_ME } from "@/lib/mock-data";
 import type { User } from "@/types";
+import { supabase } from "@/services/supabase/client";
+import { AuthService } from "@/services/api/auth";
 
 // ─── Context shape ────────────────────────────────────────────────────────────
 
 export interface AuthContextValue {
   currentUser: User;
   isAuthenticated: boolean;
-  signIn: (email: string, password?: string) => Promise<void>;
-  signOut: () => void;
+  isLoading: boolean;
 }
 
 // ─── Context ──────────────────────────────────────────────────────────────────
@@ -20,30 +21,77 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 // ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: ReactNode }): React.JSX.Element {
-  const [currentUser, setCurrentUser] = useState<User>(MOCK_ME);
-  const [isAuthenticated, setIsAuthenticated] = useState(true); // mock: start authenticated
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const segments = useSegments();
+  const router = useRouter();
 
-  // ── Auth ──────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    let mounted = true;
 
-  const signIn = useCallback(async (email: string, _password?: string) => {
-    // Phase 1: mock sign-in
-    setCurrentUser({ ...MOCK_ME, email });
-    setIsAuthenticated(true);
+    async function loadSession() {
+      try {
+        const user = await AuthService.getCurrentUser();
+        if (mounted) {
+          setCurrentUser(user);
+          setIsAuthenticated(!!user);
+        }
+      } catch (error) {
+        console.error("Failed to load session", error);
+      } finally {
+        if (mounted) setIsLoading(false);
+      }
+    }
+
+    loadSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === "SIGNED_OUT") {
+        setCurrentUser(null);
+        setIsAuthenticated(false);
+      } else if (session) {
+        const user = await AuthService.getCurrentUser();
+        setCurrentUser(user);
+        setIsAuthenticated(!!user);
+      }
+    });
+
+    return () => {
+      mounted = false;
+      authListener.subscription.unsubscribe();
+    };
   }, []);
 
-  const signOut = useCallback(() => {
-    setIsAuthenticated(false);
-  }, []);
+  // Handle routing based on auth state
+  useEffect(() => {
+    if (isLoading) return;
 
-  // ─────────────────────────────────────────────────────────────────────────
+    const inAuthGroup = segments[0] === "(auth)";
+
+    if (!isAuthenticated && !inAuthGroup) {
+      // Redirect to login if not authenticated and not in auth group
+      router.replace("/(auth)/welcome");
+    } else if (isAuthenticated && inAuthGroup) {
+      // Redirect to tabs if authenticated and in auth group
+      router.replace("/(tabs)");
+    }
+  }, [isAuthenticated, isLoading, segments, router]);
+
+  const fallbackUser: User = {
+    id: "",
+    name: "",
+    email: "",
+    initials: "",
+    defaultCurrency: "USD",
+  };
 
   return (
     <AuthContext.Provider
       value={{
-        currentUser,
+        currentUser: currentUser ?? fallbackUser,
         isAuthenticated,
-        signIn,
-        signOut,
+        isLoading,
       }}
     >
       {children}

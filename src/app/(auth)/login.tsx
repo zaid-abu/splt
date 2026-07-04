@@ -16,14 +16,16 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 
+import { useSignIn } from "@/features/auth/hooks/useAuthMutations";
+
 export default function LoginScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { toast } = useToast();
+  const { mutateAsync: signIn, isPending } = useSignIn();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
@@ -41,11 +43,20 @@ export default function LoginScreen(): JSX.Element {
       });
       return;
     }
-    setLoading(true);
-    // Simulate login
-    await new Promise((r) => setTimeout(r, 1000));
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    router.replace("/(tabs)");
+    
+    try {
+      await signIn({ email, password });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      // AppContext will handle routing when authentication state changes
+    } catch (err: any) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      toast.show({
+        label: "Login Failed",
+        description: err.message || "Invalid credentials",
+        variant: "danger",
+        placement: "top",
+      });
+    }
   }
 
   return (
@@ -146,11 +157,11 @@ export default function LoginScreen(): JSX.Element {
                 size="lg"
                 className="w-full h-14 rounded-2xl bg-primary mt-2 flex-row items-center justify-center gap-2"
                 onPress={handleLogin}
-                isDisabled={loading}
+                isDisabled={isPending}
               >
-                {loading && <ActivityIndicator color="white" />}
+                {isPending && <ActivityIndicator color="white" />}
                 <Typography type="body" weight="semibold" className="text-white">
-                  {loading ? "Signing in…" : "Sign In"}
+                  {isPending ? "Signing in…" : "Sign In"}
                 </Typography>
               </Button>
 

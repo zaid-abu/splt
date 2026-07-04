@@ -7,6 +7,7 @@ import { PressableFeedback, Typography } from "heroui-native";
 import Animated, { useAnimatedStyle, withSpring, withTiming } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { BlurView } from "expo-blur";
+import { useAuth } from "@/context/AppContext";
 
 type TabBarItemProps = {
   isFocused: boolean;
@@ -61,9 +62,12 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
   );
 }
 
-export default function TabsLayout(): JSX.Element {
+export default function TabsLayout(): JSX.Element | null {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  if (!isAuthenticated) return null;
 
   return (
     <Tabs
