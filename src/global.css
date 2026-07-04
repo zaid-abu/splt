@@ -5,6 +5,7 @@
 @source "../node_modules/heroui-native/lib";
 @source "../node_modules/heroui-native/src";
 
+/* ─── Body font utilities ──────────────────────────────────────────────────── */
 @utility font-normal {
   font-family: "PlusJakartaSans_400Regular";
   font-weight: normal;
@@ -30,6 +31,19 @@
   font-weight: 800;
 }
 
+/* ─── Heading font utilities (DM Serif Display) ────────────────────────────── */
+@utility font-heading {
+  font-family: "DMSerifDisplay_400Regular";
+  font-weight: normal;
+}
+
+@utility font-heading-italic {
+  font-family: "DMSerifDisplay_400Regular_Italic";
+  font-weight: normal;
+  font-style: italic;
+}
+
+/* ─── Tailwind theme bridge ────────────────────────────────────────────────── */
 @theme {
   --color-primary: var(--color-primary);
   --color-primary-light: var(--color-primary-light);
@@ -41,10 +55,16 @@
   --color-secondary-dark: var(--color-secondary-dark);
   --color-secondary-foreground: var(--color-secondary-foreground);
 
-  --color-accent-purple-light: var(--color-accent-purple-light);
-  --color-accent-purple-medium: var(--color-accent-purple-medium);
+  --color-accent-red: var(--color-accent-red);
+  --color-accent-green: var(--color-accent-green);
+  --color-accent-purple: var(--color-accent-purple);
+  --color-accent-pink: var(--color-accent-pink);
   --color-accent-orange: var(--color-accent-orange);
-  --color-accent-blue: var(--color-accent-blue);
+
+  /* Legacy accent aliases kept for backwards compatibility */
+  --color-accent-purple-light: var(--color-accent-purple);
+  --color-accent-purple-medium: var(--color-accent-purple);
+  --color-accent-blue: var(--color-accent-purple);
 
   --color-background: var(--color-background);
   --color-surface: var(--color-surface);
@@ -58,14 +78,14 @@
   --color-border-light: var(--color-border-light);
   --color-border-main: var(--color-border-main);
 
-  /* Aliases for backwards compatibility with previous theme */
+  /* Aliases for backwards compatibility */
   --color-foreground: var(--color-text-primary);
   --color-surface-tertiary: var(--color-border-light);
-  --color-accent: var(--color-accent-blue);
+  --color-accent: var(--color-accent-red);
   --color-accent-foreground: #ffffff;
-  --color-success: #10b981;
-  --color-warning: #f59e0b;
-  --color-danger: #ef4444;
+  --color-success: var(--color-accent-green);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-accent-red);
   --color-muted: var(--color-border-main);
   --color-muted-foreground: var(--color-text-secondary);
   --color-border: var(--color-border-main);
@@ -97,38 +117,50 @@
   --radius-pill: var(--radius-pill);
 }
 
+/* ─── Light mode (default) ─────────────────────────────────────────────────── */
 @layer base {
   :root {
-    /* Colors */
-    --color-primary: #3d2b82;
-    --color-primary-light: #6749d2;
-    --color-primary-dark: #261c4c;
+    /* ── Primary — dark charcoal CTA (replaces purple) */
+    --color-primary: #1a1a1a;
+    --color-primary-light: #3a3a3a;
+    --color-primary-dark: #000000;
     --color-primary-foreground: #ffffff;
 
-    --color-secondary: #d4e9fa;
-    --color-secondary-light: #e9f4fc;
-    --color-secondary-dark: #a9d2f5;
+    /* ── Secondary — soft warm off-white */
+    --color-secondary: #f0ebe4;
+    --color-secondary-light: #f9f6f2;
+    --color-secondary-dark: #e0d9d0;
     --color-secondary-foreground: #1a1a1a;
 
-    --color-accent-purple-light: #e0ddf2;
-    --color-accent-purple-medium: #a092e1;
-    --color-accent-orange: #f89d7b;
-    --color-accent-blue: #6b4eff;
+    /* ── Accent palette */
+    --color-accent-red: #e85d5d;      /* Debt / "you owe" indicator */
+    --color-accent-green: #4caf82;    /* Positive balance */
+    --color-accent-purple: #c4a8e0;   /* Group icon backgrounds */
+    --color-accent-pink: #e8c4c4;     /* Avatar ring accent */
+    --color-accent-orange: #f5a623;   /* Warning highlights */
 
-    --color-background: #f2f2f6;
-    --color-surface: #ffffff;
-    --color-surface-secondary: #f8f9fb;
+    /* ── Backgrounds */
+    --color-background: #f5f0eb;      /* Warm cream app background */
+    --color-surface: #ffffff;         /* White cards */
+    --color-surface-secondary: #f9f6f2; /* Slightly warmer off-white */
 
-    --color-text-primary: #1e1a34;
-    --color-text-secondary: #8a8798;
-    --color-text-disabled: #c4c4c4;
+    /* ── Text */
+    --color-text-primary: #1a1a1a;
+    --color-text-secondary: #8e8e93;
+    --color-text-disabled: #c7c7cc;
     --color-text-inverse: #ffffff;
 
-    --color-border-light: #f0f0f0;
-    --color-border-main: #e5e5e5;
+    /* ── Borders */
+    --color-border-light: #e8e4df;    /* Warm border */
+    --color-border-main: #d6d2cd;
 
-    /* Typography */
-    --font-family-heading: "PlusJakartaSans_700Bold";
+    /* ── Semantic */
+    --color-success: #4caf82;
+    --color-danger: #e85d5d;
+    --color-warning: #f5a623;
+
+    /* ── Typography */
+    --font-family-heading: "DMSerifDisplay_400Regular";
     --font-family-body: "PlusJakartaSans_400Regular";
 
     --text-xs: 12px;
@@ -139,21 +171,63 @@
     --text-xxl: 32px;
     --text-xxxl: 40px;
 
-    /* Spacing */
+    /* ── Spacing */
     --spacing-xxs: 4px;
     --spacing-xs: 8px;
     --spacing-sm: 12px;
     --spacing-md: 16px;
-    --spacing-lg: 24px;
+    --spacing-lg: 20px;   /* Section horizontal padding matches reference */
     --spacing-xl: 32px;
     --spacing-xxl: 48px;
 
-    /* Border Radius */
+    /* ── Border Radius (reduced from old 32/40 pill-style) */
     --radius-sm: 8px;
-    --radius-md: 16px;
-    --radius-lg: 24px;
-    --radius-xl: 32px;
-    --radius-xxl: 40px;
+    --radius-md: 12px;    /* buttons / inputs */
+    --radius-lg: 16px;    /* cards — was 24px */
+    --radius-xl: 16px;    /* was 32px */
+    --radius-xxl: 20px;   /* was 40px */
     --radius-pill: 9999px;
+  }
+
+  /* ─── Dark mode prep ─────────────────────────────────────────────────────── */
+  :root.dark {
+    /* ── Primary stays charcoal / shifts to off-white in dark */
+    --color-primary: #f5f0eb;
+    --color-primary-light: #ffffff;
+    --color-primary-dark: #e0dbd5;
+    --color-primary-foreground: #121212;
+
+    /* ── Secondary */
+    --color-secondary: #2a2a2a;
+    --color-secondary-light: #333333;
+    --color-secondary-dark: #1e1e1e;
+    --color-secondary-foreground: #f5f0eb;
+
+    /* ── Accents remain vibrant in dark mode */
+    --color-accent-red: #e85d5d;
+    --color-accent-green: #4caf82;
+    --color-accent-purple: #c4a8e0;
+    --color-accent-pink: #e8c4c4;
+    --color-accent-orange: #f5a623;
+
+    /* ── Backgrounds */
+    --color-background: #121212;
+    --color-surface: #1e1e1e;
+    --color-surface-secondary: #252525;
+
+    /* ── Text */
+    --color-text-primary: #f5f0eb;
+    --color-text-secondary: #9e9e9e;
+    --color-text-disabled: #555555;
+    --color-text-inverse: #1a1a1a;
+
+    /* ── Borders */
+    --color-border-light: #2e2e2e;
+    --color-border-main: #3a3a3a;
+
+    /* ── Semantic */
+    --color-success: #4caf82;
+    --color-danger: #e85d5d;
+    --color-warning: #f5a623;
   }
 }

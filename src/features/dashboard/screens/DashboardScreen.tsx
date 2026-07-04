@@ -1,40 +1,346 @@
 /**
- * Dashboard (Home) Screen - Hero UI Redesign
+ * Dashboard (Home) Screen — Phase 3 Revamp
+ *
+ * Flatter design (no shadows), smooth animations, strict reference alignment.
  */
-import { PressableFeedback, Typography } from "heroui-native";
-import { useRouter } from "expo-router";
-import { FocusAwareView } from "@/components/animations/PageAnimator";
 import type { JSX } from "react";
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
+import { ScrollView, View, RefreshControl, Pressable, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
-import { BottomSheetModal, BottomSheetView, BottomSheetBackdrop } from "@gorhom/bottom-sheet";
-import { PieChart } from "react-native-gifted-charts";
-import { useGroups } from "@/features/groups/queries/useGroups";
-import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
-import { useUserActivities } from "@/features/activity/queries/useActivities";
-import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
-import * as balancesUtil from "@/features/settlements/utils/balances";
+import { useRouter } from "expo-router";
+import { Typography } from "heroui-native";
+import Animated, { FadeInDown, LinearTransition, Easing } from "react-native-reanimated";
 
+import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { BalanceCard } from "@/features/dashboard/components/BalanceCard";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { formatAmount } from "@/components/ui/AmountDisplay";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { formatAmount } from "@/components/ui/AmountDisplay";
-import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { ActivityItem } from "@/features/activity/components/ActivityItem";
-import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
+import { useGroups } from "@/features/groups/queries/useGroups";
+import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
+import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
+import * as balancesUtil from "@/features/settlements/utils/balances";
+import type { Expense, Group, User } from "@/types";
 
+// ─── Design tokens (inline — no Tailwind needed for precise reference match) ──
+const BG = "#F5F0EB";
+const SURFACE = "#FFFFFF";
+const BORDER = "#E8E4DF";
+const TEXT_PRIMARY = "#1A1A1A";
+const TEXT_SECONDARY = "#8E8E93";
+const TEXT_DANGER = "#E85D5D";
+const TEXT_SUCCESS = "#4CAF82";
+const SECTION_PAD = 20;
+const CARD_RADIUS = 20;
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function SectionLabel({ children }: { children: string }): JSX.Element {
+  return (
+    <Typography
+      style={{
+        fontSize: 10,
+        fontWeight: "700",
+        letterSpacing: 1.4,
+        color: TEXT_SECONDARY,
+        fontFamily: "PlusJakartaSans_700Bold",
+        textTransform: "uppercase",
+        marginBottom: 12,
+      }}
+    >
+      {children}
+    </Typography>
+  );
+}
+
+// Category icon mapping
+const CATEGORY_ICONS: Record<string, keyof typeof icons> = {
+  food: "Utensils",
+  transport: "Car",
+  accommodation: "Home",
+  entertainment: "Film",
+  shopping: "ShoppingBag",
+  utilities: "Zap",
+  health: "Pill",
+  travel: "Plane",
+  other: "Package",
+};
+
+const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
+  food: { bg: "#FEF3C7", icon: "#F59E0B" },
+  transport: { bg: "#DBEAFE", icon: "#3B82F6" },
+  accommodation: { bg: "#FCE7F3", icon: "#EC4899" },
+  entertainment: { bg: "#EDE9FE", icon: "#8B5CF6" },
+  shopping: { bg: "#FEE2E2", icon: "#EF4444" },
+  utilities: { bg: "#D1FAE5", icon: "#10B981" },
+  health: { bg: "#CFFAFE", icon: "#06B6D4" },
+  travel: { bg: "#E0E7FF", icon: "#6366F1" },
+  other: { bg: "#F1F5F9", icon: "#64748B" },
+};
+
+// ─── TransactionRow ───────────────────────────────────────────────────────────
+interface TransactionRowProps {
+  expense: Expense;
+  currentUserId: string;
+  paidByUser?: User;
+  myShare: number;
+  isLast: boolean;
+  onPress: () => void;
+}
+
+function TransactionRow({
+  expense,
+  currentUserId,
+  paidByUser,
+  myShare,
+  isLast,
+  onPress,
+}: TransactionRowProps): JSX.Element {
+  const cat = expense.category ?? "other";
+  const colors = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.other;
+  const iconName = CATEGORY_ICONS[cat] ?? "Package";
+  const IconComp = (icons as any)[iconName] as React.ComponentType<{
+    size: number;
+    color: string;
+    strokeWidth: number;
+  }>;
+
+  const iPaid = expense.paidBy === currentUserId;
+  const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
+
+  // Determine sub-text logic based on the reference image
+  // If you paid, it should show green sub-text for what others owe you (total - your share).
+  // If they paid, it should show red sub-text for what you owe them (your share).
+  let subAmountText = "";
+  let subAmountColor = TEXT_DANGER;
+  
+  if (iPaid) {
+     const lentAmount = expense.amount - myShare;
+     if (lentAmount > 0) {
+       subAmountText = formatAmount(lentAmount, expense.currency);
+       subAmountColor = TEXT_SUCCESS;
+     }
+  } else if (myShare > 0) {
+     subAmountText = formatAmount(myShare, expense.currency);
+     subAmountColor = TEXT_DANGER;
+  }
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${expense.title}, ${formatAmount(expense.amount, expense.currency)}`}
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderBottomWidth: isLast ? 0 : 1,
+        borderBottomColor: "rgba(0,0,0,0.03)",
+        backgroundColor: pressed ? "#F9F6F2" : "transparent",
+      })}
+    >
+      {/* Category icon */}
+      <View
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 14,
+          backgroundColor: colors.bg,
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: 14,
+          flexShrink: 0,
+        }}
+      >
+        <IconComp size={20} color={colors.icon} strokeWidth={2} />
+        {paidByUser && (
+          <View
+            style={{
+              position: "absolute",
+              bottom: -4,
+              right: -4,
+              width: 20,
+              height: 20,
+              borderRadius: 10,
+              backgroundColor: "#E8E4DF",
+              borderWidth: 2,
+              borderColor: "#FFFFFF",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Typography
+              style={{
+                fontSize: 10,
+                fontWeight: "bold",
+                color: TEXT_PRIMARY,
+                textAlign: "center",
+                includeFontPadding: false,
+                lineHeight: 14,
+              }}
+            >
+              {paidByUser.name.charAt(0).toUpperCase()}
+            </Typography>
+          </View>
+        )}
+      </View>
+
+      {/* Title + paid by */}
+      <View style={{ flex: 1, marginRight: 12 }}>
+        <Typography
+          numberOfLines={1}
+          style={{
+            fontSize: 14,
+            fontWeight: "700",
+            color: TEXT_PRIMARY,
+            fontFamily: "PlusJakartaSans_700Bold",
+          }}
+        >
+          {expense.title}
+        </Typography>
+        <Typography
+          style={{
+            fontSize: 12,
+            color: TEXT_SECONDARY,
+            fontFamily: "PlusJakartaSans_400Regular",
+            marginTop: 2,
+          }}
+        >
+          Paid by {paidByName}
+        </Typography>
+      </View>
+
+      {/* Total + share */}
+      <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
+        <Typography
+          style={{
+            fontSize: 14,
+            fontWeight: "700",
+            color: TEXT_PRIMARY,
+            fontFamily: "PlusJakartaSans_700Bold",
+          }}
+        >
+          {formatAmount(expense.amount, expense.currency)}
+        </Typography>
+        {!!subAmountText && (
+          <Typography
+            style={{
+              fontSize: 12,
+              fontWeight: "600",
+              color: subAmountColor,
+              fontFamily: "PlusJakartaSans_600SemiBold",
+              marginTop: 2,
+            }}
+          >
+            {subAmountText}
+          </Typography>
+        )}
+      </View>
+    </Pressable>
+  );
+}
+
+// ─── GroupRow ─────────────────────────────────────────────────────────────────
+interface GroupRowProps {
+  group: Group;
+  isLast: boolean;
+  onPress: () => void;
+}
+
+const GROUP_BG_PALETTE = [
+  "#FCE7D0", "#E8E4F9", "#D5EFE2", "#D9EEF8", 
+  "#F9E3E3", "#E3EFF9", "#F5F0C0", "#E8D9F9",
+];
+
+function getGroupColor(id: string): string {
+  const idx = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % GROUP_BG_PALETTE.length;
+  return GROUP_BG_PALETTE[idx];
+}
+
+function GroupRow({ group, isLast, onPress }: GroupRowProps): JSX.Element {
+  const memberCount = group.members.length;
+  const iconBg = getGroupColor(group.id);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={`${group.name}, ${memberCount} participants`}
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        borderBottomWidth: isLast ? 0 : 1,
+        borderBottomColor: "rgba(0,0,0,0.03)",
+        backgroundColor: pressed ? "#F9F6F2" : "transparent",
+      })}
+    >
+      <View
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 22,
+          backgroundColor: iconBg,
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: 14,
+          flexShrink: 0,
+        }}
+      >
+        <Typography
+          style={{
+            fontSize: 20,
+            textAlign: "center",
+            color: TEXT_PRIMARY,
+          }}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+        >
+          {(group.icon && group.icon.length <= 2) ? group.icon : group.name.substring(0, 1).toUpperCase()}
+        </Typography>
+      </View>
+
+      <View style={{ flex: 1 }}>
+        <Typography
+          numberOfLines={1}
+          style={{
+            fontSize: 15,
+            fontWeight: "700",
+            color: TEXT_PRIMARY,
+            fontFamily: "PlusJakartaSans_700Bold",
+          }}
+        >
+          {group.name}
+        </Typography>
+        <Typography
+          style={{
+            fontSize: 13,
+            color: TEXT_SECONDARY,
+            fontFamily: "PlusJakartaSans_400Regular",
+            marginTop: 2,
+          }}
+        >
+          {memberCount} participant{memberCount !== 1 ? "s" : ""}
+        </Typography>
+      </View>
+
+      <icons.ChevronRight size={18} color={TEXT_SECONDARY} strokeWidth={1.5} />
+    </Pressable>
+  );
+}
+
+// ─── DashboardScreen ──────────────────────────────────────────────────────────
 export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
+
   const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
-  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(
-    currentUser?.id
-  );
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
 
@@ -42,75 +348,47 @@ export default function DashboardScreen(): JSX.Element {
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedSlice, setSelectedSlice] = useState<"owed" | "owe" | null>(null);
-  const bottomSheetModalRef = useRef<BottomSheetModal>(null);
 
+  // Balance computations
   const owedToYou = useMemo(
-    () =>
-      balancesUtil.getTotalOwedToMe(
-        currentUser.id,
-        groups,
-        expenses,
-        settlements,
-        preferredCurrency,
-        convertCurrency
-      ),
+    () => balancesUtil.getTotalOwedToMe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency),
     [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
   );
 
   const youOwe = useMemo(
-    () =>
-      Math.abs(
-        balancesUtil.getTotalIOwe(
-          currentUser.id,
-          groups,
-          expenses,
-          settlements,
-          preferredCurrency,
-          convertCurrency
-        )
-      ),
+    () => Math.abs(balancesUtil.getTotalIOwe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency)),
     [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
   );
 
-  const netBalance = useMemo(() => owedToYou - youOwe, [owedToYou, youOwe]);
-
-  const balances = useMemo(
-    () =>
-      balancesUtil.getUserBalances(
-        currentUser.id,
-        undefined,
-        groups,
-        expenses,
-        settlements,
-        preferredCurrency,
-        convertCurrency
-      ),
+  const perUserBalances = useMemo(
+    () => balancesUtil.getUserBalances(currentUser.id, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency),
     [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
   );
 
-  const outstandingFriends = useMemo(() => {
+  const oweUsers = useMemo(() => {
     const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
-    const uniqueUsers = Array.from(new Map(allMembers.map((user) => [user.id, user])).values());
+    const unique = Array.from(new Map(allMembers.map((u) => [u.id, u])).values());
+    return unique.filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) < 0).slice(0, 4);
+  }, [groups, currentUser.id, perUserBalances]);
 
-    return uniqueUsers
-      .filter((u) => u.id !== currentUser.id && (balances.get(u.id) || 0) !== 0)
-      .map((u) => ({ user: u, balance: balances.get(u.id) || 0 }))
-      .sort((a, b) => Math.abs(b.balance) - Math.abs(a.balance))
-      .slice(0, 3);
-  }, [groups, currentUser.id, balances]);
+  const owedUsers = useMemo(() => {
+    const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
+    const unique = Array.from(new Map(allMembers.map((u) => [u.id, u])).values());
+    return unique.filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) > 0).slice(0, 4);
+  }, [groups, currentUser.id, perUserBalances]);
 
-  const recentActivities = useMemo(() => {
-    return [...activities].sort((a, b) => b.date.getTime() - a.date.getTime()).slice(0, 3);
-  }, [activities]);
+  const recentExpenses = useMemo(
+    () => [...expenses].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5),
+    [expenses]
+  );
 
-  const greeting = useMemo(() => {
-    const hours = new Date().getHours();
-    if (hours < 12) return "Good morning";
-    if (hours < 18) return "Good afternoon";
-    return "Good evening";
-  }, []);
+  const userById = useMemo(() => {
+    const map = new Map<string, User>();
+    groups.forEach((g) => g.members.forEach((m) => map.set(m.userId, m.user)));
+    return map;
+  }, [groups]);
 
+  const activeGroups = useMemo(() => groups.slice(0, 4), [groups]);
   const firstName = useMemo(() => currentUser.name.split(" ")[0], [currentUser.name]);
 
   const onRefresh = useCallback(() => {
@@ -122,438 +400,170 @@ export default function DashboardScreen(): JSX.Element {
     }, 1000);
   }, []);
 
-  const openQuickActions = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    bottomSheetModalRef.current?.present();
-  }, []);
-
   return (
-    <FocusAwareView style={{ flex: 1 }} className="bg-background">
+    <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
 
-      {/* ── Sticky Blurred Header ───────────────────── */}
-      <BlurView
-        intensity={100}
-        tint="light"
+      {/* ── A. Header ──────────────────────────────────────────────────────── */}
+      <View
         style={{
           paddingTop: insets.top + 16,
-          paddingBottom: 16,
-          paddingHorizontal: 24,
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 50,
+          paddingBottom: 24,
+          paddingHorizontal: SECTION_PAD,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          backgroundColor: "rgba(242, 242, 246, 0.90)",
         }}
       >
-        <View>
-          <Typography type="body-sm" className="text-muted-foreground font-medium mb-1">
-            {greeting},
-          </Typography>
-          <Typography type="h2" className="font-black tracking-tight text-foreground text-[28px]">
-            {firstName}
-          </Typography>
-        </View>
-        <PressableFeedback
-          accessibilityRole="button"
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.push("/profile");
+        <Typography
+          style={{
+            fontFamily: "DMSerifDisplay_400Regular",
+            fontSize: 32,
+            color: TEXT_PRIMARY,
+            lineHeight: 40,
+            flex: 1,
           }}
+          numberOfLines={1}
         >
-          <View className="rounded-full p-[2px]">
-            <AppUserAvatar user={currentUser} size="md" />
+          Welcome, {firstName}
+        </Typography>
+
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Notifications"
+          onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+          style={{ width: 40, height: 40, alignItems: "flex-end", justifyContent: "center" }}
+        >
+          <View>
+            <icons.Bell size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+            <View style={{ position: "absolute", top: 0, right: 2, backgroundColor: "#E85D5D", width: 8, height: 8, borderRadius: 4 }} />
           </View>
-        </PressableFeedback>
-      </BlurView>
+        </Pressable>
+      </View>
 
       <ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={{ paddingTop: insets.top + 110, paddingBottom: 110 }}
+        contentContainerStyle={{ paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor="#3D2B82"
-            progressViewOffset={insets.top + 100}
-          />
-        }
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={TEXT_PRIMARY} />}
       >
-        {/* ── Enhanced Hero Card (Financial Overview) ── */}
-        <FocusAwareView delay={100} className="px-6 mb-6 mt-1">
-          <View className="bg-primary rounded-[32px] p-6 relative overflow-hidden">
-            {/* Decorative background circle */}
-            <View className="absolute -top-10 -right-10 w-[150px] h-[150px] rounded-full bg-white opacity-10" />
-            <View className="absolute -bottom-10 -left-10 w-[120px] h-[120px] rounded-full bg-white opacity-5" />
-
-            <View className="flex-row justify-between items-center mb-6 z-10">
-              <View>
-                <Typography
-                  type="body-sm"
-                  className="text-primary-foreground opacity-80 font-medium mb-1"
-                >
-                  {selectedSlice === "owed"
-                    ? "Total Owed to You"
-                    : selectedSlice === "owe"
-                      ? "Total You Owe"
-                      : netBalance >= 0
-                        ? "Net Balance (Owed to You)"
-                        : "Net Balance (You Owe)"}
-                </Typography>
-                <Typography
-                  type="h1"
-                  className="text-primary-foreground font-black text-[40px] tracking-tight"
-                >
-                  {formatAmount(
-                    Math.abs(
-                      selectedSlice === "owed"
-                        ? owedToYou
-                        : selectedSlice === "owe"
-                          ? youOwe
-                          : netBalance || 0
-                    ),
-                    preferredCurrency.code
-                  )}
-                </Typography>
-              </View>
-              <View style={{ marginRight: -10 }}>
-                <PieChart
-                  donut
-                  focusOnPress
-                  toggleFocusOnPress
-                  radius={35}
-                  innerRadius={22}
-                  data={[
-                    {
-                      value: owedToYou || 1,
-                      color: "#10b981",
-                      onPress: () => setSelectedSlice((prev) => (prev === "owed" ? null : "owed")),
-                    },
-                    {
-                      value: youOwe || 1,
-                      color: "#ef4444",
-                      onPress: () => setSelectedSlice((prev) => (prev === "owe" ? null : "owe")),
-                    },
-                  ]}
-                  backgroundColor="transparent"
-                  centerLabelComponent={() => {
-                    return <icons.Wallet size={16} color="white" />;
-                  }}
-                />
-              </View>
-            </View>
-
-            {/* Breakdown Row */}
-            <View className="flex-row items-center gap-6 mb-6 z-10">
-              <View>
-                <View className="flex-row items-center gap-1 mb-1">
-                  <Typography
-                    type="body-xs"
-                    className="text-primary-foreground opacity-70 font-medium tracking-wider"
-                  >
-                    Owed To You
-                  </Typography>
-                </View>
-                <Typography type="h3" className="text-primary-foreground font-bold">
-                  {formatAmount(owedToYou, preferredCurrency.code)}
-                </Typography>
-              </View>
-              <View className="h-8 w-[1px] bg-white/20" />
-              <View>
-                <View className="flex-row items-center gap-1 mb-1">
-                  <Typography
-                    type="body-xs"
-                    className="text-primary-foreground opacity-70 font-medium tracking-wider"
-                  >
-                    You Owe
-                  </Typography>
-                </View>
-                <Typography type="h3" className="text-primary-foreground font-bold">
-                  {formatAmount(youOwe, preferredCurrency.code)}
-                </Typography>
-              </View>
-            </View>
-
-            {/* Quick Actions inside Card */}
-            <View className="flex-row gap-3 z-10">
-              <PressableFeedback
-                accessibilityRole="button"
-                className="flex-1 bg-white rounded-[16px] h-12 items-center justify-center"
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  router.push("/(tabs)/friends");
-                }}
-              >
-                <View className="flex-row items-center justify-center gap-2">
-                  <icons.Send size={16} className="text-primary" strokeWidth={2.5} />
-                  <Typography type="body-sm" className="text-primary font-bold">
-                    Settle Up
-                  </Typography>
-                </View>
-              </PressableFeedback>
-              <PressableFeedback
-                accessibilityRole="button"
-                className="flex-1 border border-white/30 rounded-[16px] h-12 items-center justify-center"
-                onPress={openQuickActions}
-              >
-                <View className="flex-row items-center justify-center gap-2">
-                  <icons.Zap size={16} color="white" strokeWidth={2.5} />
-                  <Typography type="body-sm" className="text-white font-bold">
-                    Actions
-                  </Typography>
-                </View>
-              </PressableFeedback>
-            </View>
-          </View>
+        {/* ── B. Balance Overview ─────────────────────────────────────────── */}
+        <FocusAwareView delay={0} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
+          <BalanceCard
+            youOwe={youOwe}
+            owedToYou={owedToYou}
+            currencyCode={preferredCurrency.code}
+            oweUsers={oweUsers}
+            owedUsers={owedUsers}
+            onOwePress={() => router.push("/(tabs)/friends")}
+            onOwedPress={() => router.push("/(tabs)/friends")}
+          />
         </FocusAwareView>
 
-        {/* ── Functional Quick Actions Grid ─────────── */}
-        <FocusAwareView delay={200} className="px-6 mb-8">
-          <View className="flex-row justify-between">
-            {[
-              {
-                icon: icons.Users,
-                label: "Groups",
-                route: "/(tabs)/groups",
-                color: "#6B4EFF",
-                bg: "#E0DDF2",
-              },
-              {
-                icon: icons.UserSquare2,
-                label: "Friends",
-                route: "/(tabs)/friends",
-                color: "#10B981",
-                bg: "#D1FAE5",
-              },
-              {
-                icon: icons.Activity,
-                label: "Activity",
-                route: "/(tabs)/activity",
-                color: "#F59E0B",
-                bg: "#FEF3C7",
-              },
-              {
-                icon: icons.UserCircle,
-                label: "Profile",
-                route: "/profile",
-                color: "#EC4899",
-                bg: "#FCE7F3",
-              },
-            ].map((action, index) => (
-              <PressableFeedback
-                accessibilityRole="button"
-                key={index}
-                className="items-center gap-2"
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  action.route && router.push(action.route as any);
-                }}
-              >
-                <View
-                  className="w-16 h-16 rounded-[20px] items-center justify-center"
-                  style={{ backgroundColor: action.bg }}
-                >
-                  <action.icon size={24} color={action.color} strokeWidth={2.5} />
-                </View>
-                <Typography type="body-sm" className="text-foreground font-medium text-[12px]">
-                  {action.label}
-                </Typography>
-              </PressableFeedback>
-            ))}
-          </View>
-        </FocusAwareView>
+        {/* ── C. Active Groups ────────────────────────────────────────────── */}
+        <FocusAwareView delay={50} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
+          <SectionLabel>Active Groups</SectionLabel>
 
-        {/* ── Outstanding Balances ──────────────────── */}
-        <FocusAwareView delay={300} className="px-6 mb-6">
-          <View className="flex-row items-center justify-between mb-4">
-            <Typography type="h3" className="text-[20px] font-bold text-foreground tracking-tight">
-              Needs Attention
-            </Typography>
-            <PressableFeedback
-              accessibilityRole="button"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push("/(tabs)/friends");
-              }}
-            >
-              <Typography type="body-sm" className="text-primary font-bold">
-                See all
-              </Typography>
-            </PressableFeedback>
-          </View>
-
-          <View className="gap-3">
-            {outstandingFriends.length > 0 ? (
-              outstandingFriends.map((f, idx) => {
-                const isPositive = f.balance > 0;
-                return (
+          <View style={{ backgroundColor: SURFACE, borderRadius: CARD_RADIUS, overflow: "hidden" }}>
+            {isLoadingGroups ? (
+              <View style={{ padding: 16 }}><Typography>Loading...</Typography></View>
+            ) : activeGroups.length > 0 ? (
+              <>
+                {activeGroups.map((group, idx) => (
                   <Animated.View
-                    key={f.user.id}
-                    entering={FadeInDown.delay(300 + idx * 100).springify()}
-                    layout={LinearTransition.springify()}
+                    key={group.id}
+                    entering={FadeInDown.duration(400).delay(idx * 50).easing(Easing.out(Easing.quad))}
+                    layout={LinearTransition}
                   >
-                    <PressableFeedback
-                      accessibilityRole="button"
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        router.push(`/friend/${f.user.id}`);
-                      }}
-                    >
-                      <View className="flex-row items-center justify-between p-4 bg-surface rounded-[20px] border border-border">
-                        <View className="flex-row items-center gap-4">
-                          <AppUserAvatar user={f.user} size="lg" />
-                          <View>
-                            <Typography type="body" className="font-bold text-foreground">
-                              {f.user.name}
-                            </Typography>
-                            <Typography
-                              type="body-sm"
-                              className={`font-bold mt-0.5 ${isPositive ? "text-success" : "text-danger"}`}
-                            >
-                              {isPositive ? "Owes you " : "You owe "}
-                              {formatAmount(Math.abs(f.balance), preferredCurrency.code)}
-                            </Typography>
-                          </View>
-                        </View>
-                        <View className="w-10 h-10 rounded-full bg-secondary items-center justify-center">
-                          <icons.ChevronRight size={20} className="text-primary" />
-                        </View>
-                      </View>
-                    </PressableFeedback>
+                    <GroupRow group={group} isLast={idx === activeGroups.length - 1} onPress={() => router.push(`/group/${group.id}`)} />
                   </Animated.View>
-                );
-              })
+                ))}
+
+                {/* + Add new group row */}
+                <Pressable
+                  onPress={() => router.push("/group/new")}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 16,
+                    borderTopWidth: 1,
+                    borderTopColor: "rgba(0,0,0,0.03)",
+                    backgroundColor: pressed ? "#F9F6F2" : "transparent",
+                    gap: 8,
+                  })}
+                >
+                  <icons.Plus size={16} color={TEXT_SECONDARY} strokeWidth={2} />
+                  <Typography style={{ fontSize: 13, fontWeight: "600", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_600SemiBold" }}>
+                    Add new group
+                  </Typography>
+                </Pressable>
+              </>
             ) : (
-              <View className="p-6 bg-surface rounded-[24px] items-center justify-center border border-border border-dashed">
-                <View className="w-12 h-12 rounded-full bg-success/10 items-center justify-center mb-3">
-                  <icons.CheckCircle2 size={24} className="text-success" />
+              <>
+                <View style={{ padding: 24, alignItems: "center" }}>
+                  <Typography style={{ color: TEXT_SECONDARY }}>No groups yet</Typography>
                 </View>
-                <Typography type="body" className="font-bold text-foreground text-center">
-                  You&apos;re all caught up!
-                </Typography>
-                <Typography type="body-sm" className="text-muted-foreground text-center mt-1">
-                  No outstanding balances with friends.
-                </Typography>
-              </View>
+                <Pressable
+                  onPress={() => router.push("/group/new")}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    paddingVertical: 16,
+                    borderTopWidth: 1,
+                    borderTopColor: "rgba(0,0,0,0.03)",
+                    backgroundColor: pressed ? "#F9F6F2" : "transparent",
+                    gap: 8,
+                  })}
+                >
+                  <icons.Plus size={16} color={TEXT_SECONDARY} strokeWidth={2} />
+                  <Typography style={{ fontSize: 13, fontWeight: "600", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_600SemiBold" }}>
+                    Add new group
+                  </Typography>
+                </Pressable>
+              </>
             )}
           </View>
         </FocusAwareView>
 
-        {/* ── Recent Activity ───────────────────────── */}
-        {recentActivities.length > 0 && (
-          <FocusAwareView delay={400} className="px-6 mb-8">
-            <View className="flex-row items-center justify-between mb-4">
-              <Typography
-                type="h3"
-                className="text-[20px] font-bold text-foreground tracking-tight"
-              >
-                Recent Activity
-              </Typography>
-              <PressableFeedback
-                accessibilityRole="button"
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                  router.push("/(tabs)/activity");
-                }}
-              >
-                <Typography type="body-sm" className="text-primary font-bold">
+        {/* ── D. Transactions ─────────────────────────────────────────────── */}
+        {recentExpenses.length > 0 && (
+          <FocusAwareView delay={100} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
+            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <SectionLabel>Transactions</SectionLabel>
+              <Pressable onPress={() => router.push("/(tabs)/friends")}>
+                <Typography style={{ fontSize: 13, fontWeight: "600", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_600SemiBold", marginBottom: 12 }}>
                   See all
                 </Typography>
-              </PressableFeedback>
+              </Pressable>
             </View>
 
-            <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-              {recentActivities.map((activity, idx) => (
-                <Animated.View key={activity.id} layout={LinearTransition.springify()}>
-                  <ActivityItem
-                    activity={activity}
-                    index={idx}
-                    isLast={idx === recentActivities.length - 1}
-                  />
-                </Animated.View>
-              ))}
+            <View style={{ backgroundColor: SURFACE, borderRadius: CARD_RADIUS, overflow: "hidden" }}>
+              {recentExpenses.map((expense, idx) => {
+                const mySplit = expense.splits.find((s) => s.userId === currentUser.id);
+                const paidByUser = userById.get(expense.paidBy);
+                return (
+                  <Animated.View
+                    key={expense.id}
+                    entering={FadeInDown.duration(400).delay(idx * 50).easing(Easing.out(Easing.quad))}
+                    layout={LinearTransition}
+                  >
+                    <TransactionRow
+                      expense={expense}
+                      currentUserId={currentUser.id}
+                      paidByUser={paidByUser}
+                      myShare={mySplit?.amount ?? 0}
+                      isLast={idx === recentExpenses.length - 1}
+                      onPress={() => router.push(`/expense/${expense.id}`)}
+                    />
+                  </Animated.View>
+                );
+              })}
             </View>
           </FocusAwareView>
         )}
       </ScrollView>
-
-      {/* ── Quick Actions Bottom Sheet ───────────────────────── */}
-      <BottomSheetModal
-        ref={bottomSheetModalRef}
-        index={0}
-        snapPoints={["35%"]}
-        enablePanDownToClose={true}
-        backdropComponent={(props) => (
-          <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} opacity={0.4} />
-        )}
-        backgroundStyle={{ borderRadius: 32, backgroundColor: "#FFFFFF" }}
-      >
-        <BottomSheetView style={{ padding: 24, paddingBottom: insets.bottom + 24 }}>
-          <Typography type="h3" className="font-bold text-foreground mb-8 text-center text-[20px]">
-            Quick Actions
-          </Typography>
-          <View className="flex-row justify-around">
-            <PressableFeedback
-              accessibilityRole="button"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                bottomSheetModalRef.current?.dismiss();
-                setTimeout(() => router.push("/expense/new"), 300);
-              }}
-            >
-              <View className="items-center w-[80px]">
-                <View className="w-16 h-16 rounded-[24px] bg-primary/10 items-center justify-center mb-3">
-                  <icons.Plus size={28} className="text-primary" />
-                </View>
-                <Typography type="body-sm" className="font-bold text-center">
-                  Add Bill
-                </Typography>
-              </View>
-            </PressableFeedback>
-
-            <PressableFeedback
-              accessibilityRole="button"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                bottomSheetModalRef.current?.dismiss();
-                setTimeout(() => router.push("/(tabs)/friends"), 300);
-              }}
-            >
-              <View className="items-center w-[80px]">
-                <View className="w-16 h-16 rounded-[24px] bg-success/10 items-center justify-center mb-3">
-                  <icons.Send size={28} className="text-success" />
-                </View>
-                <Typography type="body-sm" className="font-bold text-center">
-                  Settle Up
-                </Typography>
-              </View>
-            </PressableFeedback>
-
-            <PressableFeedback
-              accessibilityRole="button"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                bottomSheetModalRef.current?.dismiss();
-                setTimeout(() => router.push("/group/new"), 300);
-              }}
-            >
-              <View className="items-center w-[80px]">
-                <View className="w-16 h-16 rounded-[24px] bg-accent/10 items-center justify-center mb-3">
-                  <icons.Users size={28} className="text-accent" />
-                </View>
-                <Typography type="body-sm" className="font-bold text-center">
-                  New Group
-                </Typography>
-              </View>
-            </PressableFeedback>
-          </View>
-        </BottomSheetView>
-      </BottomSheetModal>
-    </FocusAwareView>
+    </View>
   );
 }

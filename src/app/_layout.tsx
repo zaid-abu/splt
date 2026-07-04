@@ -9,6 +9,10 @@ import {
   PlusJakartaSans_700Bold,
   PlusJakartaSans_800ExtraBold,
 } from "@expo-google-fonts/plus-jakarta-sans";
+import {
+  DMSerifDisplay_400Regular,
+  DMSerifDisplay_400Regular_Italic,
+} from "@expo-google-fonts/dm-serif-display";
 
 import { AppProvider } from "@/providers/AppProvider";
 import "../global.css";
@@ -24,6 +28,8 @@ export default function RootLayout(): JSX.Element | null {
     PlusJakartaSans_600SemiBold,
     PlusJakartaSans_700Bold,
     PlusJakartaSans_800ExtraBold,
+    DMSerifDisplay_400Regular,
+    DMSerifDisplay_400Regular_Italic,
   });
 
   useEffect(() => {
@@ -42,7 +48,8 @@ export default function RootLayout(): JSX.Element | null {
         <Stack.Screen
           name="group/new"
           options={{
-            presentation: "modal",
+            presentation: "transparentModal",
+            animation: "fade",
             headerShown: false,
           }}
         />
