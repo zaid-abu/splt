@@ -10,7 +10,7 @@
  */
 import { Typography, Skeleton, Button, PressableFeedback } from "heroui-native";
 import { useRouter } from "expo-router";
-import { FocusAwareView } from "@/components/PageAnimator";
+import { FocusAwareView } from "@/components/animations/PageAnimator";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -19,7 +19,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 import { BlurView } from "expo-blur";
 import * as icons from "lucide-react-native";
 
-import { GroupCard } from "@/components/GroupCard";
+import { GroupCard } from "@/components/cards/GroupCard";
 import { useAuth } from "@/context/AppContext";
 import { useGroups } from "@/queries/useGroups";
 

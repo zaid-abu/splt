@@ -385,12 +385,12 @@ Recommend only one next phase. Wait for approval before continuing.
   - `[x]` Define typed route parameters.
   - `[x]` Standardize screen transitions in `_layout.tsx`.
 
-### ⏳ Phase 12: Reusable UI Components
+### ✅ Phase 12: Reusable UI Components (COMPLETED)
 
 - **Objective:** Extract primitive UI elements into `src/components/ui/`.
 - **Implementation:**
-  - Move standalone items like `AmountDisplay`, `MemberAvatar`, `CurrencySelector` into the unified `components/` hierarchy.
-  - Ensure all adhere strictly to the Design System.
+  - `[x]` Move standalone items like `AmountDisplay`, `MemberAvatar`, `CurrencySelector` into the unified `components/` hierarchy.
+  - `[x]` Ensure all adhere strictly to the Design System.
 
 ### ⏳ Phase 13: Reusable Form Components
 

@@ -9,7 +9,7 @@ import * as icons from "lucide-react-native";
 import { BlurView } from "expo-blur";
 import * as Haptics from "expo-haptics";
 import LottieView from "lottie-react-native";
-import { SwipeableRow } from "@/components/SwipeableRow";
+import { SwipeableRow } from "@/components/layout/SwipeableRow";
 import {
   useGroups,
   useCreateGroup,
@@ -27,11 +27,11 @@ import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
 
-import { FocusAwareView } from "@/components/PageAnimator";
-import { formatAmount } from "@/components/AmountDisplay";
+import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { formatAmount } from "@/components/ui/AmountDisplay";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { AppUserAvatar } from "@/components/MemberAvatar";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 
 export default function FriendsScreen(): JSX.Element {
   const router = useRouter();

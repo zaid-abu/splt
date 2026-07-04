@@ -6,7 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import { ScrollView, View, RefreshControl, TextInput } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
-import { FocusAwareView } from "@/components/PageAnimator";
+import { FocusAwareView } from "@/components/animations/PageAnimator";
 import * as icons from "lucide-react-native";
 import {
   useGroups,
@@ -27,9 +27,9 @@ import * as balancesUtil from "@/utils/balances";
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { AppUserAvatar } from "@/components/MemberAvatar";
-import { formatAmount } from "@/components/AmountDisplay";
-import { ActivityItem } from "@/components/ActivityItem";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { formatAmount } from "@/components/ui/AmountDisplay";
+import { ActivityItem } from "@/components/ui/ActivityItem";
 import type { Activity } from "@/types";
 
 export default function ActivityScreen(): JSX.Element {

@@ -24,8 +24,8 @@ import * as balancesUtil from "@/utils/balances";
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { formatAmount } from "@/components/AmountDisplay";
-import { SwipeableRow } from "@/components/SwipeableRow";
+import { formatAmount } from "@/components/ui/AmountDisplay";
+import { SwipeableRow } from "@/components/layout/SwipeableRow";
 
 interface ActivityItemProps {
   activity: Activity;

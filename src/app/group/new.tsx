@@ -48,7 +48,7 @@ import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
 
-import { CurrencySelector } from "@/components/CurrencySelector";
+import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";

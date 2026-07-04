@@ -24,8 +24,8 @@ import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
 
-import { AppUserAvatar } from "@/components/MemberAvatar";
-import { getCurrencySymbol } from "@/components/AmountDisplay";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { EXPENSE_CATEGORIES } from "@/types";

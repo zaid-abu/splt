@@ -13,7 +13,7 @@
  */
 import { Switch, Typography, Button, ListGroup, useThemeColor } from "heroui-native";
 import { useRouter } from "expo-router";
-import { FocusAwareView } from "@/components/PageAnimator";
+import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { Uniwind } from "uniwind";
 import type { JSX } from "react";
 import { useState } from "react";
@@ -42,8 +42,8 @@ import { useAuth } from "@/context/AppContext";
 import { useSignOut } from "@/features/auth/hooks/useAuthMutations";
 import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
-import { AppUserAvatar } from "@/components/MemberAvatar";
-import { CurrencySelector } from "@/components/CurrencySelector";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { CurrencySelector } from "@/components/forms/CurrencySelector";
 
 function SettingItem({ icon: Icon, title, subtitle, color, onPress, rightElement, isLast }: any) {
   return (

@@ -32,11 +32,11 @@ import { useUserActivities, useLogActivity, useDeleteActivity } from "@/queries/
 import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
 
-import { formatAmount } from "@/components/AmountDisplay";
-import { ActivityItem } from "@/components/ActivityItem";
+import { formatAmount } from "@/components/ui/AmountDisplay";
+import { ActivityItem } from "@/components/ui/ActivityItem";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { AppUserAvatar } from "@/components/MemberAvatar";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 
 export default function FriendDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<FriendRouteParams>();

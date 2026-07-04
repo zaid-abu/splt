@@ -2,8 +2,8 @@ import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import type { JSX } from "react";
 import { View } from "react-native";
 
-import { AmountDisplay } from "@/components/AmountDisplay";
-import { AppUserAvatar } from "@/components/MemberAvatar";
+import { AmountDisplay } from "@/components/ui/AmountDisplay";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import * as icons from "lucide-react-native";
 import type { Expense } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/types";

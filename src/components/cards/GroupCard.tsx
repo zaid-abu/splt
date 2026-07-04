@@ -20,8 +20,8 @@ import { useUserSettlements, useAddSettlement } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
 import { useMemo } from "react";
 
-import { AmountDisplay } from "@/components/AmountDisplay";
-import { SwipeableRow } from "@/components/SwipeableRow";
+import { AmountDisplay } from "@/components/ui/AmountDisplay";
+import { SwipeableRow } from "@/components/layout/SwipeableRow";
 import { getStringColor, hexToRgba } from "@/utils/theme";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";

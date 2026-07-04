@@ -36,8 +36,8 @@ import * as balancesUtil from "@/utils/balances";
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { AppUserAvatar } from "@/components/MemberAvatar";
-import { CurrencySelector } from "@/components/CurrencySelector";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 

@@ -41,9 +41,9 @@ import {
 } from "@/queries/useSettlements";
 import * as balancesUtil from "@/utils/balances";
 
-import { CurrencySelector } from "@/components/CurrencySelector";
-import { AppUserAvatar } from "@/components/MemberAvatar";
-import { getCurrencySymbol } from "@/components/AmountDisplay";
+import { CurrencySelector } from "@/components/forms/CurrencySelector";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
 import { useDataStore } from "@/store/useDataStore";

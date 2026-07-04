@@ -28,9 +28,9 @@ import Animated, {
   FadeInDown,
 } from "react-native-reanimated";
 
-import { ExpenseItem } from "@/components/ExpenseItem";
-import { AvatarStack, AppUserAvatar } from "@/components/MemberAvatar";
-import { getCurrencySymbol } from "@/components/AmountDisplay";
+import { ExpenseItem } from "@/components/ui/ExpenseItem";
+import { AvatarStack, AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";

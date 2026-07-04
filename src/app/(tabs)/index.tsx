@@ -3,7 +3,7 @@
  */
 import { PressableFeedback, Typography } from "heroui-native";
 import { useRouter } from "expo-router";
-import { FocusAwareView } from "@/components/PageAnimator";
+import { FocusAwareView } from "@/components/animations/PageAnimator";
 import type { JSX } from "react";
 import { useState, useCallback, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -33,9 +33,9 @@ import * as balancesUtil from "@/utils/balances";
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { formatAmount } from "@/components/AmountDisplay";
-import { AppUserAvatar } from "@/components/MemberAvatar";
-import { ActivityItem } from "@/components/ActivityItem";
+import { formatAmount } from "@/components/ui/AmountDisplay";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { ActivityItem } from "@/components/ui/ActivityItem";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
 export default function DashboardScreen(): JSX.Element {

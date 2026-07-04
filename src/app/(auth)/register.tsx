@@ -26,7 +26,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { CurrencySelector } from "@/components/CurrencySelector";
+import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import * as icons from "lucide-react-native";
 import { useSignUp } from "@/features/auth/hooks/useAuthMutations";
 
