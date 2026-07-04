@@ -13,6 +13,8 @@ import {
 import { AppProvider } from "@/providers/AppProvider";
 import "../global.css";
 
+export { ErrorFallback as ErrorBoundary } from "@/components/feedback/ErrorFallback";
+
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout(): JSX.Element | null {
