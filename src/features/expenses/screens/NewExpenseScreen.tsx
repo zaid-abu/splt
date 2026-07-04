@@ -77,6 +77,12 @@ import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import * as icons from "lucide-react-native";
 import type { ExpenseCategory, SplitMethod } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/types";
+import {
+  calculateEqualShare,
+  calculateCustomSum,
+  calculatePercentSum,
+  generateSplits,
+} from "@/features/expenses/utils/splits";
 
 const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
   { key: "equal", label: "Equal", desc: "Divide equally" },
@@ -220,18 +226,12 @@ export default function AddExpenseScreen(): JSX.Element {
 
   const includedMembers = participants.filter((u) => included[u.id]);
   const parsedAmount = parseFloat(amount.replace(",", ".")) || 0;
-  const equalShare = includedMembers.length > 0 ? parsedAmount / includedMembers.length : 0;
+  const equalShare = calculateEqualShare(includedMembers, parsedAmount);
 
-  const currentCustomSum = includedMembers.reduce(
-    (sum, u) => sum + (parseFloat(customAmounts[u.id] ?? "0") || 0),
-    0
-  );
+  const currentCustomSum = calculateCustomSum(includedMembers, customAmounts);
   const remainingCustom = Math.max(0, parsedAmount - currentCustomSum);
 
-  const currentPercentSum = includedMembers.reduce(
-    (sum, u) => sum + (parseFloat(customPercentages[u.id] ?? "0") || 0),
-    0
-  );
+  const currentPercentSum = calculatePercentSum(includedMembers, customPercentages);
   const remainingPercent = Math.max(0, 100 - currentPercentSum);
 
   async function handleSubmit(): Promise<void> {
@@ -294,20 +294,13 @@ export default function AddExpenseScreen(): JSX.Element {
 
     setLoading(true);
     try {
-      const splits = includedMembers.map((u) => {
-        let splitAmt = equalShare;
-        if (splitMethod === "custom") {
-          splitAmt = parseFloat(customAmounts[u.id] ?? "0") || 0;
-        } else if (splitMethod === "percentage") {
-          const pct = parseFloat(customPercentages[u.id] ?? "0") || 0;
-          splitAmt = (parsedAmount * pct) / 100;
-        }
-        return {
-          userId: u.id,
-          user: u,
-          amount: splitAmt,
-        };
-      });
+      const splits = generateSplits(
+        includedMembers,
+        parsedAmount,
+        splitMethod,
+        customAmounts,
+        customPercentages
+      );
 
       if (existingExpense) {
         await updateExpense({

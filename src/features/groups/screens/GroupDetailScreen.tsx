@@ -57,6 +57,7 @@ import {
   useAddSettlement,
 } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
+import { calculateTotalGroupExpenses } from "@/features/groups/utils/calculations";
 
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<GroupRouteParams>();
@@ -142,9 +143,10 @@ export default function GroupDetailScreen(): JSX.Element {
       );
 
   // Calculate total expenses in group currency
-  const totalExpensesInGroupCurrency = expenses.reduce(
-    (sum, exp) => sum + convertCurrency(exp.amount, exp.currency, group.currency),
-    0
+  const totalExpensesInGroupCurrency = calculateTotalGroupExpenses(
+    expenses,
+    group.currency,
+    convertCurrency
   );
 
   return (

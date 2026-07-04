@@ -406,11 +406,11 @@ Recommend only one next phase. Wait for approval before continuing.
   - `[x]` Slice the app into `features/expenses`, `features/groups`, etc.
   - `[x]` Move screens, hooks, queries, and components into these feature folders.
 
-### ⏳ Phase 15: Business Logic Extraction
+### ✅ Phase 15: Business Logic Extraction (COMPLETED)
 
 - **Objective:** Ensure screens are purely presentational.
 - **Implementation:**
-  - Extract complex calculations (e.g., custom split logic, balance settlement math) into pure utility functions inside `src/utils/math.ts` or feature-specific `utils/`.
+  - `[x]` Extract complex calculations (e.g., custom split logic, balance settlement math) into pure utility functions inside `src/utils/math.ts` or feature-specific `utils/`.
 
 ### ⏳ Phase 16: Performance Optimization
 
