@@ -12,7 +12,7 @@ import { View } from "react-native";
 import { Avatar, Typography, useThemeColor } from "heroui-native";
 
 import type { User } from "@/types";
-import { getStringColor, hexToRgba } from "@/utils/theme";
+import { getStringColor, hexToPastel } from "@/utils/theme";
 
 interface AppUserAvatarProps {
   user: User;
@@ -30,10 +30,10 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
   let bg, textColor;
   if (balance !== undefined) {
     if (balance > 0) {
-      bg = hexToRgba(successColor, 0.15);
+      bg = hexToPastel(successColor, 0.85);
       textColor = successColor;
     } else if (balance < 0) {
-      bg = hexToRgba(dangerColor, 0.15);
+      bg = hexToPastel(dangerColor, 0.85);
       textColor = dangerColor;
     } else {
       bg = secondaryColor;
@@ -41,7 +41,7 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
     }
   } else {
     textColor = getStringColor(user.id);
-    bg = hexToRgba(textColor, 0.15);
+    bg = hexToPastel(textColor, 0.85);
   }
 
   const sizeMap = {
@@ -59,11 +59,13 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
         backgroundColor: bg,
         width: dims.size,
         height: dims.size,
-        borderRadius: dims.size / 2,
+        borderRadius: 0,
+        borderWidth: 1,
+        borderColor: "#E8E4DF",
       }}
     >
       <Avatar.Fallback>
-        <Typography style={{ color: textColor, fontWeight: "bold", fontSize: dims.font }}>
+        <Typography style={{ color: textColor, fontFamily: "PlusJakartaSans_800ExtraBold", fontSize: dims.font, letterSpacing: -0.5 }}>
           {user.initials}
         </Typography>
       </Avatar.Fallback>
@@ -86,7 +88,7 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
     <View style={{ flexDirection: "row", alignItems: "center" }}>
       {visible.map((user, idx) => {
         const textColor = getStringColor(user.id);
-        const bg = hexToRgba(textColor, 0.15);
+        const bg = hexToPastel(textColor, 0.85);
 
         return (
           <Avatar
@@ -98,13 +100,13 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
               zIndex: visible.length - idx,
               borderWidth: 2,
               borderColor: "white",
-              width: 28,
-              height: 28,
-              borderRadius: 14,
+              borderRadius: 0,
+              width: 32,
+              height: 32,
             }}
           >
             <Avatar.Fallback>
-              <Typography style={{ color: textColor, fontSize: 10, fontWeight: "bold" }}>
+              <Typography style={{ color: textColor, fontFamily: "PlusJakartaSans_800ExtraBold", fontSize: 12 }}>
                 {user.initials}
               </Typography>
             </Avatar.Fallback>
@@ -115,18 +117,19 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
         <Avatar
           size="sm"
           style={{
+            width: 32,
+            height: 32,
+            borderRadius: 0,
             backgroundColor: secondaryColor,
             marginLeft: -8,
-            zIndex: 0,
+            alignItems: "center",
+            justifyContent: "center",
             borderWidth: 2,
             borderColor: "white",
-            width: 28,
-            height: 28,
-            borderRadius: 14,
           }}
         >
           <Avatar.Fallback>
-            <Typography style={{ color: mutedForeground, fontSize: 10, fontWeight: "bold" }}>
+            <Typography style={{ color: mutedForeground, fontFamily: "PlusJakartaSans_800ExtraBold", fontSize: 11 }}>
               +{overflow}
             </Typography>
           </Avatar.Fallback>

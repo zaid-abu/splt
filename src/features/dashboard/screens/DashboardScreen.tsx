@@ -568,7 +568,7 @@ export default function DashboardScreen(): JSX.Element {
         <FocusAwareView delay={100} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
           <SectionLabel
             rightAction={
-              <Pressable onPress={() => router.push("/(tabs)/friends")}>
+              <Pressable onPress={() => router.push("/(tabs)/activity")}>
                 <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
                   View all
                 </Typography>
