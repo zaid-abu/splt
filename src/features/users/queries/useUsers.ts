@@ -1,10 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { UsersService } from "@/services/api/users";
-import { queryKeys } from "@/queries/keys";
-
 // Extend queryKeys dynamically or just use a custom array if it's localized
 export const userQueryKeys = {
-  search: (query: string, currentUserId: string) => ["users", "search", query, currentUserId] as const,
+  search: (query: string, currentUserId: string) =>
+    ["users", "search", query, currentUserId] as const,
 };
 
 export function useSearchUsers(query: string, currentUserId: string) {

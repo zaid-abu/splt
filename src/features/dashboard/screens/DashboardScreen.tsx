@@ -11,13 +11,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import { Typography, Skeleton } from "heroui-native";
+import { Typography } from "heroui-native";
 import { useQueryClient } from "@tanstack/react-query";
 import Animated, { FadeInDown, LinearTransition, Easing } from "react-native-reanimated";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { BalanceCard } from "@/features/dashboard/components/BalanceCard";
 import { formatAmount } from "@/components/ui/AmountDisplay";
+import { AppLoader } from "@/components/ui/AppLoader";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -45,15 +46,27 @@ const SEPARATOR = "#E8E4DF"; // Slightly darker beige for subtle lines
 const SECTION_PAD = 24;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function SectionLabel({ children, rightAction }: { children: string, rightAction?: JSX.Element }): JSX.Element {
+function SectionLabel({
+  children,
+  rightAction,
+}: {
+  children: string;
+  rightAction?: JSX.Element;
+}): JSX.Element {
   return (
-    <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginBottom: 16,
+      }}
+    >
       <Typography
         style={{
           fontSize: 20,
-          fontWeight: "800",
           color: TEXT_PRIMARY,
-          fontFamily: "PlusJakartaSans_800ExtraBold",
+          fontFamily: "CrimsonText_700Bold",
           letterSpacing: -0.5,
         }}
       >
@@ -122,16 +135,16 @@ function TransactionRow({
 
   let subAmountText = "";
   let subAmountColor = TEXT_SECONDARY;
-  
+
   if (iPaid) {
-     const lentAmount = expense.amount - myShare;
-     if (lentAmount > 0) {
-       subAmountText = `Lent ${formatAmount(lentAmount, expense.currency)}`;
-       subAmountColor = TEXT_SUCCESS;
-     }
+    const lentAmount = expense.amount - myShare;
+    if (lentAmount > 0) {
+      subAmountText = `Lent ${formatAmount(lentAmount, expense.currency)}`;
+      subAmountColor = TEXT_SUCCESS;
+    }
   } else if (myShare > 0) {
-     subAmountText = `Borrowed ${formatAmount(myShare, expense.currency)}`;
-     subAmountColor = TEXT_SECONDARY;
+    subAmountText = `Borrowed ${formatAmount(myShare, expense.currency)}`;
+    subAmountColor = TEXT_SECONDARY;
   }
 
   return (
@@ -168,9 +181,8 @@ function TransactionRow({
           numberOfLines={1}
           style={{
             fontSize: 16,
-            fontWeight: "700",
             color: TEXT_PRIMARY,
-            fontFamily: "PlusJakartaSans_700Bold",
+            fontFamily: "CrimsonText_700Bold",
             letterSpacing: -0.3,
           }}
         >
@@ -180,7 +192,7 @@ function TransactionRow({
           style={{
             fontSize: 13,
             color: TEXT_SECONDARY,
-            fontFamily: "PlusJakartaSans_500Medium",
+            fontFamily: "CrimsonText_600SemiBold",
             marginTop: 2,
           }}
         >
@@ -192,9 +204,8 @@ function TransactionRow({
         <Typography
           style={{
             fontSize: 16,
-            fontWeight: "700",
             color: TEXT_PRIMARY,
-            fontFamily: "PlusJakartaSans_700Bold",
+            fontFamily: "CrimsonText_700Bold",
             letterSpacing: -0.3,
           }}
         >
@@ -204,9 +215,8 @@ function TransactionRow({
           <Typography
             style={{
               fontSize: 13,
-              fontWeight: "600",
               color: subAmountColor,
-              fontFamily: "PlusJakartaSans_600SemiBold",
+              fontFamily: "CrimsonText_600SemiBold",
               marginTop: 2,
             }}
           >
@@ -249,7 +259,7 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
 
   let subAmountText = "";
   let subAmountColor = TEXT_SECONDARY;
-  
+
   if (balance < 0) {
     subAmountText = `You owe ${formatAmount(Math.abs(balance), currency)}`;
     subAmountColor = TEXT_DANGER;
@@ -293,7 +303,9 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
             color: TEXT_PRIMARY,
           }}
         >
-          {(group.icon && group.icon.length <= 2) ? group.icon : group.name.substring(0, 1).toUpperCase()}
+          {group.icon && group.icon.length <= 2
+            ? group.icon
+            : group.name.substring(0, 1).toUpperCase()}
         </Typography>
       </View>
 
@@ -302,9 +314,8 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
           numberOfLines={1}
           style={{
             fontSize: 16,
-            fontWeight: "700",
             color: TEXT_PRIMARY,
-            fontFamily: "PlusJakartaSans_700Bold",
+            fontFamily: "CrimsonText_700Bold",
             letterSpacing: -0.3,
           }}
         >
@@ -314,7 +325,7 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
           style={{
             fontSize: 14,
             color: TEXT_SECONDARY,
-            fontFamily: "PlusJakartaSans_500Medium",
+            fontFamily: "CrimsonText_600SemiBold",
             marginTop: 4,
           }}
         >
@@ -326,9 +337,8 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
         <Typography
           style={{
             fontSize: 14,
-            fontWeight: "700",
             color: subAmountColor,
-            fontFamily: "PlusJakartaSans_700Bold",
+            fontFamily: "CrimsonText_700Bold",
           }}
         >
           {subAmountText}
@@ -356,41 +366,78 @@ export default function DashboardScreen(): JSX.Element {
   const hasNotifications = notifications.length > 0;
 
   const [refreshing, setRefreshing] = useState(false);
-  const [activityFilter, setActivityFilter] = useState<"all"|"paid"|"owe">("all");
+  const [activityFilter, setActivityFilter] = useState<"all" | "paid" | "owe">("all");
   const queryClient = useQueryClient();
 
   // Balance computations
   const owedToYou = useMemo(
-    () => balancesUtil.getTotalOwedToMe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency),
+    () =>
+      balancesUtil.getTotalOwedToMe(
+        currentUser.id,
+        groups,
+        expenses,
+        settlements,
+        preferredCurrency,
+        convertCurrency
+      ),
     [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
   );
 
   const youOwe = useMemo(
-    () => Math.abs(balancesUtil.getTotalIOwe(currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency)),
+    () =>
+      Math.abs(
+        balancesUtil.getTotalIOwe(
+          currentUser.id,
+          groups,
+          expenses,
+          settlements,
+          preferredCurrency,
+          convertCurrency
+        )
+      ),
     [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
   );
 
   const perUserBalances = useMemo(
-    () => balancesUtil.getUserBalances(currentUser.id, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency),
+    () =>
+      balancesUtil.getUserBalances(
+        currentUser.id,
+        undefined,
+        groups,
+        expenses,
+        settlements,
+        preferredCurrency,
+        convertCurrency
+      ),
     [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
   );
 
   const oweUsers = useMemo(() => {
-    return friends.filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) < 0).slice(0, 4);
+    return friends
+      .filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) < 0)
+      .slice(0, 4);
   }, [friends, currentUser.id, perUserBalances]);
 
   const owedUsers = useMemo(() => {
-    return friends.filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) > 0).slice(0, 4);
+    return friends
+      .filter((u) => u.id !== currentUser.id && (perUserBalances.get(u.id) ?? 0) > 0)
+      .slice(0, 4);
   }, [friends, currentUser.id, perUserBalances]);
 
   const recentExpenses = useMemo(() => {
     let filtered = [...expenses];
     if (activityFilter === "paid") {
-      filtered = filtered.filter(e => e.paidBy === currentUser.id);
+      filtered = filtered.filter((e) => e.paidBy === currentUser.id);
     } else if (activityFilter === "owe") {
-      filtered = filtered.filter(e => e.paidBy !== currentUser.id && e.splits.some(s => s.userId === currentUser.id && !s.paid));
+      filtered = filtered.filter(
+        (e) =>
+          e.paidBy !== currentUser.id &&
+          e.splits.some((s) => s.userId === currentUser.id && !s.paid)
+      );
     }
-    return filtered.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, 5);
+    return filtered
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 5);
   }, [expenses, activityFilter, currentUser.id]);
 
   const userById = useMemo(() => {
@@ -400,7 +447,7 @@ export default function DashboardScreen(): JSX.Element {
   }, [friends]);
 
   const activeGroups = useMemo(() => {
-    const groupBalances = groups.map(group => {
+    const groupBalances = groups.map((group) => {
       const balancesMap = balancesUtil.getUserBalances(
         currentUser.id,
         group.id,
@@ -419,7 +466,7 @@ export default function DashboardScreen(): JSX.Element {
 
     // Sort by netBalance ascending (most owed first)
     groupBalances.sort((a, b) => a.netBalance - b.netBalance);
-    
+
     return groupBalances.slice(0, 4);
   }, [groups, currentUser.id, expenses, settlements, preferredCurrency, convertCurrency]);
 
@@ -453,7 +500,7 @@ export default function DashboardScreen(): JSX.Element {
             style={{
               fontSize: 14,
               color: TEXT_SECONDARY,
-              fontFamily: "PlusJakartaSans_500Medium",
+              fontFamily: "CrimsonText_600SemiBold",
               marginBottom: 4,
             }}
           >
@@ -461,7 +508,7 @@ export default function DashboardScreen(): JSX.Element {
           </Typography>
           <Typography
             style={{
-              fontFamily: "DMSerifDisplay_400Regular",
+              fontFamily: "UnicaOne_400Regular",
               fontSize: 36,
               color: TEXT_PRIMARY,
               lineHeight: 44,
@@ -480,15 +527,33 @@ export default function DashboardScreen(): JSX.Element {
             router.push("/notifications");
           }}
           style={({ pressed }) => ({
-            width: 44, height: 44, alignItems: "center", justifyContent: "center", 
-            backgroundColor: "transparent", borderRadius: 0, borderWidth: 1, borderColor: SEPARATOR,
+            width: 44,
+            height: 44,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "transparent",
+            borderRadius: 0,
+            borderWidth: 1,
+            borderColor: SEPARATOR,
             opacity: pressed ? 0.5 : 1,
           })}
         >
           <View>
             <icons.Bell size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
             {hasNotifications && (
-              <View style={{ position: "absolute", top: -2, right: -2, backgroundColor: "#E85D5D", width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: BG }} />
+              <View
+                style={{
+                  position: "absolute",
+                  top: -2,
+                  right: -2,
+                  backgroundColor: "#E85D5D",
+                  width: 10,
+                  height: 10,
+                  borderRadius: 5,
+                  borderWidth: 2,
+                  borderColor: BG,
+                }}
+              />
             )}
           </View>
         </Pressable>
@@ -498,10 +563,21 @@ export default function DashboardScreen(): JSX.Element {
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={TEXT_PRIMARY} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={TEXT_PRIMARY} />
+        }
       >
         {/* ── B. Balance Overview ─────────────────────────────────────────── */}
-        <FocusAwareView delay={0} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40, borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingBottom: 24 }}>
+        <FocusAwareView
+          delay={0}
+          style={{
+            paddingHorizontal: SECTION_PAD,
+            marginBottom: 40,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+            paddingBottom: 24,
+          }}
+        >
           <BalanceCard
             youOwe={youOwe}
             owedToYou={owedToYou}
@@ -520,7 +596,13 @@ export default function DashboardScreen(): JSX.Element {
             rightAction={
               <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
                 <Pressable onPress={() => router.push("/(tabs)/groups")} hitSlop={8}>
-                  <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                  <Typography
+                    style={{
+                      fontSize: 14,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "CrimsonText_700Bold",
+                    }}
+                  >
                     View all
                   </Typography>
                 </Pressable>
@@ -535,31 +617,36 @@ export default function DashboardScreen(): JSX.Element {
 
           <View>
             {isLoadingGroups ? (
-              <View style={{ gap: 16 }}>
-                <Skeleton className="w-full h-[80px] rounded-none bg-[#E8E4DF]" />
-                <Skeleton className="w-full h-[80px] rounded-none bg-[#E8E4DF]" />
+              <View style={{ paddingTop: 24 }}>
+                <AppLoader />
               </View>
             ) : activeGroups.length > 0 ? (
               <>
                 {activeGroups.map(({ group, netBalance }, idx) => (
                   <Animated.View
                     key={group.id}
-                    entering={FadeInDown.duration(400).delay(idx * 50).easing(Easing.out(Easing.quad))}
+                    entering={FadeInDown.duration(400)
+                      .delay(idx * 50)
+                      .easing(Easing.out(Easing.quad))}
                     layout={LinearTransition}
                   >
-                    <GroupRow 
-                      group={group} 
+                    <GroupRow
+                      group={group}
                       balance={netBalance}
                       currency={preferredCurrency.code}
-                      isLast={idx === activeGroups.length - 1} 
-                      onPress={() => router.push(`/group/${group.id}`)} 
+                      isLast={idx === activeGroups.length - 1}
+                      onPress={() => router.push(`/group/${group.id}`)}
                     />
                   </Animated.View>
                 ))}
               </>
             ) : (
               <View style={{ paddingVertical: 24 }}>
-                <Typography style={{ color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>No groups yet. Tap + to create one.</Typography>
+                <Typography
+                  style={{ color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
+                >
+                  No groups yet. Tap + to create one.
+                </Typography>
               </View>
             )}
           </View>
@@ -569,7 +656,9 @@ export default function DashboardScreen(): JSX.Element {
           <SectionLabel
             rightAction={
               <Pressable onPress={() => router.push("/(tabs)/activity")}>
-                <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                <Typography
+                  style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "CrimsonText_700Bold" }}
+                >
                   View all
                 </Typography>
               </Pressable>
@@ -596,8 +685,7 @@ export default function DashboardScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 14,
-                    fontWeight: "700",
-                    fontFamily: "PlusJakartaSans_700Bold",
+                    fontFamily: "CrimsonText_700Bold",
                     color: activityFilter === filter ? "#FFFFFF" : TEXT_SECONDARY,
                     textTransform: "capitalize",
                   }}
@@ -616,7 +704,9 @@ export default function DashboardScreen(): JSX.Element {
                 return (
                   <Animated.View
                     key={expense.id}
-                    entering={FadeInDown.duration(400).delay(idx * 50).easing(Easing.out(Easing.quad))}
+                    entering={FadeInDown.duration(400)
+                      .delay(idx * 50)
+                      .easing(Easing.out(Easing.quad))}
                     layout={LinearTransition}
                   >
                     <TransactionRow
@@ -631,13 +721,24 @@ export default function DashboardScreen(): JSX.Element {
                 );
               })
             ) : (
-              <Animated.View 
-                entering={FadeInDown.duration(400).easing(Easing.out(Easing.quad))} 
+              <Animated.View
+                entering={FadeInDown.duration(400).easing(Easing.out(Easing.quad))}
                 layout={LinearTransition}
                 style={{ paddingVertical: 32, alignItems: "center", justifyContent: "center" }}
               >
-                <icons.PackageOpen size={48} color={TEXT_SECONDARY} strokeWidth={1} style={{ marginBottom: 16 }} />
-                <Typography style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>
+                <icons.PackageOpen
+                  size={48}
+                  color={TEXT_SECONDARY}
+                  strokeWidth={1}
+                  style={{ marginBottom: 16 }}
+                />
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                  }}
+                >
                   No recent activity found.
                 </Typography>
                 <Pressable
@@ -651,7 +752,9 @@ export default function DashboardScreen(): JSX.Element {
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
-                  <Typography style={{ fontSize: 15, fontWeight: "700", color: "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
+                  <Typography
+                    style={{ fontSize: 15, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}
+                  >
                     Log your first expense
                   </Typography>
                 </Pressable>

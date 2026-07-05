@@ -1,9 +1,7 @@
 import { Alert, Typography } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { FriendRouteParams } from "@/types/navigation";
-import Animated, {
-  FadeInDown,
-} from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import type { JSX } from "react";
 import { useMemo, useRef, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -61,10 +59,9 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
     <Typography
       style={{
         fontSize: 11,
-        fontWeight: "700",
         letterSpacing: 1.4,
         color: TEXT_SECONDARY,
-        fontFamily: "PlusJakartaSans_700Bold",
+        fontFamily: "CrimsonText_700Bold",
         textTransform: "uppercase",
         marginBottom: 16,
       }}
@@ -79,20 +76,26 @@ export default function FriendDetailScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  
+
   const optionsSheetRef = useRef<BottomSheetModal>(null);
-  
+
   const handleOpenOptions = useCallback(() => {
     optionsSheetRef.current?.present();
   }, []);
 
   const renderBackdrop = useCallback(
     (props: any) => (
-      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" opacity={0.4} />
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        pressBehavior="close"
+        opacity={0.4}
+      />
     ),
     []
   );
-  
+
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const isAppLoading = useUIStore((s) => s.isAppLoading);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
@@ -164,7 +167,11 @@ export default function FriendDetailScreen(): JSX.Element {
     sharedActivities.forEach((activity) => {
       if (activity.type === "expense" && activity.expense) {
         const cat = activity.expense.category || "other";
-        const amount = convertCurrency(activity.expense.amount, activity.currency || preferredCurrency.code, preferredCurrency.code);
+        const amount = convertCurrency(
+          activity.expense.amount,
+          activity.currency || preferredCurrency.code,
+          preferredCurrency.code
+        );
         totals[cat] = (totals[cat] || 0) + amount;
       }
     });
@@ -187,11 +194,14 @@ export default function FriendDetailScreen(): JSX.Element {
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>Friend not found</Alert.Title>
-              <Alert.Description>We couldn't find this friend.</Alert.Description>
+              <Alert.Description>We couldn&apos;t find this friend.</Alert.Description>
             </Alert.Content>
           </Alert>
-          <Pressable onPress={() => router.back()} style={{ padding: 12, backgroundColor: "#8C7A6B", borderRadius: 0 }}>
-             <Typography style={{ color: "#FFF", fontWeight: "700" }}>Go back</Typography>
+          <Pressable
+            onPress={() => router.back()}
+            style={{ padding: 12, backgroundColor: "#8C7A6B", borderRadius: 0 }}
+          >
+            <Typography style={{ color: "#FFF" }}>Go back</Typography>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -201,7 +211,7 @@ export default function FriendDetailScreen(): JSX.Element {
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
-      
+
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <View
         style={{
@@ -237,12 +247,21 @@ export default function FriendDetailScreen(): JSX.Element {
           <icons.ArrowLeft size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
         </Pressable>
 
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, flex: 1, marginHorizontal: 16 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            flex: 1,
+            marginHorizontal: 16,
+          }}
+        >
           <AppUserAvatar user={friend} size="sm" />
           <Typography
             numberOfLines={1}
             style={{
-              fontFamily: "DMSerifDisplay_400Regular",
+              fontFamily: "UnicaOne_400Regular",
               fontSize: 28,
               color: TEXT_PRIMARY,
               lineHeight: 36,
@@ -279,66 +298,146 @@ export default function FriendDetailScreen(): JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         {/* ── Balance Hero ─────────────────────────────────────────────── */}
-        <Animated.View entering={FadeInDown.duration(400).springify()} style={{ paddingHorizontal: 24, marginBottom: 40, alignItems: "center" }}>
-           <View
+        <Animated.View
+          entering={FadeInDown.duration(400).springify()}
+          style={{ paddingHorizontal: 24, marginBottom: 40, alignItems: "center" }}
+        >
+          <View
+            style={{
+              width: 80,
+              height: 80,
+              borderRadius: 0,
+              backgroundColor: isSettled ? "transparent" : isPositive ? "#E6F4EA" : "#FCE8E8",
+              borderWidth: isSettled ? 1 : 0,
+              borderColor: SEPARATOR,
+              alignItems: "center",
+              justifyContent: "center",
+              marginBottom: 16,
+            }}
+          >
+            {isSettled ? (
+              <icons.Check size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
+            ) : isPositive ? (
+              <icons.ArrowDownLeft size={32} color={TEXT_SUCCESS} strokeWidth={2} />
+            ) : (
+              <icons.ArrowUpRight size={32} color={TEXT_DANGER} strokeWidth={2} />
+            )}
+          </View>
+
+          <Typography
+            style={{
+              fontSize: 16,
+              color: TEXT_PRIMARY,
+              fontFamily: "CrimsonText_700Bold",
+              marginBottom: 8,
+            }}
+          >
+            {isSettled ? "All settled up!" : isPositive ? "Owes you" : "You owe"}
+          </Typography>
+
+          {!isSettled && (
+            <Typography
               style={{
-                width: 80,
-                height: 80,
-                borderRadius: 0,
-                backgroundColor: isSettled ? "transparent" : (isPositive ? "#E6F4EA" : "#FCE8E8"),
-                borderWidth: isSettled ? 1 : 0,
-                borderColor: SEPARATOR,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
+                fontSize: 36,
+                color: isPositive ? TEXT_SUCCESS : TEXT_DANGER,
+                fontFamily: "CrimsonText_700Bold",
               }}
             >
-              {isSettled ? (
-                <icons.Check size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
-              ) : isPositive ? (
-                <icons.ArrowDownLeft size={32} color={TEXT_SUCCESS} strokeWidth={2} />
-              ) : (
-                <icons.ArrowUpRight size={32} color={TEXT_DANGER} strokeWidth={2} />
-              )}
-            </View>
-            
-            <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 8 }}>
-               {isSettled ? "All settled up!" : (isPositive ? "Owes you" : "You owe")}
+              {formatAmount(Math.abs(netBalance), preferredCurrency.code)}
             </Typography>
-            
-            {!isSettled && (
-              <Typography style={{ fontSize: 36, fontWeight: "800", color: isPositive ? TEXT_SUCCESS : TEXT_DANGER, fontFamily: "PlusJakartaSans_800ExtraBold" }}>
-                {formatAmount(Math.abs(netBalance), preferredCurrency.code)}
-              </Typography>
-            )}
+          )}
 
-            {isPositive && !isSettled && (
-               <Pressable 
-                  onPress={() => RNAlert.alert("Reminder Sent", `We've sent a friendly reminder to ${friend.name.split(" ")[0]}.`)}
-                  style={({pressed}) => ({ marginTop: 16, paddingVertical: 8, paddingHorizontal: 16, borderRadius: 0, borderWidth: 1, borderColor: TEXT_SUCCESS, opacity: pressed ? 0.5 : 1 })}
-               >
-                  <Typography style={{ fontSize: 13, fontWeight: "700", color: TEXT_SUCCESS, fontFamily: "PlusJakartaSans_700Bold" }}>Send Reminder</Typography>
-               </Pressable>
-            )}
+          {isPositive && !isSettled && (
+            <Pressable
+              onPress={() =>
+                RNAlert.alert(
+                  "Reminder Sent",
+                  `We've sent a friendly reminder to ${friend.name.split(" ")[0]}.`
+                )
+              }
+              style={({ pressed }) => ({
+                marginTop: 16,
+                paddingVertical: 8,
+                paddingHorizontal: 16,
+                borderRadius: 0,
+                borderWidth: 1,
+                borderColor: TEXT_SUCCESS,
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <Typography
+                style={{ fontSize: 13, color: TEXT_SUCCESS, fontFamily: "CrimsonText_700Bold" }}
+              >
+                Send Reminder
+              </Typography>
+            </Pressable>
+          )}
         </Animated.View>
 
         {/* ── Category Breakdown ─────────────────────────────────────── */}
         {categorySpending.length > 0 && (
-          <Animated.View entering={FadeInDown.duration(400).delay(25).springify()} style={{ marginBottom: 40 }}>
+          <Animated.View
+            entering={FadeInDown.duration(400).delay(25).springify()}
+            style={{ marginBottom: 40 }}
+          >
             <View style={{ paddingHorizontal: 24 }}>
               <SectionLabel>Spending Together</SectionLabel>
             </View>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}
+            >
               {categorySpending.map(({ cat, amount, colors, iconName }) => {
                 const IconComp = (icons as any)[iconName] || icons.Package;
                 return (
-                  <View key={cat} style={{ flexDirection: "row", alignItems: "center", backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, padding: 12, borderRadius: 0, minWidth: 140 }}>
-                    <View style={{ width: 36, height: 36, borderRadius: 0, backgroundColor: colors.bg, alignItems: "center", justifyContent: "center", marginRight: 12 }}>
+                  <View
+                    key={cat}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      backgroundColor: "transparent",
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
+                      padding: 12,
+                      borderRadius: 0,
+                      minWidth: 140,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: 0,
+                        backgroundColor: colors.bg,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 12,
+                      }}
+                    >
                       <IconComp size={18} color={colors.icon} strokeWidth={1.5} />
                     </View>
                     <View>
-                      <Typography style={{ fontSize: 12, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", textTransform: "capitalize", marginBottom: 2 }}>{cat}</Typography>
-                      <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>{formatAmount(amount, preferredCurrency.code)}</Typography>
+                      <Typography
+                        style={{
+                          fontSize: 12,
+                          color: TEXT_SECONDARY,
+                          fontFamily: "CrimsonText_600SemiBold",
+                          textTransform: "capitalize",
+                          marginBottom: 2,
+                        }}
+                      >
+                        {cat}
+                      </Typography>
+                      <Typography
+                        style={{
+                          fontSize: 14,
+                          color: TEXT_PRIMARY,
+                          fontFamily: "CrimsonText_700Bold",
+                        }}
+                      >
+                        {formatAmount(amount, preferredCurrency.code)}
+                      </Typography>
                     </View>
                   </View>
                 );
@@ -348,31 +447,84 @@ export default function FriendDetailScreen(): JSX.Element {
         )}
 
         {/* ── Activities ─────────────────────────────────────────────── */}
-        <Animated.View entering={FadeInDown.duration(400).delay(50).springify()} style={{ paddingHorizontal: 24, marginBottom: 40 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <Animated.View
+          entering={FadeInDown.duration(400).delay(50).springify()}
+          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 16,
+            }}
+          >
             <SectionLabel>Shared Activity</SectionLabel>
-            <Typography style={{ fontSize: 13, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 16 }}>
+            <Typography
+              style={{
+                fontSize: 13,
+                color: TEXT_PRIMARY,
+                fontFamily: "CrimsonText_700Bold",
+                marginBottom: 16,
+              }}
+            >
               Total: {sharedActivities.length}
             </Typography>
           </View>
-          
+
           <View>
             {sharedActivities.length === 0 ? (
-              <View style={{ paddingVertical: 32, alignItems: "center", borderTopWidth: 1, borderBottomWidth: 1, borderColor: SEPARATOR }}>
-                <View style={{ width: 56, height: 56, borderRadius: 0, backgroundColor: "transparent", alignItems: "center", justifyContent: "center", marginBottom: 16, borderWidth: 1, borderColor: SEPARATOR }}>
+              <View
+                style={{
+                  paddingVertical: 32,
+                  alignItems: "center",
+                  borderTopWidth: 1,
+                  borderBottomWidth: 1,
+                  borderColor: SEPARATOR,
+                }}
+              >
+                <View
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 0,
+                    backgroundColor: "transparent",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
+                  }}
+                >
                   <icons.Receipt size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
                 </View>
-                <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 8 }}>
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "CrimsonText_700Bold",
+                    marginBottom: 8,
+                  }}
+                >
                   No shared activity
                 </Typography>
-                <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                  }}
+                >
                   Add an expense to start tracking
                 </Typography>
               </View>
             ) : (
               <View style={{ borderTopWidth: 1, borderColor: SEPARATOR }}>
                 {sharedActivities.map((activity, idx) => (
-                  <View key={activity.id} style={{ borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
+                  <View
+                    key={activity.id}
+                    style={{ borderBottomWidth: 1, borderBottomColor: SEPARATOR }}
+                  >
                     <ActivityItem
                       activity={activity}
                       index={idx}
@@ -395,31 +547,70 @@ export default function FriendDetailScreen(): JSX.Element {
         backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
       >
-        <BottomSheetView style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}>
-          <Typography style={{ fontSize: 20, fontFamily: "DMSerifDisplay_400Regular", color: TEXT_PRIMARY, marginBottom: 24 }}>
+        <BottomSheetView
+          style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
+        >
+          <Typography
+            style={{
+              fontSize: 20,
+              fontFamily: "UnicaOne_400Regular",
+              color: TEXT_PRIMARY,
+              marginBottom: 24,
+            }}
+          >
             Manage Friendship
           </Typography>
-          
+
           <Pressable
-             onPress={() => {
-                optionsSheetRef.current?.dismiss();
-                RNAlert.alert("Exporting", "Your history is being exported.");
-             }}
-             style={({pressed}) => ({ flexDirection: "row", alignItems: "center", paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR, opacity: pressed ? 0.5 : 1 })}
+            onPress={() => {
+              optionsSheetRef.current?.dismiss();
+              RNAlert.alert("Exporting", "Your history is being exported.");
+            }}
+            style={({ pressed }) => ({
+              flexDirection: "row",
+              alignItems: "center",
+              paddingVertical: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: SEPARATOR,
+              opacity: pressed ? 0.5 : 1,
+            })}
           >
-             <icons.Download size={20} color={TEXT_PRIMARY} strokeWidth={1.5} style={{ marginRight: 12 }} />
-             <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_500Medium", color: TEXT_PRIMARY }}>Export History</Typography>
+            <icons.Download
+              size={20}
+              color={TEXT_PRIMARY}
+              strokeWidth={1.5}
+              style={{ marginRight: 12 }}
+            />
+            <Typography
+              style={{ fontSize: 16, fontFamily: "CrimsonText_600SemiBold", color: TEXT_PRIMARY }}
+            >
+              Export History
+            </Typography>
           </Pressable>
 
           <Pressable
-             onPress={() => {
-                optionsSheetRef.current?.dismiss();
-                RNAlert.alert("Unfriend", "This feature is coming soon.");
-             }}
-             style={({pressed}) => ({ flexDirection: "row", alignItems: "center", paddingVertical: 16, opacity: pressed ? 0.5 : 1 })}
+            onPress={() => {
+              optionsSheetRef.current?.dismiss();
+              RNAlert.alert("Unfriend", "This feature is coming soon.");
+            }}
+            style={({ pressed }) => ({
+              flexDirection: "row",
+              alignItems: "center",
+              paddingVertical: 16,
+              opacity: pressed ? 0.5 : 1,
+            })}
           >
-             <icons.UserMinus size={20} color={"#E02424"} strokeWidth={1.5} style={{ marginRight: 12 }} />
-             <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_500Medium", color: "#E02424" }}>Unfriend</Typography>
+            <icons.UserMinus
+              size={20}
+              color={"#E02424"}
+              strokeWidth={1.5}
+              style={{ marginRight: 12 }}
+            />
+            <Typography
+              style={{ fontSize: 16, fontFamily: "CrimsonText_600SemiBold", color: "#E02424" }}
+            >
+              Unfriend
+            </Typography>
           </Pressable>
         </BottomSheetView>
       </BottomSheetModal>
@@ -459,8 +650,18 @@ export default function FriendDetailScreen(): JSX.Element {
             opacity: isSettled ? 0.3 : pressed ? 0.5 : 1,
           })}
         >
-          <icons.Send size={20} color={isSettled ? TEXT_SECONDARY : TEXT_PRIMARY} strokeWidth={1.5} />
-          <Typography style={{ fontSize: 16, fontWeight: "700", color: isSettled ? TEXT_SECONDARY : TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+          <icons.Send
+            size={20}
+            color={isSettled ? TEXT_SECONDARY : TEXT_PRIMARY}
+            strokeWidth={1.5}
+          />
+          <Typography
+            style={{
+              fontSize: 16,
+              color: isSettled ? TEXT_SECONDARY : TEXT_PRIMARY,
+              fontFamily: "CrimsonText_700Bold",
+            }}
+          >
             Settle Up
           </Typography>
         </Pressable>
@@ -481,7 +682,7 @@ export default function FriendDetailScreen(): JSX.Element {
           })}
         >
           <icons.Plus size={20} color="#FFFFFF" strokeWidth={2} />
-          <Typography style={{ fontSize: 16, fontWeight: "700", color: "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
+          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
             Add Expense
           </Typography>
         </Pressable>

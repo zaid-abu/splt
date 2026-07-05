@@ -6,7 +6,10 @@ import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 
-import { useNotifications, AppNotification } from "@/features/notifications/queries/useNotifications";
+import {
+  useNotifications,
+  AppNotification,
+} from "@/features/notifications/queries/useNotifications";
 import { useAuth } from "@/context/AppContext";
 import { useAcceptFriend, useRejectFriend } from "@/features/friends/queries/useFriends";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
@@ -21,7 +24,7 @@ const SEPARATOR = "#E8E4DF";
 export default function NotificationsScreen(): JSX.Element {
   const router = useRouter();
   const { currentUser } = useAuth();
-  
+
   const { data: notifications = [], isLoading } = useNotifications(currentUser?.id);
   const { mutateAsync: acceptFriend, isPending: isAccepting } = useAcceptFriend();
   const { mutateAsync: rejectFriend, isPending: isRejecting } = useRejectFriend();
@@ -43,15 +46,27 @@ export default function NotificationsScreen(): JSX.Element {
       const isWorking = isAccepting || isRejecting;
 
       return (
-        <Animated.View layout={LinearTransition} entering={FadeInDown.duration(400).delay(index * 50)}>
+        <Animated.View
+          layout={LinearTransition}
+          entering={FadeInDown.duration(400).delay(index * 50)}
+        >
           <View style={{ padding: 24, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
               <AppUserAvatar user={friendship.friendUser!} size="md" />
               <View style={{ flex: 1, marginLeft: 16 }}>
-                <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                <Typography
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                >
                   {item.title}
                 </Typography>
-                <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 4 }}>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                    marginTop: 4,
+                  }}
+                >
                   {item.subtitle}
                 </Typography>
               </View>
@@ -69,13 +84,17 @@ export default function NotificationsScreen(): JSX.Element {
                   opacity: pressed || isWorking ? 0.7 : 1,
                 })}
               >
-                {isAccepting ? <ActivityIndicator color="#FFF" /> : (
-                  <Typography style={{ color: "#FFF", fontSize: 14, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold" }}>
+                {isAccepting ? (
+                  <ActivityIndicator color="#FFF" />
+                ) : (
+                  <Typography
+                    style={{ color: "#FFF", fontSize: 14, fontFamily: "CrimsonText_700Bold" }}
+                  >
                     Accept
                   </Typography>
                 )}
               </Pressable>
-              
+
               <Pressable
                 onPress={() => handleReject(friendship.id)}
                 disabled={isWorking}
@@ -90,8 +109,12 @@ export default function NotificationsScreen(): JSX.Element {
                   opacity: pressed || isWorking ? 0.5 : 1,
                 })}
               >
-                {isRejecting ? <ActivityIndicator color={TEXT_PRIMARY} /> : (
-                  <Typography style={{ color: TEXT_PRIMARY, fontSize: 14, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold" }}>
+                {isRejecting ? (
+                  <ActivityIndicator color={TEXT_PRIMARY} />
+                ) : (
+                  <Typography
+                    style={{ color: TEXT_PRIMARY, fontSize: 14, fontFamily: "CrimsonText_700Bold" }}
+                  >
                     Reject
                   </Typography>
                 )}
@@ -101,36 +124,53 @@ export default function NotificationsScreen(): JSX.Element {
         </Animated.View>
       );
     }
-    
+
     return null;
   };
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
-      
+
       {/* Header */}
-      <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 24, paddingTop: 60, paddingBottom: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 24,
+          paddingTop: 60,
+          paddingBottom: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: SEPARATOR,
+        }}
+      >
         <Pressable
           accessibilityRole="button"
           onPress={() => router.back()}
           style={({ pressed }) => ({
-            width: 44, height: 44, alignItems: "center", justifyContent: "center",
-            backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR,
+            width: 44,
+            height: 44,
+            alignItems: "center",
+            justifyContent: "center",
+            backgroundColor: "transparent",
+            borderWidth: 1,
+            borderColor: SEPARATOR,
             opacity: pressed ? 0.5 : 1,
             marginRight: 16,
           })}
         >
           <icons.ArrowLeft size={20} color={TEXT_PRIMARY} />
         </Pressable>
-        <Typography style={{ fontSize: 24, fontFamily: "DMSerifDisplay_400Regular", color: TEXT_PRIMARY }}>
+        <Typography
+          style={{ fontSize: 24, fontFamily: "UnicaOne_400Regular", color: TEXT_PRIMARY }}
+        >
           Notifications
         </Typography>
       </View>
 
       <FlatList
         data={notifications}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 100 }}
         ListEmptyComponent={
@@ -139,11 +179,30 @@ export default function NotificationsScreen(): JSX.Element {
               <ActivityIndicator size="large" color={TEXT_PRIMARY} />
             ) : (
               <>
-                <icons.BellOff size={48} color={TEXT_SECONDARY} style={{ marginBottom: 16, opacity: 0.5 }} />
-                <Typography style={{ fontSize: 18, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", textAlign: "center" }}>
+                <icons.BellOff
+                  size={48}
+                  color={TEXT_SECONDARY}
+                  style={{ marginBottom: 16, opacity: 0.5 }}
+                />
+                <Typography
+                  style={{
+                    fontSize: 18,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "CrimsonText_700Bold",
+                    textAlign: "center",
+                  }}
+                >
                   All caught up!
                 </Typography>
-                <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", textAlign: "center", marginTop: 8 }}>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                    textAlign: "center",
+                    marginTop: 8,
+                  }}
+                >
                   You have no new notifications right now.
                 </Typography>
               </>

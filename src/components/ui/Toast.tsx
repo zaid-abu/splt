@@ -37,17 +37,39 @@ export function CustomToast({ props, options }: { props: any; options: any }): J
         marginTop: 16,
       }}
     >
-      <View style={{ width: 40, height: 40, alignItems: "center", justifyContent: "center", marginRight: 12, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR }}>
+      <View
+        style={{
+          width: 40,
+          height: 40,
+          alignItems: "center",
+          justifyContent: "center",
+          marginRight: 12,
+          backgroundColor: "transparent",
+          borderWidth: 1,
+          borderColor: SEPARATOR,
+        }}
+      >
         <IconComponent size={20} color={iconColor} strokeWidth={1.5} />
       </View>
       <View style={{ flex: 1 }}>
         {!!options.label && (
-          <Typography numberOfLines={1} style={{ fontSize: 15, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+          <Typography
+            numberOfLines={1}
+            style={{ fontSize: 15, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+          >
             {options.label}
           </Typography>
         )}
         {!!options.description && (
-          <Typography numberOfLines={2} style={{ fontSize: 13, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 2 }}>
+          <Typography
+            numberOfLines={2}
+            style={{
+              fontSize: 13,
+              color: TEXT_SECONDARY,
+              fontFamily: "CrimsonText_600SemiBold",
+              marginTop: 2,
+            }}
+          >
             {options.description}
           </Typography>
         )}

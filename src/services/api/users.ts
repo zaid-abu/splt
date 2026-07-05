@@ -5,10 +5,10 @@ import { mapUser } from "./mappers";
 export const UsersService = {
   async searchUsers(query: string, excludeUserId: string): Promise<User[]> {
     if (!query.trim()) return [];
-    
+
     // ilike is case-insensitive in Postgres
     const searchTerm = `%${query.trim()}%`;
-    
+
     const { data, error } = await supabase
       .from("users")
       .select("*")

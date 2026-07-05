@@ -65,7 +65,14 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
       }}
     >
       <Avatar.Fallback>
-        <Typography style={{ color: textColor, fontFamily: "PlusJakartaSans_800ExtraBold", fontSize: dims.font, letterSpacing: -0.5 }}>
+        <Typography
+          style={{
+            color: textColor,
+            fontFamily: "CrimsonText_700Bold",
+            fontSize: dims.font,
+            letterSpacing: -0.5,
+          }}
+        >
           {user.initials}
         </Typography>
       </Avatar.Fallback>
@@ -106,7 +113,9 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
             }}
           >
             <Avatar.Fallback>
-              <Typography style={{ color: textColor, fontFamily: "PlusJakartaSans_800ExtraBold", fontSize: 12 }}>
+              <Typography
+                style={{ color: textColor, fontFamily: "CrimsonText_700Bold", fontSize: 12 }}
+              >
                 {user.initials}
               </Typography>
             </Avatar.Fallback>
@@ -129,7 +138,9 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
           }}
         >
           <Avatar.Fallback>
-            <Typography style={{ color: mutedForeground, fontFamily: "PlusJakartaSans_800ExtraBold", fontSize: 11 }}>
+            <Typography
+              style={{ color: mutedForeground, fontFamily: "CrimsonText_700Bold", fontSize: 11 }}
+            >
               +{overflow}
             </Typography>
           </Avatar.Fallback>

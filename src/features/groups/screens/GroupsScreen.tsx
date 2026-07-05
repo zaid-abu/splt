@@ -3,7 +3,7 @@
  *
  * Flatter design (no shadows), smooth animations, strict reference alignment based on design.json
  */
-import { Typography, Skeleton } from "heroui-native";
+import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useCallback, useMemo } from "react";
@@ -17,6 +17,7 @@ import { FocusAwareView } from "@/components/animations/PageAnimator";
 import Animated, { LinearTransition } from "react-native-reanimated";
 
 import { GroupCard } from "@/features/groups/components/GroupCard";
+import { AppLoader } from "@/components/ui/AppLoader";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -71,11 +72,20 @@ export default function GroupsScreen(): JSX.Element {
 
   const ListHeaderComponent = useCallback(
     () => (
-      <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 24, marginTop: insets.top + 16 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 24 }}>
+      <View
+        style={{ paddingHorizontal: SECTION_PAD, marginBottom: 24, marginTop: insets.top + 16 }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 24,
+          }}
+        >
           <Typography
             style={{
-              fontFamily: "DMSerifDisplay_400Regular",
+              fontFamily: "UnicaOne_400Regular",
               fontSize: 36,
               color: TEXT_PRIMARY,
               lineHeight: 44,
@@ -88,8 +98,14 @@ export default function GroupsScreen(): JSX.Element {
             accessibilityRole="button"
             onPress={() => router.push("/group/new")}
             style={({ pressed }) => ({
-              width: 44, height: 44, alignItems: "center", justifyContent: "center", 
-              backgroundColor: "transparent", borderRadius: 0, borderWidth: 1, borderColor: SEPARATOR,
+              width: 44,
+              height: 44,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "transparent",
+              borderRadius: 0,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
               opacity: pressed ? 0.5 : 1,
             })}
           >
@@ -118,7 +134,7 @@ export default function GroupsScreen(): JSX.Element {
             style={{
               flex: 1,
               marginLeft: 12,
-              fontFamily: "PlusJakartaSans_500Medium",
+              fontFamily: "CrimsonText_600SemiBold",
               color: TEXT_PRIMARY,
               fontSize: 16,
             }}
@@ -138,21 +154,8 @@ export default function GroupsScreen(): JSX.Element {
     () => (
       <View style={{ paddingHorizontal: SECTION_PAD }}>
         {isLoading ? (
-          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
-            <View style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR, flexDirection: "row", alignItems: "center" }}>
-              <Skeleton className="w-12 h-12 rounded-none mr-4 bg-[#E8E4DF]" />
-              <View style={{ flex: 1, gap: 8 }}>
-                <Skeleton className="w-3/4 h-5 rounded-none bg-[#E8E4DF]" />
-                <Skeleton className="w-1/3 h-4 rounded-none bg-[#E8E4DF]" />
-              </View>
-            </View>
-            <View style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR, flexDirection: "row", alignItems: "center" }}>
-              <Skeleton className="w-12 h-12 rounded-none mr-4 bg-[#E8E4DF]" />
-              <View style={{ flex: 1, gap: 8 }}>
-                <Skeleton className="w-1/2 h-5 rounded-none bg-[#E8E4DF]" />
-                <Skeleton className="w-1/4 h-4 rounded-none bg-[#E8E4DF]" />
-              </View>
-            </View>
+          <View style={{ paddingTop: 40 }}>
+            <AppLoader />
           </View>
         ) : (
           <View
@@ -178,10 +181,26 @@ export default function GroupsScreen(): JSX.Element {
             >
               <icons.Users size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
             </View>
-            <Typography style={{ fontSize: 20, fontWeight: "700", color: TEXT_PRIMARY, marginBottom: 8, fontFamily: "PlusJakartaSans_700Bold", textAlign: "center", letterSpacing: -0.5 }}>
+            <Typography
+              style={{
+                fontSize: 20,
+                color: TEXT_PRIMARY,
+                marginBottom: 8,
+                fontFamily: "CrimsonText_700Bold",
+                textAlign: "center",
+                letterSpacing: -0.5,
+              }}
+            >
               No groups found
             </Typography>
-            <Typography style={{ fontSize: 15, color: TEXT_SECONDARY, textAlign: "center", fontFamily: "PlusJakartaSans_500Medium" }}>
+            <Typography
+              style={{
+                fontSize: 15,
+                color: TEXT_SECONDARY,
+                textAlign: "center",
+                fontFamily: "CrimsonText_600SemiBold",
+              }}
+            >
               {search
                 ? "Try a different search term"
                 : "Create a group with friends to start splitting expenses easily."}
@@ -204,7 +223,14 @@ export default function GroupsScreen(): JSX.Element {
                 })}
               >
                 <icons.Plus size={20} color={TEXT_PRIMARY} strokeWidth={2} />
-                <Typography style={{ color: TEXT_PRIMARY, fontWeight: "700", fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", marginLeft: 8 }}>
+                <Typography
+                  style={{
+                    color: TEXT_PRIMARY,
+                    fontSize: 16,
+                    fontFamily: "CrimsonText_700Bold",
+                    marginLeft: 8,
+                  }}
+                >
                   Create Group
                 </Typography>
               </Pressable>
@@ -217,7 +243,7 @@ export default function GroupsScreen(): JSX.Element {
   );
 
   const renderItem = useCallback(
-    ({ item, index }: { item: { group: Group, netBalance: number }; index: number }) => {
+    ({ item, index }: { item: { group: Group; netBalance: number }; index: number }) => {
       const isLast = index === filtered.length - 1;
 
       return (

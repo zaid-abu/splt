@@ -1,42 +1,34 @@
 import type { JSX } from "react";
 import { useState, useMemo, useCallback } from "react";
-import {
-  View,
-  TextInput,
-  StyleSheet,
-  Pressable,
-  ScrollView,
-  FlatList,
-} from "react-native";
-import { Typography, Skeleton, PressableFeedback } from "heroui-native";
+import { View, TextInput, StyleSheet, Pressable, ScrollView, FlatList } from "react-native";
+import { Typography, PressableFeedback } from "heroui-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 
-import Animated, { FadeIn } from "react-native-reanimated";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
+import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { AppLoader } from "@/components/ui/AppLoader";
 import type { Activity } from "@/types";
 
 // --- Design Tokens ---
 const BG = "#F5F0EB";
 const BRAND = "#8C7A6B";
-const SURFACE = "#FFFFFF";
 const BORDER = "#E8E4DF";
 const TEXT_PRIMARY = "#1A1A1A";
 const TEXT_SECONDARY = "#8A8782";
 
 type FilterType = "All" | "Expenses" | "Settlements" | "Groups" | "Friends";
 
-type ListItem =
-  | { type: "header"; title: string }
-  | { type: "item"; activity: Activity };
+type ListItem = { type: "header"; title: string } | { type: "item"; activity: Activity };
 
 export default function ActivityScreen(): JSX.Element {
   const router = useRouter();
@@ -45,8 +37,11 @@ export default function ActivityScreen(): JSX.Element {
 
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [], isLoading: isLoadingExpenses } = useUserExpenses(currentUser?.id);
-  const { data: settlements = [], isLoading: isLoadingSettlements } = useUserSettlements(currentUser?.id);
-  const isAppLoading = useUIStore((s) => s.isAppLoading) || isLoadingExpenses || isLoadingSettlements;
+  const { data: settlements = [], isLoading: isLoadingSettlements } = useUserSettlements(
+    currentUser?.id
+  );
+  const isAppLoading =
+    useUIStore((s) => s.isAppLoading) || isLoadingExpenses || isLoadingSettlements;
 
   const activities = useMemo(() => {
     const arr: Activity[] = [];
@@ -122,7 +117,10 @@ export default function ActivityScreen(): JSX.Element {
   const groupedActivities = useMemo(() => {
     const groups: Record<string, Activity[]> = {};
     filteredActivities.forEach((activity) => {
-      const monthYear = activity.date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+      const monthYear = activity.date.toLocaleDateString("en-US", {
+        month: "long",
+        year: "numeric",
+      });
       if (!groups[monthYear]) {
         groups[monthYear] = [];
       }
@@ -145,7 +143,7 @@ export default function ActivityScreen(): JSX.Element {
   const stickyHeaderIndices = useMemo(() => {
     const indices: number[] = [];
     listData.forEach((item, index) => {
-      if (item.type === "header") indices.push(index + 1);
+      if (item.type === "header") indices.push(index);
     });
     return indices;
   }, [listData]);
@@ -156,7 +154,11 @@ export default function ActivityScreen(): JSX.Element {
     const filters: FilterType[] = ["All", "Expenses", "Settlements", "Groups", "Friends"];
     return (
       <View style={styles.filtersContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filtersScroll}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filtersScroll}
+        >
           {filters.map((filter) => {
             const isActive = activeFilter === filter;
             return (
@@ -166,16 +168,20 @@ export default function ActivityScreen(): JSX.Element {
                   Haptics.selectionAsync();
                   setActiveFilter(filter);
                 }}
-                style={[
-                  styles.filterPill,
-                  isActive ? styles.filterPillActive : styles.filterPillInactive,
-                ]}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 8,
+                  backgroundColor: isActive ? "#8C7A6B" : "transparent",
+                  borderWidth: 1,
+                  borderColor: isActive ? "#8C7A6B" : BORDER,
+                }}
               >
                 <Typography
-                  style={[
-                    styles.filterText,
-                    isActive ? styles.filterTextActive : styles.filterTextInactive,
-                  ]}
+                  style={{
+                    fontSize: 13,
+                    fontFamily: "CrimsonText_700Bold",
+                    color: isActive ? "#FFFFFF" : TEXT_PRIMARY,
+                  }}
                 >
                   {filter}
                 </Typography>
@@ -187,59 +193,77 @@ export default function ActivityScreen(): JSX.Element {
     );
   };
 
-  const ListHeaderComponent = useCallback(() => (
-    <View style={{ paddingTop: 24, backgroundColor: BG }}>
-      <Typography style={styles.pageTitle}>Timeline</Typography>
+  const renderHeader = () => (
+    <Animated.View entering={FadeInDown.duration(400)} style={{ backgroundColor: BG }}>
+      {/* ── Header ── */}
+      <View
+        style={{
+          paddingTop: 16,
+          paddingHorizontal: 24,
+          paddingBottom: 24,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          backgroundColor: BG,
+        }}
+      >
+        <Typography
+          style={{
+            fontFamily: "CrimsonText_700Bold",
+            fontSize: 16,
+            color: TEXT_SECONDARY,
+            textTransform: "uppercase",
+            letterSpacing: 2,
+          }}
+        >
+          Timeline
+        </Typography>
+      </View>
 
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBox}>
-          <icons.Search size={20} color={TEXT_SECONDARY} />
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Search activity..."
-            placeholderTextColor={TEXT_SECONDARY}
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={styles.searchInput}
-          />
-          {searchQuery.length > 0 && (
-            <PressableFeedback
-              accessibilityRole="button"
-              onPress={() => setSearchQuery("")}
-              hitSlop={8}
-            >
-              <icons.XCircle size={18} color={TEXT_SECONDARY} />
-            </PressableFeedback>
-          )}
-        </View>
+      <View
+        style={{
+          paddingHorizontal: 24,
+          paddingBottom: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: BORDER,
+        }}
+      >
+        <TextInput
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder="Search activity..."
+          placeholderTextColor={TEXT_SECONDARY}
+          autoCapitalize="none"
+          autoCorrect={false}
+          style={{
+            fontSize: 32,
+            fontFamily: "UnicaOne_400Regular",
+            color: TEXT_PRIMARY,
+            padding: 0,
+          }}
+        />
+        {searchQuery.length > 0 && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => setSearchQuery("")}
+            hitSlop={8}
+            style={({ pressed }) => ({
+              position: "absolute",
+              right: 24,
+              top: 8,
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <icons.X size={24} color={TEXT_PRIMARY} strokeWidth={1} />
+          </Pressable>
+        )}
       </View>
 
       {renderFilterPills()}
 
-      {isAppLoading && (
-        <View style={{ paddingHorizontal: 24, marginTop: 24 }}>
-          <Skeleton style={{ width: 100, height: 16, backgroundColor: BORDER, marginBottom: 16 }} />
-          <View style={{ backgroundColor: SURFACE, borderWidth: 1, borderColor: BORDER }}>
-            <View style={{ padding: 16, flexDirection: "row", alignItems: "center", gap: 16 }}>
-              <Skeleton style={{ width: 48, height: 48, backgroundColor: BORDER }} />
-              <View style={{ flex: 1, gap: 8 }}>
-                <Skeleton style={{ width: "80%", height: 16, backgroundColor: BORDER }} />
-                <Skeleton style={{ width: "40%", height: 12, backgroundColor: BORDER }} />
-              </View>
-            </View>
-            <View style={{ padding: 16, flexDirection: "row", alignItems: "center", gap: 16, borderTopWidth: 1, borderTopColor: BORDER }}>
-              <Skeleton style={{ width: 48, height: 48, backgroundColor: BORDER }} />
-              <View style={{ flex: 1, gap: 8 }}>
-                <Skeleton style={{ width: "60%", height: 16, backgroundColor: BORDER }} />
-                <Skeleton style={{ width: "30%", height: 12, backgroundColor: BORDER }} />
-              </View>
-            </View>
-          </View>
-        </View>
-      )}
-    </View>
-  ), [insets.top, searchQuery, isAppLoading, activeFilter]);
+      {isAppLoading && <AppLoader />}
+    </Animated.View>
+  );
 
   const ListEmptyComponent = useCallback(() => {
     if (isAppLoading) return null;
@@ -261,11 +285,15 @@ export default function ActivityScreen(): JSX.Element {
   }, [isAppLoading, searchQuery, activeFilter]);
 
   return (
-    <Animated.View entering={FadeIn.duration(400)} style={[styles.container, { paddingTop: insets.top }]}>
+    <FocusAwareView style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar style="dark" />
-      <FlatList
+      {renderHeader()}
+      <Animated.FlatList
         data={listData}
-        keyExtractor={(item, index) => (item.type === "header" ? `header-${item.title}` : `item-${item.activity.id}`)}
+        keyExtractor={(item, index) =>
+          item.type === "header" ? `header-${item.title}` : `item-${item.activity.id}`
+        }
+        itemLayoutAnimation={LinearTransition}
         renderItem={({ item, index }) => {
           if (item.type === "header") {
             return (
@@ -274,16 +302,16 @@ export default function ActivityScreen(): JSX.Element {
               </View>
             );
           }
-          const isNextHeader = index === listData.length - 1 || listData[index + 1].type === "header";
+          const isNextHeader =
+            index === listData.length - 1 || listData[index + 1].type === "header";
           return <ActivityItem activity={item.activity} index={index} isLast={isNextHeader} />;
         }}
-        ListHeaderComponent={ListHeaderComponent}
         ListEmptyComponent={ListEmptyComponent}
         stickyHeaderIndices={stickyHeaderIndices}
         contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
         showsVerticalScrollIndicator={false}
       />
-    </Animated.View>
+    </FocusAwareView>
   );
 }
 
@@ -293,67 +321,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: BG,
   },
-  pageTitle: {
-    fontFamily: "DMSerifDisplay_400Regular",
-    fontSize: 40,
-    color: TEXT_PRIMARY,
-    paddingHorizontal: 24,
-    marginBottom: 24,
-  },
-  searchContainer: {
-    paddingHorizontal: 24,
-    marginBottom: 16,
-  },
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: SURFACE,
-    height: 48,
-    borderRadius: 0,
-    paddingHorizontal: 16,
-    borderWidth: 1,
-    borderColor: BORDER,
-  },
-  searchInput: {
-    flex: 1,
-    marginLeft: 12,
-    fontSize: 16,
-    fontFamily: "PlusJakartaSans_500Medium",
-    color: TEXT_PRIMARY,
-  },
   filtersContainer: {
     marginBottom: 24,
   },
   filtersScroll: {
     paddingHorizontal: 24,
     gap: 8,
-  },
-  filterPill: {
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderWidth: 1,
-    borderRadius: 0,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  filterPillInactive: {
-    backgroundColor: SURFACE,
-    borderColor: BORDER,
-  },
-  filterPillActive: {
-    backgroundColor: BRAND,
-    borderColor: BRAND,
-  },
-  filterText: {
-    fontSize: 13,
-    fontFamily: "PlusJakartaSans_700Bold",
-    letterSpacing: 0.5,
-  },
-  filterTextInactive: {
-    color: TEXT_PRIMARY,
-  },
-  filterTextActive: {
-    color: "#FFFFFF",
   },
   headerContainer: {
     backgroundColor: BG,
@@ -365,7 +338,7 @@ const styles = StyleSheet.create({
   },
   headerText: {
     fontSize: 13,
-    fontFamily: "PlusJakartaSans_800ExtraBold",
+    fontFamily: "CrimsonText_700Bold",
     color: TEXT_SECONDARY,
     textTransform: "uppercase",
     letterSpacing: 1.5,
@@ -376,7 +349,7 @@ const styles = StyleSheet.create({
   },
   emptyBox: {
     padding: 32,
-    backgroundColor: SURFACE,
+    backgroundColor: "transparent",
     borderWidth: 1,
     borderColor: BORDER,
     alignItems: "center",
@@ -393,13 +366,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontFamily: "PlusJakartaSans_700Bold",
+    fontFamily: "CrimsonText_700Bold",
     color: TEXT_PRIMARY,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    fontFamily: "PlusJakartaSans_500Medium",
+    fontFamily: "CrimsonText_600SemiBold",
     color: TEXT_SECONDARY,
     textAlign: "center",
     lineHeight: 20,

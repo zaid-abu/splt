@@ -50,7 +50,7 @@ export function GroupCard({
 
   let subAmountText = "";
   let subAmountColor = TEXT_SECONDARY;
-  
+
   if (balance < 0) {
     subAmountText = `You owe ${formatAmount(Math.abs(balance), currency)}`;
     subAmountColor = TEXT_DANGER;
@@ -101,7 +101,7 @@ export function GroupCard({
               }}
               numberOfLines={1}
             >
-              {(group.icon && group.icon.length <= 2)
+              {group.icon && group.icon.length <= 2
                 ? group.icon
                 : group.name.substring(0, 1).toUpperCase()}
             </Typography>
@@ -113,9 +113,8 @@ export function GroupCard({
               numberOfLines={1}
               style={{
                 fontSize: 16,
-                fontWeight: "700",
                 color: TEXT_PRIMARY,
-                fontFamily: "PlusJakartaSans_700Bold",
+                fontFamily: "CrimsonText_700Bold",
                 letterSpacing: -0.3,
               }}
             >
@@ -125,7 +124,7 @@ export function GroupCard({
               style={{
                 fontSize: 14,
                 color: TEXT_SECONDARY,
-                fontFamily: "PlusJakartaSans_500Medium",
+                fontFamily: "CrimsonText_600SemiBold",
                 marginTop: 4,
               }}
             >
@@ -138,9 +137,8 @@ export function GroupCard({
             <Typography
               style={{
                 fontSize: 14,
-                fontWeight: "700",
                 color: subAmountColor,
-                fontFamily: "PlusJakartaSans_700Bold",
+                fontFamily: "CrimsonText_700Bold",
               }}
             >
               {subAmountText}

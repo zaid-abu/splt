@@ -6,12 +6,7 @@ import { useCallback, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, ScrollView, Pressable } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
-import Animated, {
-  FadeIn,
-  FadeInDown,
-  LinearTransition,
-  Easing,
-} from "react-native-reanimated";
+import Animated, { FadeIn, FadeInDown, LinearTransition, Easing } from "react-native-reanimated";
 
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -39,10 +34,9 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
     <Typography
       style={{
         fontSize: 11,
-        fontWeight: "700",
         letterSpacing: 1.4,
         color: TEXT_SECONDARY,
-        fontFamily: "PlusJakartaSans_700Bold",
+        fontFamily: "CrimsonText_700Bold",
         textTransform: "uppercase",
         marginBottom: 16,
       }}
@@ -109,16 +103,16 @@ function TransactionRow({
 
   let subAmountText = "";
   let subAmountColor = TEXT_DANGER;
-  
+
   if (iPaid) {
-     const lentAmount = expense.amount - myShare;
-     if (lentAmount > 0) {
-       subAmountText = formatAmount(lentAmount, expense.currency);
-       subAmountColor = TEXT_SUCCESS;
-     }
+    const lentAmount = expense.amount - myShare;
+    if (lentAmount > 0) {
+      subAmountText = formatAmount(lentAmount, expense.currency);
+      subAmountColor = TEXT_SUCCESS;
+    }
   } else if (myShare > 0) {
-     subAmountText = formatAmount(myShare, expense.currency);
-     subAmountColor = TEXT_DANGER;
+    subAmountText = formatAmount(myShare, expense.currency);
+    subAmountColor = TEXT_DANGER;
   }
 
   const dateStr = expense.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -165,7 +159,9 @@ function TransactionRow({
               justifyContent: "center",
             }}
           >
-            <Typography style={{ fontSize: 10, fontWeight: "bold", color: TEXT_PRIMARY, textAlign: "center", lineHeight: 14 }}>
+            <Typography
+              style={{ fontSize: 10, color: TEXT_PRIMARY, textAlign: "center", lineHeight: 14 }}
+            >
               {paidByUser.name.charAt(0).toUpperCase()}
             </Typography>
           </View>
@@ -173,24 +169,50 @@ function TransactionRow({
       </View>
 
       <View style={{ flex: 1, marginRight: 12 }}>
-        <Typography numberOfLines={1} style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+        <Typography
+          numberOfLines={1}
+          style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+        >
           {expense.title}
         </Typography>
-        <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 4 }}>
+        <Typography
+          style={{
+            fontSize: 14,
+            color: TEXT_SECONDARY,
+            fontFamily: "CrimsonText_600SemiBold",
+            marginTop: 4,
+          }}
+        >
           {paidByName} paid
         </Typography>
       </View>
 
       <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
-        <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+        <Typography
+          style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+        >
           {formatAmount(expense.amount, expense.currency)}
         </Typography>
         {!!subAmountText ? (
-          <Typography style={{ fontSize: 14, fontWeight: "700", color: subAmountColor, fontFamily: "PlusJakartaSans_700Bold", marginTop: 4 }}>
+          <Typography
+            style={{
+              fontSize: 14,
+              color: subAmountColor,
+              fontFamily: "CrimsonText_700Bold",
+              marginTop: 4,
+            }}
+          >
             {subAmountText}
           </Typography>
         ) : (
-          <Typography style={{ fontSize: 14, fontWeight: "500", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 4 }}>
+          <Typography
+            style={{
+              fontSize: 14,
+              color: TEXT_SECONDARY,
+              fontFamily: "CrimsonText_600SemiBold",
+              marginTop: 4,
+            }}
+          >
             {dateStr}
           </Typography>
         )}
@@ -199,13 +221,12 @@ function TransactionRow({
   );
 }
 
-
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<GroupRouteParams>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  
+
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: allExpenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
@@ -214,9 +235,12 @@ export default function GroupDetailScreen(): JSX.Element {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
 
   const group = useMemo(() => groups.find((g) => g.id === id), [groups, id]);
-  
+
   const expenses = useMemo(
-    () => allExpenses.filter((e) => e.groupId === id).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+    () =>
+      allExpenses
+        .filter((e) => e.groupId === id)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
     [allExpenses, id]
   );
 
@@ -228,8 +252,22 @@ export default function GroupDetailScreen(): JSX.Element {
   const groupDebts = useMemo(() => {
     if (!group) return [];
     return group.simplifyDebts
-      ? balancesUtil.getSimplifiedDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency)
-      : balancesUtil.getExactPairwiseDebts(group.id, expenses, settlements, group, preferredCurrency, convertCurrency);
+      ? balancesUtil.getSimplifiedDebts(
+          group.id,
+          expenses,
+          settlements,
+          group,
+          preferredCurrency,
+          convertCurrency
+        )
+      : balancesUtil.getExactPairwiseDebts(
+          group.id,
+          expenses,
+          settlements,
+          group,
+          preferredCurrency,
+          convertCurrency
+        );
   }, [group, expenses, settlements, preferredCurrency, convertCurrency]);
 
   const oweUsers = useMemo(() => {
@@ -249,12 +287,18 @@ export default function GroupDetailScreen(): JSX.Element {
   }, [groupDebts, currentUser.id, group]);
 
   const youOwe = useMemo(
-    () => groupDebts.filter((d) => d.fromUserId === currentUser.id).reduce((acc, curr) => acc + curr.amount, 0),
+    () =>
+      groupDebts
+        .filter((d) => d.fromUserId === currentUser.id)
+        .reduce((acc, curr) => acc + curr.amount, 0),
     [groupDebts, currentUser.id]
   );
 
   const owedToYou = useMemo(
-    () => groupDebts.filter((d) => d.toUserId === currentUser.id).reduce((acc, curr) => acc + curr.amount, 0),
+    () =>
+      groupDebts
+        .filter((d) => d.toUserId === currentUser.id)
+        .reduce((acc, curr) => acc + curr.amount, 0),
     [groupDebts, currentUser.id]
   );
 
@@ -275,8 +319,11 @@ export default function GroupDetailScreen(): JSX.Element {
               <Alert.Description>This group may have been deleted.</Alert.Description>
             </Alert.Content>
           </Alert>
-          <Pressable onPress={() => router.back()} style={{ padding: 12, backgroundColor: "#8C7A6B", borderRadius: 0 }}>
-             <Typography style={{ color: "#FFF", fontWeight: "700" }}>Go back</Typography>
+          <Pressable
+            onPress={() => router.back()}
+            style={{ padding: 12, backgroundColor: "#8C7A6B", borderRadius: 0 }}
+          >
+            <Typography style={{ color: "#FFF" }}>Go back</Typography>
           </Pressable>
         </View>
       </SafeAreaView>
@@ -288,7 +335,7 @@ export default function GroupDetailScreen(): JSX.Element {
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
-      
+
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <View
         style={{
@@ -324,12 +371,21 @@ export default function GroupDetailScreen(): JSX.Element {
           <icons.ArrowLeft size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
         </Pressable>
 
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 12, flex: 1, marginHorizontal: 16 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 12,
+            flex: 1,
+            marginHorizontal: 16,
+          }}
+        >
           <GroupIcon size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
           <Typography
             numberOfLines={1}
             style={{
-              fontFamily: "DMSerifDisplay_400Regular",
+              fontFamily: "UnicaOne_400Regular",
               fontSize: 28,
               color: TEXT_PRIMARY,
               lineHeight: 36,
@@ -366,7 +422,10 @@ export default function GroupDetailScreen(): JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         {/* ── Balance Cards ─────────────────────────────────────────────── */}
-        <Animated.View entering={FadeInDown.duration(400).springify()} style={{ paddingHorizontal: 24, marginBottom: 40 }}>
+        <Animated.View
+          entering={FadeInDown.duration(400).springify()}
+          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+        >
           <BalanceCard
             youOwe={youOwe}
             owedToYou={owedToYou}
@@ -379,15 +438,41 @@ export default function GroupDetailScreen(): JSX.Element {
         </Animated.View>
 
         {/* ── Group Balances ────────────────────────────────────────────── */}
-        <Animated.View entering={FadeInDown.duration(400).delay(50).springify()} style={{ paddingHorizontal: 24, marginBottom: 40 }}>
+        <Animated.View
+          entering={FadeInDown.duration(400).delay(50).springify()}
+          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+        >
           <SectionLabel>Group Balances</SectionLabel>
           <View>
             {groupDebts.length === 0 ? (
-              <View style={{ paddingVertical: 24, alignItems: "center", justifyContent: "center", borderTopWidth: 1, borderBottomWidth: 1, borderColor: SEPARATOR }}>
-                <View style={{ width: 48, height: 48, borderRadius: 0, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+              <View
+                style={{
+                  paddingVertical: 24,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderTopWidth: 1,
+                  borderBottomWidth: 1,
+                  borderColor: SEPARATOR,
+                }}
+              >
+                <View
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 0,
+                    backgroundColor: "transparent",
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                  }}
+                >
                   <icons.Check size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
                 </View>
-                <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                <Typography
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                >
                   All settled up!
                 </Typography>
               </View>
@@ -418,15 +503,34 @@ export default function GroupDetailScreen(): JSX.Element {
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
                       <AppUserAvatar user={fromUser} size="md" />
                       <View>
-                        <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                        <Typography
+                          style={{
+                            fontSize: 16,
+                            color: TEXT_PRIMARY,
+                            fontFamily: "CrimsonText_700Bold",
+                          }}
+                        >
                           {isMeOwe ? "You" : fromUser.name}
                         </Typography>
-                        <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 4 }}>
+                        <Typography
+                          style={{
+                            fontSize: 14,
+                            color: TEXT_SECONDARY,
+                            fontFamily: "CrimsonText_600SemiBold",
+                            marginTop: 4,
+                          }}
+                        >
                           owes {isOweMe ? "you" : toUser.name.split(" ")[0]}
                         </Typography>
                       </View>
                     </View>
-                    <Typography style={{ fontSize: 18, fontWeight: "800", color: amountColor, fontFamily: "PlusJakartaSans_800ExtraBold" }}>
+                    <Typography
+                      style={{
+                        fontSize: 18,
+                        color: amountColor,
+                        fontFamily: "CrimsonText_700Bold",
+                      }}
+                    >
                       {formatAmount(debt.amount, group.currency)}
                     </Typography>
                   </Pressable>
@@ -437,24 +541,74 @@ export default function GroupDetailScreen(): JSX.Element {
         </Animated.View>
 
         {/* ── Transactions ─────────────────────────────────────────────── */}
-        <Animated.View entering={FadeInDown.duration(400).delay(100).springify()} style={{ paddingHorizontal: 24, marginBottom: 40 }}>
-          <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+        <Animated.View
+          entering={FadeInDown.duration(400).delay(100).springify()}
+          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 16,
+            }}
+          >
             <SectionLabel>Transactions</SectionLabel>
-            <Typography style={{ fontSize: 13, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 16 }}>
+            <Typography
+              style={{
+                fontSize: 13,
+                color: TEXT_PRIMARY,
+                fontFamily: "CrimsonText_700Bold",
+                marginBottom: 16,
+              }}
+            >
               Total: {formatAmount(totalExpensesInGroupCurrency, group.currency)}
             </Typography>
           </View>
-          
+
           <View>
             {expenses.length === 0 ? (
-              <View style={{ paddingVertical: 32, alignItems: "center", borderTopWidth: 1, borderBottomWidth: 1, borderColor: SEPARATOR }}>
-                <View style={{ width: 56, height: 56, borderRadius: 0, backgroundColor: "transparent", alignItems: "center", justifyContent: "center", marginBottom: 16, borderWidth: 1, borderColor: SEPARATOR }}>
+              <View
+                style={{
+                  paddingVertical: 32,
+                  alignItems: "center",
+                  borderTopWidth: 1,
+                  borderBottomWidth: 1,
+                  borderColor: SEPARATOR,
+                }}
+              >
+                <View
+                  style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: 0,
+                    backgroundColor: "transparent",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 16,
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
+                  }}
+                >
                   <icons.Receipt size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
                 </View>
-                <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 8 }}>
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "CrimsonText_700Bold",
+                    marginBottom: 8,
+                  }}
+                >
                   No expenses yet
                 </Typography>
-                <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                  }}
+                >
                   Add the first expense for this group
                 </Typography>
               </View>
@@ -514,7 +668,9 @@ export default function GroupDetailScreen(): JSX.Element {
           })}
         >
           <icons.Handshake size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
-          <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+          <Typography
+            style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+          >
             Settle Up
           </Typography>
         </Pressable>
@@ -535,7 +691,7 @@ export default function GroupDetailScreen(): JSX.Element {
           })}
         >
           <icons.Plus size={20} color="#FFFFFF" strokeWidth={2} />
-          <Typography style={{ fontSize: 16, fontWeight: "700", color: "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
+          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
             Add Expense
           </Typography>
         </Pressable>

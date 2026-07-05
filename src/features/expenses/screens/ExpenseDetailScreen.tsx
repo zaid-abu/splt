@@ -1,4 +1,4 @@
-import { Typography, Skeleton } from "heroui-native";
+import { Typography } from "heroui-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseRouteParams } from "@/types/navigation";
@@ -12,13 +12,11 @@ import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 
 import { useGroups } from "@/features/groups/queries/useGroups";
-import {
-  useUserExpenses,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
+import { useUserExpenses, useDeleteExpense } from "@/features/expenses/queries/useExpenses";
 
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
+import { AppLoader } from "@/components/ui/AppLoader";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { EXPENSE_CATEGORIES } from "@/types";
@@ -56,7 +54,13 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
   const renderBackdrop = useCallback(
     (props: any) => (
-      <BottomSheetBackdrop {...props} disappearsOnIndex={-1} appearsOnIndex={0} pressBehavior="close" opacity={0.4} />
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        pressBehavior="close"
+        opacity={0.4}
+      />
     ),
     []
   );
@@ -67,12 +71,35 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
   if (!expense) {
     return (
-      <View style={{ flex: 1, backgroundColor: BG, alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: BG,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
         <icons.AlertCircle size={48} color={TEXT_PRIMARY} />
-        <Typography style={{ fontSize: 24, fontWeight: "700", color: TEXT_PRIMARY, marginTop: 16, fontFamily: "PlusJakartaSans_700Bold" }}>
+        <Typography
+          style={{
+            fontSize: 24,
+            color: TEXT_PRIMARY,
+            marginTop: 16,
+            fontFamily: "CrimsonText_700Bold",
+          }}
+        >
           Expense not found
         </Typography>
-        <Typography style={{ fontSize: 16, color: TEXT_SECONDARY, textAlign: "center", marginTop: 8, fontFamily: "PlusJakartaSans_500Medium" }}>
+        <Typography
+          style={{
+            fontSize: 16,
+            color: TEXT_SECONDARY,
+            textAlign: "center",
+            marginTop: 8,
+            fontFamily: "CrimsonText_600SemiBold",
+          }}
+        >
           This expense may have been deleted or is unavailable.
         </Typography>
         <Pressable
@@ -87,7 +114,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
             opacity: pressed ? 0.8 : 1,
           })}
         >
-          <Typography style={{ fontSize: 16, fontWeight: "700", color: "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
+          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
             Go back
           </Typography>
         </Pressable>
@@ -118,7 +145,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
-      
+
       {/* ── Immersive Header ── */}
       <View
         style={{
@@ -151,7 +178,9 @@ export default function ExpenseDetailScreen(): JSX.Element {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Pressable
             accessibilityRole="button"
-            onPress={() => router.push({ pathname: "/expense/new", params: { expenseId: expense.id } })}
+            onPress={() =>
+              router.push({ pathname: "/expense/new", params: { expenseId: expense.id } })
+            }
             style={({ pressed }) => ({
               width: 44,
               height: 44,
@@ -187,59 +216,175 @@ export default function ExpenseDetailScreen(): JSX.Element {
         </View>
       </View>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
-        
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 60 }}
+      >
         {/* ── Bill Section ── */}
-        <Animated.View entering={FadeInDown.duration(400)} style={{ paddingHorizontal: 24, paddingTop: 40, paddingBottom: 40, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 32 }}>
+        <Animated.View
+          entering={FadeInDown.duration(400)}
+          style={{
+            paddingHorizontal: 24,
+            paddingTop: 40,
+            paddingBottom: 40,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: 32,
+            }}
+          >
             <View style={{ flex: 1 }}>
-              <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold", textTransform: "uppercase", letterSpacing: 2, marginBottom: 8 }}>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_700Bold",
+                  textTransform: "uppercase",
+                  letterSpacing: 2,
+                  marginBottom: 8,
+                }}
+              >
                 {category?.label ?? "Expense"}
               </Typography>
-              <Typography style={{ fontSize: 32, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "DMSerifDisplay_400Regular", lineHeight: 40 }}>
+              <Typography
+                style={{
+                  fontSize: 32,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "UnicaOne_400Regular",
+                  lineHeight: 40,
+                }}
+              >
                 {expense.title}
               </Typography>
             </View>
-            <View style={{ width: 64, height: 64, borderRadius: 0, backgroundColor: categoryColor.bg, alignItems: "center", justifyContent: "center" }}>
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 0,
+                backgroundColor: categoryColor.bg,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <CategoryIcon size={32} color={categoryColor.icon} strokeWidth={1.5} />
             </View>
           </View>
 
           <View style={{ marginBottom: 32 }}>
-            <Typography style={{ fontSize: 72, lineHeight: 80, fontWeight: "800", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_800ExtraBold", letterSpacing: -2 }}>
+            <Typography
+              style={{
+                fontSize: 72,
+                lineHeight: 80,
+                color: TEXT_PRIMARY,
+                fontFamily: "CrimsonText_700Bold",
+                letterSpacing: -2,
+              }}
+            >
               {formatAmt(expense.amount)}
             </Typography>
           </View>
 
           <View style={{ gap: 16 }}>
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <Typography style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>Date</Typography>
-              <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>{dateStr}</Typography>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_600SemiBold",
+                }}
+              >
+                Date
+              </Typography>
+              <Typography
+                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
+                {dateStr}
+              </Typography>
             </View>
 
-            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-              <Typography style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>Paid by</Typography>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_600SemiBold",
+                }}
+              >
+                Paid by
+              </Typography>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <AppUserAvatar user={expense.paidByUser} size="sm" />
-                <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                <Typography
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                >
                   {paidByMe ? "You" : expense.paidByUser.name}
                 </Typography>
               </View>
             </View>
 
             {group && (
-              <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-                <Typography style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>Group</Typography>
-                <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                  }}
+                >
+                  Group
+                </Typography>
+                <Typography
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                >
                   {group.name}
                 </Typography>
               </View>
             )}
 
             {expense.notes && (
-              <View style={{ marginTop: 8, paddingTop: 16, borderTopWidth: 1, borderTopColor: SEPARATOR }}>
-                <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", lineHeight: 22, fontStyle: "italic" }}>
-                  "{expense.notes}"
+              <View
+                style={{
+                  marginTop: 8,
+                  paddingTop: 16,
+                  borderTopWidth: 1,
+                  borderTopColor: SEPARATOR,
+                }}
+              >
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                    lineHeight: 22,
+                  }}
+                >
+                  &quot;{expense.notes}&quot;
                 </Typography>
               </View>
             )}
@@ -247,13 +392,42 @@ export default function ExpenseDetailScreen(): JSX.Element {
         </Animated.View>
 
         {/* ── Split Breakdown ── */}
-        <Animated.View entering={FadeInDown.duration(400).delay(100)} style={{ paddingHorizontal: 24, paddingTop: 40 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-            <Typography style={{ fontSize: 12, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold", textTransform: "uppercase", letterSpacing: 2 }}>
+        <Animated.View
+          entering={FadeInDown.duration(400).delay(100)}
+          style={{ paddingHorizontal: 24, paddingTop: 40 }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 24,
+            }}
+          >
+            <Typography
+              style={{
+                fontSize: 12,
+                color: TEXT_SECONDARY,
+                fontFamily: "CrimsonText_700Bold",
+                textTransform: "uppercase",
+                letterSpacing: 2,
+              }}
+            >
               Split Breakdown
             </Typography>
-            <View style={{ paddingHorizontal: 12, paddingVertical: 4, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, borderRadius: 12 }}>
-              <Typography style={{ fontSize: 11, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+            <View
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+                backgroundColor: "transparent",
+                borderWidth: 1,
+                borderColor: SEPARATOR,
+                borderRadius: 12,
+              }}
+            >
+              <Typography
+                style={{ fontSize: 11, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
                 {expense.splitMethod === "equal" ? "EQUAL" : "CUSTOM"}
               </Typography>
             </View>
@@ -261,9 +435,8 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
           <View>
             {isAppLoading ? (
-              <View style={{ gap: 16 }}>
-                <Skeleton className="w-full h-[64px] rounded-none bg-[#E8E4DF]" />
-                <Skeleton className="w-full h-[64px] rounded-none bg-[#E8E4DF]" />
+              <View style={{ paddingTop: 24 }}>
+                <AppLoader />
               </View>
             ) : (
               expense.splits.map((split: any, idx: number) => {
@@ -272,12 +445,12 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 const isPayer = split.userId === expense.paidBy;
 
                 return (
-                  <Pressable 
+                  <Pressable
                     key={split.userId}
                     onPress={() => {
-                       if (!isMe) {
-                         router.push(`/friend/${split.userId}`);
-                       }
+                      if (!isMe) {
+                        router.push(`/friend/${split.userId}`);
+                      }
                     }}
                     style={({ pressed }) => ({
                       flexDirection: "row",
@@ -285,19 +458,38 @@ export default function ExpenseDetailScreen(): JSX.Element {
                       paddingVertical: 16,
                       borderBottomWidth: idx < expense.splits.length - 1 ? 1 : 0,
                       borderBottomColor: SEPARATOR,
-                      opacity: !isMe && pressed ? 0.5 : 1
+                      opacity: !isMe && pressed ? 0.5 : 1,
                     })}
                   >
                     <AppUserAvatar user={split.user} size="lg" />
                     <View style={{ flex: 1, marginLeft: 16, justifyContent: "center" }}>
-                      <Typography style={{ fontSize: 18, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 2 }}>
+                      <Typography
+                        style={{
+                          fontSize: 18,
+                          color: TEXT_PRIMARY,
+                          fontFamily: "CrimsonText_700Bold",
+                          marginBottom: 2,
+                        }}
+                      >
                         {isMe ? "You" : split.user.name}
                       </Typography>
-                      <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>
+                      <Typography
+                        style={{
+                          fontSize: 14,
+                          color: TEXT_SECONDARY,
+                          fontFamily: "CrimsonText_600SemiBold",
+                        }}
+                      >
                         {isPaid ? (isPayer ? "Paid the bill" : "Settled") : "Owes"}
                       </Typography>
                     </View>
-                    <Typography style={{ fontSize: 20, fontWeight: "800", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_800ExtraBold" }}>
+                    <Typography
+                      style={{
+                        fontSize: 20,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "CrimsonText_700Bold",
+                      }}
+                    >
                       {formatAmt(split.amount)}
                     </Typography>
                   </Pressable>
@@ -309,50 +501,86 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
         {/* ── My Share Summary ── */}
         {myShare && (
-          <Animated.View entering={FadeInDown.duration(400).delay(200)} style={{ paddingHorizontal: 24, paddingTop: 40 }}>
-            <View style={{ paddingVertical: 24, paddingHorizontal: 24, backgroundColor: "#8C7A6B", borderRadius: 0 }}>
-              <Typography style={{ fontSize: 14, fontWeight: "700", color: "#FFFFFF", opacity: 0.7, fontFamily: "PlusJakartaSans_700Bold", textTransform: "uppercase", letterSpacing: 1.4, marginBottom: 8 }}>
+          <Animated.View
+            entering={FadeInDown.duration(400).delay(200)}
+            style={{ paddingHorizontal: 24, paddingTop: 40 }}
+          >
+            <View
+              style={{
+                paddingVertical: 24,
+                paddingHorizontal: 24,
+                backgroundColor: "#8C7A6B",
+                borderRadius: 0,
+              }}
+            >
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: "#FFFFFF",
+                  opacity: 0.7,
+                  fontFamily: "CrimsonText_700Bold",
+                  textTransform: "uppercase",
+                  letterSpacing: 1.4,
+                  marginBottom: 8,
+                }}
+              >
                 {paidByMe ? "You paid" : "Your Share"}
               </Typography>
-              <Typography style={{ fontSize: 32, fontWeight: "800", color: "#FFFFFF", fontFamily: "PlusJakartaSans_800ExtraBold", marginBottom: 8 }}>
+              <Typography
+                style={{
+                  fontSize: 32,
+                  color: "#FFFFFF",
+                  fontFamily: "CrimsonText_700Bold",
+                  marginBottom: 8,
+                }}
+              >
                 {paidByMe ? formatAmt(expense.amount) : formatAmt(myShare.amount)}
               </Typography>
-              <Typography style={{ fontSize: 14, color: "#FFFFFF", opacity: 0.9, fontFamily: "PlusJakartaSans_500Medium", lineHeight: 20 }}>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: "#FFFFFF",
+                  opacity: 0.9,
+                  fontFamily: "CrimsonText_600SemiBold",
+                  lineHeight: 20,
+                }}
+              >
                 {paidByMe
                   ? `Your share is ${formatAmt(myShare.amount)}. The rest is owed to you.`
                   : `You owe ${expense.paidByUser.name.split(" ")[0]} to settle up.`}
               </Typography>
 
               {!paidByMe && !myShare.paid && (
-                 <Pressable
-                   accessibilityRole="button"
-                   onPress={() => 
-                     router.push({
-                       pathname: `/settle/${expense.paidBy}`,
-                       params: {
-                         amount: myShare.amount.toString(),
-                         groupId: expense.groupId || undefined,
-                       },
-                     } as any)
-                   }
-                   style={({ pressed }) => ({
-                     marginTop: 24,
-                     height: 48,
-                     backgroundColor: "#FFFFFF",
-                     alignItems: "center",
-                     justifyContent: "center",
-                     opacity: pressed ? 0.8 : 1,
-                   })}
-                 >
-                   <Typography style={{ fontSize: 15, fontWeight: "700", color: "#8C7A6B", fontFamily: "PlusJakartaSans_700Bold" }}>
-                     Settle Your Share
-                   </Typography>
-                 </Pressable>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() =>
+                    router.push({
+                      pathname: `/settle/${expense.paidBy}`,
+                      params: {
+                        amount: myShare.amount.toString(),
+                        groupId: expense.groupId || undefined,
+                      },
+                    } as any)
+                  }
+                  style={({ pressed }) => ({
+                    marginTop: 24,
+                    height: 48,
+                    backgroundColor: "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: pressed ? 0.8 : 1,
+                  })}
+                >
+                  <Typography
+                    style={{ fontSize: 15, color: "#8C7A6B", fontFamily: "CrimsonText_700Bold" }}
+                  >
+                    Settle Your Share
+                  </Typography>
+                </Pressable>
               )}
             </View>
           </Animated.View>
         )}
-
       </ScrollView>
 
       {/* ── Delete Confirmation Bottom Sheet ── */}
@@ -364,12 +592,28 @@ export default function ExpenseDetailScreen(): JSX.Element {
         backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
       >
-        <BottomSheetView style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}>
-          <Typography style={{ fontSize: 22, fontFamily: "PlusJakartaSans_700Bold", color: TEXT_PRIMARY, marginBottom: 8 }}>
+        <BottomSheetView
+          style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
+        >
+          <Typography
+            style={{
+              fontSize: 22,
+              fontFamily: "CrimsonText_700Bold",
+              color: TEXT_PRIMARY,
+              marginBottom: 8,
+            }}
+          >
             Delete Expense?
           </Typography>
-          <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_500Medium", color: TEXT_SECONDARY, marginBottom: 24 }}>
-            Are you sure you want to delete "{expense.title}"? This cannot be undone.
+          <Typography
+            style={{
+              fontSize: 16,
+              fontFamily: "CrimsonText_600SemiBold",
+              color: TEXT_SECONDARY,
+              marginBottom: 24,
+            }}
+          >
+            Are you sure you want to delete &quot;{expense.title}&quot;? This cannot be undone.
           </Typography>
 
           <View style={{ flexDirection: "row", gap: 12 }}>
@@ -385,7 +629,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 opacity: pressed ? 0.5 : 1,
               })}
             >
-              <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: TEXT_PRIMARY }}>Cancel</Typography>
+              <Typography
+                style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: TEXT_PRIMARY }}
+              >
+                Cancel
+              </Typography>
             </Pressable>
             <Pressable
               onPress={() => {
@@ -404,7 +652,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 opacity: pressed ? 0.8 : 1,
               })}
             >
-              <Typography style={{ fontSize: 16, fontFamily: "PlusJakartaSans_700Bold", color: "#FFFFFF" }}>Delete</Typography>
+              <Typography
+                style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: "#FFFFFF" }}
+              >
+                Delete
+              </Typography>
             </Pressable>
           </View>
         </BottomSheetView>

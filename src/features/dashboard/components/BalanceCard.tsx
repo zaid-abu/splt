@@ -20,10 +20,9 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
     <Typography
       style={{
         fontSize: 10,
-        fontWeight: "700",
         letterSpacing: 1.2,
         color: TEXT_MUTED,
-        fontFamily: "PlusJakartaSans_700Bold",
+        fontFamily: "CrimsonText_700Bold",
         textTransform: "uppercase",
         marginBottom: 8,
       }}
@@ -72,11 +71,24 @@ function HalfCard({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
       onPress={onPress}
+      // eslint-disable-next-line
       onPressIn={() => (scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }))}
+      // eslint-disable-next-line
       onPressOut={() => (scale.value = withSpring(1, { damping: 15, stiffness: 300 }))}
       style={{ flex: 1 }}
     >
-      <Animated.View style={[{ flex: 1, paddingVertical: 12, paddingHorizontal: 12, backgroundColor: "transparent", borderRadius: 16 }, animatedStyle]}>
+      <Animated.View
+        style={[
+          {
+            flex: 1,
+            paddingVertical: 12,
+            paddingHorizontal: 12,
+            backgroundColor: "transparent",
+            borderRadius: 16,
+          },
+          animatedStyle,
+        ]}
+      >
         <SectionLabel>{label}</SectionLabel>
 
         {/* Amount + Currency */}
@@ -84,9 +96,8 @@ function HalfCard({
           <Typography
             style={{
               fontSize: 32,
-              fontWeight: "800",
               color: amountColor,
-              fontFamily: "PlusJakartaSans_800ExtraBold",
+              fontFamily: "CrimsonText_700Bold",
               lineHeight: 40,
               letterSpacing: -1,
             }}
@@ -98,9 +109,8 @@ function HalfCard({
           <Typography
             style={{
               fontSize: 14,
-              fontWeight: "600",
               color: TEXT_MUTED,
-              fontFamily: "PlusJakartaSans_600SemiBold",
+              fontFamily: "CrimsonText_600SemiBold",
               marginLeft: 4,
             }}
           >
@@ -109,7 +119,14 @@ function HalfCard({
         </View>
 
         {/* Action row */}
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "flex-end", minHeight: 28 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            minHeight: 28,
+          }}
+        >
           {showSettleButton && users.length > 0 && amount > 0 ? (
             <Pressable
               accessibilityRole="button"
@@ -125,7 +142,9 @@ function HalfCard({
                 opacity: pressed ? 0.7 : 1,
               })}
             >
-              <Typography style={{ fontSize: 12, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+              <Typography
+                style={{ fontSize: 12, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
                 Settle
               </Typography>
             </Pressable>
@@ -173,14 +192,35 @@ export function BalanceCard({
           justifyContent: "center",
         }}
       >
-        <View style={{ width: 64, height: 64, borderRadius: 0, borderWidth: 1, borderColor: SEPARATOR, backgroundColor: "transparent", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+        <View
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 0,
+            borderWidth: 1,
+            borderColor: SEPARATOR,
+            backgroundColor: "transparent",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 16,
+          }}
+        >
           <icons.Check size={32} color={AMOUNT_OWED} strokeWidth={2.5} />
         </View>
-        <Typography style={{ fontSize: 24, fontWeight: "800", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_800ExtraBold", marginBottom: 8 }}>
+        <Typography
+          style={{
+            fontSize: 24,
+            color: TEXT_PRIMARY,
+            fontFamily: "CrimsonText_700Bold",
+            marginBottom: 8,
+          }}
+        >
           All settled up!
         </Typography>
-        <Typography style={{ fontSize: 15, color: TEXT_MUTED, fontFamily: "PlusJakartaSans_500Medium" }}>
-          You don't owe anyone, and no one owes you.
+        <Typography
+          style={{ fontSize: 15, color: TEXT_MUTED, fontFamily: "CrimsonText_600SemiBold" }}
+        >
+          You don&apos;t owe anyone, and no one owes you.
         </Typography>
       </View>
     );
@@ -207,10 +247,12 @@ export function BalanceCard({
         showSettleButton={true}
         onSettlePress={onSettlePress}
       />
-      
+
       {/* Divider */}
-      <View style={{ width: 1, backgroundColor: SEPARATOR, marginVertical: 12, marginHorizontal: 4 }} />
-      
+      <View
+        style={{ width: 1, backgroundColor: SEPARATOR, marginVertical: 12, marginHorizontal: 4 }}
+      />
+
       <HalfCard
         label="YOU ARE OWED"
         amount={owedToYou}
@@ -222,7 +264,6 @@ export function BalanceCard({
       />
 
       {/* Net Balance Pill */}
-
     </View>
   );
 }

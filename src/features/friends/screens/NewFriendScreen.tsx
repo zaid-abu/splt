@@ -39,7 +39,10 @@ export default function NewFriendScreen(): JSX.Element {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data: searchResults, isLoading: isSearching } = useSearchUsers(debouncedQuery, currentUser.id);
+  const { data: searchResults, isLoading: isSearching } = useSearchUsers(
+    debouncedQuery,
+    currentUser.id
+  );
   const { data: allFriendships = [] } = useAllFriendships(currentUser.id);
 
   const handleAddFriend = async (targetUser: User) => {
@@ -79,30 +82,59 @@ export default function NewFriendScreen(): JSX.Element {
 
   const renderUserItem = ({ item, index }: { item: User; index: number }) => {
     const isAdding = addingUserId === item.id;
-    
+
     // Check friendship status
-    const existingFriendship = allFriendships.find(f => f.friendUser?.id === item.id);
+    const existingFriendship = allFriendships.find((f) => f.friendUser?.id === item.id);
     const status = existingFriendship?.status;
-    
+
     const isRequested = status === "pending";
     const isAdded = status === "accepted";
     const isDisabled = !!addingUserId || isRequested || isAdded;
 
     return (
       <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
-        <View style={{ flexDirection: "row", alignItems: "center", paddingHorizontal: 24, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
-          
-          <View style={{ width: 48, height: 48, borderRadius: 0, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, alignItems: "center", justifyContent: "center", marginRight: 16 }}>
-            <Typography style={{ fontSize: 18, fontWeight: "700", color: TEXT_PRIMARY }}>
-              {item.initials}
-            </Typography>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 24,
+            paddingVertical: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 0,
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 16,
+            }}
+          >
+            <Typography style={{ fontSize: 18, color: TEXT_PRIMARY }}>{item.initials}</Typography>
           </View>
-          
+
           <View style={{ flex: 1, marginRight: 12 }}>
-            <Typography numberOfLines={1} style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+            <Typography
+              numberOfLines={1}
+              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+            >
               {item.name}
             </Typography>
-            <Typography numberOfLines={1} style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 4 }}>
+            <Typography
+              numberOfLines={1}
+              style={{
+                fontSize: 14,
+                color: TEXT_SECONDARY,
+                fontFamily: "CrimsonText_600SemiBold",
+                marginTop: 4,
+              }}
+            >
               {item.email}
             </Typography>
           </View>
@@ -127,11 +159,15 @@ export default function NewFriendScreen(): JSX.Element {
             {isAdding ? (
               <Spinner size="sm" color="white" />
             ) : isAdded ? (
-              <Typography style={{ fontSize: 14, fontWeight: "700", color: "white", fontFamily: "PlusJakartaSans_700Bold" }}>
+              <Typography
+                style={{ fontSize: 14, color: "white", fontFamily: "CrimsonText_700Bold" }}
+              >
                 Added
               </Typography>
             ) : isRequested ? (
-              <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+              <Typography
+                style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
                 Requested
               </Typography>
             ) : (
@@ -148,19 +184,35 @@ export default function NewFriendScreen(): JSX.Element {
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View style={{ paddingTop: insets.top + 16, paddingBottom: 24, paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-        <Typography style={{ fontFamily: "DMSerifDisplay_400Regular", fontSize: 28, color: TEXT_PRIMARY, lineHeight: 36 }}>
+      <View
+        style={{
+          paddingTop: insets.top + 16,
+          paddingBottom: 24,
+          paddingHorizontal: 24,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography
+          style={{
+            fontFamily: "UnicaOne_400Regular",
+            fontSize: 28,
+            color: TEXT_PRIMARY,
+            lineHeight: 36,
+          }}
+        >
           Add Friend
         </Typography>
-        <Pressable 
+        <Pressable
           onPress={() => {
             if (router.canGoBack()) {
               router.back();
             } else {
               router.replace("/(tabs)");
             }
-          }} 
-          accessibilityRole="button" 
+          }}
+          accessibilityRole="button"
           style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
         >
           <icons.X size={24} color={TEXT_SECONDARY} strokeWidth={1.5} />
@@ -172,8 +224,25 @@ export default function NewFriendScreen(): JSX.Element {
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         {/* Search Bar */}
-        <View style={{ paddingHorizontal: 24, paddingBottom: 24, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
-          <View style={{ flexDirection: "row", alignItems: "center", backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, height: 56, paddingHorizontal: 16 }}>
+        <View
+          style={{
+            paddingHorizontal: 24,
+            paddingBottom: 24,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              height: 56,
+              paddingHorizontal: 16,
+            }}
+          >
             <icons.Search size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
             <TextInput
               value={searchQuery}
@@ -185,7 +254,7 @@ export default function NewFriendScreen(): JSX.Element {
               style={{
                 flex: 1,
                 marginLeft: 12,
-                fontFamily: "PlusJakartaSans_500Medium",
+                fontFamily: "CrimsonText_600SemiBold",
                 color: TEXT_PRIMARY,
                 fontSize: 16,
               }}
@@ -208,29 +277,89 @@ export default function NewFriendScreen(): JSX.Element {
           contentContainerStyle={{ paddingBottom: 100 }}
           keyboardShouldPersistTaps="handled"
           ListEmptyComponent={
-            <View style={{ paddingHorizontal: 24, paddingVertical: 48, alignItems: "center", justifyContent: "center" }}>
+            <View
+              style={{
+                paddingHorizontal: 24,
+                paddingVertical: 48,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               {debouncedQuery.length >= 2 && !isSearching ? (
                 <>
-                  <View style={{ width: 64, height: 64, borderRadius: 0, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                  <View
+                    style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: 0,
+                      backgroundColor: "transparent",
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 16,
+                    }}
+                  >
                     <icons.UserX size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
                   </View>
-                  <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", textAlign: "center", marginBottom: 8 }}>
+                  <Typography
+                    style={{
+                      fontSize: 16,
+                      color: TEXT_PRIMARY,
+                      fontFamily: "CrimsonText_700Bold",
+                      textAlign: "center",
+                      marginBottom: 8,
+                    }}
+                  >
                     No users found
                   </Typography>
-                  <Typography style={{ fontSize: 15, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", textAlign: "center" }}>
-                    No users matching "{debouncedQuery}"
+                  <Typography
+                    style={{
+                      fontSize: 15,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "CrimsonText_600SemiBold",
+                      textAlign: "center",
+                    }}
+                  >
+                    No users matching &quot;{debouncedQuery}&quot;
                   </Typography>
                 </>
               ) : debouncedQuery.length > 0 ? (
-                <Typography style={{ fontSize: 15, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", textAlign: "center" }}>
+                <Typography
+                  style={{
+                    fontSize: 15,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                    textAlign: "center",
+                  }}
+                >
                   Keep typing to search...
                 </Typography>
               ) : (
                 <View style={{ alignItems: "center" }}>
-                   <View style={{ width: 64, height: 64, borderRadius: 0, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                  <View
+                    style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: 0,
+                      backgroundColor: "transparent",
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 16,
+                    }}
+                  >
                     <icons.Users size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
                   </View>
-                  <Typography style={{ fontSize: 15, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", textAlign: "center" }}>
+                  <Typography
+                    style={{
+                      fontSize: 15,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "CrimsonText_600SemiBold",
+                      textAlign: "center",
+                    }}
+                  >
                     Find friends by their name or email address.
                   </Typography>
                 </View>

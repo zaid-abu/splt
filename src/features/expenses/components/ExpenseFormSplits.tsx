@@ -16,10 +16,9 @@ function SectionLabel({ children }: { children: string }) {
     <Typography
       style={{
         fontSize: 11,
-        fontWeight: "700",
         letterSpacing: 1.4,
         color: TEXT_SECONDARY,
-        fontFamily: "PlusJakartaSans_700Bold",
+        fontFamily: "CrimsonText_700Bold",
         textTransform: "uppercase",
         marginBottom: 16,
       }}
@@ -100,8 +99,7 @@ export function ExpenseFormSelectors({
                 <Typography
                   style={{
                     fontSize: 15,
-                    fontWeight: "700",
-                    fontFamily: "PlusJakartaSans_700Bold",
+                    fontFamily: "CrimsonText_700Bold",
                     color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
                   }}
                 >
@@ -151,8 +149,7 @@ export function ExpenseFormSelectors({
                 <Typography
                   style={{
                     fontSize: 15,
-                    fontWeight: "700",
-                    fontFamily: "PlusJakartaSans_700Bold",
+                    fontFamily: "CrimsonText_700Bold",
                     color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
                   }}
                 >
@@ -167,7 +164,14 @@ export function ExpenseFormSelectors({
       {/* ── Split method ───────────────────────── */}
       <View style={{ paddingHorizontal: 24, marginBottom: 40 }}>
         <SectionLabel>Split Method</SectionLabel>
-        <View style={{ flexDirection: "row", backgroundColor: "transparent", borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
+        <View
+          style={{
+            flexDirection: "row",
+            backgroundColor: "transparent",
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
           {SPLIT_METHODS.map((method) => {
             const isSelected = splitMethod === method.key;
             return (
@@ -190,8 +194,7 @@ export function ExpenseFormSelectors({
                 <Typography
                   style={{
                     fontSize: 15,
-                    fontWeight: "700",
-                    fontFamily: "PlusJakartaSans_700Bold",
+                    fontFamily: "CrimsonText_700Bold",
                     color: isSelected ? TEXT_PRIMARY : TEXT_SECONDARY,
                   }}
                 >

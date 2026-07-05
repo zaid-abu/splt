@@ -65,8 +65,15 @@ export function useAddFriend() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ userId, friendId }: { userId: string; friendId: string }) =>
-      FriendsService.addFriend(userId, friendId),
+    mutationFn: ({
+      userId,
+      friendId,
+      groupId,
+    }: {
+      userId: string;
+      friendId: string;
+      groupId?: string;
+    }) => FriendsService.addFriend(userId, friendId, groupId),
     onSuccess: (_, { userId }) => {
       queryClient.invalidateQueries({ queryKey: friendKeys.list(userId) });
     },
@@ -98,4 +105,3 @@ export function useRejectFriend() {
     },
   });
 }
-

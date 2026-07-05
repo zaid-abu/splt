@@ -5,17 +5,21 @@
  */
 import DateTimePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-import {
-  Typography,
-  Spinner,
-  Popover,
-} from "heroui-native";
+import { Typography, Spinner, Popover } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseNewRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, InteractionManager, Pressable, TextInput } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  InteractionManager,
+  Pressable,
+  TextInput,
+} from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -94,19 +98,35 @@ export default function AddExpenseScreen(): JSX.Element {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <View style={{ paddingTop: insets.top + 16, paddingBottom: 24, paddingHorizontal: 24, flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
-          <Typography style={{ fontFamily: "DMSerifDisplay_400Regular", fontSize: 28, color: TEXT_PRIMARY, lineHeight: 36 }}>
+        <View
+          style={{
+            paddingTop: insets.top + 16,
+            paddingBottom: 24,
+            paddingHorizontal: 24,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <Typography
+            style={{
+              fontFamily: "UnicaOne_400Regular",
+              fontSize: 28,
+              color: TEXT_PRIMARY,
+              lineHeight: 36,
+            }}
+          >
             {state.existingExpense ? "Edit Expense" : "Add Expense"}
           </Typography>
-          <Pressable 
+          <Pressable
             onPress={() => {
               if (router.canGoBack()) {
                 router.back();
               } else {
                 router.replace("/(tabs)");
               }
-            }} 
-            accessibilityRole="button" 
+            }}
+            accessibilityRole="button"
             style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
           >
             <icons.X size={24} color={TEXT_SECONDARY} strokeWidth={1.5} />
@@ -147,10 +167,34 @@ export default function AddExpenseScreen(): JSX.Element {
               {(state.selectedGroup || state.selectedFriends.length > 0) &&
                 state.selectionConfirmed &&
                 !(initialGroupId || initialFriendId) && (
-                  <Animated.View entering={FadeInUp.duration(300)} style={{ paddingHorizontal: 24, marginBottom: 40 }}>
-                    <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
-                      <View style={{ flexDirection: "row", alignItems: "center", gap: 16, flex: 1 }}>
-                        <View style={{ width: 48, height: 48, borderRadius: 0, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, alignItems: "center", justifyContent: "center" }}>
+                  <Animated.View
+                    entering={FadeInUp.duration(300)}
+                    style={{ paddingHorizontal: 24, marginBottom: 40 }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        paddingVertical: 16,
+                        borderBottomWidth: 1,
+                        borderBottomColor: SEPARATOR,
+                      }}
+                    >
+                      <View
+                        style={{ flexDirection: "row", alignItems: "center", gap: 16, flex: 1 }}
+                      >
+                        <View
+                          style={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: 0,
+                            backgroundColor: "transparent",
+                            borderWidth: 1,
+                            borderColor: SEPARATOR,
+                            alignItems: "center",
+                            justifyContent: "center",
+                          }}
+                        >
                           {state.selectedGroup ? (
                             <icons.Users size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
                           ) : (
@@ -158,12 +202,26 @@ export default function AddExpenseScreen(): JSX.Element {
                           )}
                         </View>
                         <View style={{ flex: 1 }}>
-                          <Typography numberOfLines={1} style={{ fontSize: 20, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                          <Typography
+                            numberOfLines={1}
+                            style={{
+                              fontSize: 20,
+                              color: TEXT_PRIMARY,
+                              fontFamily: "CrimsonText_700Bold",
+                            }}
+                          >
                             {state.selectedGroup
                               ? state.selectedGroup.name
                               : state.selectedFriends.map((f) => f.name.split(" ")[0]).join(", ")}
                           </Typography>
-                          <Typography style={{ fontSize: 13, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 4 }}>
+                          <Typography
+                            style={{
+                              fontSize: 13,
+                              color: TEXT_SECONDARY,
+                              fontFamily: "CrimsonText_600SemiBold",
+                              marginTop: 4,
+                            }}
+                          >
                             Currency: {state.expenseCurrency}
                           </Typography>
                         </View>
@@ -175,9 +233,23 @@ export default function AddExpenseScreen(): JSX.Element {
                           actions.setSelectedFriendIds([]);
                           actions.setSelectionConfirmed(false);
                         }}
-                        style={({ pressed }) => ({ paddingHorizontal: 16, paddingVertical: 8, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, borderRadius: 0, opacity: pressed ? 0.5 : 1 })}
+                        style={({ pressed }) => ({
+                          paddingHorizontal: 16,
+                          paddingVertical: 8,
+                          backgroundColor: "transparent",
+                          borderWidth: 1,
+                          borderColor: SEPARATOR,
+                          borderRadius: 0,
+                          opacity: pressed ? 0.5 : 1,
+                        })}
                       >
-                        <Typography style={{ fontSize: 13, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                        <Typography
+                          style={{
+                            fontSize: 13,
+                            color: TEXT_PRIMARY,
+                            fontFamily: "CrimsonText_700Bold",
+                          }}
+                        >
                           Change
                         </Typography>
                       </Pressable>
@@ -189,8 +261,28 @@ export default function AddExpenseScreen(): JSX.Element {
               {((initialGroupId && state.selectedGroup) ||
                 (initialFriendId && state.selectedFriends.length > 0)) && (
                 <View style={{ paddingHorizontal: 24, marginBottom: 40 }}>
-                  <View style={{ flexDirection: "row", alignItems: "center", paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
-                    <View style={{ width: 48, height: 48, borderRadius: 0, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, alignItems: "center", justifyContent: "center", marginRight: 16 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 16,
+                      borderBottomWidth: 1,
+                      borderBottomColor: SEPARATOR,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 0,
+                        backgroundColor: "transparent",
+                        borderWidth: 1,
+                        borderColor: SEPARATOR,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginRight: 16,
+                      }}
+                    >
                       {state.selectedGroup ? (
                         <icons.Users size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
                       ) : (
@@ -198,13 +290,30 @@ export default function AddExpenseScreen(): JSX.Element {
                       )}
                     </View>
                     <View>
-                      <Typography numberOfLines={1} style={{ fontSize: 20, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                      <Typography
+                        numberOfLines={1}
+                        style={{
+                          fontSize: 20,
+                          color: TEXT_PRIMARY,
+                          fontFamily: "CrimsonText_700Bold",
+                        }}
+                      >
                         {state.selectedGroup
                           ? state.selectedGroup.name
                           : state.selectedFriends[0].name}
                       </Typography>
-                      <Typography style={{ fontSize: 13, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 4 }}>
-                        Currency: {state.selectedGroup ? state.selectedGroup.currency : preferredCurrency.code}
+                      <Typography
+                        style={{
+                          fontSize: 13,
+                          color: TEXT_SECONDARY,
+                          fontFamily: "CrimsonText_600SemiBold",
+                          marginTop: 4,
+                        }}
+                      >
+                        Currency:{" "}
+                        {state.selectedGroup
+                          ? state.selectedGroup.currency
+                          : preferredCurrency.code}
                       </Typography>
                     </View>
                   </View>
@@ -214,12 +323,25 @@ export default function AddExpenseScreen(): JSX.Element {
               {(state.selectedGroup || state.selectedFriends.length > 0) &&
                 state.selectionConfirmed && (
                   <Animated.View entering={FadeInUp.duration(300).delay(100)}>
-                    
                     {/* ── Amount & Title ────────────── */}
                     <View style={{ paddingHorizontal: 24, marginBottom: 40, alignItems: "center" }}>
-                      
-                      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 24 }}>
-                        <Typography style={{ fontSize: 40, fontWeight: "800", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_800ExtraBold", marginRight: 8, marginTop: 4 }}>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginBottom: 24,
+                        }}
+                      >
+                        <Typography
+                          style={{
+                            fontSize: 40,
+                            color: TEXT_SECONDARY,
+                            fontFamily: "CrimsonText_700Bold",
+                            marginRight: 8,
+                            marginTop: 4,
+                          }}
+                        >
                           {state.expenseCurrency}
                         </Typography>
                         <TextInput
@@ -230,16 +352,22 @@ export default function AddExpenseScreen(): JSX.Element {
                           keyboardType="decimal-pad"
                           style={{
                             fontSize: 72,
-                            fontWeight: "800",
                             color: TEXT_PRIMARY,
-                            fontFamily: "PlusJakartaSans_800ExtraBold",
+                            fontFamily: "CrimsonText_700Bold",
                             textAlign: "center",
                             minWidth: 120,
                           }}
                         />
                       </View>
 
-                      <View style={{ width: "100%", borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingBottom: 16 }}>
+                      <View
+                        style={{
+                          width: "100%",
+                          borderBottomWidth: 1,
+                          borderBottomColor: SEPARATOR,
+                          paddingBottom: 16,
+                        }}
+                      >
                         <TextInput
                           placeholder="What was it for? (e.g. Dinner, Uber)"
                           placeholderTextColor={TEXT_SECONDARY}
@@ -250,92 +378,125 @@ export default function AddExpenseScreen(): JSX.Element {
                             height: 48,
                             fontSize: 20,
                             color: TEXT_PRIMARY,
-                            fontFamily: "PlusJakartaSans_700Bold",
-                            textAlign: "center"
+                            fontFamily: "CrimsonText_700Bold",
+                            textAlign: "center",
                           }}
                         />
                       </View>
-
                     </View>
 
                     {/* ── Currency, Date & Receipt ────────────── */}
                     <View style={{ paddingHorizontal: 24, marginBottom: 40 }}>
-                        <View style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
-                          <CurrencySelector
-                            label="Currency"
-                            value={state.expenseCurrency}
-                            onChange={(c) => {
-                              actions.setExpenseCurrency(c.code);
-                              if (!state.selectedGroup) actions.setCurrency(c);
-                            }}
-                          />
-                        </View>
+                      <View
+                        style={{
+                          paddingVertical: 16,
+                          borderBottomWidth: 1,
+                          borderBottomColor: SEPARATOR,
+                        }}
+                      >
+                        <CurrencySelector
+                          label="Currency"
+                          value={state.expenseCurrency}
+                          onChange={(c) => {
+                            actions.setExpenseCurrency(c.code);
+                            if (!state.selectedGroup) actions.setCurrency(c);
+                          }}
+                        />
+                      </View>
 
-                        <Popover
-                          isOpen={state.showDatePicker}
-                          onOpenChange={actions.setShowDatePicker}
-                        >
-                          <Popover.Trigger asChild>
-                            <Pressable
-                              accessibilityRole="button"
-                              style={({ pressed }) => ({ paddingVertical: 16, flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: SEPARATOR, opacity: pressed ? 0.5 : 1 })}
+                      <Popover
+                        isOpen={state.showDatePicker}
+                        onOpenChange={actions.setShowDatePicker}
+                      >
+                        <Popover.Trigger asChild>
+                          <Pressable
+                            accessibilityRole="button"
+                            style={({ pressed }) => ({
+                              paddingVertical: 16,
+                              flexDirection: "row",
+                              alignItems: "center",
+                              borderBottomWidth: 1,
+                              borderBottomColor: SEPARATOR,
+                              opacity: pressed ? 0.5 : 1,
+                            })}
+                          >
+                            <icons.Calendar size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                            <Typography
+                              style={{
+                                flex: 1,
+                                marginLeft: 16,
+                                fontSize: 16,
+                                color: TEXT_PRIMARY,
+                                fontFamily: "CrimsonText_600SemiBold",
+                              }}
                             >
-                              <icons.Calendar size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                              <Typography style={{ flex: 1, marginLeft: 16, fontSize: 16, color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_500Medium" }}>
-                                {dayjs(state.expenseDate).format("MMMM D, YYYY")}
-                              </Typography>
-                              <icons.ChevronRight size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
-                            </Pressable>
-                          </Popover.Trigger>
-                          <Popover.Portal>
-                            <Popover.Overlay />
-                            <Popover.Content
-                              presentation="popover"
-                              placement="top"
-                              width={340}
-                              className="bg-[#F5F0EB] rounded-none p-2 border border-[#E8E4DF] shadow-lg"
-                            >
-                              <Popover.Arrow fill="#F5F0EB" />
-                              <DateTimePicker
-                                mode="single"
-                                date={dayjs(state.expenseDate)}
-                                onChange={(params: any) => {
-                                  if (params.date) {
-                                    actions.setExpenseDate(dayjs(params.date).toDate());
-                                    setTimeout(() => actions.setShowDatePicker(false), 300);
-                                  }
-                                }}
-                                styles={{
-                                  selected: { backgroundColor: "#8C7A6B", borderRadius: 0 },
-                                  today: { backgroundColor: SEPARATOR, borderRadius: 0 },
-                                  day_label: { color: TEXT_PRIMARY, fontSize: 15 },
-                                  header: { paddingBottom: 12 },
-                                  month_selector_label: { fontWeight: "700", color: TEXT_PRIMARY, fontSize: 16 },
-                                  year_selector_label: { fontWeight: "700", color: TEXT_PRIMARY, fontSize: 16 },
-                                  weekday_label: { color: TEXT_SECONDARY, fontWeight: "500" },
-                                }}
-                              />
-                            </Popover.Content>
-                          </Popover.Portal>
-                        </Popover>
+                              {dayjs(state.expenseDate).format("MMMM D, YYYY")}
+                            </Typography>
+                            <icons.ChevronRight
+                              size={20}
+                              color={TEXT_SECONDARY}
+                              strokeWidth={1.5}
+                            />
+                          </Pressable>
+                        </Popover.Trigger>
+                        <Popover.Portal>
+                          <Popover.Overlay />
+                          <Popover.Content
+                            presentation="popover"
+                            placement="top"
+                            width={340}
+                            className="bg-[#F5F0EB] rounded-none p-2 border border-[#E8E4DF] shadow-lg"
+                          >
+                            <Popover.Arrow fill="#F5F0EB" />
+                            <DateTimePicker
+                              mode="single"
+                              date={dayjs(state.expenseDate)}
+                              onChange={(params: any) => {
+                                if (params.date) {
+                                  actions.setExpenseDate(dayjs(params.date).toDate());
+                                  setTimeout(() => actions.setShowDatePicker(false), 300);
+                                }
+                              }}
+                              styles={{
+                                selected: { backgroundColor: "#8C7A6B", borderRadius: 0 },
+                                today: { backgroundColor: SEPARATOR, borderRadius: 0 },
+                                day_label: { color: TEXT_PRIMARY, fontSize: 15 },
+                                header: { paddingBottom: 12 },
+                                month_selector_label: { color: TEXT_PRIMARY, fontSize: 16 },
+                                year_selector_label: { color: TEXT_PRIMARY, fontSize: 16 },
+                                weekday_label: { color: TEXT_SECONDARY },
+                              }}
+                            />
+                          </Popover.Content>
+                        </Popover.Portal>
+                      </Popover>
 
-                        <Pressable
-                          accessibilityRole="button"
-                          onPress={() => {}}
-                          style={({ pressed }) => ({
-                            paddingVertical: 16,
-                            flexDirection: "row",
-                            alignItems: "center",
-                            borderBottomWidth: 1, borderBottomColor: SEPARATOR,
-                            opacity: pressed ? 0.5 : 1
-                          })}
+                      <Pressable
+                        accessibilityRole="button"
+                        onPress={() => {}}
+                        style={({ pressed }) => ({
+                          paddingVertical: 16,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          borderBottomWidth: 1,
+                          borderBottomColor: SEPARATOR,
+                          opacity: pressed ? 0.5 : 1,
+                        })}
+                      >
+                        <icons.Camera size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                        <Typography
+                          style={{
+                            flex: 1,
+                            marginLeft: 16,
+                            fontSize: 16,
+                            color: TEXT_PRIMARY,
+                            fontFamily: "CrimsonText_600SemiBold",
+                          }}
                         >
-                          <icons.Camera size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                          <Typography style={{ flex: 1, marginLeft: 16, fontSize: 16, color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_500Medium" }}>
-                            Attach Receipt
-                          </Typography>
-                          <icons.ChevronRight size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
-                        </Pressable>
+                          Attach Receipt
+                        </Typography>
+                        <icons.ChevronRight size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+                      </Pressable>
                     </View>
 
                     <ExpenseFormSelectors
@@ -396,14 +557,26 @@ export default function AddExpenseScreen(): JSX.Element {
               style={({ pressed }) => ({
                 height: 56,
                 borderRadius: 0,
-                backgroundColor: (!state.selectedGroup && state.selectedFriends.length === 0) ? SEPARATOR : TEXT_PRIMARY,
+                backgroundColor:
+                  !state.selectedGroup && state.selectedFriends.length === 0
+                    ? SEPARATOR
+                    : TEXT_PRIMARY,
                 alignItems: "center",
                 justifyContent: "center",
                 flexDirection: "row",
                 opacity: pressed ? 0.8 : 1,
               })}
             >
-              <Typography style={{ fontSize: 16, fontWeight: "700", color: (!state.selectedGroup && state.selectedFriends.length === 0) ? TEXT_SECONDARY : "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color:
+                    !state.selectedGroup && state.selectedFriends.length === 0
+                      ? TEXT_SECONDARY
+                      : "#FFFFFF",
+                  fontFamily: "CrimsonText_700Bold",
+                }}
+              >
                 Continue
               </Typography>
             </Pressable>
@@ -423,7 +596,9 @@ export default function AddExpenseScreen(): JSX.Element {
               })}
             >
               {state.loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
-              <Typography style={{ fontSize: 16, fontWeight: "700", color: "#FFFFFF", fontFamily: "PlusJakartaSans_700Bold" }}>
+              <Typography
+                style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}
+              >
                 {state.existingExpense ? "Save Changes" : "Add Expense"}
               </Typography>
             </Pressable>

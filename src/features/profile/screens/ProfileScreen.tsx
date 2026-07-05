@@ -23,10 +23,12 @@ import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 
+import { SettingsItem } from "@/features/profile/components/SettingsItem";
+
 const BG = "#F5F0EB";
 const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782"; 
-const TEXT_DANGER = "#000000"; 
+const TEXT_SECONDARY = "#8A8782";
+const TEXT_DANGER = "#000000";
 const TEXT_SUCCESS = "#4CAF82";
 const SEPARATOR = "#E8E4DF";
 const SECTION_PAD = 24;
@@ -35,41 +37,16 @@ function SectionLabel({ children }: { children: string }) {
   return (
     <Typography
       style={{
-        fontSize: 20,
-        fontWeight: "800",
-        color: TEXT_PRIMARY,
-        fontFamily: "PlusJakartaSans_800ExtraBold",
-        letterSpacing: -0.5,
-        marginBottom: 16,
+        fontSize: 11,
+        color: TEXT_SECONDARY,
+        fontFamily: "CrimsonText_700Bold",
+        letterSpacing: 1.4,
+        textTransform: "uppercase",
+        marginBottom: 8,
       }}
     >
       {children}
     </Typography>
-  );
-}
-
-function SettingRow({ icon: Icon, title, rightElement, isLast }: any) {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        paddingVertical: 16,
-        borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: SEPARATOR,
-      }}
-    >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-        <View style={{ width: 40, height: 40, borderRadius: 0, backgroundColor: "transparent", alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: SEPARATOR }}>
-          <Icon size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
-        </View>
-        <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", letterSpacing: -0.3 }}>
-          {title}
-        </Typography>
-      </View>
-      <View>{rightElement}</View>
-    </View>
   );
 }
 
@@ -119,10 +96,21 @@ export default function ProfileScreen(): JSX.Element {
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
-      
+
       {/* Header */}
-      <FocusAwareView delay={0} style={{ paddingTop: insets.top + 16, paddingBottom: 16, paddingHorizontal: SECTION_PAD }}>
-        <Typography style={{ fontFamily: "DMSerifDisplay_400Regular", fontSize: 36, color: TEXT_PRIMARY, lineHeight: 44, letterSpacing: -0.5 }}>
+      <FocusAwareView
+        delay={0}
+        style={{ paddingTop: insets.top + 16, paddingBottom: 16, paddingHorizontal: SECTION_PAD }}
+      >
+        <Typography
+          style={{
+            fontFamily: "UnicaOne_400Regular",
+            fontSize: 36,
+            color: TEXT_PRIMARY,
+            lineHeight: 44,
+            letterSpacing: -0.5,
+          }}
+        >
           Profile.
         </Typography>
       </FocusAwareView>
@@ -133,15 +121,36 @@ export default function ProfileScreen(): JSX.Element {
         showsVerticalScrollIndicator={false}
       >
         {/* User Stats Edge-to-Edge */}
-        <FocusAwareView delay={100} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40, paddingBottom: 32, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
-          
+        <FocusAwareView
+          delay={100}
+          style={{
+            paddingHorizontal: SECTION_PAD,
+            marginBottom: 40,
+            paddingBottom: 32,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
             <AppUserAvatar user={currentUser} size="lg" />
             <View style={{ marginLeft: 16 }}>
-              <Typography style={{ fontSize: 24, fontWeight: "800", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_800ExtraBold", letterSpacing: -0.5 }}>
+              <Typography
+                style={{
+                  fontSize: 24,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "CrimsonText_700Bold",
+                  letterSpacing: -0.5,
+                }}
+              >
                 {currentUser.name}
               </Typography>
-              <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_600SemiBold",
+                }}
+              >
                 {currentUser.email}
               </Typography>
             </View>
@@ -149,31 +158,70 @@ export default function ProfileScreen(): JSX.Element {
 
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={{ flex: 1 }}>
-              <Typography style={{ fontSize: 12, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4 }}>
+              <Typography
+                style={{
+                  fontSize: 12,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_700Bold",
+                  textTransform: "uppercase",
+                  letterSpacing: 1.2,
+                  marginBottom: 4,
+                }}
+              >
                 Groups
               </Typography>
-              <Typography style={{ fontSize: 24, fontWeight: "800", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_800ExtraBold" }}>
+              <Typography
+                style={{ fontSize: 24, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
                 {groups.length}
               </Typography>
             </View>
-            <View style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }} />
+            <View
+              style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
+            />
             <View style={{ flex: 1 }}>
-              <Typography style={{ fontSize: 12, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4 }}>
+              <Typography
+                style={{
+                  fontSize: 12,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_700Bold",
+                  textTransform: "uppercase",
+                  letterSpacing: 1.2,
+                  marginBottom: 4,
+                }}
+              >
                 Owed
               </Typography>
-              <Typography style={{ fontSize: 24, fontWeight: "800", color: TEXT_SUCCESS, fontFamily: "PlusJakartaSans_800ExtraBold" }}>
-                +{preferredCurrency.symbol}{owedToYou.toFixed(0)}
+              <Typography
+                style={{ fontSize: 24, color: TEXT_SUCCESS, fontFamily: "CrimsonText_700Bold" }}
+              >
+                +{preferredCurrency.symbol}
+                {owedToYou.toFixed(0)}
               </Typography>
             </View>
             {youOwe > 0 && (
               <>
-                <View style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }} />
+                <View
+                  style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
+                />
                 <View style={{ flex: 1 }}>
-                  <Typography style={{ fontSize: 12, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold", textTransform: "uppercase", letterSpacing: 1.2, marginBottom: 4 }}>
+                  <Typography
+                    style={{
+                      fontSize: 12,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "CrimsonText_700Bold",
+                      textTransform: "uppercase",
+                      letterSpacing: 1.2,
+                      marginBottom: 4,
+                    }}
+                  >
                     Owe
                   </Typography>
-                  <Typography style={{ fontSize: 24, fontWeight: "800", color: TEXT_DANGER, fontFamily: "PlusJakartaSans_800ExtraBold" }}>
-                    -{preferredCurrency.symbol}{youOwe.toFixed(0)}
+                  <Typography
+                    style={{ fontSize: 24, color: TEXT_DANGER, fontFamily: "CrimsonText_700Bold" }}
+                  >
+                    -{preferredCurrency.symbol}
+                    {youOwe.toFixed(0)}
                   </Typography>
                 </View>
               </>
@@ -183,46 +231,43 @@ export default function ProfileScreen(): JSX.Element {
 
         {/* Preferences */}
         <FocusAwareView delay={200} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40 }}>
-          <SectionLabel>Preferences</SectionLabel>
-          <View>
-            <SettingRow
-              icon={icons.Moon}
+          <SectionLabel>PREFERENCES</SectionLabel>
+          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
+            <SettingsItem
+              icon="Moon"
               title="Dark Mode"
+              subtitle="Switch between light and dark themes"
               rightElement={<Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />}
             />
-            <SettingRow
-              icon={icons.Bell}
+            <SettingsItem
+              icon="Bell"
               title="Notifications"
+              subtitle="Manage push notifications"
               rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />}
             />
-            
+
             {/* Custom Edge-to-Edge wrapper for Currency Selector to match the new look */}
-            <View style={{ paddingVertical: 16 }}>
+            <View
+              style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}
+            >
               <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
             </View>
           </View>
         </FocusAwareView>
 
-        {/* Sign Out */}
+        {/* Account */}
         <FocusAwareView delay={300} style={{ paddingHorizontal: SECTION_PAD }}>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => signOut()}
-            style={({ pressed }) => ({
-              backgroundColor: "transparent",
-              opacity: pressed ? 0.5 : 1,
-              borderWidth: 1,
-              borderColor: SEPARATOR,
-              paddingVertical: 16,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 8,
-            })}
-          >
-            <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", letterSpacing: -0.3 }}>
-              Sign Out
-            </Typography>
-          </Pressable>
+          <SectionLabel>ACCOUNT</SectionLabel>
+          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
+            <SettingsItem
+              icon="LogOut"
+              title="Sign Out"
+              subtitle="Log out of your account"
+              onPress={() => signOut()}
+              isDanger
+              isLast
+            />
+          </View>
         </FocusAwareView>
       </ScrollView>
     </FocusAwareView>

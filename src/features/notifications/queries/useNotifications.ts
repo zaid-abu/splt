@@ -18,10 +18,10 @@ export function useNotifications(userId?: string) {
     queryKey: ["notifications", userId],
     queryFn: async () => {
       if (!userId) return [];
-      
+
       const pendingRequests = await FriendsService.getPendingFriendRequests(userId);
-      
-      const notifications: AppNotification[] = pendingRequests.map(req => ({
+
+      const notifications: AppNotification[] = pendingRequests.map((req) => ({
         id: `friend_req_${req.id}`,
         type: "friend_request",
         title: "New Friend Request",

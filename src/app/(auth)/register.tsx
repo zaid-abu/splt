@@ -1,4 +1,4 @@
-import { Button, Typography, PressableFeedback, useThemeColor } from "heroui-native";
+import { Button, Typography, PressableFeedback } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -12,9 +12,15 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useSignUp } from "@/features/auth/hooks/useAuthMutations";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerSchema, type RegisterFormData } from "@/validation/schemas";
 import { FormInput } from "@/components/forms/FormInput";
 import { useAppToast } from "@/hooks/useAppToast";
+
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const SEPARATOR = "#E8E4DF";
 
 export default function RegisterScreen(): JSX.Element {
   const router = useRouter();
@@ -30,15 +36,17 @@ export default function RegisterScreen(): JSX.Element {
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
   });
 
-  const foreground = useThemeColor("foreground" as any) as unknown as string;
-  const inputForeground = useThemeColor("input-foreground" as any) as unknown as string;
-
   const onSubmit = async (data: RegisterFormData): Promise<void> => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
       await signUp(data);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace("/(tabs)");
+      const hasOnboarded = await AsyncStorage.getItem("@splt_onboarded");
+      if (hasOnboarded === "true") {
+        router.replace("/(tabs)");
+      } else {
+        router.replace("/onboarding");
+      }
     } catch (err: any) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       toast.show({
@@ -55,48 +63,85 @@ export default function RegisterScreen(): JSX.Element {
   };
 
   return (
-    <View className="flex-1 bg-background">
+    <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
+        {/* Fixed Header */}
+        <View
+          style={{
+            paddingTop: insets.top + 16,
+            paddingHorizontal: 32,
+            paddingBottom: 16,
+            backgroundColor: BG,
+            zIndex: 10,
+          }}
+        >
+          <PressableFeedback
+            accessibilityRole="button"
+            onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 0,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "transparent",
+            }}
+            hitSlop={8}
+          >
+            <icons.ArrowLeft size={20} color={TEXT_PRIMARY} />
+          </PressableFeedback>
+        </View>
+
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
             paddingHorizontal: 32,
-            paddingTop: insets.top + 20,
+            paddingTop: 24,
             paddingBottom: insets.bottom + 24,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Back Button */}
-          <Animated.View entering={FadeInDown.delay(100).duration(400)} className="mb-10">
-            <PressableFeedback
-              accessibilityRole="button"
-              onPress={() => router.canGoBack() ? router.back() : router.replace("/")}
-              className="w-10 h-10 rounded-none border border-border-light items-center justify-center bg-surface"
-              hitSlop={8}
-            >
-              <icons.ArrowLeft size={20} color={foreground} />
-            </PressableFeedback>
-          </Animated.View>
-
-          <View className="flex-1">
+          <View style={{ flex: 1 }}>
             {/* Editorial Header */}
-            <Animated.View entering={FadeInDown.delay(200).duration(600)} className="mb-12">
-              <Typography type="h1" className="font-heading text-[48px] text-foreground mb-4 leading-tight">
+            <Animated.View
+              entering={FadeInDown.delay(200).duration(600)}
+              style={{ marginBottom: 48 }}
+            >
+              <Typography
+                style={{
+                  fontFamily: "UnicaOne_400Regular",
+                  fontSize: 56,
+                  color: TEXT_PRIMARY,
+                  lineHeight: 64,
+                  letterSpacing: -0.5,
+                  marginBottom: 16,
+                }}
+              >
                 Create{"\n"}account.
               </Typography>
-              <Typography type="body" className="text-muted-foreground text-[18px] max-w-[280px] leading-relaxed">
+              <Typography
+                style={{
+                  fontFamily: "CrimsonText_400Regular",
+                  fontSize: 20,
+                  color: TEXT_SECONDARY,
+                  lineHeight: 28,
+                  maxWidth: 280,
+                }}
+              >
                 Join SPLT and start splitting expenses with friends effortlessly.
               </Typography>
             </Animated.View>
 
             {/* Form */}
-            <View className="gap-6">
+            <View style={{ gap: 24 }}>
               <Animated.View entering={FadeInDown.delay(300).duration(600)}>
                 <FormInput
                   control={control}
@@ -105,7 +150,7 @@ export default function RegisterScreen(): JSX.Element {
                   placeholder="Maria Doe"
                   autoCapitalize="words"
                   autoComplete="name"
-                  leftElement={<icons.User size={18} color={inputForeground} />}
+                  leftElement={<icons.User size={18} color={TEXT_SECONDARY} />}
                 />
               </Animated.View>
 
@@ -118,7 +163,7 @@ export default function RegisterScreen(): JSX.Element {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
-                  leftElement={<icons.Mail size={18} color={inputForeground} />}
+                  leftElement={<icons.Mail size={18} color={TEXT_SECONDARY} />}
                 />
               </Animated.View>
 
@@ -130,7 +175,7 @@ export default function RegisterScreen(): JSX.Element {
                   placeholder="••••••••"
                   secureTextEntry={!showPassword}
                   autoComplete="new-password"
-                  leftElement={<icons.Lock size={18} color={inputForeground} />}
+                  leftElement={<icons.Lock size={18} color={TEXT_SECONDARY} />}
                   rightElement={
                     <PressableFeedback
                       accessibilityRole="button"
@@ -141,9 +186,9 @@ export default function RegisterScreen(): JSX.Element {
                       hitSlop={8}
                     >
                       {showPassword ? (
-                        <icons.EyeOff size={18} color={inputForeground} />
+                        <icons.EyeOff size={18} color={TEXT_SECONDARY} />
                       ) : (
-                        <icons.Eye size={18} color={inputForeground} />
+                        <icons.Eye size={18} color={TEXT_SECONDARY} />
                       )}
                     </PressableFeedback>
                   }
@@ -158,7 +203,7 @@ export default function RegisterScreen(): JSX.Element {
                   placeholder="••••••••"
                   secureTextEntry={!showConfirmPassword}
                   autoComplete="new-password"
-                  leftElement={<icons.Lock size={18} color={inputForeground} />}
+                  leftElement={<icons.Lock size={18} color={TEXT_SECONDARY} />}
                   rightElement={
                     <PressableFeedback
                       accessibilityRole="button"
@@ -169,40 +214,63 @@ export default function RegisterScreen(): JSX.Element {
                       hitSlop={8}
                     >
                       {showConfirmPassword ? (
-                        <icons.EyeOff size={18} color={inputForeground} />
+                        <icons.EyeOff size={18} color={TEXT_SECONDARY} />
                       ) : (
-                        <icons.Eye size={18} color={inputForeground} />
+                        <icons.Eye size={18} color={TEXT_SECONDARY} />
                       )}
                     </PressableFeedback>
                   }
                 />
               </Animated.View>
 
-              <Animated.View entering={FadeInDown.delay(700).duration(600)} className="mt-6">
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-full h-[52px] rounded-none bg-primary flex-row items-center justify-center gap-2 shadow-sm"
+              <Animated.View
+                entering={FadeInDown.delay(700).duration(600)}
+                style={{ marginTop: 24 }}
+              >
+                <PressableFeedback
+                  accessibilityRole="button"
+                  style={{
+                    width: "100%",
+                    height: 56,
+                    borderRadius: 0,
+                    backgroundColor: TEXT_PRIMARY,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: "row",
+                    gap: 8,
+                    opacity: isPending ? 0.7 : 1,
+                  }}
                   onPress={handleSubmit(onSubmit, onInvalid)}
                   isDisabled={isPending}
                 >
-                  {isPending && <ActivityIndicator color="white" />}
-                  <Typography type="body" className="text-primary-foreground text-[15px] font-semibold">
+                  {isPending && <ActivityIndicator color="#FFFFFF" />}
+                  <Typography
+                    style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}
+                  >
                     {isPending ? "Creating account…" : "Create Account"}
                   </Typography>
-                </Button>
+                </PressableFeedback>
               </Animated.View>
             </View>
           </View>
 
-          <View className="flex-1" />
+          <View style={{ flex: 1 }} />
 
           {/* Footer */}
           <Animated.View
             entering={FadeInDown.delay(800).duration(600)}
-            className="flex-row items-center justify-center gap-2 pb-2 mt-12"
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              paddingBottom: 8,
+              marginTop: 48,
+            }}
           >
-            <Typography type="body" className="text-muted-foreground">
+            <Typography
+              style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
+            >
               Already have an account?
             </Typography>
             <PressableFeedback
@@ -213,7 +281,9 @@ export default function RegisterScreen(): JSX.Element {
               }}
               hitSlop={8}
             >
-              <Typography type="body" className="font-bold text-foreground">
+              <Typography
+                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
                 Sign in
               </Typography>
             </PressableFeedback>

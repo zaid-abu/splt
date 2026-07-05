@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import type { ReactNode } from "react";
-import { useRouter, useSegments } from "expo-router";
+import { useRouter, useSegments, useRootNavigationState } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import type { User } from "@/types";
 import { supabase } from "@/services/supabase/client";
@@ -26,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
   const [isLoading, setIsLoading] = useState(true);
   const segments = useSegments();
   const router = useRouter();
+  const rootNavigationState = useRootNavigationState();
 
   useEffect(() => {
     let mounted = true;
@@ -65,18 +67,30 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
 
   // Handle routing based on auth state
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || !rootNavigationState?.key) return;
 
-    const inAuthGroup = segments[0] === "(auth)";
+    const navigateApp = async () => {
+      const inAuthGroup = segments[0] === "(auth)";
+      const inOnboarding = segments[0] === "onboarding";
 
-    if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to login if not authenticated and not in auth group
-      router.replace("/(auth)/welcome");
-    } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to tabs if authenticated and in auth group
-      router.replace("/(tabs)");
-    }
-  }, [isAuthenticated, isLoading, segments, router]);
+      if (!isAuthenticated && !inAuthGroup) {
+        // Redirect to login if not authenticated and not in auth group
+        router.replace("/(auth)/welcome");
+      } else if (isAuthenticated) {
+        const hasOnboarded = await AsyncStorage.getItem("@splt_onboarded");
+
+        if (hasOnboarded !== "true" && !inOnboarding) {
+          // If authenticated but not onboarded, always send to onboarding
+          router.replace("/onboarding");
+        } else if (hasOnboarded === "true" && (inAuthGroup || inOnboarding)) {
+          // If onboarded and currently in auth or onboarding, send to tabs
+          router.replace("/(tabs)");
+        }
+      }
+    };
+
+    navigateApp();
+  }, [isAuthenticated, isLoading, segments, router, rootNavigationState?.key]);
 
   const fallbackUser: User = {
     id: "",

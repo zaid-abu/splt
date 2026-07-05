@@ -77,13 +77,22 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
   const subtitle = useMemo(() => {
     const dateStr = activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     if (activity.type === "expense" && activity.expense) {
-      const paidByName = activity.expense.paidBy === currentUser.id ? "You" : (activity.expense.paidByUser?.name?.split(" ")[0] || "Someone");
+      const paidByName =
+        activity.expense.paidBy === currentUser.id
+          ? "You"
+          : activity.expense.paidByUser?.name?.split(" ")[0] || "Someone";
       return `${paidByName} paid • ${dateStr}`;
     }
     if (activity.type === "settlement" && activity.settlement) {
-       const fromName = activity.settlement.fromUserId === currentUser.id ? "You" : (activity.settlement.fromUser?.name?.split(" ")[0] || "Someone");
-       const toName = activity.settlement.toUserId === currentUser.id ? "you" : (activity.settlement.toUser?.name?.split(" ")[0] || "someone");
-       return `${fromName} paid ${toName} • ${dateStr}`;
+      const fromName =
+        activity.settlement.fromUserId === currentUser.id
+          ? "You"
+          : activity.settlement.fromUser?.name?.split(" ")[0] || "Someone";
+      const toName =
+        activity.settlement.toUserId === currentUser.id
+          ? "you"
+          : activity.settlement.toUser?.name?.split(" ")[0] || "someone";
+      return `${fromName} paid ${toName} • ${dateStr}`;
     }
     return dateStr;
   }, [activity, currentUser.id]);
@@ -154,10 +163,20 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
 
           {/* Title & Subtitle */}
           <View style={{ flex: 1, marginRight: 12 }}>
-            <Typography numberOfLines={1} style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+            <Typography
+              numberOfLines={1}
+              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+            >
               {activity.description}
             </Typography>
-            <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 4 }}>
+            <Typography
+              style={{
+                fontSize: 14,
+                color: TEXT_SECONDARY,
+                fontFamily: "CrimsonText_600SemiBold",
+                marginTop: 4,
+              }}
+            >
               {subtitle}
             </Typography>
           </View>
@@ -166,16 +185,36 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
           <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
             {involvement.showAmount ? (
               <>
-                <Typography style={{ fontSize: 16, fontWeight: "700", color: textColors[involvement.type], fontFamily: "PlusJakartaSans_700Bold" }}>
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: textColors[involvement.type],
+                    fontFamily: "CrimsonText_700Bold",
+                  }}
+                >
                   {involvement.type === "positive" ? "+" : ""}
                   {formatAmount(involvement.amount, activity.currency || "USD")}
                 </Typography>
-                <Typography style={{ fontSize: 14, fontWeight: "700", color: textColors[involvement.type], fontFamily: "PlusJakartaSans_700Bold", marginTop: 4 }}>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: textColors[involvement.type],
+                    fontFamily: "CrimsonText_700Bold",
+                    marginTop: 4,
+                  }}
+                >
                   {involvement.text}
                 </Typography>
               </>
             ) : (
-              <Typography style={{ fontSize: 14, fontWeight: "500", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", marginTop: 4 }}>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_600SemiBold",
+                  marginTop: 4,
+                }}
+              >
                 {involvement.text}
               </Typography>
             )}

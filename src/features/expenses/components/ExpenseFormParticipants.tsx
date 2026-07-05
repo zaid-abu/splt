@@ -19,10 +19,9 @@ function SectionLabel({ children }: { children: string }) {
     <Typography
       style={{
         fontSize: 11,
-        fontWeight: "700",
         letterSpacing: 1.4,
         color: TEXT_SECONDARY,
-        fontFamily: "PlusJakartaSans_700Bold",
+        fontFamily: "CrimsonText_700Bold",
         textTransform: "uppercase",
         marginBottom: 16,
       }}
@@ -70,14 +69,28 @@ export function ExpenseSelectionTabs({
       </View>
 
       <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-        <View style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingBottom: 12 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+            paddingBottom: 12,
+          }}
+        >
           <icons.Search size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search friends or groups..."
             placeholderTextColor={TEXT_SECONDARY}
-            style={{ flex: 1, marginLeft: 16, fontFamily: "PlusJakartaSans_500Medium", color: TEXT_PRIMARY, fontSize: 18 }}
+            style={{
+              flex: 1,
+              marginLeft: 16,
+              fontFamily: "CrimsonText_600SemiBold",
+              color: TEXT_PRIMARY,
+              fontSize: 18,
+            }}
           />
           {searchQuery.length > 0 && (
             <Pressable accessibilityRole="button" onPress={() => setSearchQuery("")} hitSlop={8}>
@@ -89,7 +102,11 @@ export function ExpenseSelectionTabs({
 
       {selectedFriends.length > 0 && (
         <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 8 }}
+          >
             {selectedFriends.map((f) => (
               <View
                 key={f.id}
@@ -107,7 +124,9 @@ export function ExpenseSelectionTabs({
                 }}
               >
                 <AppUserAvatar user={f} size="sm" />
-                <Typography style={{ fontSize: 13, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                <Typography
+                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                >
                   {f.name.split(" ")[0]}
                 </Typography>
                 <Pressable
@@ -125,7 +144,14 @@ export function ExpenseSelectionTabs({
 
       {/* ── Tabs ────────────────────────── */}
       <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-        <View style={{ flexDirection: "row", backgroundColor: "transparent", borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
+        <View
+          style={{
+            flexDirection: "row",
+            backgroundColor: "transparent",
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
           {(["friends", "groups"] as const).map((tab) => {
             const isSelected = selectionTab === tab;
             return (
@@ -145,8 +171,7 @@ export function ExpenseSelectionTabs({
                 <Typography
                   style={{
                     fontSize: 14,
-                    fontWeight: "700",
-                    fontFamily: "PlusJakartaSans_700Bold",
+                    fontFamily: "CrimsonText_700Bold",
                     color: isSelected ? TEXT_PRIMARY : TEXT_SECONDARY,
                     textTransform: "capitalize",
                   }}
@@ -161,8 +186,8 @@ export function ExpenseSelectionTabs({
 
       <View style={{ paddingHorizontal: 24 }}>
         <View>
-          {selectionTab === "friends" && (
-            filteredFriends.length > 0 ? (
+          {selectionTab === "friends" &&
+            (filteredFriends.length > 0 ? (
               filteredFriends.map((f, idx) => {
                 const isSelected = selectedFriendIds.includes(f.id);
                 return (
@@ -186,10 +211,29 @@ export function ExpenseSelectionTabs({
                     })}
                   >
                     <AppUserAvatar user={f} size="md" />
-                    <Typography style={{ flex: 1, fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginLeft: 16 }}>
+                    <Typography
+                      style={{
+                        flex: 1,
+                        fontSize: 16,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "CrimsonText_700Bold",
+                        marginLeft: 16,
+                      }}
+                    >
                       {f.name}
                     </Typography>
-                    <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: isSelected ? 0 : 2, borderColor: SEPARATOR, backgroundColor: isSelected ? "#8C7A6B" : "transparent", alignItems: "center", justifyContent: "center" }}>
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 12,
+                        borderWidth: isSelected ? 0 : 2,
+                        borderColor: SEPARATOR,
+                        backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
                       {isSelected && <icons.Check size={14} color="#FFFFFF" strokeWidth={3} />}
                     </View>
                   </Pressable>
@@ -197,13 +241,16 @@ export function ExpenseSelectionTabs({
               })
             ) : (
               <View style={{ padding: 32, alignItems: "center" }}>
-                <Typography style={{ color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>No friends found.</Typography>
+                <Typography
+                  style={{ color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
+                >
+                  No friends found.
+                </Typography>
               </View>
-            )
-          )}
+            ))}
 
-          {selectionTab === "groups" && (
-            filteredGroups.length > 0 ? (
+          {selectionTab === "groups" &&
+            (filteredGroups.length > 0 ? (
               filteredGroups.map((g, idx) => {
                 const GroupIcon = (icons as any)[g.icon] || icons.Users;
                 const isSelected = selectedGroupId === g.id;
@@ -225,13 +272,43 @@ export function ExpenseSelectionTabs({
                       opacity: pressed ? 0.5 : 1,
                     })}
                   >
-                    <View style={{ width: 48, height: 48, borderRadius: 0, backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, alignItems: "center", justifyContent: "center" }}>
+                    <View
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 0,
+                        backgroundColor: "transparent",
+                        borderWidth: 1,
+                        borderColor: SEPARATOR,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
                       <GroupIcon size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
                     </View>
-                    <Typography style={{ flex: 1, fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginLeft: 16 }}>
+                    <Typography
+                      style={{
+                        flex: 1,
+                        fontSize: 16,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "CrimsonText_700Bold",
+                        marginLeft: 16,
+                      }}
+                    >
                       {g.name}
                     </Typography>
-                    <View style={{ width: 24, height: 24, borderRadius: 12, borderWidth: isSelected ? 0 : 2, borderColor: SEPARATOR, backgroundColor: isSelected ? "#8C7A6B" : "transparent", alignItems: "center", justifyContent: "center" }}>
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 12,
+                        borderWidth: isSelected ? 0 : 2,
+                        borderColor: SEPARATOR,
+                        backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
                       {isSelected && <icons.Check size={14} color="#FFFFFF" strokeWidth={3} />}
                     </View>
                   </Pressable>
@@ -239,20 +316,45 @@ export function ExpenseSelectionTabs({
               })
             ) : (
               <View style={{ padding: 32, alignItems: "center" }}>
-                <Typography style={{ color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium" }}>No groups found.</Typography>
+                <Typography
+                  style={{ color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
+                >
+                  No groups found.
+                </Typography>
               </View>
-            )
-          )}
+            ))}
         </View>
       </View>
 
       {groups.length === 0 && uniqueFriends.length === 0 && (
         <View style={{ paddingHorizontal: 24, marginTop: 32 }}>
-          <View style={{ padding: 24, alignItems: "center", borderTopWidth: 1, borderBottomWidth: 1, borderColor: SEPARATOR }}>
-            <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold", marginBottom: 8 }}>
+          <View
+            style={{
+              padding: 24,
+              alignItems: "center",
+              borderTopWidth: 1,
+              borderBottomWidth: 1,
+              borderColor: SEPARATOR,
+            }}
+          >
+            <Typography
+              style={{
+                fontSize: 16,
+                color: TEXT_PRIMARY,
+                fontFamily: "CrimsonText_700Bold",
+                marginBottom: 8,
+              }}
+            >
               No groups or friends yet
             </Typography>
-            <Typography style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_500Medium", textAlign: "center" }}>
+            <Typography
+              style={{
+                fontSize: 14,
+                color: TEXT_SECONDARY,
+                fontFamily: "CrimsonText_600SemiBold",
+                textAlign: "center",
+              }}
+            >
               Create a group first to add expenses.
             </Typography>
           </View>
@@ -265,7 +367,9 @@ export function ExpenseSelectionTabs({
 interface ExpenseParticipantsProps {
   participants: User[];
   included: Record<string, boolean>;
-  setIncluded: (val: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)) => void;
+  setIncluded: (
+    val: Record<string, boolean> | ((prev: Record<string, boolean>) => Record<string, boolean>)
+  ) => void;
   splitMethod: SplitMethod;
   parsedAmount: number;
   remainingCustom: number;
@@ -273,9 +377,13 @@ interface ExpenseParticipantsProps {
   expenseCurrency: string;
   equalShare: number;
   customAmounts: Record<string, string>;
-  setCustomAmounts: (val: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
+  setCustomAmounts: (
+    val: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)
+  ) => void;
   customPercentages: Record<string, string>;
-  setCustomPercentages: (val: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)) => void;
+  setCustomPercentages: (
+    val: Record<string, string> | ((prev: Record<string, string>) => Record<string, string>)
+  ) => void;
   currentUserId: string;
 }
 
@@ -297,16 +405,35 @@ export function ExpenseFormParticipants({
 }: ExpenseParticipantsProps) {
   return (
     <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-      <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 8,
+        }}
+      >
         <SectionLabel>Participants</SectionLabel>
-        
+
         {splitMethod === "custom" && parsedAmount > 0 && (
-          <Typography style={{ fontSize: 12, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold", color: remainingCustom === 0 ? TEXT_SUCCESS : TEXT_DANGER }}>
+          <Typography
+            style={{
+              fontSize: 12,
+              fontFamily: "CrimsonText_700Bold",
+              color: remainingCustom === 0 ? TEXT_SUCCESS : TEXT_DANGER,
+            }}
+          >
             Remaining: {formatAmount(remainingCustom, expenseCurrency)}
           </Typography>
         )}
         {splitMethod === "percentage" && parsedAmount > 0 && (
-          <Typography style={{ fontSize: 12, fontWeight: "700", fontFamily: "PlusJakartaSans_700Bold", color: remainingPercent === 0 ? TEXT_SUCCESS : TEXT_DANGER }}>
+          <Typography
+            style={{
+              fontSize: 12,
+              fontFamily: "CrimsonText_700Bold",
+              color: remainingPercent === 0 ? TEXT_SUCCESS : TEXT_DANGER,
+            }}
+          >
             Remaining: {remainingPercent.toFixed(1)}%
           </Typography>
         )}
@@ -337,13 +464,32 @@ export function ExpenseFormParticipants({
 
               <AppUserAvatar user={u} size="md" />
 
-              <Typography style={{ flex: 1, marginLeft: 16, fontSize: 16, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+              <Typography
+                style={{
+                  flex: 1,
+                  marginLeft: 16,
+                  fontSize: 16,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "CrimsonText_700Bold",
+                }}
+              >
                 {u.id === currentUserId ? "You" : u.name}
               </Typography>
 
               {splitMethod === "equal" && isIncluded && parsedAmount > 0 && (
-                <View style={{ backgroundColor: "transparent", borderWidth: 1, borderColor: SEPARATOR, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 0 }}>
-                  <Typography style={{ fontSize: 14, fontWeight: "700", color: TEXT_PRIMARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                <View
+                  style={{
+                    backgroundColor: "transparent",
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 0,
+                  }}
+                >
+                  <Typography
+                    style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                  >
                     {formatAmount(equalShare, expenseCurrency)}
                   </Typography>
                 </View>
@@ -365,9 +511,8 @@ export function ExpenseFormParticipants({
                       borderWidth: 1,
                       borderColor: SEPARATOR,
                       fontSize: 18,
-                      fontWeight: "700",
                       color: TEXT_PRIMARY,
-                      fontFamily: "PlusJakartaSans_700Bold",
+                      fontFamily: "CrimsonText_700Bold",
                       textAlign: "right",
                     }}
                   />
@@ -391,14 +536,19 @@ export function ExpenseFormParticipants({
                         borderWidth: 1,
                         borderColor: SEPARATOR,
                         fontSize: 18,
-                        fontWeight: "700",
                         color: TEXT_PRIMARY,
-                        fontFamily: "PlusJakartaSans_700Bold",
+                        fontFamily: "CrimsonText_700Bold",
                         textAlign: "right",
                       }}
                     />
                   </View>
-                  <Typography style={{ fontSize: 16, fontWeight: "700", color: TEXT_SECONDARY, fontFamily: "PlusJakartaSans_700Bold" }}>
+                  <Typography
+                    style={{
+                      fontSize: 16,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "CrimsonText_700Bold",
+                    }}
+                  >
                     %
                   </Typography>
                 </View>

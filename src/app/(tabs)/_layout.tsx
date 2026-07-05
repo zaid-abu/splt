@@ -109,7 +109,11 @@ function AddTabItem({ onPress }: { onPress: () => void }): JSX.Element {
       style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 10 }}
     >
       {/* A slightly larger PlusCircle to give it subtle visual emphasis */}
-      <icons.PlusCircle size={ICON_SIZE + 2} color={COLOR_INACTIVE} strokeWidth={ICON_STROKE_INACTIVE} />
+      <icons.PlusCircle
+        size={ICON_SIZE + 2}
+        color={COLOR_INACTIVE}
+        strokeWidth={ICON_STROKE_INACTIVE}
+      />
       {/* Invisible placeholder dot to keep layout aligned with other items */}
       <View style={{ width: 4, height: 4, marginTop: 5, opacity: 0 }} />
     </TouchableOpacity>

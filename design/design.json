@@ -272,7 +272,11 @@
         "background": "surface.card",
         "borderRadius": "radii.md",
         "padding": "spacing.cardPadding",
-        "structure": ["cardLabel", "amountLarge + amountCurrencySuffix", "avatarStack + trailingArrowIcon"],
+        "structure": [
+          "cardLabel",
+          "amountLarge + amountCurrencySuffix",
+          "avatarStack + trailingArrowIcon"
+        ],
         "variants": {
           "youOwe": { "background": "#FEFDFA" },
           "youAreOwed": { "background": "#EFEEE9" }
@@ -357,7 +361,13 @@
         "height": "60px",
         "background": "background.primary",
         "iconCount": 5,
-        "icons": ["home", "stats/bars", "add (center, circular outline)", "groups/people", "profile"],
+        "icons": [
+          "home",
+          "stats/bars",
+          "add (center, circular outline)",
+          "groups/people",
+          "profile"
+        ],
         "activeIndicator": {
           "type": "dot",
           "size": "4px",

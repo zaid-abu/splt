@@ -46,11 +46,7 @@ const CurrencyListItem = memo(
         <View style={[styles.itemContainer, isSelected && styles.itemContainerSelected]}>
           <View style={styles.itemLeft}>
             <View style={[styles.symbolBox, isSelected && styles.symbolBoxSelected]}>
-              <Typography
-                style={styles.symbolText}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
+              <Typography style={styles.symbolText} numberOfLines={1} adjustsFontSizeToFit>
                 {currency.symbol}
               </Typography>
             </View>
@@ -68,6 +64,8 @@ const CurrencyListItem = memo(
   },
   (prevProps, nextProps) => prevProps.isSelected === nextProps.isSelected
 );
+
+CurrencyListItem.displayName = "CurrencyListItem";
 
 // --- Main Component ---
 export function CurrencySelector({
@@ -91,7 +89,9 @@ export function CurrencySelector({
   const handlePresentModalPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Keyboard.dismiss();
-    bottomSheetModalRef.current?.present();
+    setTimeout(() => {
+      bottomSheetModalRef.current?.present();
+    }, 150);
   }, []);
 
   const handleSheetChanges = useCallback((index: number) => {
@@ -122,21 +122,13 @@ export function CurrencySelector({
 
   return (
     <View style={styles.container}>
-      {label && (
-        <Typography style={styles.label}>
-          {label}
-        </Typography>
-      )}
+      {label && <Typography style={styles.label}>{label}</Typography>}
 
       <PressableFeedback accessibilityRole="button" onPress={handlePresentModalPress}>
         <View style={styles.triggerContainer}>
           <View style={styles.triggerLeft}>
             <View style={styles.triggerSymbolBox}>
-              <Typography
-                style={styles.triggerSymbolText}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
+              <Typography style={styles.triggerSymbolText} numberOfLines={1} adjustsFontSizeToFit>
                 {selectedCurrency.symbol}
               </Typography>
             </View>
@@ -159,9 +151,7 @@ export function CurrencySelector({
         handleIndicatorStyle={{ backgroundColor: BORDER, width: 40 }}
       >
         <View style={styles.modalContent}>
-          <Typography style={styles.modalTitle}>
-            Select Currency
-          </Typography>
+          <Typography style={styles.modalTitle}>Select Currency</Typography>
 
           <View style={styles.searchContainer}>
             <View style={styles.searchBox}>
@@ -206,9 +196,7 @@ export function CurrencySelector({
               )}
               ListEmptyComponent={
                 <View style={styles.emptyContainer}>
-                  <Typography style={styles.emptyText}>
-                    No currencies found
-                  </Typography>
+                  <Typography style={styles.emptyText}>No currencies found</Typography>
                 </View>
               }
             />
@@ -227,7 +215,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 12,
     color: TEXT_SECONDARY,
-    fontFamily: "PlusJakartaSans_700Bold",
+    fontFamily: "CrimsonText_700Bold",
     textTransform: "uppercase",
     letterSpacing: 1.5,
     marginLeft: 8,
@@ -259,12 +247,12 @@ const styles = StyleSheet.create({
   },
   triggerSymbolText: {
     fontSize: 14,
-    fontFamily: "PlusJakartaSans_800ExtraBold",
+    fontFamily: "CrimsonText_700Bold",
     color: TEXT_PRIMARY,
   },
   triggerText: {
     fontSize: 15,
-    fontFamily: "PlusJakartaSans_700Bold",
+    fontFamily: "CrimsonText_700Bold",
     color: TEXT_PRIMARY,
   },
   modalContent: {
@@ -274,7 +262,7 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 24,
-    fontFamily: "PlusJakartaSans_800ExtraBold",
+    fontFamily: "CrimsonText_700Bold",
     color: TEXT_PRIMARY,
     marginBottom: 24,
   },
@@ -295,7 +283,7 @@ const styles = StyleSheet.create({
     flex: 1,
     marginLeft: 12,
     fontSize: 16,
-    fontFamily: "PlusJakartaSans_500Medium",
+    fontFamily: "CrimsonText_600SemiBold",
     color: TEXT_PRIMARY,
   },
   listWrapper: {
@@ -303,7 +291,7 @@ const styles = StyleSheet.create({
     backgroundColor: SURFACE,
     borderWidth: 1,
     borderColor: BORDER,
-    borderBottomWidth: 0, 
+    borderBottomWidth: 0,
   },
   // List Item Styles
   itemContainer: {
@@ -341,7 +329,7 @@ const styles = StyleSheet.create({
   },
   symbolText: {
     fontSize: 16,
-    fontFamily: "PlusJakartaSans_800ExtraBold",
+    fontFamily: "CrimsonText_700Bold",
     color: TEXT_PRIMARY,
   },
   textContainer: {
@@ -350,12 +338,12 @@ const styles = StyleSheet.create({
   },
   codeText: {
     fontSize: 16,
-    fontFamily: "PlusJakartaSans_700Bold",
+    fontFamily: "CrimsonText_700Bold",
     color: TEXT_PRIMARY,
   },
   nameText: {
     fontSize: 13,
-    fontFamily: "PlusJakartaSans_500Medium",
+    fontFamily: "CrimsonText_600SemiBold",
     color: TEXT_SECONDARY,
     marginTop: 2,
   },
@@ -369,6 +357,6 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 15,
     color: TEXT_SECONDARY,
-    fontFamily: "PlusJakartaSans_500Medium",
+    fontFamily: "CrimsonText_600SemiBold",
   },
 });
