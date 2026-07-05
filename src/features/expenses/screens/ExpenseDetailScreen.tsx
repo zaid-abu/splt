@@ -1,52 +1,69 @@
-import { Button, Dialog, Typography, Skeleton } from "heroui-native";
+import { Typography } from "heroui-native";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useState } from "react";
+import { ScrollView, View, Pressable, Dimensions } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useState, useRef, useCallback } from "react";
 import * as icons from "lucide-react-native";
-import {
-  useGroups,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
-} from "@/features/groups/queries/useGroups";
-import {
-  useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
-import {
-  useUserActivities,
-  useLogActivity,
-  useDeleteActivity,
-} from "@/features/activity/queries/useActivities";
-import {
-  useUserSettlements,
-  useAddSettlement,
-} from "@/features/settlements/queries/useSettlements";
-import * as balancesUtil from "@/features/settlements/utils/balances";
+import * as Haptics from "expo-haptics";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
+
+import { useGroups } from "@/features/groups/queries/useGroups";
+import { useUserExpenses, useDeleteExpense } from "@/features/expenses/queries/useExpenses";
 
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
+import { AppLoader } from "@/components/ui/AppLoader";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { EXPENSE_CATEGORIES } from "@/types";
 
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const SEPARATOR = "#E8E4DF";
+
+const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
+  food: { bg: "#FEF3C7", icon: "#F59E0B" },
+  transport: { bg: "#DBEAFE", icon: "#3B82F6" },
+  accommodation: { bg: "#FCE7F3", icon: "#EC4899" },
+  entertainment: { bg: "#EDE9FE", icon: "#8B5CF6" },
+  shopping: { bg: "#FEE2E2", icon: "#EF4444" },
+  utilities: { bg: "#D1FAE5", icon: "#10B981" },
+  health: { bg: "#CFFAFE", icon: "#06B6D4" },
+  travel: { bg: "#E0E7FF", icon: "#6366F1" },
+  other: { bg: "#F1F5F9", icon: "#64748B" },
+};
+
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+
 export default function ExpenseDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<ExpenseRouteParams>();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { mutateAsync: deleteExpense } = useDeleteExpense();
 
   const isAppLoading = useUIStore((s) => s.isAppLoading);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const deleteSheetRef = useRef<BottomSheetModal>(null);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        pressBehavior="close"
+        opacity={0.4}
+      />
+    ),
+    []
+  );
 
   const expense = expenses.find((e) => e.id === id);
   const group = groups.find((g) => g.id === expense?.groupId);
@@ -54,26 +71,54 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
   if (!expense) {
     return (
-      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
-        <View className="flex-1 items-center justify-center px-5 gap-4">
-          <icons.AlertCircle size={48} className="text-danger" />
-          <Typography type="h3" className="font-bold">
-            Expense not found
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: BG,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
+        <icons.AlertCircle size={48} color={TEXT_PRIMARY} />
+        <Typography
+          style={{
+            fontSize: 24,
+            color: TEXT_PRIMARY,
+            marginTop: 16,
+            fontFamily: "CrimsonText_700Bold",
+          }}
+        >
+          Expense not found
+        </Typography>
+        <Typography
+          style={{
+            fontSize: 16,
+            color: TEXT_SECONDARY,
+            textAlign: "center",
+            marginTop: 8,
+            fontFamily: "CrimsonText_600SemiBold",
+          }}
+        >
+          This expense may have been deleted or is unavailable.
+        </Typography>
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={({ pressed }) => ({
+            marginTop: 24,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            backgroundColor: "#8C7A6B",
+            borderRadius: 0,
+            opacity: pressed ? 0.8 : 1,
+          })}
+        >
+          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
+            Go back
           </Typography>
-          <Typography type="body" className="text-muted-foreground text-center">
-            This expense may have been deleted or is unavailable.
-          </Typography>
-          <Button
-            onPress={() => router.back()}
-            className="mt-4 bg-white border border-border rounded-full"
-            variant="outline"
-          >
-            <Typography type="body" className="font-bold text-foreground">
-              Go back
-            </Typography>
-          </Button>
-        </View>
-      </SafeAreaView>
+        </Pressable>
+      </View>
     );
   }
 
@@ -89,210 +134,309 @@ export default function ExpenseDetailScreen(): JSX.Element {
     })}`;
 
   const dateStr = expense.date.toLocaleDateString("en-US", {
-    month: "short",
+    month: "long",
     day: "numeric",
     year: "numeric",
   });
 
   const CategoryIcon = (icons as any)[category?.icon ?? "Package"] || icons.Package;
+  const categoryColor = CATEGORY_COLORS[expense.category ?? "other"] || CATEGORY_COLORS.other;
 
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
+    <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: 40 }}
-        showsVerticalScrollIndicator={false}
+
+      {/* ── Immersive Header ── */}
+      <View
+        style={{
+          paddingTop: insets.top + 16,
+          paddingHorizontal: 24,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          zIndex: 10,
+        }}
       >
-        {/* ── Header row ─────────────────────────────── */}
-        <View className="flex-row items-center justify-between px-6 pt-4 mb-4">
-          <Button
-            variant="outline"
-            isIconOnly
-            className="w-12 h-12 rounded-full bg-white border border-border"
-            onPress={() => router.back()}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => router.back()}
+          style={({ pressed }) => ({
+            width: 44,
+            height: 44,
+            borderRadius: 0,
+            backgroundColor: "transparent",
+            borderWidth: 1,
+            borderColor: SEPARATOR,
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: pressed ? 0.5 : 1,
+          })}
+        >
+          <icons.ArrowLeft size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+        </Pressable>
+
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() =>
+              router.push({ pathname: "/expense/new", params: { expenseId: expense.id } })
+            }
+            style={({ pressed }) => ({
+              width: 44,
+              height: 44,
+              borderRadius: 0,
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: pressed ? 0.5 : 1,
+            })}
           >
-            <icons.ChevronLeft size={24} className="text-foreground" strokeWidth={2.5} />
-          </Button>
+            <icons.Edit2 size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          </Pressable>
 
-          <View className="flex-row items-center gap-3">
-            <Button
-              variant="outline"
-              isIconOnly
-              className="w-12 h-12 rounded-full bg-white border border-border"
-              onPress={() =>
-                router.push({ pathname: "/expense/new", params: { expenseId: expense.id } })
-              }
-            >
-              <icons.Edit2 size={20} className="text-foreground" strokeWidth={2.5} />
-            </Button>
-
-            <Dialog isOpen={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <Dialog.Trigger asChild>
-                <Button
-                  variant="outline"
-                  isIconOnly
-                  className="w-12 h-12 rounded-full bg-white border border-border"
-                >
-                  <icons.Trash2 size={20} className="text-danger" strokeWidth={2.5} />
-                </Button>
-              </Dialog.Trigger>
-              <Dialog.Portal className="absolute inset-0 justify-center p-5 z-50">
-                <Dialog.Overlay className="absolute inset-0 bg-black/40" />
-                <Dialog.Content className="bg-white p-6 rounded-[32px] shadow-lg self-center w-full max-w-[400px]">
-                  <View className="absolute top-4 right-4 z-10">
-                    <Button
-                      variant="ghost"
-                      isIconOnly
-                      size="sm"
-                      onPress={() => setIsDialogOpen(false)}
-                      className="p-2"
-                    >
-                      <icons.X size={20} className="text-muted-foreground" />
-                    </Button>
-                  </View>
-                  <View className="w-12 h-12 rounded-full bg-danger/10 items-center justify-center mb-4">
-                    <icons.AlertTriangle size={24} className="text-danger" />
-                  </View>
-                  <Dialog.Title className="text-[22px] font-bold mb-2">
-                    Delete Expense?
-                  </Dialog.Title>
-                  <Dialog.Description className="text-[16px] text-muted-foreground mb-6">
-                    Are you sure you want to delete &quot;{expense.title}&quot;? This cannot be
-                    undone.
-                  </Dialog.Description>
-                  <View className="flex-row gap-3">
-                    <Button
-                      variant="secondary"
-                      className="flex-1 rounded-full h-[56px] border border-border"
-                      onPress={() => setIsDialogOpen(false)}
-                    >
-                      Cancel
-                    </Button>
-                    <Button
-                      variant="danger"
-                      className="flex-1 rounded-full h-[56px]"
-                      onPress={() => {
-                        setIsDialogOpen(false);
-                        setTimeout(() => {
-                          router.back();
-                          setTimeout(() => {
-                            deleteExpense(expense.id);
-                          }, 400); // Wait for the screen transition to finish
-                        }, 300); // Wait for the dialog animation to finish
-                      }}
-                    >
-                      Delete
-                    </Button>
-                  </View>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog>
-          </View>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => deleteSheetRef.current?.present()}
+            style={({ pressed }) => ({
+              width: 44,
+              height: 44,
+              borderRadius: 0,
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: pressed ? 0.5 : 1,
+            })}
+          >
+            <icons.Trash2 size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          </Pressable>
         </View>
+      </View>
 
-        {/* ── Receipt Card ─────────────────────────────── */}
-        <View className="mx-6 bg-white rounded-[32px] p-6 border border-border mb-4">
-          <View className="items-center mb-6">
-            <View className="w-16 h-16 rounded-full bg-primary/10 border border-primary/20 items-center justify-center mb-4">
-              <CategoryIcon size={32} className="text-primary" strokeWidth={2} />
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 60 }}
+      >
+        {/* ── Bill Section ── */}
+        <Animated.View
+          entering={FadeInDown.duration(400)}
+          style={{
+            paddingHorizontal: 24,
+            paddingTop: 40,
+            paddingBottom: 40,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              marginBottom: 32,
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_700Bold",
+                  textTransform: "uppercase",
+                  letterSpacing: 2,
+                  marginBottom: 8,
+                }}
+              >
+                {category?.label ?? "Expense"}
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: 32,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "UnicaOne_400Regular",
+                  lineHeight: 40,
+                }}
+              >
+                {expense.title}
+              </Typography>
             </View>
-            <Typography
-              type="body"
-              className="font-bold text-muted-foreground uppercase tracking-widest mb-2 text-center"
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: 0,
+                backgroundColor: categoryColor.bg,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
-              {expense.title}
-            </Typography>
+              <CategoryIcon size={32} color={categoryColor.icon} strokeWidth={1.5} />
+            </View>
+          </View>
+
+          <View style={{ marginBottom: 32 }}>
             <Typography
-              type="h1"
-              className="text-[48px] font-black tracking-tighter text-foreground mb-3 text-center leading-tight"
+              style={{
+                fontSize: 72,
+                lineHeight: 80,
+                color: TEXT_PRIMARY,
+                fontFamily: "CrimsonText_700Bold",
+                letterSpacing: -2,
+              }}
             >
               {formatAmt(expense.amount)}
             </Typography>
-            <View className="px-4 py-2 bg-secondary rounded-full">
-              <Typography type="body-sm" className="font-bold text-muted-foreground">
-                {expense.splitMethod === "equal" ? "Split equally" : "Split unequally"}
-              </Typography>
-            </View>
           </View>
 
-          {/* Dashed Separator */}
-          <View className="w-full border-t-[1.5px] border-dashed border-border my-6 relative">
-            <View className="absolute w-6 h-6 bg-[#F2F2F6] rounded-full -left-[44px] -top-[13px] border-r border-border" />
-            <View className="absolute w-6 h-6 bg-[#F2F2F6] rounded-full -right-[44px] -top-[13px] border-l border-border" />
-          </View>
-
-          {/* Meta rows */}
-          <View className="gap-5 mb-2">
-            <View className="flex-row justify-between items-center">
-              <Typography type="body" className="text-muted-foreground font-medium">
+          <View style={{ gap: 16 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_600SemiBold",
+                }}
+              >
                 Date
               </Typography>
-              <Typography type="body" className="font-bold text-foreground">
+              <Typography
+                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
                 {dateStr}
               </Typography>
             </View>
-            <View className="flex-row justify-between items-center">
-              <Typography type="body" className="text-muted-foreground font-medium">
+
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_600SemiBold",
+                }}
+              >
                 Paid by
               </Typography>
-              <View className="flex-row items-center gap-2">
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <AppUserAvatar user={expense.paidByUser} size="sm" />
-                <Typography type="body" className="font-bold text-foreground">
-                  {paidByMe ? "You" : expense.paidByUser.name.split(" ")[0]}
+                <Typography
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                >
+                  {paidByMe ? "You" : expense.paidByUser.name}
                 </Typography>
               </View>
             </View>
+
             {group && (
-              <View className="flex-row justify-between items-center">
-                <Typography type="body" className="text-muted-foreground font-medium">
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                  }}
+                >
                   Group
                 </Typography>
-                <View className="flex-row items-center gap-2">
-                  <View className="w-6 h-6 rounded-full bg-accent/20 items-center justify-center">
-                    <icons.Users size={12} className="text-accent" />
-                  </View>
-                  <Typography type="body" className="font-bold text-foreground">
-                    {group.name}
-                  </Typography>
-                </View>
+                <Typography
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                >
+                  {group.name}
+                </Typography>
               </View>
             )}
+
             {expense.notes && (
-              <View className="mt-2 bg-secondary p-4 rounded-[16px]">
-                <Typography type="body-sm" className="text-muted-foreground leading-5">
-                  {expense.notes}
+              <View
+                style={{
+                  marginTop: 8,
+                  paddingTop: 16,
+                  borderTopWidth: 1,
+                  borderTopColor: SEPARATOR,
+                }}
+              >
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                    lineHeight: 22,
+                  }}
+                >
+                  &quot;{expense.notes}&quot;
                 </Typography>
               </View>
             )}
           </View>
-        </View>
+        </Animated.View>
 
-        {/* ── Split breakdown ────────────────────────────── */}
-        <View className="px-6 mb-4">
-          <Typography
-            type="body-xs"
-            className="font-bold text-muted-foreground tracking-widest uppercase mb-4 ml-2"
+        {/* ── Split Breakdown ── */}
+        <Animated.View
+          entering={FadeInDown.duration(400).delay(100)}
+          style={{ paddingHorizontal: 24, paddingTop: 40 }}
+        >
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+              marginBottom: 24,
+            }}
           >
-            Split Breakdown
-          </Typography>
-          <View className="bg-white rounded-[24px] border border-border p-2">
+            <Typography
+              style={{
+                fontSize: 12,
+                color: TEXT_SECONDARY,
+                fontFamily: "CrimsonText_700Bold",
+                textTransform: "uppercase",
+                letterSpacing: 2,
+              }}
+            >
+              Split Breakdown
+            </Typography>
+            <View
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+                backgroundColor: "transparent",
+                borderWidth: 1,
+                borderColor: SEPARATOR,
+                borderRadius: 12,
+              }}
+            >
+              <Typography
+                style={{ fontSize: 11, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
+                {expense.splitMethod === "equal" ? "EQUAL" : "CUSTOM"}
+              </Typography>
+            </View>
+          </View>
+
+          <View>
             {isAppLoading ? (
-              <View className="p-4 gap-4">
-                <View className="flex-row items-center gap-4">
-                  <Skeleton className="w-10 h-10 rounded-full" />
-                  <View className="flex-1 gap-2">
-                    <Skeleton className="w-24 h-4 rounded-full" />
-                    <Skeleton className="w-16 h-3 rounded-full" />
-                  </View>
-                </View>
-                <View className="flex-row items-center gap-4">
-                  <Skeleton className="w-10 h-10 rounded-full" />
-                  <View className="flex-1 gap-2">
-                    <Skeleton className="w-32 h-4 rounded-full" />
-                    <Skeleton className="w-20 h-3 rounded-full" />
-                  </View>
-                </View>
+              <View style={{ paddingTop: 24 }}>
+                <AppLoader />
               </View>
             ) : (
               expense.splits.map((split: any, idx: number) => {
@@ -301,88 +445,222 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 const isPayer = split.userId === expense.paidBy;
 
                 return (
-                  <View key={split.userId}>
-                    <View className="flex-row items-center p-3">
-                      <AppUserAvatar user={split.user} size="md" />
-                      <View className="flex-1 ml-4 justify-center">
-                        <View className="flex-row items-center gap-2">
-                          <Typography type="body" className="font-bold text-foreground text-[16px]">
-                            {isMe ? "You" : split.user.name}
-                          </Typography>
-                          {isPayer && (
-                            <View className="px-2 py-0.5 bg-primary/10 rounded-md">
-                              <Typography
-                                type="body-xs"
-                                className="text-primary font-bold text-[10px] uppercase tracking-wider"
-                              >
-                                Paid
-                              </Typography>
-                            </View>
-                          )}
-                        </View>
-                        <Typography
-                          type="body-sm"
-                          className="text-muted-foreground font-medium mt-0.5"
-                        >
-                          {isPaid ? (isPayer ? "Paid for group" : "Paid back ✓") : "Owes"}
-                        </Typography>
-                      </View>
+                  <Pressable
+                    key={split.userId}
+                    onPress={() => {
+                      if (!isMe) {
+                        router.push(`/friend/${split.userId}`);
+                      }
+                    }}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 16,
+                      borderBottomWidth: idx < expense.splits.length - 1 ? 1 : 0,
+                      borderBottomColor: SEPARATOR,
+                      opacity: !isMe && pressed ? 0.5 : 1,
+                    })}
+                  >
+                    <AppUserAvatar user={split.user} size="lg" />
+                    <View style={{ flex: 1, marginLeft: 16, justifyContent: "center" }}>
                       <Typography
-                        type="h3"
-                        className={`font-black ${isPaid ? "text-foreground" : "text-danger"}`}
+                        style={{
+                          fontSize: 18,
+                          color: TEXT_PRIMARY,
+                          fontFamily: "CrimsonText_700Bold",
+                          marginBottom: 2,
+                        }}
                       >
-                        {formatAmt(split.amount)}
+                        {isMe ? "You" : split.user.name}
+                      </Typography>
+                      <Typography
+                        style={{
+                          fontSize: 14,
+                          color: TEXT_SECONDARY,
+                          fontFamily: "CrimsonText_600SemiBold",
+                        }}
+                      >
+                        {isPaid ? (isPayer ? "Paid the bill" : "Settled") : "Owes"}
                       </Typography>
                     </View>
-                    {idx < expense.splits.length - 1 && (
-                      <View className="h-[1px] bg-border/50 mx-4 my-1" />
-                    )}
-                  </View>
+                    <Typography
+                      style={{
+                        fontSize: 20,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "CrimsonText_700Bold",
+                      }}
+                    >
+                      {formatAmt(split.amount)}
+                    </Typography>
+                  </Pressable>
                 );
               })
             )}
           </View>
-        </View>
+        </Animated.View>
 
-        {/* ── My share summary ──────────────────────────── */}
+        {/* ── My Share Summary ── */}
         {myShare && (
-          <View className="px-6">
+          <Animated.View
+            entering={FadeInDown.duration(400).delay(200)}
+            style={{ paddingHorizontal: 24, paddingTop: 40 }}
+          >
             <View
-              className={`rounded-[24px] p-5 border ${paidByMe ? "bg-success/10 border-success/20" : "bg-danger/10 border-danger/20"}`}
+              style={{
+                paddingVertical: 24,
+                paddingHorizontal: 24,
+                backgroundColor: "#8C7A6B",
+                borderRadius: 0,
+              }}
             >
-              <View className="flex-row items-center gap-4">
-                <View
-                  className={`w-12 h-12 rounded-full items-center justify-center ${paidByMe ? "bg-success/20" : "bg-danger/20"}`}
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: "#FFFFFF",
+                  opacity: 0.7,
+                  fontFamily: "CrimsonText_700Bold",
+                  textTransform: "uppercase",
+                  letterSpacing: 1.4,
+                  marginBottom: 8,
+                }}
+              >
+                {paidByMe ? "You paid" : "Your Share"}
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: 32,
+                  color: "#FFFFFF",
+                  fontFamily: "CrimsonText_700Bold",
+                  marginBottom: 8,
+                }}
+              >
+                {paidByMe ? formatAmt(expense.amount) : formatAmt(myShare.amount)}
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: "#FFFFFF",
+                  opacity: 0.9,
+                  fontFamily: "CrimsonText_600SemiBold",
+                  lineHeight: 20,
+                }}
+              >
+                {paidByMe
+                  ? `Your share is ${formatAmt(myShare.amount)}. The rest is owed to you.`
+                  : `You owe ${expense.paidByUser.name.split(" ")[0]} to settle up.`}
+              </Typography>
+
+              {!paidByMe && !myShare.paid && (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() =>
+                    router.push({
+                      pathname: `/settle/${expense.paidBy}`,
+                      params: {
+                        amount: myShare.amount.toString(),
+                        groupId: expense.groupId || undefined,
+                      },
+                    } as any)
+                  }
+                  style={({ pressed }) => ({
+                    marginTop: 24,
+                    height: 48,
+                    backgroundColor: "#FFFFFF",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: pressed ? 0.8 : 1,
+                  })}
                 >
-                  {paidByMe ? (
-                    <icons.ArrowDownLeft size={24} className="text-success" />
-                  ) : (
-                    <icons.ArrowUpRight size={24} className="text-danger" />
-                  )}
-                </View>
-                <View className="flex-1">
                   <Typography
-                    type="h3"
-                    className={`font-black mb-1 ${paidByMe ? "text-success" : "text-danger"}`}
+                    style={{ fontSize: 15, color: "#8C7A6B", fontFamily: "CrimsonText_700Bold" }}
                   >
-                    {paidByMe
-                      ? `You paid ${formatAmt(expense.amount)}`
-                      : `You owe ${formatAmt(myShare.amount)}`}
+                    Settle Your Share
                   </Typography>
-                  <Typography
-                    type="body-sm"
-                    className={`font-medium ${paidByMe ? "text-success/70" : "text-danger/70"}`}
-                  >
-                    {paidByMe
-                      ? `Your share is ${formatAmt(myShare.amount)} · others owe you the rest`
-                      : `Pay ${expense.paidByUser.name.split(" ")[0]} to settle up`}
-                  </Typography>
-                </View>
-              </View>
+                </Pressable>
+              )}
             </View>
-          </View>
+          </Animated.View>
         )}
       </ScrollView>
-    </SafeAreaView>
+
+      {/* ── Delete Confirmation Bottom Sheet ── */}
+      <BottomSheetModal
+        ref={deleteSheetRef}
+        index={0}
+        enableDynamicSizing={true}
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+      >
+        <BottomSheetView
+          style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
+        >
+          <Typography
+            style={{
+              fontSize: 22,
+              fontFamily: "CrimsonText_700Bold",
+              color: TEXT_PRIMARY,
+              marginBottom: 8,
+            }}
+          >
+            Delete Expense?
+          </Typography>
+          <Typography
+            style={{
+              fontSize: 16,
+              fontFamily: "CrimsonText_600SemiBold",
+              color: TEXT_SECONDARY,
+              marginBottom: 24,
+            }}
+          >
+            Are you sure you want to delete &quot;{expense.title}&quot;? This cannot be undone.
+          </Typography>
+
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Pressable
+              onPress={() => deleteSheetRef.current?.dismiss()}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 48,
+                borderWidth: 1,
+                borderColor: SEPARATOR,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <Typography
+                style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: TEXT_PRIMARY }}
+              >
+                Cancel
+              </Typography>
+            </Pressable>
+            <Pressable
+              onPress={() => {
+                deleteSheetRef.current?.dismiss();
+                setTimeout(() => {
+                  router.back();
+                  setTimeout(() => deleteExpense(expense.id), 400);
+                }, 300);
+              }}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 48,
+                backgroundColor: "#E02424",
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Typography
+                style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: "#FFFFFF" }}
+              >
+                Delete
+              </Typography>
+            </Pressable>
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
+    </View>
   );
 }

@@ -1,38 +1,22 @@
 import React, { useMemo } from "react";
-import { View } from "react-native";
-import { Typography, ListGroup } from "heroui-native";
+import { View, Pressable } from "react-native";
+import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
-import {
-  useGroups,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
-} from "@/features/groups/queries/useGroups";
-import {
-  useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
-import {
-  useUserActivities,
-  useLogActivity,
-  useDeleteActivity,
-} from "@/features/activity/queries/useActivities";
-import {
-  useUserSettlements,
-  useAddSettlement,
-} from "@/features/settlements/queries/useSettlements";
-import * as balancesUtil from "@/features/settlements/utils/balances";
 
+import { useDeleteActivity } from "@/features/activity/queries/useActivities";
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
-import { useUIStore } from "@/store/useUIStore";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { SwipeableRow } from "@/components/layout/SwipeableRow";
+
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const TEXT_DANGER = "#000000";
+const TEXT_SUCCESS = "#4CAF82";
+const SEPARATOR = "#E8E4DF";
 
 interface ActivityItemProps {
   activity: Activity;
@@ -90,6 +74,29 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
     return { type: "neutral", text: "", amount: 0, showAmount: false };
   }, [activity, currentUser.id]);
 
+  const subtitle = useMemo(() => {
+    const dateStr = activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    if (activity.type === "expense" && activity.expense) {
+      const paidByName =
+        activity.expense.paidBy === currentUser.id
+          ? "You"
+          : activity.expense.paidByUser?.name?.split(" ")[0] || "Someone";
+      return `${paidByName} paid • ${dateStr}`;
+    }
+    if (activity.type === "settlement" && activity.settlement) {
+      const fromName =
+        activity.settlement.fromUserId === currentUser.id
+          ? "You"
+          : activity.settlement.fromUser?.name?.split(" ")[0] || "Someone";
+      const toName =
+        activity.settlement.toUserId === currentUser.id
+          ? "you"
+          : activity.settlement.toUser?.name?.split(" ")[0] || "someone";
+      return `${fromName} paid ${toName} • ${dateStr}`;
+    }
+    return dateStr;
+  }, [activity, currentUser.id]);
+
   const IconComponent = useMemo(() => {
     if (activity.type === "expense") return icons.Receipt;
     if (activity.type === "settlement") return icons.Banknote;
@@ -98,27 +105,27 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
   }, [activity.type]);
 
   const bgColors: Record<string, string> = {
-    positive: "bg-success/10",
-    negative: "bg-danger/10",
-    neutral: "bg-secondary",
+    positive: "#E6F4EA",
+    negative: "#FCE8E8",
+    neutral: SEPARATOR,
   };
 
   const textColors: Record<string, string> = {
-    positive: "text-success",
-    negative: "text-danger",
-    neutral: "text-foreground",
+    positive: TEXT_SUCCESS,
+    negative: TEXT_DANGER,
+    neutral: TEXT_PRIMARY,
   };
 
   const iconColors: Record<string, string> = {
-    positive: "text-success",
-    negative: "text-danger",
-    neutral: "text-muted-foreground",
+    positive: TEXT_SUCCESS,
+    negative: TEXT_DANGER,
+    neutral: TEXT_PRIMARY,
   };
 
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
       <SwipeableRow onDelete={() => deleteActivity(activity.id)}>
-        <ListGroup.Item
+        <Pressable
           onPress={() => {
             if (activity.expense) {
               router.push(`/expense/${activity.expense.id}`);
@@ -126,46 +133,93 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
               router.push(`/group/${activity.groupId}`);
             }
           }}
-          className={`p-4 ${!isLast ? "border-b border-border/50" : ""}`}
+          accessibilityRole="button"
+          style={({ pressed }) => ({
+            flexDirection: "row",
+            alignItems: "center",
+            paddingVertical: 16,
+            borderBottomWidth: isLast ? 0 : 1,
+            borderBottomColor: SEPARATOR,
+            opacity: pressed ? 0.5 : 1,
+            backgroundColor: "transparent",
+            paddingHorizontal: 24, // Optional if global padding applies, but we usually pad inside
+          })}
         >
-          <ListGroup.ItemPrefix>
-            <View
-              className={`w-12 h-12 rounded-[16px] items-center justify-center mr-4 ${bgColors[involvement.type]}`}
-            >
-              <IconComponent size={24} className={iconColors[involvement.type]} strokeWidth={2.5} />
-            </View>
-          </ListGroup.ItemPrefix>
+          {/* Icon Box */}
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 0,
+              backgroundColor: bgColors[involvement.type],
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 16,
+              flexShrink: 0,
+            }}
+          >
+            <IconComponent size={24} color={iconColors[involvement.type]} strokeWidth={1.5} />
+          </View>
 
-          <ListGroup.ItemContent>
-            <ListGroup.ItemTitle className="font-bold text-foreground" numberOfLines={1}>
-              {activity.description}
-            </ListGroup.ItemTitle>
-            <ListGroup.ItemDescription
-              className="text-muted-foreground font-medium mt-0.5"
+          {/* Title & Subtitle */}
+          <View style={{ flex: 1, marginRight: 12 }}>
+            <Typography
               numberOfLines={1}
+              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
             >
-              {activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-            </ListGroup.ItemDescription>
-          </ListGroup.ItemContent>
+              {activity.description}
+            </Typography>
+            <Typography
+              style={{
+                fontSize: 14,
+                color: TEXT_SECONDARY,
+                fontFamily: "CrimsonText_600SemiBold",
+                marginTop: 4,
+              }}
+            >
+              {subtitle}
+            </Typography>
+          </View>
 
-          <ListGroup.ItemSuffix className="items-end ml-4">
+          {/* Amount / Involvement */}
+          <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
             {involvement.showAmount ? (
               <>
-                <Typography type="body-xs" className="text-muted-foreground font-bold mb-0.5">
-                  {involvement.text}
-                </Typography>
-                <Typography type="body" className={`font-black ${textColors[involvement.type]}`}>
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: textColors[involvement.type],
+                    fontFamily: "CrimsonText_700Bold",
+                  }}
+                >
                   {involvement.type === "positive" ? "+" : ""}
                   {formatAmount(involvement.amount, activity.currency || "USD")}
                 </Typography>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: textColors[involvement.type],
+                    fontFamily: "CrimsonText_700Bold",
+                    marginTop: 4,
+                  }}
+                >
+                  {involvement.text}
+                </Typography>
               </>
             ) : (
-              <Typography type="body-sm" className="text-muted-foreground font-medium">
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_600SemiBold",
+                  marginTop: 4,
+                }}
+              >
                 {involvement.text}
               </Typography>
             )}
-          </ListGroup.ItemSuffix>
-        </ListGroup.Item>
+          </View>
+        </Pressable>
       </SwipeableRow>
     </Animated.View>
   );

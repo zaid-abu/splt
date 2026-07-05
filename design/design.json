@@ -1,0 +1,536 @@
+{
+  "designSystem": {
+    "meta": {
+      "name": "Splitwise-style Expense Sharing App",
+      "extractedFrom": "Two mobile screens: Home Dashboard + Create Group modal",
+      "platform": "iOS",
+      "style": "Warm minimal fintech / editorial-sans hybrid",
+      "themeMode": "light"
+    },
+
+    "colorPalette": {
+      "background": {
+        "primary": "#F7F6F1",
+        "secondary": "#EFEEE9",
+        "canvasOutside": "#E5DCBB",
+        "statusBarOverlay": "#C1C0BC"
+      },
+      "surface": {
+        "card": "#FEFDFA",
+        "cardAlt": "#F4F3EE",
+        "modalSheet": "#FEFDF9",
+        "rowHover": "#F1F0EB",
+        "inputField": "#5D5C5A",
+        "inputFieldText": "#FFFFFF"
+      },
+      "text": {
+        "primary": "#1A1A1A",
+        "secondary": "#6E6D68",
+        "tertiary": "#9B9A94",
+        "disabled": "#B7B6B0",
+        "inverse": "#FFFFFF",
+        "onDarkInput": "#FFFFFF"
+      },
+      "border": {
+        "default": "#E7E5DE",
+        "subtle": "#EDEBE4",
+        "divider": "#1A1A1A"
+      },
+      "accent": {
+        "primaryAction": "#1A1A1A",
+        "primaryActionText": "#FFFFFF"
+      },
+      "semantic": {
+        "negative": "#D9534F",
+        "negativeSoft": "#E8938F",
+        "positive": "#5B8C5A",
+        "positiveSoft": "#8FB88E",
+        "notificationBadge": "#E4574B",
+        "notificationBadgeText": "#FFFFFF"
+      },
+      "avatarPastels": {
+        "lavender": "#E6D9F5",
+        "peach": "#F7DCC8",
+        "mint": "#D6EDE1",
+        "skyBlue": "#D9E6F2",
+        "blush": "#F5DCE0",
+        "sand": "#EFE3CE"
+      },
+      "iconography": {
+        "default": "#1A1A1A",
+        "muted": "#9B9A94",
+        "onDark": "#FFFFFF",
+        "activeNav": "#1A1A1A",
+        "inactiveNav": "#B7B6B0"
+      }
+    },
+
+    "typography": {
+      "fontFamilies": {
+        "display": "'PP Editorial New', 'Georgia', 'Times New Roman', serif",
+        "body": "'Inter', 'Helvetica Neue', Arial, sans-serif",
+        "numeric": "'Inter', 'Helvetica Neue', Arial, sans-serif"
+      },
+      "styles": {
+        "screenTitle": {
+          "fontFamily": "display",
+          "fontSize": "26px",
+          "fontWeight": 400,
+          "lineHeight": "1.2",
+          "letterSpacing": "-0.01em",
+          "color": "text.primary",
+          "example": "Welcome, Maria"
+        },
+        "modalTitle": {
+          "fontFamily": "display",
+          "fontSize": "17px",
+          "fontWeight": 400,
+          "lineHeight": "1.3",
+          "color": "text.primary",
+          "example": "Create new group",
+          "alignment": "center"
+        },
+        "sectionLabel": {
+          "fontFamily": "body",
+          "fontSize": "11px",
+          "fontWeight": 600,
+          "letterSpacing": "0.08em",
+          "textTransform": "uppercase",
+          "color": "text.tertiary",
+          "example": "ACTIVE GROUPS / TRANSACTIONS / PARTICIPANTS / CURRENCY / TITLE"
+        },
+        "amountLarge": {
+          "fontFamily": "display",
+          "fontSize": "30px",
+          "fontWeight": 400,
+          "lineHeight": "1.1",
+          "color": "text.primary",
+          "example": "176 / 225"
+        },
+        "amountCurrencySuffix": {
+          "fontFamily": "body",
+          "fontSize": "12px",
+          "fontWeight": 500,
+          "color": "text.secondary",
+          "example": "PLN"
+        },
+        "cardLabel": {
+          "fontFamily": "body",
+          "fontSize": "10px",
+          "fontWeight": 600,
+          "letterSpacing": "0.06em",
+          "textTransform": "uppercase",
+          "color": "text.tertiary",
+          "example": "YOU OWE / YOU ARE OWED"
+        },
+        "rowTitle": {
+          "fontFamily": "body",
+          "fontSize": "15px",
+          "fontWeight": 600,
+          "color": "text.primary",
+          "example": "Summer trip / Breakfast"
+        },
+        "rowSubtitle": {
+          "fontFamily": "body",
+          "fontSize": "12px",
+          "fontWeight": 400,
+          "color": "text.secondary",
+          "example": "3 participants / Paid by you"
+        },
+        "rowTrailingAmount": {
+          "fontFamily": "body",
+          "fontSize": "14px",
+          "fontWeight": 600,
+          "color": "text.primary",
+          "example": "186 zl"
+        },
+        "rowTrailingSubAmount": {
+          "fontFamily": "body",
+          "fontSize": "11px",
+          "fontWeight": 500,
+          "example": "102 zl (positive/negative colored)"
+        },
+        "buttonLabel": {
+          "fontFamily": "body",
+          "fontSize": "15px",
+          "fontWeight": 600,
+          "color": "text.inverse",
+          "example": "Create group"
+        },
+        "footnote": {
+          "fontFamily": "body",
+          "fontSize": "11px",
+          "fontWeight": 400,
+          "color": "text.tertiary",
+          "textAlign": "center",
+          "example": "All participants will receive an invite"
+        },
+        "inputText": {
+          "fontFamily": "body",
+          "fontSize": "14px",
+          "fontWeight": 500,
+          "color": "text.primary",
+          "example": "Day trip to Warsaw"
+        },
+        "linkAction": {
+          "fontFamily": "body",
+          "fontSize": "13px",
+          "fontWeight": 600,
+          "color": "text.primary",
+          "example": "+ Add"
+        },
+        "avatarInitials": {
+          "fontFamily": "body",
+          "fontSize": "13px",
+          "fontWeight": 600,
+          "color": "text.primary"
+        },
+        "statusBarTime": {
+          "fontFamily": "body",
+          "fontSize": "15px",
+          "fontWeight": 600,
+          "color": "text.primary"
+        }
+      }
+    },
+
+    "spacing": {
+      "unit": 4,
+      "scale": {
+        "xs": "4px",
+        "sm": "8px",
+        "md": "12px",
+        "lg": "16px",
+        "xl": "20px",
+        "2xl": "24px",
+        "3xl": "32px",
+        "4xl": "40px"
+      },
+      "screenPadding": "20px",
+      "cardPadding": "14px",
+      "listRowPaddingVertical": "12px",
+      "sectionGap": "24px"
+    },
+
+    "radii": {
+      "none": "0px",
+      "sm": "8px",
+      "md": "14px",
+      "lg": "20px",
+      "xl": "28px",
+      "pill": "999px",
+      "screenCorner": "40px",
+      "avatarCircle": "50%",
+      "iconBadgeCircle": "50%"
+    },
+
+    "elevation": {
+      "phoneFrame": "0px 20px 60px rgba(0,0,0,0.15)",
+      "card": "none (flat, relies on background contrast)",
+      "modalSheet": "0px -4px 24px rgba(0,0,0,0.08)",
+      "floatingButton": "none"
+    },
+
+    "iconSizes": {
+      "statusBar": "16px",
+      "navBarIcon": "24px",
+      "bellIcon": "20px",
+      "chevronIcon": "16px",
+      "trashIcon": "18px",
+      "closeIcon": "16px",
+      "arrowUpRight": "14px",
+      "groupIcon": "20px",
+      "addIcon": "14px"
+    },
+
+    "components": {
+      "statusBar": {
+        "height": "44px",
+        "background": "transparent",
+        "content": ["time", "cellularSignal", "wifi", "batteryIndicator"],
+        "textColor": "text.primary"
+      },
+      "screenHeader": {
+        "layout": "flex-row space-between align-center",
+        "padding": "20px 20px 16px 20px",
+        "title": "typography.screenTitle",
+        "trailing": "notificationBell"
+      },
+      "notificationBell": {
+        "iconColor": "iconography.default",
+        "badge": {
+          "shape": "circle",
+          "size": "16px",
+          "background": "semantic.notificationBadge",
+          "textColor": "semantic.notificationBadgeText",
+          "fontSize": "9px",
+          "position": "top-right overlap"
+        }
+      },
+      "summaryCard": {
+        "layout": "two-column grid, 12px gap",
+        "background": "surface.card",
+        "borderRadius": "radii.md",
+        "padding": "spacing.cardPadding",
+        "structure": [
+          "cardLabel",
+          "amountLarge + amountCurrencySuffix",
+          "avatarStack + trailingArrowIcon"
+        ],
+        "variants": {
+          "youOwe": { "background": "#FEFDFA" },
+          "youAreOwed": { "background": "#EFEEE9" }
+        },
+        "trailingIcon": {
+          "type": "arrow-up-right",
+          "background": "surface.cardAlt",
+          "shape": "circle",
+          "size": "24px"
+        }
+      },
+      "avatarStack": {
+        "overlap": "-8px",
+        "avatarSize": "28px",
+        "borderColor": "surface.card",
+        "borderWidth": "2px",
+        "maxVisible": 3,
+        "shape": "circle"
+      },
+      "sectionHeader": {
+        "text": "typography.sectionLabel",
+        "marginBottom": "spacing.sm",
+        "marginTop": "spacing.sectionGap"
+      },
+      "listGroupContainer": {
+        "background": "surface.card",
+        "borderRadius": "radii.md",
+        "divider": {
+          "style": "1px solid",
+          "color": "border.subtle",
+          "insetLeft": "56px"
+        }
+      },
+      "groupListRow": {
+        "layout": "flex-row align-center",
+        "padding": "12px 14px",
+        "leading": {
+          "type": "iconBadge",
+          "size": "40px",
+          "shape": "circle",
+          "backgroundVariants": "avatarPastels.*",
+          "iconColor": "text.primary"
+        },
+        "title": "typography.rowTitle",
+        "subtitle": "typography.rowSubtitle",
+        "trailing": {
+          "type": "chevronRight",
+          "color": "iconography.muted"
+        }
+      },
+      "addNewGroupRow": {
+        "background": "surface.cardAlt",
+        "borderRadius": "radii.md",
+        "padding": "14px",
+        "alignment": "center",
+        "icon": "plus",
+        "label": "Add new group",
+        "textStyle": "typography.rowTitle (medium weight)"
+      },
+      "transactionListRow": {
+        "layout": "flex-row align-center space-between",
+        "padding": "10px 0",
+        "leading": {
+          "type": "circularThumbnail / emojiIcon",
+          "size": "36px",
+          "shape": "circle"
+        },
+        "title": "typography.rowTitle",
+        "subtitle": "typography.rowSubtitle (e.g. 'Paid by you')",
+        "trailingPrimary": "typography.rowTrailingAmount",
+        "trailingSecondary": {
+          "positive": { "color": "semantic.positive" },
+          "negative": { "color": "semantic.negative" },
+          "neutral": { "color": "text.disabled", "note": "used for settled/greyed-out rows" }
+        },
+        "disabledRowState": {
+          "opacity": 0.4,
+          "usage": "fully settled or pending transaction"
+        }
+      },
+      "bottomTabBar": {
+        "height": "60px",
+        "background": "background.primary",
+        "iconCount": 5,
+        "icons": [
+          "home",
+          "stats/bars",
+          "add (center, circular outline)",
+          "groups/people",
+          "profile"
+        ],
+        "activeIndicator": {
+          "type": "dot",
+          "size": "4px",
+          "color": "iconography.activeNav",
+          "position": "below active icon"
+        },
+        "iconColorActive": "iconography.activeNav",
+        "iconColorInactive": "iconography.inactiveNav",
+        "centerButton": {
+          "shape": "circle",
+          "border": "1.5px solid text.primary",
+          "background": "transparent",
+          "size": "32px"
+        }
+      },
+      "homeIndicator": {
+        "width": "134px",
+        "height": "5px",
+        "borderRadius": "radii.pill",
+        "color": "text.primary",
+        "position": "bottom center, 8px from edge"
+      },
+      "modalSheet": {
+        "background": "surface.modalSheet",
+        "borderRadius": "radii.xl (top corners only)",
+        "dragHandle": {
+          "width": "36px",
+          "height": "4px",
+          "borderRadius": "radii.pill",
+          "color": "border.default",
+          "position": "top center"
+        },
+        "header": {
+          "layout": "centered title with close button trailing-right",
+          "title": "typography.modalTitle",
+          "closeButton": {
+            "shape": "circle",
+            "size": "28px",
+            "background": "surface.cardAlt",
+            "icon": "x",
+            "iconColor": "text.primary"
+          }
+        },
+        "padding": "20px"
+      },
+      "textInput": {
+        "background": "surface.inputField",
+        "textColor": "surface.inputFieldText",
+        "placeholderColor": "rgba(255,255,255,0.6)",
+        "borderRadius": "radii.md",
+        "padding": "14px 16px",
+        "height": "48px",
+        "leadingIcon": {
+          "size": "18px",
+          "background": "avatarPastels.skyBlue / contextual",
+          "shape": "circle",
+          "container": "28px"
+        }
+      },
+      "sectionLabelWithAction": {
+        "layout": "flex-row space-between align-center",
+        "label": "typography.sectionLabel",
+        "action": {
+          "text": "typography.linkAction",
+          "icon": "plus",
+          "iconSize": "12px"
+        }
+      },
+      "participantRow": {
+        "layout": "flex-row align-center space-between",
+        "padding": "8px 0",
+        "leading": {
+          "type": "avatar",
+          "size": "32px",
+          "shape": "circle",
+          "fallback": "initials on pastel background"
+        },
+        "label": "typography.rowTitle (regular weight, 14px)",
+        "trailing": {
+          "type": "trashIcon",
+          "color": "text.tertiary",
+          "size": "18px"
+        }
+      },
+      "dropdownSelect": {
+        "background": "surface.card",
+        "border": "1px solid border.default",
+        "borderRadius": "radii.md",
+        "height": "48px",
+        "padding": "0 16px",
+        "textStyle": "typography.inputText (dark on light variant)",
+        "trailingIcon": "chevronDown"
+      },
+      "primaryButton": {
+        "background": "accent.primaryAction",
+        "textColor": "accent.primaryActionText",
+        "borderRadius": "radii.pill",
+        "height": "52px",
+        "width": "100%",
+        "textStyle": "typography.buttonLabel",
+        "alignment": "center"
+      },
+      "footnoteText": {
+        "textStyle": "typography.footnote",
+        "marginTop": "spacing.sm",
+        "alignment": "center"
+      },
+      "phoneFrame": {
+        "borderRadius": "radii.screenCorner",
+        "border": "8px solid #0A0A0A",
+        "shadow": "elevation.phoneFrame",
+        "notch": "none (dynamic island / punch-hole not visible, plain status bar)"
+      }
+    },
+
+    "layoutPatterns": {
+      "screenStructure": [
+        "statusBar",
+        "screenHeader (title + notification)",
+        "summaryCardsRow (2-up grid)",
+        "sectionLabel",
+        "cardGroupList",
+        "addActionRow",
+        "sectionLabel",
+        "transactionList",
+        "bottomTabBar",
+        "homeIndicator"
+      ],
+      "modalStructure": [
+        "dragHandle",
+        "modalHeader (title + close)",
+        "formSection: TITLE (input with icon)",
+        "formSection: PARTICIPANTS (label+add action, list of rows)",
+        "formSection: CURRENCY (dropdown)",
+        "primaryButton",
+        "footnoteText"
+      ],
+      "grid": {
+        "columns": 2,
+        "gutter": "12px",
+        "marginHorizontal": "20px"
+      }
+    },
+
+    "imageryStyle": {
+      "avatars": "circular photographic headshots, ~28-40px, or pastel initials fallback",
+      "groupIcons": "flat line icons (sun, building) centered in soft pastel circular badges",
+      "transactionIcons": "small circular photo or emoji-style icon representing category/person",
+      "illustrationTone": "minimal, warm, editorial, no heavy gradients or shadows"
+    },
+
+    "motionAndInteraction": {
+      "notes": "Not directly observable from static screens; recommended defaults",
+      "recommendedTransitions": {
+        "modalPresent": "slide-up spring, 300ms",
+        "rowTap": "opacity 0.6 on press",
+        "buttonPress": "scale 0.97, 100ms"
+      }
+    },
+
+    "accessibility": {
+      "contrastNotes": "Primary text on cream background exceeds WCAG AA; secondary/tertiary gray text should be checked at small sizes (11px) for AA compliance.",
+      "minTouchTarget": "44px x 44px recommended for icon buttons"
+    }
+  }
+}

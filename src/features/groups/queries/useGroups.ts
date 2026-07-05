@@ -63,6 +63,20 @@ export function useAddGroupMembers() {
       groupsApi.addMembers(groupId, userIds),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.groupDetails(variables.groupId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups });
+    },
+  });
+}
+
+export function useRemoveGroupMember() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ groupId, userId }: { groupId: string; userId: string }) =>
+      groupsApi.removeMember(groupId, userId),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.groupDetails(variables.groupId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.groups });
     },
   });
 }

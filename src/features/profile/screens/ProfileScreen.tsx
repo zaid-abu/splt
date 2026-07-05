@@ -1,50 +1,21 @@
 /**
- * Profile Screen
- *
- * HeroUI components used:
- * - Avatar, Avatar.Fallback
- * - Card, Card.Body, Card.Title, Card.Description
- * - ListGroup + all sub-components
- * - Button
- * - Switch
- * - Separator
- * - Typography
- * - Chip
+ * Profile Screen — Edge-to-Edge Editorial Design
+ * PURE WHITE background, borderless layout, large typography, minimalist lines.
  */
-import { Switch, Typography, Button, ListGroup, useThemeColor } from "heroui-native";
+import { Switch, Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { Uniwind } from "uniwind";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ScrollView, View, Pressable } from "react-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import {
-  useGroups,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
-} from "@/features/groups/queries/useGroups";
-import {
-  useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
-import {
-  useUserActivities,
-  useLogActivity,
-  useDeleteActivity,
-} from "@/features/activity/queries/useActivities";
-import {
-  useUserSettlements,
-  useAddSettlement,
-} from "@/features/settlements/queries/useSettlements";
+import { useGroups } from "@/features/groups/queries/useGroups";
+import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
+import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
-
 import { useAuth } from "@/context/AppContext";
 import { useSignOut } from "@/features/auth/hooks/useAuthMutations";
 import { useUIStore } from "@/store/useUIStore";
@@ -52,32 +23,30 @@ import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 
-function SettingItem({ icon: Icon, title, subtitle, color, onPress, rightElement, isLast }: any) {
+import { SettingsItem } from "@/features/profile/components/SettingsItem";
+
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const TEXT_DANGER = "#000000";
+const TEXT_SUCCESS = "#4CAF82";
+const SEPARATOR = "#E8E4DF";
+const SECTION_PAD = 24;
+
+function SectionLabel({ children }: { children: string }) {
   return (
-    <ListGroup.Item
-      onPress={onPress}
-      className={`p-4 ${!isLast ? "border-b border-border/50" : ""}`}
+    <Typography
+      style={{
+        fontSize: 11,
+        color: TEXT_SECONDARY,
+        fontFamily: "CrimsonText_700Bold",
+        letterSpacing: 1.4,
+        textTransform: "uppercase",
+        marginBottom: 8,
+      }}
     >
-      <ListGroup.ItemPrefix>
-        <View
-          className="w-10 h-10 rounded-full items-center justify-center mr-4"
-          style={{ backgroundColor: `${color}15` }}
-        >
-          <Icon size={20} color={color} strokeWidth={2.5} />
-        </View>
-      </ListGroup.ItemPrefix>
-      <ListGroup.ItemContent>
-        <ListGroup.ItemTitle className="font-bold text-foreground">{title}</ListGroup.ItemTitle>
-        {subtitle && (
-          <ListGroup.ItemDescription className="text-muted-foreground mt-0.5">
-            {subtitle}
-          </ListGroup.ItemDescription>
-        )}
-      </ListGroup.ItemContent>
-      <ListGroup.ItemSuffix>
-        {rightElement || <icons.ChevronRight size={20} className="text-muted-foreground" />}
-      </ListGroup.ItemSuffix>
-    </ListGroup.Item>
+      {children}
+    </Typography>
   );
 }
 
@@ -87,6 +56,7 @@ export default function ProfileScreen(): JSX.Element {
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
 
+  const insets = useSafeAreaInsets();
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const setCurrency = useUIStore((s) => s.setCurrency);
@@ -109,18 +79,10 @@ export default function ProfileScreen(): JSX.Element {
       convertCurrency
     )
   );
-  const netBalance = owedToYou - youOwe;
 
-  const router = useRouter();
   const { mutate: signOut } = useSignOut();
   const [darkMode, setDarkMode] = useState(true);
   const [notifs, setNotifs] = useState(true);
-
-  const accentColor = useThemeColor("accent" as any) as unknown as string;
-  const warningColor = useThemeColor("warning" as any) as unknown as string;
-  const successColor = useThemeColor("success" as any) as unknown as string;
-  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
-  const primaryColor = useThemeColor("primary" as any) as unknown as string;
 
   const handleCurrencyChange = (currency: Currency) => {
     setCurrency(currency);
@@ -132,180 +94,182 @@ export default function ProfileScreen(): JSX.Element {
   };
 
   return (
-    <FocusAwareView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
-        <StatusBar style="dark" />
-        <ScrollView
-          style={{ flex: 1 }}
-          className="bg-background"
-          contentContainerStyle={{ paddingBottom: 100 }}
-          showsVerticalScrollIndicator={false}
-        >
-          {/* ── Header ─────────────────────────────────── */}
-          <FocusAwareView delay={0} className="px-6 pt-4 mb-6">
-            <Typography type="h2" className="font-black tracking-tight text-[28px]">
-              Profile
-            </Typography>
-          </FocusAwareView>
+    <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
+      <StatusBar style="dark" />
 
-          {/* ── User card ───────────────────────────────── */}
-          <FocusAwareView delay={100} className="px-6 mb-6">
-            <View className="bg-white rounded-[32px] p-6 items-center border border-border">
-              <View className="mb-4">
-                <AppUserAvatar user={currentUser} size="lg" />
-              </View>
-              <Typography type="h3" className="font-black tracking-tight text-[24px] mb-1">
+      {/* Header */}
+      <FocusAwareView
+        delay={0}
+        style={{ paddingTop: insets.top + 16, paddingBottom: 16, paddingHorizontal: SECTION_PAD }}
+      >
+        <Typography
+          style={{
+            fontFamily: "UnicaOne_400Regular",
+            fontSize: 36,
+            color: TEXT_PRIMARY,
+            lineHeight: 44,
+            letterSpacing: -0.5,
+          }}
+        >
+          Profile.
+        </Typography>
+      </FocusAwareView>
+
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* User Stats Edge-to-Edge */}
+        <FocusAwareView
+          delay={100}
+          style={{
+            paddingHorizontal: SECTION_PAD,
+            marginBottom: 40,
+            paddingBottom: 32,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
+            <AppUserAvatar user={currentUser} size="lg" />
+            <View style={{ marginLeft: 16 }}>
+              <Typography
+                style={{
+                  fontSize: 24,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "CrimsonText_700Bold",
+                  letterSpacing: -0.5,
+                }}
+              >
                 {currentUser.name}
               </Typography>
-              <Typography type="body" className="text-muted-foreground font-medium mb-6">
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_600SemiBold",
+                }}
+              >
                 {currentUser.email}
               </Typography>
+            </View>
+          </View>
 
-              {/* Stats Row */}
-              <View className="flex-row gap-3 w-full">
-                <View className="flex-1 bg-secondary rounded-[16px] py-3 items-center">
-                  <Typography type="body-sm" className="text-muted-foreground font-medium mb-0.5">
-                    Groups
+          <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={{ flex: 1 }}>
+              <Typography
+                style={{
+                  fontSize: 12,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_700Bold",
+                  textTransform: "uppercase",
+                  letterSpacing: 1.2,
+                  marginBottom: 4,
+                }}
+              >
+                Groups
+              </Typography>
+              <Typography
+                style={{ fontSize: 24, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
+                {groups.length}
+              </Typography>
+            </View>
+            <View
+              style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
+            />
+            <View style={{ flex: 1 }}>
+              <Typography
+                style={{
+                  fontSize: 12,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "CrimsonText_700Bold",
+                  textTransform: "uppercase",
+                  letterSpacing: 1.2,
+                  marginBottom: 4,
+                }}
+              >
+                Owed
+              </Typography>
+              <Typography
+                style={{ fontSize: 24, color: TEXT_SUCCESS, fontFamily: "CrimsonText_700Bold" }}
+              >
+                +{preferredCurrency.symbol}
+                {owedToYou.toFixed(0)}
+              </Typography>
+            </View>
+            {youOwe > 0 && (
+              <>
+                <View
+                  style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
+                />
+                <View style={{ flex: 1 }}>
+                  <Typography
+                    style={{
+                      fontSize: 12,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "CrimsonText_700Bold",
+                      textTransform: "uppercase",
+                      letterSpacing: 1.2,
+                      marginBottom: 4,
+                    }}
+                  >
+                    Owe
                   </Typography>
-                  <Typography type="body" className="font-black text-foreground">
-                    {groups.length}
+                  <Typography
+                    style={{ fontSize: 24, color: TEXT_DANGER, fontFamily: "CrimsonText_700Bold" }}
+                  >
+                    -{preferredCurrency.symbol}
+                    {youOwe.toFixed(0)}
                   </Typography>
                 </View>
-                <View className="flex-1 bg-success/10 rounded-[16px] py-3 items-center">
-                  <Typography type="body-sm" className="text-success font-medium mb-0.5">
-                    Owed
-                  </Typography>
-                  <Typography type="body" className="font-black text-success">
-                    +{preferredCurrency.symbol}
-                    {owedToYou.toFixed(0)}
-                  </Typography>
-                </View>
-                {youOwe > 0 && (
-                  <View className="flex-1 bg-danger/10 rounded-[16px] py-3 items-center">
-                    <Typography type="body-sm" className="text-danger font-medium mb-0.5">
-                      Owe
-                    </Typography>
-                    <Typography type="body" className="font-black text-danger">
-                      -{preferredCurrency.symbol}
-                      {youOwe.toFixed(0)}
-                    </Typography>
-                  </View>
-                )}
-              </View>
-            </View>
-          </FocusAwareView>
+              </>
+            )}
+          </View>
+        </FocusAwareView>
 
-          {/* ── Account settings ───────────────────────── */}
-          <FocusAwareView delay={200} className="px-6 mb-4">
-            <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
-              ACCOUNT
-            </Typography>
-            <View className="rounded-[24px]">
-              <ListGroup className="bg-white rounded-[24px] overflow-hidden border border-border">
-                <SettingItem
-                  icon={icons.User}
-                  title="Edit Profile"
-                  subtitle="Name, email, photo"
-                  color={accentColor}
-                  onPress={() => {}}
-                />
-                <SettingItem
-                  icon={icons.Bell}
-                  title="Notifications"
-                  subtitle="Push, email alerts"
-                  color={warningColor}
-                  rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />}
-                />
-                <SettingItem
-                  icon={icons.Shield}
-                  title="Security"
-                  subtitle="Password, biometrics"
-                  color={successColor}
-                  onPress={() => {}}
-                  isLast
-                />
-              </ListGroup>
-            </View>
-          </FocusAwareView>
+        {/* Preferences */}
+        <FocusAwareView delay={200} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40 }}>
+          <SectionLabel>PREFERENCES</SectionLabel>
+          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
+            <SettingsItem
+              icon="Moon"
+              title="Dark Mode"
+              subtitle="Switch between light and dark themes"
+              rightElement={<Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />}
+            />
+            <SettingsItem
+              icon="Bell"
+              title="Notifications"
+              subtitle="Manage push notifications"
+              rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />}
+            />
 
-          {/* ── Preferences ────────────────────────────── */}
-          <FocusAwareView delay={300} className="px-6 mb-4 z-50">
-            <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
-              PREFERENCES
-            </Typography>
-            <View className="gap-3">
-              <ListGroup className="bg-white rounded-[24px] border border-border overflow-hidden">
-                <SettingItem
-                  icon={icons.Moon}
-                  title="Dark Mode"
-                  color={mutedForeground}
-                  rightElement={
-                    <Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />
-                  }
-                />
-                <SettingItem
-                  icon={icons.CreditCard}
-                  title="Payment Methods"
-                  subtitle="Link bank account, card"
-                  color={primaryColor}
-                  onPress={() => {}}
-                  isLast
-                />
-              </ListGroup>
-
+            {/* Custom Edge-to-Edge wrapper for Currency Selector to match the new look */}
+            <View
+              style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}
+            >
               <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
             </View>
-          </FocusAwareView>
+          </View>
+        </FocusAwareView>
 
-          {/* ── About ──────────────────────────────────── */}
-          <FocusAwareView delay={400} className="px-6 mb-6">
-            <Typography type="body-xs" className="text-muted font-bold tracking-widest mb-3 ml-2">
-              ABOUT
-            </Typography>
-            <View className="rounded-[24px]">
-              <ListGroup className="bg-white rounded-[24px] overflow-hidden border border-border">
-                <SettingItem
-                  icon={icons.HelpCircle}
-                  title="Help & Support"
-                  color={accentColor}
-                  onPress={() => {}}
-                />
-                <SettingItem
-                  icon={icons.FileText}
-                  title="Privacy Policy"
-                  color={primaryColor}
-                  onPress={() => {}}
-                />
-                <SettingItem
-                  icon={icons.Info}
-                  title="Version"
-                  color={primaryColor}
-                  rightElement={
-                    <View className="bg-secondary px-3 py-1 rounded-full">
-                      <Typography type="body-sm" className="font-bold text-muted-foreground">
-                        1.0.0
-                      </Typography>
-                    </View>
-                  }
-                  isLast
-                />
-              </ListGroup>
-            </View>
-          </FocusAwareView>
-
-          {/* ── Sign Out ────────────────────────────────── */}
-          <FocusAwareView delay={500} className="px-6">
-            <Button
-              variant="danger-soft"
-              size="lg"
-              className="rounded-[20px]"
+        {/* Account */}
+        <FocusAwareView delay={300} style={{ paddingHorizontal: SECTION_PAD }}>
+          <SectionLabel>ACCOUNT</SectionLabel>
+          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
+            <SettingsItem
+              icon="LogOut"
+              title="Sign Out"
+              subtitle="Log out of your account"
               onPress={() => signOut()}
-            >
-              <Button.Label className="font-bold text-danger">Sign Out</Button.Label>
-            </Button>
-          </FocusAwareView>
-        </ScrollView>
-      </SafeAreaView>
+              isDanger
+              isLast
+            />
+          </View>
+        </FocusAwareView>
+      </ScrollView>
     </FocusAwareView>
   );
 }

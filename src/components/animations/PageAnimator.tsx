@@ -3,8 +3,8 @@ import { useCallback } from "react";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
   withTiming,
+  Easing,
 } from "react-native-reanimated";
 import { useFocusEffect } from "expo-router";
 
@@ -31,7 +31,7 @@ export function FocusAwareView({
 
       const timeout = setTimeout(() => {
         opacity.value = withTiming(1, { duration: 300 });
-        translateY.value = withSpring(0, { damping: 15, stiffness: 150 });
+        translateY.value = withTiming(0, { duration: 350, easing: Easing.out(Easing.quad) });
       }, delay);
 
       return () => {

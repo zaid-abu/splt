@@ -1,43 +1,49 @@
 {
   "colors": {
     "primary": {
-      "main": "#3D2B82",
-      "light": "#6749D2",
-      "dark": "#261C4C",
+      "main": "#1A1A1A",
+      "light": "#3A3A3A",
+      "dark": "#000000",
       "contrastText": "#FFFFFF"
     },
     "secondary": {
-      "main": "#D4E9FA",
-      "light": "#E9F4FC",
-      "dark": "#A9D2F5",
+      "main": "#F0EBE4",
+      "light": "#F9F6F2",
+      "dark": "#E0D9D0",
       "contrastText": "#1A1A1A"
     },
     "accent": {
-      "purpleLight": "#E0DDF2",
-      "purpleMedium": "#A092E1",
-      "orange": "#F89D7B",
-      "blue": "#6B4EFF"
+      "red": "#E85D5D",
+      "green": "#4CAF82",
+      "purple": "#C4A8E0",
+      "pink": "#E8C4C4",
+      "orange": "#F5A623"
     },
     "background": {
       "default": "#FFFFFF",
-      "paper": "#F8F9FB",
-      "app": "#F2F2F6"
+      "paper": "#F9F6F2",
+      "app": "#F5F0EB"
     },
     "text": {
-      "primary": "#1E1A34",
-      "secondary": "#8A8798",
-      "disabled": "#C4C4C4",
+      "primary": "#1A1A1A",
+      "secondary": "#8E8E93",
+      "disabled": "#C7C7CC",
       "inverse": "#FFFFFF"
     },
     "border": {
-      "light": "#F0F0F0",
-      "main": "#E5E5E5"
+      "light": "#E8E4DF",
+      "main": "#D6D2CD"
+    },
+    "semantic": {
+      "success": "#4CAF82",
+      "danger": "#E85D5D",
+      "warning": "#F5A623"
     }
   },
   "typography": {
     "fontFamily": {
-      "heading": "'Poppins', sans-serif",
-      "body": "'Inter', sans-serif"
+      "heading": "'DM Serif Display', serif",
+      "body": "'Plus Jakarta Sans', sans-serif"
     },
     "fontSize": {
       "xs": "12px",
@@ -52,7 +58,8 @@
       "regular": "400",
       "medium": "500",
       "semibold": "600",
-      "bold": "700"
+      "bold": "700",
+      "black": "800"
     }
   },
   "spacing": {
@@ -60,22 +67,22 @@
     "xs": "8px",
     "sm": "12px",
     "md": "16px",
-    "lg": "24px",
+    "lg": "20px",
     "xl": "32px",
     "xxl": "48px"
   },
   "borderRadius": {
     "sm": "8px",
-    "md": "16px",
-    "lg": "24px",
-    "xl": "32px",
-    "xxl": "40px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "16px",
+    "xxl": "20px",
     "pill": "9999px"
   },
   "shadows": {
     "none": "none",
-    "sm": "0px 2px 4px rgba(0, 0, 0, 0.02)",
-    "md": "0px 4px 8px rgba(0, 0, 0, 0.05)",
-    "lg": "0px 8px 24px rgba(38, 28, 76, 0.08)"
+    "sm": "0px 1px 3px rgba(0, 0, 0, 0.04)",
+    "md": "0px 2px 8px rgba(0, 0, 0, 0.06)",
+    "lg": "0px 4px 16px rgba(0, 0, 0, 0.08)"
   }
 }

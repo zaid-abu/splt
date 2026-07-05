@@ -1,90 +1,269 @@
 /**
- * BalanceCard — HeroUI Card + Typography over LinearGradient.
- *
- * Card anatomy: Card > Card.Header | Card.Body | Card.Footer
- * Typography types: h1-h6, body, body-sm, body-xs
- *
- * @see https://heroui.com/docs/native/components/card.mdx
- * @see https://heroui.com/docs/native/components/text.mdx
+ * BalanceCard — Premium Edge-to-Edge Design
  */
-import { Card, Typography } from "heroui-native";
-import { LinearGradient } from "expo-linear-gradient";
 import type { JSX } from "react";
-import { View } from "react-native";
+import { View, Pressable } from "react-native";
+import { Typography } from "heroui-native";
+import * as icons from "lucide-react-native";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import type { User } from "@/types";
 
-interface BalanceCardProps {
-  owedToYou: number;
-  youOwe: number;
-  net: number;
-  currencySymbol?: string;
-  currencyCode?: string;
+const BG = "transparent";
+const TEXT_PRIMARY = "#000000";
+const TEXT_MUTED = "#8A8782";
+const SEPARATOR = "#E8E4DF";
+const AMOUNT_OWE = "#000000";
+const AMOUNT_OWED = "#4CAF82";
+
+function SectionLabel({ children }: { children: string }): JSX.Element {
+  return (
+    <Typography
+      style={{
+        fontSize: 10,
+        letterSpacing: 1.2,
+        color: TEXT_MUTED,
+        fontFamily: "CrimsonText_700Bold",
+        textTransform: "uppercase",
+        marginBottom: 8,
+      }}
+    >
+      {children}
+    </Typography>
+  );
 }
 
-function fmt(n: number): string {
-  const a = Math.abs(n);
-  if (a >= 1_000_000) return `${(a / 1_000_000).toFixed(1)}M`;
-  if (a >= 1_000) return `${(a / 1_000).toFixed(1)}K`;
-  return a.toFixed(2);
+interface HalfCardProps {
+  label: string;
+  amount: number;
+  currencyCode: string;
+  amountColor: string;
+  users: User[];
+  onPress: () => void;
+  accessibilityLabel: string;
+  showSettleButton?: boolean;
+  onSettlePress?: () => void;
+}
+
+function HalfCard({
+  label,
+  amount,
+  currencyCode,
+  amountColor,
+  users,
+  onPress,
+  accessibilityLabel,
+  showSettleButton,
+  onSettlePress,
+}: HalfCardProps): JSX.Element {
+  const scale = useSharedValue(1);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+  }));
+
+  const a = Math.abs(amount);
+  let valStr = a.toFixed(2);
+  if (a >= 1_000_000) valStr = `${(a / 1_000_000).toFixed(1)}M`;
+  else if (a >= 10_000) valStr = `${(a / 1_000).toFixed(1)}K`;
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      onPress={onPress}
+      // eslint-disable-next-line
+      onPressIn={() => (scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }))}
+      // eslint-disable-next-line
+      onPressOut={() => (scale.value = withSpring(1, { damping: 15, stiffness: 300 }))}
+      style={{ flex: 1 }}
+    >
+      <Animated.View
+        style={[
+          {
+            flex: 1,
+            paddingVertical: 12,
+            paddingHorizontal: 12,
+            backgroundColor: "transparent",
+            borderRadius: 16,
+          },
+          animatedStyle,
+        ]}
+      >
+        <SectionLabel>{label}</SectionLabel>
+
+        {/* Amount + Currency */}
+        <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 16 }}>
+          <Typography
+            style={{
+              fontSize: 32,
+              color: amountColor,
+              fontFamily: "CrimsonText_700Bold",
+              lineHeight: 40,
+              letterSpacing: -1,
+            }}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          >
+            {valStr}
+          </Typography>
+          <Typography
+            style={{
+              fontSize: 14,
+              color: TEXT_MUTED,
+              fontFamily: "CrimsonText_600SemiBold",
+              marginLeft: 4,
+            }}
+          >
+            {currencyCode}
+          </Typography>
+        </View>
+
+        {/* Action row */}
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "flex-end",
+            minHeight: 28,
+          }}
+        >
+          {showSettleButton && users.length > 0 && amount > 0 ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={(e) => {
+                e.stopPropagation();
+                onSettlePress?.();
+              }}
+              style={({ pressed }) => ({
+                backgroundColor: SEPARATOR,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 0,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <Typography
+                style={{ fontSize: 12, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
+                Settle
+              </Typography>
+            </Pressable>
+          ) : (
+            <icons.ArrowUpRight size={18} color={amountColor} strokeWidth={2.5} />
+          )}
+        </View>
+      </Animated.View>
+    </Pressable>
+  );
+}
+
+export interface BalanceCardProps {
+  youOwe: number;
+  owedToYou: number;
+  currencyCode: string;
+  oweUsers: User[];
+  owedUsers: User[];
+  onOwePress: () => void;
+  onOwedPress: () => void;
+  onSettlePress?: () => void;
 }
 
 export function BalanceCard({
-  owedToYou,
   youOwe,
-  net,
-  currencySymbol = "$",
-  currencyCode = "USD",
+  owedToYou,
+  currencyCode,
+  oweUsers,
+  owedUsers,
+  onOwePress,
+  onOwedPress,
+  onSettlePress,
 }: BalanceCardProps): JSX.Element {
-  const isPositive = net >= 0;
+  const isAllSettled = youOwe === 0 && owedToYou === 0;
+  const netBalance = owedToYou - youOwe;
+
+  if (isAllSettled) {
+    return (
+      <View
+        style={{
+          backgroundColor: "transparent",
+          paddingVertical: 32,
+          paddingHorizontal: 16,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <View
+          style={{
+            width: 64,
+            height: 64,
+            borderRadius: 0,
+            borderWidth: 1,
+            borderColor: SEPARATOR,
+            backgroundColor: "transparent",
+            alignItems: "center",
+            justifyContent: "center",
+            marginBottom: 16,
+          }}
+        >
+          <icons.Check size={32} color={AMOUNT_OWED} strokeWidth={2.5} />
+        </View>
+        <Typography
+          style={{
+            fontSize: 24,
+            color: TEXT_PRIMARY,
+            fontFamily: "CrimsonText_700Bold",
+            marginBottom: 8,
+          }}
+        >
+          All settled up!
+        </Typography>
+        <Typography
+          style={{ fontSize: 15, color: TEXT_MUTED, fontFamily: "CrimsonText_600SemiBold" }}
+        >
+          You don&apos;t owe anyone, and no one owes you.
+        </Typography>
+      </View>
+    );
+  }
 
   return (
-    <LinearGradient
-      colors={isPositive ? ["#065F46", "#059669", "#10B981"] : ["#7F1D1D", "#DC2626", "#EF4444"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{ borderRadius: 20, marginBottom: 20 }}
+    <View
+      style={{
+        backgroundColor: BG,
+        paddingVertical: 16,
+        flexDirection: "row",
+        alignItems: "stretch",
+        position: "relative",
+      }}
     >
-      {/* Use transparent Card variant so gradient shows through */}
-      <Card variant="transparent" className="gap-0">
-        <Card.Header className="pb-1">
-          <Typography type="body-xs" className="text-white/70 font-medium tracking-wider">
-            TOTAL BALANCE
-          </Typography>
-        </Card.Header>
+      <HalfCard
+        label="YOU OWE"
+        amount={youOwe}
+        currencyCode={currencyCode}
+        amountColor={AMOUNT_OWE}
+        users={oweUsers}
+        onPress={onOwePress}
+        accessibilityLabel={`You owe ${youOwe} ${currencyCode}`}
+        showSettleButton={true}
+        onSettlePress={onSettlePress}
+      />
 
-        <Card.Body className="pt-0 pb-4">
-          <View className="flex-row items-end gap-1">
-            <Typography type="h1" className="text-white font-black tracking-tighter">
-              {net < 0 ? "-" : ""}
-              {currencySymbol}
-              {fmt(net)}
-            </Typography>
-            <Typography type="body-sm" className="text-white/60 mb-2">
-              {currencyCode}
-            </Typography>
-          </View>
-        </Card.Body>
+      {/* Divider */}
+      <View
+        style={{ width: 1, backgroundColor: SEPARATOR, marginVertical: 12, marginHorizontal: 4 }}
+      />
 
-        <Card.Footer className="gap-3 pt-0">
-          <View className="flex-1 bg-white/10 rounded-xl p-3">
-            <Typography type="body-xs" className="text-white/60 font-medium tracking-wider">
-              Owed To You
-            </Typography>
-            <Typography type="h5" className="text-white font-bold mt-0.5">
-              {currencySymbol}
-              {fmt(owedToYou)}
-            </Typography>
-          </View>
-          <View className="flex-1 bg-white/10 rounded-xl p-3">
-            <Typography type="body-xs" className="text-white/60 font-medium tracking-wider">
-              You Owe
-            </Typography>
-            <Typography type="h5" className="text-white font-bold mt-0.5">
-              {currencySymbol}
-              {fmt(youOwe)}
-            </Typography>
-          </View>
-        </Card.Footer>
-      </Card>
-    </LinearGradient>
+      <HalfCard
+        label="YOU ARE OWED"
+        amount={owedToYou}
+        currencyCode={currencyCode}
+        amountColor={AMOUNT_OWED}
+        users={owedUsers}
+        onPress={onOwedPress}
+        accessibilityLabel={`You are owed ${owedToYou} ${currencyCode}`}
+      />
+
+      {/* Net Balance Pill */}
+    </View>
   );
 }

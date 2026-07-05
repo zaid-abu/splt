@@ -5,8 +5,8 @@
 
 export const TYPOGRAPHY = {
   fontFamily: {
-    heading: "PlusJakartaSans_700Bold",
-    body: "PlusJakartaSans_400Regular",
+    heading: "CrimsonText_700Bold",
+    body: "CrimsonText_400Regular",
   },
   fontSize: {
     xs: 12,

@@ -1,178 +1,373 @@
-import {
-  Button,
-  Typography,
-  PressableFeedback,
-  Spinner,
-  TextField,
-  Label,
-  Input,
-  useToast,
-} from "heroui-native";
+import { Typography, Spinner } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { KeyboardAvoidingView, Platform, View, FlatList, Pressable, TextInput } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import {
-  useGroups,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
-} from "@/features/groups/queries/useGroups";
-import {
-  useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
-import {
-  useUserActivities,
-  useLogActivity,
-  useDeleteActivity,
-} from "@/features/activity/queries/useActivities";
-import {
-  useUserSettlements,
-  useAddSettlement,
-} from "@/features/settlements/queries/useSettlements";
-import * as balancesUtil from "@/features/settlements/utils/balances";
-
 import * as icons from "lucide-react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
+
+import { useAddFriend, useAllFriendships } from "@/features/friends/queries/useFriends";
 import { useAuth } from "@/context/AppContext";
-import { useUIStore } from "@/store/useUIStore";
+import { useSearchUsers } from "@/features/users/queries/useUsers";
+import type { User, Friendship } from "@/types";
+import { useAppToast } from "@/hooks/useAppToast";
+
+// ─── Design Tokens ───
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const SEPARATOR = "#E8E4DF";
 
 export default function NewFriendScreen(): JSX.Element {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const { mutateAsync: createGroup, isPending: isCreatingGroup } = useCreateGroup();
-  const { toast } = useToast();
+  const { mutateAsync: addFriend } = useAddFriend();
+  const { toast } = useAppToast();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [addingUserId, setAddingUserId] = useState<string | null>(null);
 
-  const isFormValid = name.trim().length > 0 && email.trim().length > 0 && email.includes("@");
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-  const handleSubmit = async () => {
-    if (!isFormValid) return;
+  const { data: searchResults, isLoading: isSearching } = useSearchUsers(
+    debouncedQuery,
+    currentUser.id
+  );
+  const { data: allFriendships = [] } = useAllFriendships(currentUser.id);
 
-    setIsSubmitting(true);
+  const handleAddFriend = async (targetUser: User) => {
+    if (addingUserId) return;
+    setAddingUserId(targetUser.id);
+
     try {
-      // In the current data model, friends are derived from groups.
-      // So we create a 1-on-1 group representing this friendship.
-      await createGroup({
-        name: `Non-group expenses with ${name.trim()}`,
-        icon: "User", // Using a fallback string icon
-        currency: currentUser.defaultCurrency || "USD",
-        createdBy: currentUser.id,
-        members: [{ userId: currentUser.id, user: currentUser, balance: 0 }],
-        simplifyDebts: true,
+      await addFriend({
+        userId: currentUser.id,
+        friendId: targetUser.id,
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show({
-        label: "Friend added",
-        description: `${name} has been added to your friends.`,
+        label: "Friend Request Sent",
+        description: `A friend request was sent to ${targetUser.name}.`,
         variant: "success",
+        placement: "top",
       });
-      router.back();
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/(tabs)");
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to add friend";
       toast.show({
         label: "Error",
         description: msg,
         variant: "danger",
+        placement: "top",
       });
-      setIsSubmitting(false);
+    } finally {
+      setAddingUserId(null);
     }
   };
 
+  const renderUserItem = ({ item, index }: { item: User; index: number }) => {
+    const isAdding = addingUserId === item.id;
+
+    // Check friendship status
+    const existingFriendship = allFriendships.find((f) => f.friendUser?.id === item.id);
+    const status = existingFriendship?.status;
+
+    const isRequested = status === "pending";
+    const isAdded = status === "accepted";
+    const isDisabled = !!addingUserId || isRequested || isAdded;
+
+    return (
+      <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 24,
+            paddingVertical: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 0,
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              alignItems: "center",
+              justifyContent: "center",
+              marginRight: 16,
+            }}
+          >
+            <Typography style={{ fontSize: 18, color: TEXT_PRIMARY }}>{item.initials}</Typography>
+          </View>
+
+          <View style={{ flex: 1, marginRight: 12 }}>
+            <Typography
+              numberOfLines={1}
+              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+            >
+              {item.name}
+            </Typography>
+            <Typography
+              numberOfLines={1}
+              style={{
+                fontSize: 14,
+                color: TEXT_SECONDARY,
+                fontFamily: "CrimsonText_600SemiBold",
+                marginTop: 4,
+              }}
+            >
+              {item.email}
+            </Typography>
+          </View>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => handleAddFriend(item)}
+            disabled={isDisabled}
+            style={({ pressed }) => ({
+              height: 44,
+              paddingHorizontal: isRequested || isAdded ? 16 : 0,
+              width: isRequested || isAdded ? undefined : 44,
+              backgroundColor: isAdded ? "#4CAF82" : isRequested ? "transparent" : "#8C7A6B",
+              borderWidth: isRequested ? 1 : 0,
+              borderColor: SEPARATOR,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: 0,
+              opacity: pressed || (!!addingUserId && !isAdding) ? 0.5 : 1,
+            })}
+          >
+            {isAdding ? (
+              <Spinner size="sm" color="white" />
+            ) : isAdded ? (
+              <Typography
+                style={{ fontSize: 14, color: "white", fontFamily: "CrimsonText_700Bold" }}
+              >
+                Added
+              </Typography>
+            ) : isRequested ? (
+              <Typography
+                style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              >
+                Requested
+              </Typography>
+            ) : (
+              <icons.UserPlus size={20} color="white" strokeWidth={1.5} />
+            )}
+          </Pressable>
+        </View>
+      </Animated.View>
+    );
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top", "bottom"]}>
+    <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
 
       {/* Header */}
-      <View className="flex-row items-center justify-between px-6 py-4">
-        <PressableFeedback
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          hitSlop={8}
-          className="w-10 h-10 items-center justify-center bg-white rounded-full border border-border/50"
+      <View
+        style={{
+          paddingTop: insets.top + 16,
+          paddingBottom: 24,
+          paddingHorizontal: 24,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <Typography
+          style={{
+            fontFamily: "UnicaOne_400Regular",
+            fontSize: 28,
+            color: TEXT_PRIMARY,
+            lineHeight: 36,
+          }}
         >
-          <icons.X size={20} color="#0F172A" />
-        </PressableFeedback>
-        <Typography type="h3" className="font-bold">
           Add Friend
         </Typography>
-        <View className="w-10 h-10" />
+        <Pressable
+          onPress={() => {
+            if (router.canGoBack()) {
+              router.back();
+            } else {
+              router.replace("/(tabs)");
+            }
+          }}
+          accessibilityRole="button"
+          style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
+        >
+          <icons.X size={24} color={TEXT_SECONDARY} strokeWidth={1.5} />
+        </Pressable>
       </View>
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
-          keyboardShouldPersistTaps="handled"
+        {/* Search Bar */}
+        <View
+          style={{
+            paddingHorizontal: 24,
+            paddingBottom: 24,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
         >
-          <View className="bg-white rounded-[24px] p-6 border border-border/50 shadow-sm mb-6">
-            <View className="mb-6 gap-2">
-              <TextField>
-                <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
-                  FRIEND&apos;S NAME
-                </Label>
-                <Input
-                  value={name}
-                  onChangeText={setName}
-                  placeholder="e.g. John Doe"
-                  autoCapitalize="words"
-                  autoFocus
-                  className="bg-[#F8F8F9] h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
-                />
-              </TextField>
-            </View>
-
-            <View className="mb-6 gap-2">
-              <TextField>
-                <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
-                  FRIEND&apos;S EMAIL
-                </Label>
-                <Input
-                  value={email}
-                  onChangeText={setEmail}
-                  placeholder="john@example.com"
-                  autoCapitalize="none"
-                  keyboardType="email-address"
-                  className="bg-[#F8F8F9] h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
-                />
-              </TextField>
-            </View>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              height: 56,
+              paddingHorizontal: 16,
+            }}
+          >
+            <icons.Search size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+            <TextInput
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder="Search by name or email..."
+              placeholderTextColor={TEXT_SECONDARY}
+              autoCapitalize="none"
+              autoFocus
+              style={{
+                flex: 1,
+                marginLeft: 12,
+                fontFamily: "CrimsonText_600SemiBold",
+                color: TEXT_PRIMARY,
+                fontSize: 16,
+              }}
+            />
+            {isSearching ? (
+              <Spinner size="sm" color={TEXT_SECONDARY} />
+            ) : searchQuery.length > 0 ? (
+              <Pressable accessibilityRole="button" onPress={() => setSearchQuery("")} hitSlop={8}>
+                <icons.XCircle size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+              </Pressable>
+            ) : null}
           </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </View>
 
-      {/* Footer / Submit */}
-      <View className="p-6 bg-white border-t border-border/50 pt-4 pb-8 shadow-sm">
-        <Button
-          variant="primary"
-          size="lg"
-          className="w-full rounded-[16px] h-[56px]"
-          isDisabled={!isFormValid || isSubmitting}
-          onPress={handleSubmit}
-        >
-          {isSubmitting ? (
-            <Spinner color="white" />
-          ) : (
-            <>
-              <icons.UserPlus size={20} color="white" className="mr-2" />
-              <Button.Label className="font-bold text-[16px] text-white">Add Friend</Button.Label>
-            </>
-          )}
-        </Button>
-      </View>
-    </SafeAreaView>
+        {/* Results */}
+        <FlatList
+          data={searchResults}
+          keyExtractor={(item) => item.id}
+          renderItem={renderUserItem}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          keyboardShouldPersistTaps="handled"
+          ListEmptyComponent={
+            <View
+              style={{
+                paddingHorizontal: 24,
+                paddingVertical: 48,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              {debouncedQuery.length >= 2 && !isSearching ? (
+                <>
+                  <View
+                    style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: 0,
+                      backgroundColor: "transparent",
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 16,
+                    }}
+                  >
+                    <icons.UserX size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                  </View>
+                  <Typography
+                    style={{
+                      fontSize: 16,
+                      color: TEXT_PRIMARY,
+                      fontFamily: "CrimsonText_700Bold",
+                      textAlign: "center",
+                      marginBottom: 8,
+                    }}
+                  >
+                    No users found
+                  </Typography>
+                  <Typography
+                    style={{
+                      fontSize: 15,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "CrimsonText_600SemiBold",
+                      textAlign: "center",
+                    }}
+                  >
+                    No users matching &quot;{debouncedQuery}&quot;
+                  </Typography>
+                </>
+              ) : debouncedQuery.length > 0 ? (
+                <Typography
+                  style={{
+                    fontSize: 15,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "CrimsonText_600SemiBold",
+                    textAlign: "center",
+                  }}
+                >
+                  Keep typing to search...
+                </Typography>
+              ) : (
+                <View style={{ alignItems: "center" }}>
+                  <View
+                    style={{
+                      width: 64,
+                      height: 64,
+                      borderRadius: 0,
+                      backgroundColor: "transparent",
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 16,
+                    }}
+                  >
+                    <icons.Users size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                  </View>
+                  <Typography
+                    style={{
+                      fontSize: 15,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "CrimsonText_600SemiBold",
+                      textAlign: "center",
+                    }}
+                  >
+                    Find friends by their name or email address.
+                  </Typography>
+                </View>
+              )}
+            </View>
+          }
+        />
+      </KeyboardAvoidingView>
+    </View>
   );
 }

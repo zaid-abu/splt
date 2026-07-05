@@ -1,14 +1,13 @@
 import { Stack, SplashScreen } from "expo-router";
 import type { JSX } from "react";
 import { useEffect } from "react";
+import { useFonts, UnicaOne_400Regular } from "@expo-google-fonts/unica-one";
 import {
-  useFonts,
-  PlusJakartaSans_400Regular,
-  PlusJakartaSans_500Medium,
-  PlusJakartaSans_600SemiBold,
-  PlusJakartaSans_700Bold,
-  PlusJakartaSans_800ExtraBold,
-} from "@expo-google-fonts/plus-jakarta-sans";
+  CrimsonText_400Regular,
+  CrimsonText_400Regular_Italic,
+  CrimsonText_600SemiBold,
+  CrimsonText_700Bold,
+} from "@expo-google-fonts/crimson-text";
 
 import { AppProvider } from "@/providers/AppProvider";
 import "../global.css";
@@ -19,11 +18,11 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout(): JSX.Element | null {
   const [loaded] = useFonts({
-    PlusJakartaSans_400Regular,
-    PlusJakartaSans_500Medium,
-    PlusJakartaSans_600SemiBold,
-    PlusJakartaSans_700Bold,
-    PlusJakartaSans_800ExtraBold,
+    UnicaOne_400Regular,
+    CrimsonText_400Regular,
+    CrimsonText_400Regular_Italic,
+    CrimsonText_600SemiBold,
+    CrimsonText_700Bold,
   });
 
   useEffect(() => {
@@ -38,11 +37,13 @@ export default function RootLayout(): JSX.Element | null {
     <AppProvider>
       <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
         <Stack.Screen name="(auth)" />
+        <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
           name="group/new"
           options={{
-            presentation: "modal",
+            presentation: "transparentModal",
+            animation: "fade",
             headerShown: false,
           }}
         />

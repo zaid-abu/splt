@@ -1,9 +1,9 @@
 import { useEffect } from "react";
-import { useToast } from "heroui-native";
 import { queryClient } from "@/lib/queryClient";
+import { useAppToast } from "@/hooks/useAppToast";
 
 export function GlobalQueryToast(): null {
-  const { toast } = useToast();
+  const { toast } = useAppToast();
 
   useEffect(() => {
     const unsubscribe = queryClient.getMutationCache().subscribe((event) => {

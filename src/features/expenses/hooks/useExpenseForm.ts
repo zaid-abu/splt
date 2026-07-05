@@ -12,6 +12,7 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 interface UseExpenseFormProps {
   currentUser: User;
   groups: Group[];
+  friends: User[];
   expenses: Expense[];
   initialGroupId?: string;
   initialFriendId?: string;
@@ -27,6 +28,7 @@ interface UseExpenseFormProps {
 export function useExpenseForm({
   currentUser,
   groups,
+  friends,
   expenses,
   initialGroupId,
   initialFriendId,
@@ -64,11 +66,8 @@ export function useExpenseForm({
   const [searchQuery, setSearchQuery] = useState("");
 
   const uniqueFriends = useMemo(() => {
-    const allMembers = groups.flatMap((g) => g.members.map((m) => m.user));
-    return Array.from(new Map(allMembers.map((user) => [user.id, user])).values()).filter(
-      (user) => user.id !== currentUser.id
-    );
-  }, [groups, currentUser.id]);
+    return friends.filter((user) => user.id !== currentUser.id);
+  }, [friends, currentUser.id]);
 
   const filteredGroups = useMemo(() => {
     if (!searchQuery.trim()) return groups;
@@ -255,7 +254,11 @@ export function useExpenseForm({
         });
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/(tabs)");
+      }
     } catch (e: any) {
       toast.show({
         label: "Error",

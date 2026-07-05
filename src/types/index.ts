@@ -62,6 +62,18 @@ export interface User {
   defaultCurrency: string;
 }
 
+export type FriendshipStatus = "pending" | "accepted" | "blocked";
+
+export interface Friendship {
+  id: string;
+  userId: string;
+  friendId: string;
+  status: FriendshipStatus;
+  createdAt: Date;
+  updatedAt: Date;
+  friendUser?: User; // joined data
+}
+
 export interface GroupMember {
   userId: string;
   user: User;

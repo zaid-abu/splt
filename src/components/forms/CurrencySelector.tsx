@@ -1,19 +1,73 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
-import { View, TextInput } from "react-native";
+import React, { useCallback, useMemo, useRef, useState, memo } from "react";
+import { View, TextInput, StyleSheet, Keyboard } from "react-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetFlatList } from "@gorhom/bottom-sheet";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import { Typography, PressableFeedback, useThemeColor } from "heroui-native";
+import { Typography, PressableFeedback } from "heroui-native";
 
 import type { Currency } from "@/types";
 import { CURRENCIES } from "@/types";
 
+// --- Design Tokens ---
+const BG = "#F5F0EB";
+const BRAND = "#8C7A6B";
+const SURFACE = "#FFFFFF";
+const BORDER = "#E8E4DF";
+const TEXT_PRIMARY = "#1A1A1A";
+const TEXT_SECONDARY = "#8A8782";
+
+// --- Props ---
 interface CurrencySelectorProps {
   value: string;
   onChange: (currency: Currency) => void;
   label?: string;
 }
 
+// --- Memoized List Item ---
+// Extremely important for performance when rendering hundreds of currencies.
+const CurrencyListItem = memo(
+  ({
+    currency,
+    isSelected,
+    onPress,
+  }: {
+    currency: Currency;
+    isSelected: boolean;
+    onPress: (c: Currency) => void;
+  }) => {
+    return (
+      <PressableFeedback
+        accessibilityRole="button"
+        onPress={() => {
+          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          onPress(currency);
+        }}
+      >
+        <View style={[styles.itemContainer, isSelected && styles.itemContainerSelected]}>
+          <View style={styles.itemLeft}>
+            <View style={[styles.symbolBox, isSelected && styles.symbolBoxSelected]}>
+              <Typography style={styles.symbolText} numberOfLines={1} adjustsFontSizeToFit>
+                {currency.symbol}
+              </Typography>
+            </View>
+            <View style={styles.textContainer}>
+              <Typography style={[styles.codeText, isSelected && styles.textSelected]}>
+                {currency.code}
+              </Typography>
+              <Typography style={styles.nameText}>{currency.name}</Typography>
+            </View>
+          </View>
+          {isSelected && <icons.Check size={20} color={TEXT_PRIMARY} />}
+        </View>
+      </PressableFeedback>
+    );
+  },
+  (prevProps, nextProps) => prevProps.isSelected === nextProps.isSelected
+);
+
+CurrencyListItem.displayName = "CurrencyListItem";
+
+// --- Main Component ---
 export function CurrencySelector({
   value,
   onChange,
@@ -22,26 +76,22 @@ export function CurrencySelector({
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [search, setSearch] = useState("");
 
-  const backgroundColor = useThemeColor("background" as any) as unknown as string;
-  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
-
   const selectedCurrency = CURRENCIES.find((c) => c.code === value) || CURRENCIES[0];
 
-  const filtered = useMemo(
-    () =>
-      search.trim()
-        ? CURRENCIES.filter(
-            (c) =>
-              c.code.toLowerCase().includes(search.toLowerCase()) ||
-              c.name.toLowerCase().includes(search.toLowerCase())
-          )
-        : CURRENCIES,
-    [search]
-  );
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return CURRENCIES;
+    return CURRENCIES.filter(
+      (c) => c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
+    );
+  }, [search]);
 
   const handlePresentModalPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    bottomSheetModalRef.current?.present();
+    Keyboard.dismiss();
+    setTimeout(() => {
+      bottomSheetModalRef.current?.present();
+    }, 150);
   }, []);
 
   const handleSheetChanges = useCallback((index: number) => {
@@ -62,65 +112,58 @@ export function CurrencySelector({
     []
   );
 
+  const handleSelect = useCallback(
+    (c: Currency) => {
+      onChange(c);
+      bottomSheetModalRef.current?.dismiss();
+    },
+    [onChange]
+  );
+
   return (
-    <View className="gap-2">
-      {label && (
-        <Typography
-          type="body-xs"
-          className="text-muted-foreground font-bold tracking-widest uppercase ml-2"
-        >
-          {label}
-        </Typography>
-      )}
+    <View style={styles.container}>
+      {label && <Typography style={styles.label}>{label}</Typography>}
 
       <PressableFeedback accessibilityRole="button" onPress={handlePresentModalPress}>
-        <View className="bg-white h-[56px] rounded-[20px] px-4 flex-row items-center justify-between border border-border">
-          <View className="flex-row items-center gap-3">
-            <View className="w-10 h-10 rounded-full bg-secondary items-center justify-center px-1">
-              <Typography
-                type="body-sm"
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                className="font-bold text-foreground"
-              >
+        <View style={styles.triggerContainer}>
+          <View style={styles.triggerLeft}>
+            <View style={styles.triggerSymbolBox}>
+              <Typography style={styles.triggerSymbolText} numberOfLines={1} adjustsFontSizeToFit>
                 {selectedCurrency.symbol}
               </Typography>
             </View>
-            <Typography type="body" className="font-bold text-foreground">
+            <Typography style={styles.triggerText}>
               {selectedCurrency.code} — {selectedCurrency.name}
             </Typography>
           </View>
-          <icons.ChevronDown size={20} className="text-muted-foreground" />
+          <icons.ChevronDown size={20} color={TEXT_SECONDARY} />
         </View>
       </PressableFeedback>
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
         index={0}
-        snapPoints={["70%"]}
+        snapPoints={["75%", "95%"]}
         enableDynamicSizing={false}
         onChange={handleSheetChanges}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor }}
-        handleIndicatorStyle={{ backgroundColor: mutedForeground, width: 40 }}
-        style={{ minWidth: "100%", alignSelf: "center" }}
+        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: BORDER, width: 40 }}
       >
-        <View className="flex-1 px-6 pt-2 pb-6">
-          <Typography type="h3" className="font-black text-[20px] mb-4 text-foreground text-center">
-            Select Currency
-          </Typography>
+        <View style={styles.modalContent}>
+          <Typography style={styles.modalTitle}>Select Currency</Typography>
 
-          <View className="mb-4">
-            <View className="flex-row items-center bg-white h-[44px] rounded-[16px] px-4 border border-border">
-              <icons.Search size={20} color={mutedForeground} />
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBox}>
+              <icons.Search size={20} color={TEXT_SECONDARY} />
               <TextInput
                 value={search}
                 onChangeText={setSearch}
                 placeholder="Search currencies…"
-                className="flex-1 ml-2 font-medium text-[15px] text-foreground"
-                placeholderTextColor={mutedForeground}
+                placeholderTextColor={TEXT_SECONDARY}
                 autoCapitalize="none"
                 autoCorrect={false}
+                style={styles.searchInput}
               />
               {search.length > 0 && (
                 <PressableFeedback
@@ -128,67 +171,32 @@ export function CurrencySelector({
                   onPress={() => setSearch("")}
                   hitSlop={8}
                 >
-                  <icons.XCircle size={18} color={mutedForeground} />
+                  <icons.XCircle size={18} color={TEXT_SECONDARY} />
                 </PressableFeedback>
               )}
             </View>
           </View>
 
-          <View className="flex-1 bg-white rounded-[24px] overflow-hidden border border-border">
+          <View style={styles.listWrapper}>
             <BottomSheetFlatList
               data={filtered}
               keyExtractor={(item) => item.code}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={{ paddingBottom: 20 }}
-              renderItem={({ item: currency, index: idx }) => {
-                const isSelected = currency.code === value;
-                return (
-                  <PressableFeedback
-                    accessibilityRole="button"
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      onChange(currency);
-                      bottomSheetModalRef.current?.dismiss();
-                    }}
-                  >
-                    <View
-                      className={`flex-row items-center justify-between p-4 ${idx < filtered.length - 1 ? "border-b border-border/50" : ""}`}
-                    >
-                      <View className="flex-row items-center gap-3 flex-1">
-                        <View
-                          className={`w-12 h-12 rounded-full items-center justify-center px-1 ${isSelected ? "bg-primary/10" : "bg-secondary"}`}
-                        >
-                          <Typography
-                            type="body-sm"
-                            numberOfLines={1}
-                            adjustsFontSizeToFit
-                            className={`font-bold text-center ${isSelected ? "text-primary" : "text-foreground"}`}
-                          >
-                            {currency.symbol}
-                          </Typography>
-                        </View>
-                        <View className="flex-1 pr-2">
-                          <Typography
-                            type="body"
-                            className={`font-bold ${isSelected ? "text-primary" : "text-foreground"}`}
-                          >
-                            {currency.code}
-                          </Typography>
-                          <Typography type="body-sm" className="text-muted-foreground mt-0.5">
-                            {currency.name}
-                          </Typography>
-                        </View>
-                      </View>
-                      {isSelected && <icons.Check size={20} className="text-primary" />}
-                    </View>
-                  </PressableFeedback>
-                );
-              }}
+              showsVerticalScrollIndicator={true}
+              keyboardShouldPersistTaps="handled"
+              initialNumToRender={20}
+              maxToRenderPerBatch={20}
+              windowSize={5}
+              contentContainerStyle={{ paddingBottom: 40 }}
+              renderItem={({ item }) => (
+                <CurrencyListItem
+                  currency={item}
+                  isSelected={item.code === value}
+                  onPress={handleSelect}
+                />
+              )}
               ListEmptyComponent={
-                <View className="p-8 items-center">
-                  <Typography type="body" className="text-muted-foreground">
-                    No currencies found
-                  </Typography>
+                <View style={styles.emptyContainer}>
+                  <Typography style={styles.emptyText}>No currencies found</Typography>
                 </View>
               }
             />
@@ -198,3 +206,157 @@ export function CurrencySelector({
     </View>
   );
 }
+
+// --- Styles (Bypassing Tailwind for maximum performance) ---
+const styles = StyleSheet.create({
+  container: {
+    gap: 8,
+  },
+  label: {
+    fontSize: 12,
+    color: TEXT_SECONDARY,
+    fontFamily: "CrimsonText_700Bold",
+    textTransform: "uppercase",
+    letterSpacing: 1.5,
+    marginLeft: 8,
+  },
+  triggerContainer: {
+    backgroundColor: SURFACE,
+    height: 56,
+    borderRadius: 0,
+    borderWidth: 1,
+    borderColor: BORDER,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+  },
+  triggerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  triggerSymbolBox: {
+    width: 32,
+    height: 32,
+    borderRadius: 0,
+    backgroundColor: BG,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  triggerSymbolText: {
+    fontSize: 14,
+    fontFamily: "CrimsonText_700Bold",
+    color: TEXT_PRIMARY,
+  },
+  triggerText: {
+    fontSize: 15,
+    fontFamily: "CrimsonText_700Bold",
+    color: TEXT_PRIMARY,
+  },
+  modalContent: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 8,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontFamily: "CrimsonText_700Bold",
+    color: TEXT_PRIMARY,
+    marginBottom: 24,
+  },
+  searchContainer: {
+    marginBottom: 16,
+  },
+  searchBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: SURFACE,
+    height: 48,
+    borderRadius: 0,
+    paddingHorizontal: 16,
+    borderWidth: 1,
+    borderColor: BORDER,
+  },
+  searchInput: {
+    flex: 1,
+    marginLeft: 12,
+    fontSize: 16,
+    fontFamily: "CrimsonText_600SemiBold",
+    color: TEXT_PRIMARY,
+  },
+  listWrapper: {
+    flex: 1,
+    backgroundColor: SURFACE,
+    borderWidth: 1,
+    borderColor: BORDER,
+    borderBottomWidth: 0,
+  },
+  // List Item Styles
+  itemContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER,
+    backgroundColor: SURFACE,
+  },
+  itemContainerSelected: {
+    backgroundColor: BG,
+  },
+  itemLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    flex: 1,
+  },
+  symbolBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 0,
+    backgroundColor: BG,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+    borderWidth: 1,
+    borderColor: BORDER,
+  },
+  symbolBoxSelected: {
+    backgroundColor: BRAND,
+    borderColor: BRAND,
+  },
+  symbolText: {
+    fontSize: 16,
+    fontFamily: "CrimsonText_700Bold",
+    color: TEXT_PRIMARY,
+  },
+  textContainer: {
+    flex: 1,
+    paddingRight: 16,
+  },
+  codeText: {
+    fontSize: 16,
+    fontFamily: "CrimsonText_700Bold",
+    color: TEXT_PRIMARY,
+  },
+  nameText: {
+    fontSize: 13,
+    fontFamily: "CrimsonText_600SemiBold",
+    color: TEXT_SECONDARY,
+    marginTop: 2,
+  },
+  textSelected: {
+    color: TEXT_PRIMARY,
+  },
+  emptyContainer: {
+    padding: 32,
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 15,
+    color: TEXT_SECONDARY,
+    fontFamily: "CrimsonText_600SemiBold",
+  },
+});

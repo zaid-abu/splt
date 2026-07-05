@@ -1,20 +1,35 @@
 import React from "react";
-import { View, ScrollView, TextInput } from "react-native";
-import {
-  Typography,
-  PressableFeedback,
-  Tabs,
-  Spinner,
-  Alert,
-  Checkbox,
-  Input,
-} from "heroui-native";
+import { View, ScrollView, TextInput, Pressable } from "react-native";
+import { Typography, Checkbox } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import type { User, Group, SplitMethod } from "@/types";
+
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const TEXT_DANGER = "#000000";
+const TEXT_SUCCESS = "#4CAF82";
+const SEPARATOR = "#E8E4DF";
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <Typography
+      style={{
+        fontSize: 11,
+        letterSpacing: 1.4,
+        color: TEXT_SECONDARY,
+        fontFamily: "CrimsonText_700Bold",
+        textTransform: "uppercase",
+        marginBottom: 16,
+      }}
+    >
+      {children}
+    </Typography>
+  );
+}
 
 interface SelectionTabsProps {
   selectionTab: "friends" | "groups";
@@ -48,38 +63,45 @@ export function ExpenseSelectionTabs({
   groups,
 }: SelectionTabsProps) {
   return (
-    <Animated.View entering={FadeInDown.duration(300)} className="mb-6">
-      <Typography
-        type="body-xs"
-        className="text-muted-foreground font-bold tracking-widest mb-3 ml-8 uppercase"
-      >
-        WHO IS THIS WITH?
-      </Typography>
+    <Animated.View entering={FadeInDown.duration(300)} style={{ marginBottom: 32 }}>
+      <View style={{ paddingHorizontal: 24 }}>
+        <SectionLabel>Who is this with?</SectionLabel>
+      </View>
 
-      <View className="px-6 mb-4">
-        <View className="flex-row items-center bg-white rounded-[16px] border border-border/50 h-[48px] px-4">
-          <icons.Search size={20} color="#8A8798" />
+      <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+            paddingBottom: 12,
+          }}
+        >
+          <icons.Search size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search friends or groups..."
-            placeholderTextColor="#8A8798"
-            className="flex-1 ml-2 font-medium text-foreground text-[16px]"
+            placeholderTextColor={TEXT_SECONDARY}
+            style={{
+              flex: 1,
+              marginLeft: 16,
+              fontFamily: "CrimsonText_600SemiBold",
+              color: TEXT_PRIMARY,
+              fontSize: 18,
+            }}
           />
           {searchQuery.length > 0 && (
-            <PressableFeedback
-              accessibilityRole="button"
-              onPress={() => setSearchQuery("")}
-              hitSlop={8}
-            >
-              <icons.XCircle size={18} color="#8A8798" />
-            </PressableFeedback>
+            <Pressable accessibilityRole="button" onPress={() => setSearchQuery("")} hitSlop={8}>
+              <icons.XCircle size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+            </Pressable>
           )}
         </View>
       </View>
 
       {selectedFriends.length > 0 && (
-        <View className="px-6 mb-4">
+        <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -88,20 +110,32 @@ export function ExpenseSelectionTabs({
             {selectedFriends.map((f) => (
               <View
                 key={f.id}
-                className="flex-row items-center bg-primary/10 pl-1.5 pr-3 py-1.5 rounded-full border border-primary/20 gap-2"
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  backgroundColor: "transparent",
+                  borderWidth: 1,
+                  borderColor: SEPARATOR,
+                  paddingLeft: 4,
+                  paddingRight: 12,
+                  paddingVertical: 4,
+                  borderRadius: 0,
+                  gap: 8,
+                }}
               >
                 <AppUserAvatar user={f} size="sm" />
-                <Typography type="body-sm" className="font-bold text-primary">
+                <Typography
+                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                >
                   {f.name.split(" ")[0]}
                 </Typography>
-                <PressableFeedback
+                <Pressable
                   accessibilityRole="button"
                   onPress={() => setSelectedFriendIds((prev) => prev.filter((id) => id !== f.id))}
+                  style={{ padding: 4, marginLeft: 4 }}
                 >
-                  <View className="bg-white/50 rounded-full p-1 ml-1">
-                    <icons.X size={12} className="text-primary" strokeWidth={3} />
-                  </View>
-                </PressableFeedback>
+                  <icons.X size={14} color={TEXT_PRIMARY} strokeWidth={3} />
+                </Pressable>
               </View>
             ))}
           </ScrollView>
@@ -109,135 +143,221 @@ export function ExpenseSelectionTabs({
       )}
 
       {/* ── Tabs ────────────────────────── */}
-      <Tabs
-        value={selectionTab}
-        onValueChange={setSelectionTab as any}
-        variant="primary"
-        className="px-6 gap-4"
-      >
-        <Tabs.List className="w-full bg-white rounded-[16px] p-1 border border-border">
-          <Tabs.Indicator className="bg-primary rounded-[12px]" />
-          <Tabs.Trigger value="friends" className="flex-1 h-[40px]">
-            {({ isSelected }) => (
-              <Tabs.Label
-                className={`font-bold text-sm ${isSelected ? "text-white" : "text-foreground"}`}
+      <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            backgroundColor: "transparent",
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+          }}
+        >
+          {(["friends", "groups"] as const).map((tab) => {
+            const isSelected = selectionTab === tab;
+            return (
+              <Pressable
+                key={tab}
+                accessibilityRole="button"
+                onPress={() => setSelectionTab(tab)}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 12,
+                  alignItems: "center",
+                  borderBottomWidth: 2,
+                  borderBottomColor: isSelected ? "#8C7A6B" : "transparent",
+                  opacity: pressed ? 0.5 : 1,
+                })}
               >
-                Friends
-              </Tabs.Label>
-            )}
-          </Tabs.Trigger>
-          <Tabs.Trigger value="groups" className="flex-1 h-[40px]">
-            {({ isSelected }) => (
-              <Tabs.Label
-                className={`font-bold text-sm ${isSelected ? "text-white" : "text-foreground"}`}
-              >
-                Groups
-              </Tabs.Label>
-            )}
-          </Tabs.Trigger>
-        </Tabs.List>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    fontFamily: "CrimsonText_700Bold",
+                    color: isSelected ? TEXT_PRIMARY : TEXT_SECONDARY,
+                    textTransform: "capitalize",
+                  }}
+                >
+                  {tab}
+                </Typography>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
 
-        <Tabs.Content value="friends">
-          <View className="rounded-[24px]">
-            <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-              {filteredFriends.length > 0 ? (
-                filteredFriends.map((f, idx) => {
-                  const isSelected = selectedFriendIds.includes(f.id);
-                  return (
-                    <PressableFeedback
-                      accessibilityRole="button"
-                      key={f.id}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        setSelectedGroupId("");
-                        setSelectedFriendIds((prev) =>
-                          prev.includes(f.id) ? prev.filter((id) => id !== f.id) : [...prev, f.id]
-                        );
+      <View style={{ paddingHorizontal: 24 }}>
+        <View>
+          {selectionTab === "friends" &&
+            (filteredFriends.length > 0 ? (
+              filteredFriends.map((f, idx) => {
+                const isSelected = selectedFriendIds.includes(f.id);
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    key={f.id}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSelectedGroupId("");
+                      setSelectedFriendIds((prev) =>
+                        prev.includes(f.id) ? prev.filter((id) => id !== f.id) : [...prev, f.id]
+                      );
+                    }}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 16,
+                      borderBottomWidth: idx < filteredFriends.length - 1 ? 1 : 0,
+                      borderBottomColor: SEPARATOR,
+                      opacity: pressed ? 0.5 : 1,
+                    })}
+                  >
+                    <AppUserAvatar user={f} size="md" />
+                    <Typography
+                      style={{
+                        flex: 1,
+                        fontSize: 16,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "CrimsonText_700Bold",
+                        marginLeft: 16,
                       }}
                     >
-                      <View
-                        className={`flex-row items-center p-4 ${idx < filteredFriends.length - 1 ? "border-b border-border/50" : ""}`}
-                      >
-                        <AppUserAvatar user={f} size="md" />
-                        <Typography type="body" className="flex-1 font-bold text-foreground ml-4">
-                          {f.name}
-                        </Typography>
-                        <View
-                          className={`w-6 h-6 rounded-full border items-center justify-center ${isSelected ? "bg-primary border-primary" : "border-muted"}`}
-                        >
-                          {isSelected && <icons.Check size={14} color="white" strokeWidth={3} />}
-                        </View>
-                      </View>
-                    </PressableFeedback>
-                  );
-                })
-              ) : (
-                <View className="p-8 items-center justify-center">
-                  <Typography type="body" className="text-muted-foreground text-center">
-                    No friends found.
-                  </Typography>
-                </View>
-              )}
-            </View>
-          </View>
-        </Tabs.Content>
-
-        <Tabs.Content value="groups">
-          <View className="rounded-[24px]">
-            <View className="bg-white rounded-[24px] overflow-hidden border border-border">
-              {filteredGroups.length > 0 ? (
-                filteredGroups.map((g, idx) => {
-                  const GroupIcon = (icons as any)[g.icon] || icons.Users;
-                  const isSelected = selectedGroupId === g.id;
-                  return (
-                    <PressableFeedback
-                      accessibilityRole="button"
-                      key={g.id}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        setSelectedFriendIds([]);
-                        setSelectedGroupId((prev) => (prev === g.id ? "" : g.id));
+                      {f.name}
+                    </Typography>
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 12,
+                        borderWidth: isSelected ? 0 : 2,
+                        borderColor: SEPARATOR,
+                        backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      <View
-                        className={`flex-row items-center p-4 ${idx < filteredGroups.length - 1 ? "border-b border-border/50" : ""}`}
-                      >
-                        <View className="w-12 h-12 rounded-[16px] bg-primary/10 items-center justify-center">
-                          <GroupIcon size={24} className="text-primary" />
-                        </View>
-                        <Typography type="body" className="flex-1 font-bold text-foreground ml-4">
-                          {g.name}
-                        </Typography>
-                        <View
-                          className={`w-6 h-6 rounded-full border items-center justify-center ${isSelected ? "bg-primary border-primary" : "border-muted"}`}
-                        >
-                          {isSelected && <icons.Check size={14} color="white" strokeWidth={3} />}
-                        </View>
-                      </View>
-                    </PressableFeedback>
-                  );
-                })
-              ) : (
-                <View className="p-8 items-center justify-center">
-                  <Typography type="body" className="text-muted-foreground text-center">
-                    No groups found.
-                  </Typography>
-                </View>
-              )}
-            </View>
-          </View>
-        </Tabs.Content>
-      </Tabs>
+                      {isSelected && <icons.Check size={14} color="#FFFFFF" strokeWidth={3} />}
+                    </View>
+                  </Pressable>
+                );
+              })
+            ) : (
+              <View style={{ padding: 32, alignItems: "center" }}>
+                <Typography
+                  style={{ color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
+                >
+                  No friends found.
+                </Typography>
+              </View>
+            ))}
+
+          {selectionTab === "groups" &&
+            (filteredGroups.length > 0 ? (
+              filteredGroups.map((g, idx) => {
+                const GroupIcon = (icons as any)[g.icon] || icons.Users;
+                const isSelected = selectedGroupId === g.id;
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    key={g.id}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      setSelectedFriendIds([]);
+                      setSelectedGroupId((prev) => (prev === g.id ? "" : g.id));
+                    }}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 16,
+                      borderBottomWidth: idx < filteredGroups.length - 1 ? 1 : 0,
+                      borderBottomColor: SEPARATOR,
+                      opacity: pressed ? 0.5 : 1,
+                    })}
+                  >
+                    <View
+                      style={{
+                        width: 48,
+                        height: 48,
+                        borderRadius: 0,
+                        backgroundColor: "transparent",
+                        borderWidth: 1,
+                        borderColor: SEPARATOR,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <GroupIcon size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                    </View>
+                    <Typography
+                      style={{
+                        flex: 1,
+                        fontSize: 16,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "CrimsonText_700Bold",
+                        marginLeft: 16,
+                      }}
+                    >
+                      {g.name}
+                    </Typography>
+                    <View
+                      style={{
+                        width: 24,
+                        height: 24,
+                        borderRadius: 12,
+                        borderWidth: isSelected ? 0 : 2,
+                        borderColor: SEPARATOR,
+                        backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {isSelected && <icons.Check size={14} color="#FFFFFF" strokeWidth={3} />}
+                    </View>
+                  </Pressable>
+                );
+              })
+            ) : (
+              <View style={{ padding: 32, alignItems: "center" }}>
+                <Typography
+                  style={{ color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
+                >
+                  No groups found.
+                </Typography>
+              </View>
+            ))}
+        </View>
+      </View>
 
       {groups.length === 0 && uniqueFriends.length === 0 && (
-        <View className="px-6 mt-4">
-          <Alert status="default" className="rounded-[20px]">
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>No groups or friends yet</Alert.Title>
-              <Alert.Description>Create a group first to add expenses.</Alert.Description>
-            </Alert.Content>
-          </Alert>
+        <View style={{ paddingHorizontal: 24, marginTop: 32 }}>
+          <View
+            style={{
+              padding: 24,
+              alignItems: "center",
+              borderTopWidth: 1,
+              borderBottomWidth: 1,
+              borderColor: SEPARATOR,
+            }}
+          >
+            <Typography
+              style={{
+                fontSize: 16,
+                color: TEXT_PRIMARY,
+                fontFamily: "CrimsonText_700Bold",
+                marginBottom: 8,
+              }}
+            >
+              No groups or friends yet
+            </Typography>
+            <Typography
+              style={{
+                fontSize: 14,
+                color: TEXT_SECONDARY,
+                fontFamily: "CrimsonText_600SemiBold",
+                textAlign: "center",
+              }}
+            >
+              Create a group first to add expenses.
+            </Typography>
+          </View>
         </View>
       )}
     </Animated.View>
@@ -284,91 +404,155 @@ export function ExpenseFormParticipants({
   currentUserId,
 }: ExpenseParticipantsProps) {
   return (
-    <View className="px-6 mb-6">
-      <View className="flex-row justify-between items-end mb-3 ml-2 mr-2">
-        <Typography
-          type="body-xs"
-          className="text-muted-foreground font-bold tracking-widest uppercase"
-        >
-          PARTICIPANTS
-        </Typography>
+    <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: 8,
+        }}
+      >
+        <SectionLabel>Participants</SectionLabel>
+
         {splitMethod === "custom" && parsedAmount > 0 && (
           <Typography
-            type="body-xs"
-            className={`font-bold ${remainingCustom === 0 ? "text-success" : "text-danger"}`}
+            style={{
+              fontSize: 12,
+              fontFamily: "CrimsonText_700Bold",
+              color: remainingCustom === 0 ? TEXT_SUCCESS : TEXT_DANGER,
+            }}
           >
             Remaining: {formatAmount(remainingCustom, expenseCurrency)}
           </Typography>
         )}
         {splitMethod === "percentage" && parsedAmount > 0 && (
           <Typography
-            type="body-xs"
-            className={`font-bold ${remainingPercent === 0 ? "text-success" : "text-danger"}`}
+            style={{
+              fontSize: 12,
+              fontFamily: "CrimsonText_700Bold",
+              color: remainingPercent === 0 ? TEXT_SUCCESS : TEXT_DANGER,
+            }}
           >
             Remaining: {remainingPercent.toFixed(1)}%
           </Typography>
         )}
       </View>
-      <View className="bg-white rounded-[24px] overflow-hidden border border-border">
+
+      <View>
         {participants.map((u, idx) => {
           const isIncluded = included[u.id] ?? true;
           return (
-            <View key={u.id}>
-              <View
-                className={`flex-row items-center gap-4 p-4 ${idx < participants.length - 1 ? "border-b border-border/50" : ""}`}
+            <View
+              key={u.id}
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingVertical: 16,
+                borderBottomWidth: idx < participants.length - 1 ? 1 : 0,
+                borderBottomColor: SEPARATOR,
+                opacity: isIncluded ? 1 : 0.5,
+              }}
+            >
+              <Checkbox
+                isSelected={isIncluded}
+                onSelectedChange={(v) => setIncluded((prev) => ({ ...prev, [u.id]: v }))}
+                style={{ marginRight: 16 }}
               >
-                <Checkbox
-                  isSelected={isIncluded}
-                  onSelectedChange={(v) => setIncluded((prev) => ({ ...prev, [u.id]: v }))}
+                <Checkbox.Indicator />
+              </Checkbox>
+
+              <AppUserAvatar user={u} size="md" />
+
+              <Typography
+                style={{
+                  flex: 1,
+                  marginLeft: 16,
+                  fontSize: 16,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "CrimsonText_700Bold",
+                }}
+              >
+                {u.id === currentUserId ? "You" : u.name}
+              </Typography>
+
+              {splitMethod === "equal" && isIncluded && parsedAmount > 0 && (
+                <View
+                  style={{
+                    backgroundColor: "transparent",
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
+                    paddingHorizontal: 12,
+                    paddingVertical: 6,
+                    borderRadius: 0,
+                  }}
                 >
-                  <Checkbox.Indicator />
-                </Checkbox>
+                  <Typography
+                    style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                  >
+                    {formatAmount(equalShare, expenseCurrency)}
+                  </Typography>
+                </View>
+              )}
 
-                <AppUserAvatar user={u} size="sm" />
+              {splitMethod === "custom" && isIncluded && (
+                <View style={{ width: 100 }}>
+                  <TextInput
+                    placeholder="0.00"
+                    placeholderTextColor={TEXT_SECONDARY}
+                    value={customAmounts[u.id] ?? ""}
+                    onChangeText={(v) => setCustomAmounts((prev) => ({ ...prev, [u.id]: v }))}
+                    keyboardType="decimal-pad"
+                    style={{
+                      backgroundColor: "transparent",
+                      height: 48,
+                      borderRadius: 12,
+                      paddingHorizontal: 12,
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
+                      fontSize: 18,
+                      color: TEXT_PRIMARY,
+                      fontFamily: "CrimsonText_700Bold",
+                      textAlign: "right",
+                    }}
+                  />
+                </View>
+              )}
 
-                <Typography type="body" className="flex-1 font-bold text-foreground">
-                  {u.id === currentUserId ? "You" : u.name}
-                </Typography>
-
-                {splitMethod === "equal" && isIncluded && parsedAmount > 0 && (
-                  <View className="bg-success/10 px-3 py-1.5 rounded-full border border-success/20">
-                    <Typography type="body-sm" className="font-bold text-success">
-                      {formatAmount(equalShare, expenseCurrency)}
-                    </Typography>
-                  </View>
-                )}
-
-                {splitMethod === "custom" && isIncluded && (
-                  <View className="w-[100px]">
-                    <Input
-                      placeholder="0.00"
-                      value={customAmounts[u.id] ?? ""}
-                      onChangeText={(v) => setCustomAmounts((prev) => ({ ...prev, [u.id]: v }))}
+              {splitMethod === "percentage" && isIncluded && (
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <View style={{ width: 80 }}>
+                    <TextInput
+                      placeholder="0"
+                      placeholderTextColor={TEXT_SECONDARY}
+                      value={customPercentages[u.id] ?? ""}
+                      onChangeText={(v) => setCustomPercentages((prev) => ({ ...prev, [u.id]: v }))}
                       keyboardType="decimal-pad"
-                      className="bg-background h-[44px] rounded-[14px] px-3 border border-border font-bold text-[16px] text-right"
+                      style={{
+                        backgroundColor: "transparent",
+                        height: 48,
+                        borderRadius: 12,
+                        paddingHorizontal: 12,
+                        borderWidth: 1,
+                        borderColor: SEPARATOR,
+                        fontSize: 18,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "CrimsonText_700Bold",
+                        textAlign: "right",
+                      }}
                     />
                   </View>
-                )}
-
-                {splitMethod === "percentage" && isIncluded && (
-                  <View className="flex-row items-center gap-2">
-                    <View className="w-[80px]">
-                      <Input
-                        placeholder="0"
-                        value={customPercentages[u.id] ?? ""}
-                        onChangeText={(v) =>
-                          setCustomPercentages((prev) => ({ ...prev, [u.id]: v }))
-                        }
-                        keyboardType="decimal-pad"
-                        className="bg-background h-[44px] rounded-[14px] px-3 border border-border font-bold text-[16px] text-right"
-                      />
-                    </View>
-                    <Typography type="body-sm" className="font-bold text-muted-foreground">
-                      %
-                    </Typography>
-                  </View>
-                )}
-              </View>
+                  <Typography
+                    style={{
+                      fontSize: 16,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "CrimsonText_700Bold",
+                    }}
+                  >
+                    %
+                  </Typography>
+                </View>
+              )}
             </View>
           );
         })}

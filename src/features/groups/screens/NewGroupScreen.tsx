@@ -1,66 +1,29 @@
-/**
- * New Group Screen
- *
- * HeroUI components used:
- * - Button
- * - Card, Card.Body, Card.Title, Card.Description
- * - TextField, TextField.Label, TextField.Input, TextField.FieldError
- * - TextArea, TextArea.Label, TextArea.Input
- * - Avatar, Avatar.Fallback
- * - Chip (emoji picker)
- * - ScrollShadow
- * - Typography
- * - Alert
- * - Separator
- */
-import {
-  Alert,
-  Button,
-  Typography,
-  PressableFeedback,
-  Spinner,
-  TextField,
-  Label,
-  Input,
-  useToast,
-  Chip,
-} from "heroui-native";
-import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { View, Keyboard, Pressable } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useRouter } from "expo-router";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  BottomSheetScrollView,
+  BottomSheetTextInput,
+  BottomSheetModalProvider,
+  BottomSheetModal,
+} from "@gorhom/bottom-sheet";
+import { ScrollView } from "react-native-gesture-handler";
+import Animated, { LinearTransition, FadeIn, FadeOut } from "react-native-reanimated";
+import { Button, Typography, Spinner } from "heroui-native";
 import * as Haptics from "expo-haptics";
-import {
-  useGroups,
-  useCreateGroup,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
-} from "@/features/groups/queries/useGroups";
-import {
-  useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
-  useDeleteExpense,
-} from "@/features/expenses/queries/useExpenses";
-import {
-  useUserActivities,
-  useLogActivity,
-  useDeleteActivity,
-} from "@/features/activity/queries/useActivities";
-import {
-  useUserSettlements,
-  useAddSettlement,
-} from "@/features/settlements/queries/useSettlements";
-import * as balancesUtil from "@/features/settlements/utils/balances";
-
-import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import * as icons from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useCreateGroup } from "@/features/groups/queries/useGroups";
+import { useFriends, useAddFriend } from "@/features/friends/queries/useFriends";
+import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useAuth } from "@/context/AppContext";
-import { useUIStore } from "@/store/useUIStore";
-import type { Currency } from "@/types";
+import type { Currency, User } from "@/types";
+import { useAppToast } from "@/hooks/useAppToast";
+import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 
 const GROUP_ICONS = [
   "Home",
@@ -80,14 +43,23 @@ const GROUP_ICONS = [
   "Target",
 ];
 
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const SEPARATOR = "#E8E4DF";
+
 export default function NewGroupScreen(): JSX.Element {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const { mutateAsync: createGroup, isPending: isCreatingGroup } = useCreateGroup();
-  const { toast } = useToast();
+  const { mutateAsync: createGroup } = useCreateGroup();
+  const { data: friends = [] } = useFriends(currentUser?.id);
+  const { mutateAsync: addFriend } = useAddFriend();
+  const { toast } = useAppToast();
+
+  const bottomSheetRef = useRef<BottomSheet>(null);
 
   const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
   const [icon, setIcon] = useState("Home");
   const [currency, setCurrency] = useState<Currency>({
     code: "USD",
@@ -95,21 +67,38 @@ export default function NewGroupScreen(): JSX.Element {
     symbol: "$",
   });
   const [loading, setLoading] = useState(false);
-  const [memberEmails, setMemberEmails] = useState<string[]>([]);
-  const [emailInput, setEmailInput] = useState("");
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
-  const handleAddEmail = () => {
-    const trimmed = emailInput.trim().toLowerCase();
-    if (trimmed && trimmed.includes("@") && !memberEmails.includes(trimmed)) {
-      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-      setMemberEmails([...memberEmails, trimmed]);
-      setEmailInput("");
-    }
+  const snapPoints = useMemo(() => ["85%"], []);
+
+  const searchSheetRef = useRef<BottomSheetModal>(null);
+
+  const handleDismiss = useCallback(() => {
+    router.back();
+  }, [router]);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop {...props} appearsOnIndex={0} disappearsOnIndex={-1} opacity={0.4} />
+    ),
+    []
+  );
+
+  const openSearchSheet = () => {
+    Keyboard.dismiss();
+    searchSheetRef.current?.present();
   };
 
-  const handleRemoveEmail = (emailToRemove: string) => {
+  const handleAddUser = (user: User) => {
+    if (!selectedUsers.find((u) => u.id === user.id)) {
+      setSelectedUsers([...selectedUsers, user]);
+    }
+    searchSheetRef.current?.dismiss();
+  };
+
+  const handleRemoveUser = (userId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setMemberEmails(memberEmails.filter((email) => email !== emailToRemove));
+    setSelectedUsers(selectedUsers.filter((u) => u.id !== userId));
   };
 
   async function handleCreate(): Promise<void> {
@@ -125,16 +114,42 @@ export default function NewGroupScreen(): JSX.Element {
 
     setLoading(true);
     try {
+      const friendIds = new Set(friends.map((f) => f.id));
+      const usersToAddNow = selectedUsers.filter((u) => friendIds.has(u.id));
+      const strangersToInvite = selectedUsers.filter((u) => !friendIds.has(u.id));
+
       const group = await createGroup({
         name: name.trim(),
-        description: description.trim() || undefined,
+        description: undefined,
         icon,
         currency: currency.code,
         createdBy: currentUser.id,
-        members: [{ userId: currentUser.id, user: currentUser, balance: 0 }],
+        members: [
+          { userId: currentUser.id, user: currentUser, balance: 0 },
+          ...usersToAddNow.map((u) => ({ userId: u.id, user: u, balance: 0 })),
+        ],
       });
+
+      for (const stranger of strangersToInvite) {
+        await addFriend({ userId: currentUser.id, friendId: stranger.id, groupId: group.id });
+      }
+
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace(`/group/${group.id}`);
+
+      if (strangersToInvite.length > 0) {
+        toast.show({
+          label: "Requests Sent",
+          description:
+            "Non-friends will be added to the group once they accept your friend request.",
+          variant: "success",
+          placement: "top",
+        });
+      }
+
+      bottomSheetRef.current?.close();
+      setTimeout(() => {
+        router.replace(`/group/${group.id}`);
+      }, 300);
     } catch {
       toast.show({
         label: "Error",
@@ -146,216 +161,360 @@ export default function NewGroupScreen(): JSX.Element {
     }
   }
 
+  const IconComponent = (icons as any)[icon] || icons.HelpCircle;
+
   return (
-    <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top", "bottom"]}>
-      <StatusBar style="dark" />
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <ScrollView
-          className="flex-1 bg-background"
-          contentContainerStyle={{ paddingBottom: 48 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
+    <BottomSheetModalProvider>
+      <View style={{ flex: 1 }}>
+        <StatusBar style="light" />
+        <BottomSheet
+          ref={bottomSheetRef}
+          snapPoints={snapPoints}
+          enableDynamicSizing={false}
+          index={0}
+          enablePanDownToClose
+          onClose={handleDismiss}
+          backdropComponent={renderBackdrop}
+          handleIndicatorStyle={{ backgroundColor: "#D6D2CD", width: 40 }}
+          backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
         >
-          {/* ── Header ────────────────────────────────── */}
-          <View className="flex-row items-center justify-between px-6 pt-4 mb-8">
-            <Typography type="h3" className="font-black tracking-tight text-[28px]">
-              New Group
-            </Typography>
-            <Button variant="ghost" size="sm" onPress={() => router.back()}>
-              ✕ Cancel
-            </Button>
-          </View>
-
-          {/* ── Icon picker ──────────────────────────── */}
-          <View className="mb-8">
-            <Typography
-              type="body-xs"
-              className="text-muted-foreground font-bold tracking-widest mb-3 ml-8"
+          <View style={{ flex: 1 }}>
+            {/* ── Top Bar ────────────────────────────────────────────── */}
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                paddingHorizontal: 24,
+                paddingBottom: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: SEPARATOR,
+              }}
             >
-              CHOOSE ICON
-            </Typography>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}
-            >
-              {GROUP_ICONS.map((i) => {
-                const IconComponent = (icons as any)[i] || icons.HelpCircle;
-                const isSelected = icon === i;
-                return (
-                  <PressableFeedback
-                    accessibilityRole="button"
-                    key={i}
-                    onPress={() => {
-                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                      setIcon(i);
-                    }}
-                  >
-                    <View
-                      className={`w-14 h-14 rounded-full items-center justify-center border-2 ${isSelected ? "bg-primary border-primary" : "bg-white border-transparent"}`}
-                    >
-                      <IconComponent
-                        size={24}
-                        color={isSelected ? "white" : "#8A8798"}
-                        strokeWidth={isSelected ? 2.5 : 2}
-                      />
-                    </View>
-                  </PressableFeedback>
-                );
-              })}
-            </ScrollView>
-          </View>
-
-          {/* ── Preview ───────────────────────────────── */}
-          <View className="px-6 mb-8">
-            <View className="items-center bg-white rounded-[32px] p-6 border border-border">
-              <View className="w-20 h-20 rounded-full bg-primary/10 items-center justify-center mb-4">
-                {(() => {
-                  const PreviewIcon = (icons as any)[icon] || icons.HelpCircle;
-                  return <PreviewIcon size={36} className="text-primary" strokeWidth={2.5} />;
-                })()}
-              </View>
-              <Typography type="h3" className="font-black text-[24px] mb-1 text-center">
-                {name.trim() || "Group name"}
+              <View style={{ flex: 1 }} />
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "CrimsonText_700Bold",
+                }}
+              >
+                Create new group
               </Typography>
-              {description.trim() ? (
-                <Typography
-                  type="body"
-                  className="text-muted-foreground font-medium text-center mb-4"
+              <View style={{ flex: 1, alignItems: "flex-end" }}>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => bottomSheetRef.current?.close()}
+                  hitSlop={12}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
                 >
-                  {description}
-                </Typography>
-              ) : (
-                <View className="h-4" />
-              )}
-              <View className="bg-primary/10 px-3 py-1.5 rounded-full">
-                <Typography type="body-sm" className="font-bold text-primary">
-                  {currency.symbol} {currency.code}
-                </Typography>
+                  <icons.X size={24} color={TEXT_SECONDARY} />
+                </Pressable>
               </View>
             </View>
-          </View>
 
-          {/* ── Form fields ───────────────────────────── */}
-          <View className="px-6 mb-8 gap-5">
-            <TextField>
-              <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
-                GROUP NAME
-              </Label>
-              <Input
-                value={name}
-                onChangeText={(t) => setName(t)}
-                placeholder="e.g. Weekend Trip, Housemates…"
-                autoCapitalize="words"
-                className="bg-white h-[56px] rounded-[20px] px-4 border border-border text-[16px]"
-              />
-            </TextField>
-
-            <TextField>
-              <Label className="ml-1 tracking-widest uppercase text-muted-foreground text-[10px]">
-                DESCRIPTION (OPTIONAL)
-              </Label>
-              <Input
-                value={description}
-                onChangeText={setDescription}
-                placeholder="What is this group for?"
-                multiline
-                textAlignVertical="top"
-                className="bg-white rounded-[20px] px-4 py-3 border border-border min-h-[80px] text-[16px]"
-              />
-            </TextField>
-          </View>
-
-          {/* ── Currency ──────────────────────────────── */}
-          <View className="px-6 mb-8">
-            <Typography
-              type="body-xs"
-              className="text-muted-foreground font-bold tracking-widest mb-3 ml-2"
+            <BottomSheetScrollView
+              contentContainerStyle={{ paddingVertical: 24 }}
+              keyboardShouldPersistTaps="handled"
             >
-              CURRENCY
-            </Typography>
-            <View className="bg-white rounded-[24px] p-5 border border-border">
-              <Typography type="body-sm" className="text-muted-foreground font-medium mb-4">
-                All expenses will use this currency
-              </Typography>
-              <CurrencySelector value={currency.code} onChange={setCurrency} />
-            </View>
-          </View>
-
-          {/* ── Members ──────────────────────────────── */}
-          <View className="px-6 mb-6">
-            <Typography
-              type="body-xs"
-              className="text-muted-foreground font-bold tracking-widest mb-3 ml-2 uppercase"
-            >
-              MEMBERS
-            </Typography>
-            <View className="bg-white rounded-[24px] p-5 border border-border">
-              <Typography type="body-sm" className="text-muted-foreground font-medium mb-4">
-                Add friends by their email address
-              </Typography>
-
-              <View className="flex-row gap-2 mb-4">
-                <View className="flex-1">
-                  <Input
-                    value={emailInput}
-                    onChangeText={setEmailInput}
-                    placeholder="friend@example.com"
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                    onSubmitEditing={handleAddEmail}
-                    className="bg-[#F8F8F9] h-[48px] rounded-[16px] px-4 border border-border text-[15px]"
+              {/* ── Title Input ────────────────────────────────────────── */}
+              <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
+                <Typography
+                  style={{
+                    fontSize: 11,
+                    color: TEXT_SECONDARY,
+                    marginBottom: 8,
+                    letterSpacing: 1.4,
+                    fontFamily: "CrimsonText_700Bold",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  TITLE
+                </Typography>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    backgroundColor: "transparent",
+                    paddingVertical: 12,
+                    borderBottomWidth: 1,
+                    borderBottomColor: SEPARATOR,
+                  }}
+                >
+                  <IconComponent size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                  <View
+                    style={{
+                      width: 1,
+                      height: 24,
+                      backgroundColor: SEPARATOR,
+                      marginHorizontal: 16,
+                    }}
+                  />
+                  <BottomSheetTextInput
+                    style={{
+                      flex: 1,
+                      fontSize: 20,
+                      color: TEXT_PRIMARY,
+                      fontFamily: "CrimsonText_700Bold",
+                    }}
+                    placeholder="e.g. Day trip to Warsaw"
+                    placeholderTextColor={TEXT_SECONDARY}
+                    value={name}
+                    onChangeText={setName}
+                    autoCapitalize="words"
                   />
                 </View>
-                <Button
-                  variant="secondary"
-                  onPress={handleAddEmail}
-                  className="h-[48px] rounded-[16px] px-4"
-                  isDisabled={!emailInput.includes("@")}
-                >
-                  <Button.Label>Add</Button.Label>
-                </Button>
               </View>
 
-              <View className="flex-row flex-wrap gap-2">
-                {memberEmails.map((email) => (
-                  <Chip
-                    key={email}
-                    className="bg-primary/10 rounded-full pl-3 pr-2 py-1 flex-row items-center gap-1"
+              {/* ── Icon Picker (Horizontal List) ──────────────────────── */}
+              <View style={{ marginBottom: 32 }}>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 24, gap: 12 }}
+                >
+                  {GROUP_ICONS.map((i) => {
+                    const Ico = (icons as any)[i] || icons.HelpCircle;
+                    const isSelected = icon === i;
+
+                    // Generate color for picker
+                    const GROUP_BG_PALETTE = [
+                      "#FCE7D0",
+                      "#E8E4F9",
+                      "#D5EFE2",
+                      "#D9EEF8",
+                      "#F9E3E3",
+                      "#E3EFF9",
+                      "#F5F0C0",
+                      "#E8D9F9",
+                    ];
+                    const colorIdx =
+                      i.split("").reduce((a, c) => a + c.charCodeAt(0), 0) %
+                      GROUP_BG_PALETTE.length;
+                    const iconBg = GROUP_BG_PALETTE[colorIdx];
+
+                    return (
+                      <Pressable
+                        accessibilityRole="button"
+                        key={i}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          setIcon(i);
+                        }}
+                        style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                      >
+                        <View
+                          style={{
+                            width: 56,
+                            height: 56,
+                            borderRadius: 0,
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                            borderWidth: 1,
+                            borderColor: isSelected ? "#8C7A6B" : SEPARATOR,
+                          }}
+                        >
+                          <Ico
+                            size={24}
+                            color={isSelected ? "#FFFFFF" : TEXT_PRIMARY}
+                            strokeWidth={isSelected ? 2 : 1.5}
+                          />
+                        </View>
+                      </Pressable>
+                    );
+                  })}
+                </ScrollView>
+              </View>
+
+              {/* ── Participants ───────────────────────────────────────── */}
+              <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 16,
+                  }}
+                >
+                  <Typography
+                    style={{
+                      fontSize: 11,
+                      color: TEXT_SECONDARY,
+                      letterSpacing: 1.4,
+                      fontFamily: "CrimsonText_700Bold",
+                      textTransform: "uppercase",
+                    }}
                   >
-                    <Typography type="body-sm" className="text-primary font-medium">
-                      {email}
-                    </Typography>
-                    <PressableFeedback
-                      accessibilityRole="button"
-                      onPress={() => handleRemoveEmail(email)}
-                      className="p-1 rounded-full bg-primary/20 ml-1"
+                    PARTICIPANTS
+                  </Typography>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={openSearchSheet}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: 15,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "CrimsonText_700Bold",
+                      }}
                     >
-                      <icons.X size={12} className="text-primary" />
-                    </PressableFeedback>
-                  </Chip>
+                      + Add
+                    </Typography>
+                  </Pressable>
+                </View>
+
+                {/* Current user (You) */}
+                <Animated.View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 16,
+                    borderBottomWidth: 1,
+                    borderBottomColor: SEPARATOR,
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 0,
+                      backgroundColor: SEPARATOR,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginRight: 16,
+                    }}
+                  >
+                    <icons.User size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                  </View>
+                  <Typography
+                    style={{
+                      fontSize: 16,
+                      color: TEXT_PRIMARY,
+                      fontFamily: "CrimsonText_700Bold",
+                    }}
+                  >
+                    You
+                  </Typography>
+                </Animated.View>
+
+                {/* Added members */}
+                {selectedUsers.map((user) => (
+                  <Animated.View
+                    key={user.id}
+                    entering={FadeIn}
+                    exiting={FadeOut}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 16,
+                      borderBottomWidth: 1,
+                      borderBottomColor: SEPARATOR,
+                    }}
+                  >
+                    <View style={{ marginRight: 16 }}>
+                      <AppUserAvatar user={user} size="sm" />
+                    </View>
+                    <Typography
+                      style={{
+                        flex: 1,
+                        fontSize: 16,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "CrimsonText_600SemiBold",
+                      }}
+                    >
+                      {user.name}
+                    </Typography>
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => handleRemoveUser(user.id)}
+                      style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
+                    >
+                      <icons.Trash2 size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+                    </Pressable>
+                  </Animated.View>
                 ))}
               </View>
+
+              {/* ── Currency ───────────────────────────────────────────── */}
+              <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
+                <Typography
+                  style={{
+                    fontSize: 11,
+                    color: TEXT_SECONDARY,
+                    marginBottom: 16,
+                    letterSpacing: 1.4,
+                    fontFamily: "CrimsonText_700Bold",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  CURRENCY
+                </Typography>
+                <View
+                  style={{ borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingBottom: 8 }}
+                >
+                  <CurrencySelector value={currency.code} onChange={setCurrency} />
+                </View>
+              </View>
+            </BottomSheetScrollView>
+
+            {/* ── Footer Button ──────────────────────────────────────── */}
+            <View
+              style={{
+                paddingHorizontal: 24,
+                paddingTop: 16,
+                paddingBottom: Math.max(insets.bottom, 16),
+                backgroundColor: BG,
+              }}
+            >
+              <Pressable
+                accessibilityRole="button"
+                onPress={handleCreate}
+                disabled={loading}
+                style={({ pressed }) => ({
+                  width: "100%",
+                  height: 56,
+                  borderRadius: 0,
+                  backgroundColor: "#8C7A6B",
+                  marginBottom: 12,
+                  justifyContent: "center",
+                  alignItems: "center",
+                  flexDirection: "row",
+                  opacity: pressed || loading ? 0.8 : 1,
+                })}
+              >
+                {loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
+                <Typography
+                  style={{
+                    color: "#FFFFFF",
+                    fontSize: 16,
+                    fontFamily: "CrimsonText_700Bold",
+                  }}
+                >
+                  Create group
+                </Typography>
+              </Pressable>
+              <Typography
+                style={{
+                  fontSize: 13,
+                  color: TEXT_SECONDARY,
+                  textAlign: "center",
+                  fontFamily: "CrimsonText_600SemiBold",
+                }}
+              >
+                All participants will receive an invite
+              </Typography>
             </View>
           </View>
-        </ScrollView>
+        </BottomSheet>
 
-        {/* ── Fixed Submit Button ────────────────────────────────── */}
-        <View className="px-6 py-4 bg-background border-t border-border/50">
-          <Button
-            variant="primary"
-            className="w-full h-[56px] rounded-[20px]"
-            onPress={handleCreate}
-            isDisabled={loading}
-          >
-            {loading && <Spinner color="white" size="sm" className="mr-2" />}
-            <Button.Label className="font-bold">Create Group</Button.Label>
-          </Button>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        <UserSearchBottomSheet
+          ref={searchSheetRef}
+          onSelect={handleAddUser}
+          excludeUserIds={selectedUsers.map((u) => u.id)}
+          title="Add to Group"
+        />
+      </View>
+    </BottomSheetModalProvider>
   );
 }
