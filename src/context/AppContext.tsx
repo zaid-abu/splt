@@ -7,19 +7,13 @@ import type { User } from "@/types";
 import { supabase } from "@/services/supabase/client";
 import { AuthService } from "@/services/api/auth";
 
-// ─── Context shape ────────────────────────────────────────────────────────────
-
 export interface AuthContextValue {
-  currentUser: User;
+  currentUser: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
 }
 
-// ─── Context ──────────────────────────────────────────────────────────────────
-
 const AuthContext = createContext<AuthContextValue | null>(null);
-
-// ─── Provider ─────────────────────────────────────────────────────────────────
 
 export function AuthProvider({ children }: { children: ReactNode }): React.JSX.Element {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -65,25 +59,21 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     };
   }, []);
 
-  // Handle routing based on auth state
   useEffect(() => {
     if (isLoading || !rootNavigationState?.key) return;
 
-    const navigateApp = async () => {
-      const inAuthGroup = segments[0] === "(auth)";
-      const inOnboarding = segments[0] === "onboarding";
+    const inAuthGroup = segments[0] === "(auth)";
+    const inOnboarding = segments[0] === "onboarding";
 
+    const navigateApp = async () => {
       if (!isAuthenticated && !inAuthGroup) {
-        // Redirect to login if not authenticated and not in auth group
         router.replace("/(auth)/welcome");
       } else if (isAuthenticated) {
         const hasOnboarded = await AsyncStorage.getItem("@splt_onboarded");
 
         if (hasOnboarded !== "true" && !inOnboarding) {
-          // If authenticated but not onboarded, always send to onboarding
           router.replace("/onboarding");
         } else if (hasOnboarded === "true" && (inAuthGroup || inOnboarding)) {
-          // If onboarded and currently in auth or onboarding, send to tabs
           router.replace("/(tabs)");
         }
       }
@@ -92,18 +82,10 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     navigateApp();
   }, [isAuthenticated, isLoading, segments, router, rootNavigationState?.key]);
 
-  const fallbackUser: User = {
-    id: "",
-    name: "",
-    email: "",
-    initials: "",
-    defaultCurrency: "USD",
-  };
-
   return (
     <AuthContext.Provider
       value={{
-        currentUser: currentUser ?? fallbackUser,
+        currentUser,
         isAuthenticated,
         isLoading,
       }}
@@ -112,8 +94,6 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
     </AuthContext.Provider>
   );
 }
-
-// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);

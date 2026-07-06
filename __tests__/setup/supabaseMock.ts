@@ -29,6 +29,7 @@ export interface MockChain {
   maybeSingle: jest.Mock;
   returns: jest.Mock;
   ilike: jest.Mock;
+  range: jest.Mock;
 }
 
 export interface MockAuth {
@@ -70,6 +71,7 @@ export function createSupabaseMock(): MockSupabase {
     maybeSingle: jest.fn(),
     returns: jest.fn(),
     ilike: jest.fn(),
+    range: jest.fn(),
   };
 
   const auth: MockAuth = {
@@ -84,7 +86,7 @@ export function createSupabaseMock(): MockSupabase {
 
   // Wire every chainable method to return the chain itself so
   // `.from("x").select("*").eq("id", "1").order(...)` all work.
-  const chainable = chain as Record<string, jest.Mock>;
+  const chainable = chain as unknown as Record<string, jest.Mock>;
   const chainMethods: Array<keyof MockChain> = [
     "from",
     "select",
@@ -99,6 +101,7 @@ export function createSupabaseMock(): MockSupabase {
     "limit",
     "returns",
     "ilike",
+    "range",
   ];
   chainMethods.forEach((method) => {
     chainable[method].mockReturnValue(chain);

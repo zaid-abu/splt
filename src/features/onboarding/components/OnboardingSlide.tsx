@@ -1,64 +1,36 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
-import { Typography } from "heroui-native";
+import { View } from "react-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
 import { OnboardingSlideData } from "../constants/slides";
+import { Text } from "@/components/ui/Text";
 
 interface OnboardingSlideProps {
   item: OnboardingSlideData;
   width: number;
 }
 
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-
 export function OnboardingSlide({ item, width }: OnboardingSlideProps) {
   const Icon = (icons as any)[item.icon];
 
   return (
-    <View style={[styles.container, { width }]}>
-      <Animated.View entering={FadeIn.duration(800)} style={styles.iconContainer}>
-        {Icon && <Icon size={80} color={TEXT_PRIMARY} strokeWidth={1} />}
+    <View style={{ width, flex: 1, paddingHorizontal: 32, justifyContent: "center" }}>
+      <Animated.View entering={FadeIn.duration(800)} className="mb-12 items-start">
+        {Icon && <Icon size={80} color="#FB923C" strokeWidth={1} />}
       </Animated.View>
-      <View style={styles.textContainer}>
+      <View className="pr-4">
         <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-          <Typography style={styles.title}>{item.title}</Typography>
+          <Text variant="h1" color="foreground" className="font-heading text-[56px] leading-[64px] mb-4">
+            {item.title}
+          </Text>
         </Animated.View>
         <Animated.View entering={FadeInDown.delay(400).duration(600)}>
-          <Typography style={styles.description}>{item.description}</Typography>
+          <Text variant="body" color="muted" className="text-lg leading-7">
+            {item.description}
+          </Text>
         </Animated.View>
       </View>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingHorizontal: 32,
-    justifyContent: "center",
-  },
-  iconContainer: {
-    marginBottom: 48,
-    alignItems: "flex-start",
-  },
-  textContainer: {
-    paddingRight: 16,
-  },
-  title: {
-    fontSize: 56,
-    color: TEXT_PRIMARY,
-    fontFamily: "UnicaOne_400Regular",
-    lineHeight: 64,
-    marginBottom: 16,
-  },
-  description: {
-    fontSize: 20,
-    color: TEXT_SECONDARY,
-    fontFamily: "CrimsonText_400Regular",
-    lineHeight: 28,
-  },
-});

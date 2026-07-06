@@ -1,6 +1,7 @@
 import { supabase } from "@/services/supabase/client";
 import type { Group } from "@/types";
 import { mapGroup, toGroupInsert, toGroupUpdate, type GroupRow } from "@/services/api/mappers";
+import { handleSupabaseError } from "@/services/api/errors";
 
 export const groupsApi = {
   async fetchGroups(userId: string): Promise<Group[]> {
@@ -10,7 +11,7 @@ export const groupsApi = {
       .select("group_id")
       .eq("user_id", userId);
 
-    if (membershipError) throw membershipError;
+    if (membershipError) handleSupabaseError(membershipError, "Failed to fetch group memberships");
 
     const groupIds = memberships.map((m) => m.group_id);
     if (groupIds.length === 0) return [];
@@ -23,7 +24,7 @@ export const groupsApi = {
       .order("created_at", { ascending: false })
       .returns<GroupRow[]>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to fetch groups");
     return data?.map(mapGroup) ?? [];
   },
 
@@ -35,7 +36,7 @@ export const groupsApi = {
       .single()
       .returns<GroupRow>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to fetch group");
     return mapGroup(data);
   },
 
@@ -47,7 +48,7 @@ export const groupsApi = {
       .single()
       .returns<GroupRow>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to create group");
 
     const memberIds = groupData.members?.map((member) => member.userId) ?? [];
     if (memberIds.length > 0) {
@@ -66,7 +67,7 @@ export const groupsApi = {
       .maybeSingle()
       .returns<GroupRow>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to update group");
     if (!data)
       throw new Error("You do not have permission to update this group, or it does not exist.");
 
@@ -75,7 +76,7 @@ export const groupsApi = {
 
   async deleteGroup(groupId: string): Promise<void> {
     const { error } = await supabase.from("groups").delete().eq("id", groupId);
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to delete group");
   },
 
   async addMembers(groupId: string, userIds: string[]): Promise<void> {
@@ -87,7 +88,7 @@ export const groupsApi = {
         user_id: id,
         balance: 0,
       });
-      if (error) throw error;
+      if (error) handleSupabaseError(error, "Failed to add member");
     }
   },
 
@@ -98,7 +99,7 @@ export const groupsApi = {
       .eq("group_id", groupId)
       .eq("user_id", userId);
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to remove member");
     if (count === 0) {
       throw new Error("You do not have permission to remove this member.");
     }

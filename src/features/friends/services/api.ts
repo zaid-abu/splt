@@ -1,6 +1,7 @@
 import { supabase } from "@/services/supabase/client";
 import type { Friendship, User } from "@/types";
 import { mapUser } from "@/services/api/mappers";
+import { handleSupabaseError, ServiceError } from "@/services/api/errors";
 
 export const FriendsService = {
   async getFriends(userId: string): Promise<Friendship[]> {
@@ -16,10 +17,9 @@ export const FriendsService = {
       .or(`user_id.eq.${userId},friend_id.eq.${userId}`)
       .eq("status", "accepted");
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to get friends");
 
     return (data || []).map((row: any) => {
-      // Determine which one is the friend vs the current user
       const isUserInitiator = row.user_id === userId;
       const friendData = isUserInitiator ? row.friend : row.user;
 
@@ -47,7 +47,7 @@ export const FriendsService = {
       )
       .or(`user_id.eq.${userId},friend_id.eq.${userId}`);
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to get all friendships");
 
     return (data || []).map((row: any) => {
       const isUserInitiator = row.user_id === userId;
@@ -66,7 +66,6 @@ export const FriendsService = {
   },
 
   async addFriend(userId: string, friendId: string, groupId?: string): Promise<Friendship> {
-    // Check if friendship already exists
     const { data: existing } = await (supabase as any)
       .from("friendships")
       .select("*")
@@ -76,7 +75,7 @@ export const FriendsService = {
 
     if (existing) {
       if (existing.status === "accepted") {
-        throw new Error("You are already friends.");
+        throw new ServiceError("You are already friends.", "ALREADY_FRIENDS");
       }
 
       let metadata = existing.metadata || {};
@@ -99,7 +98,7 @@ export const FriendsService = {
         )
         .single();
 
-      if (error) throw error;
+      if (error) handleSupabaseError(error, "Failed to update friendship");
 
       const isUserInitiator = data.user_id === userId;
       const friendData = isUserInitiator ? data.friend : data.user;
@@ -115,7 +114,6 @@ export const FriendsService = {
       };
     }
 
-    // Insert new friendship
     const metadata = groupId ? { pending_groups: [groupId] } : {};
 
     const { data, error } = await (supabase as any)
@@ -135,7 +133,7 @@ export const FriendsService = {
       )
       .single();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to add friend");
 
     const isUserInitiator = data.user_id === userId;
     const friendData = isUserInitiator ? data.friend : data.user;
@@ -164,10 +162,9 @@ export const FriendsService = {
       .eq("friend_id", userId)
       .eq("status", "pending");
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to get pending requests");
 
     return (data || []).map((row: any) => {
-      // The user who initiated the request is user_id
       const friendData = row.user;
 
       return {
@@ -188,12 +185,12 @@ export const FriendsService = {
       .update({ status: "accepted", updated_at: new Date().toISOString() })
       .eq("id", friendshipId);
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to accept friendship");
   },
 
   async rejectFriendship(friendshipId: string): Promise<void> {
     const { error } = await (supabase as any).from("friendships").delete().eq("id", friendshipId);
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to reject friendship");
   },
 };

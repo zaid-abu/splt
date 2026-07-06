@@ -1,6 +1,7 @@
 import { supabase } from "@/services/supabase/client";
 import type { Settlement } from "@/types";
 import { mapSettlement, toSettlementInsert, type SettlementRow } from "@/services/api/mappers";
+import { handleSupabaseError } from "@/services/api/errors";
 
 const settlementSelect = "*, fromUser:users!from_user_id(*), toUser:users!to_user_id(*)";
 
@@ -13,7 +14,7 @@ export const settlementsApi = {
       .order("date", { ascending: false })
       .returns<SettlementRow[]>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to fetch group settlements");
     return data?.map(mapSettlement) ?? [];
   },
 
@@ -25,7 +26,7 @@ export const settlementsApi = {
       .order("date", { ascending: false })
       .returns<SettlementRow[]>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to fetch user settlements");
     return data?.map(mapSettlement) ?? [];
   },
 
@@ -37,12 +38,12 @@ export const settlementsApi = {
       .single()
       .returns<SettlementRow>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to add settlement");
     return mapSettlement(data);
   },
 
   async deleteSettlement(settlementId: string): Promise<void> {
     const { error } = await supabase.from("settlements").delete().eq("id", settlementId);
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to delete settlement");
   },
 };

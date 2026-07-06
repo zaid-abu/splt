@@ -1,6 +1,5 @@
 import React, { useMemo } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import { View } from "react-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
@@ -9,27 +8,22 @@ import { useDeleteActivity } from "@/features/activity/queries/useActivities";
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { SwipeableRow } from "@/components/layout/SwipeableRow";
-
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
+import { Text } from "@/components/primitives/Text";
+import { Pressable } from "@/components/primitives/Pressable";
 
 interface ActivityItemProps {
   activity: Activity;
   index: number;
+  isFirst?: boolean;
   isLast?: boolean;
 }
 
-export function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
+export function ActivityItem({ activity, index, isFirst, isLast }: ActivityItemProps): React.JSX.Element {
   const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? "";
   const { mutateAsync: deleteActivity } = useDeleteActivity();
   const router = useRouter();
 
-  // Determine financial involvement
   const involvement = useMemo(() => {
     if (activity.type === "group_created") {
       return { type: "neutral", text: "Group created", amount: 0, showAmount: false };
@@ -40,14 +34,13 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
 
     if (activity.type === "expense" && activity.expense) {
       const exp = activity.expense;
-      const mySplit = exp.splits.find((s) => s.userId === currentUser.id);
+      const mySplit = exp.splits.find((s) => s.userId === userId);
 
       if (!mySplit) {
         return { type: "neutral", text: "Not involved", amount: 0, showAmount: false };
       }
 
-      if (exp.paidBy === currentUser.id) {
-        // You paid for it.
+      if (exp.paidBy === userId) {
         const owedToYou = exp.amount - mySplit.amount;
         if (owedToYou > 0) {
           return { type: "positive", text: "You lent", amount: owedToYou, showAmount: true };
@@ -55,47 +48,46 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
           return { type: "neutral", text: "You paid your share", amount: 0, showAmount: false };
         }
       } else {
-        // Someone else paid
         return { type: "negative", text: "You owe", amount: mySplit.amount, showAmount: true };
       }
     }
 
     if (activity.type === "settlement" && activity.settlement) {
       const set = activity.settlement;
-      if (set.fromUserId === currentUser.id) {
+      if (set.fromUserId === userId) {
         return { type: "neutral", text: "You paid", amount: set.amount, showAmount: true };
       }
-      if (set.toUserId === currentUser.id) {
+      if (set.toUserId === userId) {
         return { type: "positive", text: "You received", amount: set.amount, showAmount: true };
       }
       return { type: "neutral", text: "Not involved", amount: 0, showAmount: false };
     }
 
     return { type: "neutral", text: "", amount: 0, showAmount: false };
-  }, [activity, currentUser.id]);
+  }, [activity, userId]);
 
   const subtitle = useMemo(() => {
     const dateStr = activity.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     if (activity.type === "expense" && activity.expense) {
       const paidByName =
-        activity.expense.paidBy === currentUser.id
+        activity.expense.paidBy === userId
           ? "You"
           : activity.expense.paidByUser?.name?.split(" ")[0] || "Someone";
       return `${paidByName} paid • ${dateStr}`;
     }
     if (activity.type === "settlement" && activity.settlement) {
       const fromName =
-        activity.settlement.fromUserId === currentUser.id
+        activity.settlement.fromUserId === userId
           ? "You"
           : activity.settlement.fromUser?.name?.split(" ")[0] || "Someone";
       const toName =
-        activity.settlement.toUserId === currentUser.id
+        activity.settlement.toUserId === userId
           ? "you"
           : activity.settlement.toUser?.name?.split(" ")[0] || "someone";
       return `${fromName} paid ${toName} • ${dateStr}`;
     }
     return dateStr;
-  }, [activity, currentUser.id]);
+  }, [activity, userId]);
 
   const IconComponent = useMemo(() => {
     if (activity.type === "expense") return icons.Receipt;
@@ -104,27 +96,33 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
     return icons.Activity;
   }, [activity.type]);
 
-  const bgColors: Record<string, string> = {
-    positive: "#E6F4EA",
-    negative: "#FCE8E8",
-    neutral: SEPARATOR,
+  const iconBgMap: Record<string, string> = {
+    positive: "bg-success/10",
+    negative: "bg-danger/10",
+    neutral: "bg-surface-2",
   };
 
-  const textColors: Record<string, string> = {
-    positive: TEXT_SUCCESS,
-    negative: TEXT_DANGER,
-    neutral: TEXT_PRIMARY,
+  const iconColorMap: Record<string, string> = {
+    positive: "#22C55E",
+    negative: "#EF4444",
+    neutral: "#FB923C",
   };
 
-  const iconColors: Record<string, string> = {
-    positive: TEXT_SUCCESS,
-    negative: TEXT_DANGER,
-    neutral: TEXT_PRIMARY,
+  const textColorMap: Record<string, "success" | "danger" | "foreground"> = {
+    positive: "success",
+    negative: "danger",
+    neutral: "foreground",
   };
 
+  if (!currentUser) return <></>;
   return (
-    <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
-      <SwipeableRow onDelete={() => deleteActivity(activity.id)}>
+    <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()} className="px-6">
+      <View
+        className={`bg-surface shadow-sm border-x border-border
+          ${isFirst ? "rounded-t-2xl border-t mt-2" : ""}
+          ${isLast ? "rounded-b-2xl border-b mb-6" : ""}
+        `}
+      >
         <Pressable
           onPress={() => {
             if (activity.expense) {
@@ -133,94 +131,36 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
               router.push(`/group/${activity.groupId}`);
             }
           }}
-          accessibilityRole="button"
-          style={({ pressed }) => ({
-            flexDirection: "row",
-            alignItems: "center",
-            paddingVertical: 16,
-            borderBottomWidth: isLast ? 0 : 1,
-            borderBottomColor: SEPARATOR,
-            opacity: pressed ? 0.5 : 1,
-            backgroundColor: "transparent",
-            paddingHorizontal: 24, // Optional if global padding applies, but we usually pad inside
-          })}
+          className={`flex-row items-center border-0 bg-transparent px-4 py-4 active:bg-surface-2 ${isLast ? "" : "border-b border-border"} ${isFirst ? "rounded-t-2xl" : ""} ${isLast ? "rounded-b-2xl" : ""}`}
         >
-          {/* Icon Box */}
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 0,
-              backgroundColor: bgColors[involvement.type],
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 16,
-              flexShrink: 0,
-            }}
-          >
-            <IconComponent size={24} color={iconColors[involvement.type]} strokeWidth={1.5} />
+          <View className={`w-12 h-12 rounded-xl items-center justify-center mr-4 shrink-0 border border-border ${iconBgMap[involvement.type]}`}>
+            <IconComponent size={24} color={iconColorMap[involvement.type]} strokeWidth={1.5} />
+          </View>
+          
+          <View className="flex-1">
+            <Text variant="body" className="font-bold mb-0.5">{activity.description}</Text>
+            <Text variant="caption" color="muted">{subtitle}</Text>
           </View>
 
-          {/* Title & Subtitle */}
-          <View style={{ flex: 1, marginRight: 12 }}>
-            <Typography
-              numberOfLines={1}
-              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-            >
-              {activity.description}
-            </Typography>
-            <Typography
-              style={{
-                fontSize: 14,
-                color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_600SemiBold",
-                marginTop: 4,
-              }}
-            >
-              {subtitle}
-            </Typography>
-          </View>
-
-          {/* Amount / Involvement */}
-          <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
+          <View className="items-end shrink-0 ml-2">
             {involvement.showAmount ? (
               <>
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: textColors[involvement.type],
-                    fontFamily: "CrimsonText_700Bold",
-                  }}
-                >
+                <Text variant="body" className={`font-bold ${textColorMap[involvement.type] === "success" ? "text-success" : textColorMap[involvement.type] === "danger" ? "text-danger" : "text-foreground"}`}>
                   {involvement.type === "positive" ? "+" : ""}
                   {formatAmount(involvement.amount, activity.currency || "USD")}
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: textColors[involvement.type],
-                    fontFamily: "CrimsonText_700Bold",
-                    marginTop: 4,
-                  }}
-                >
+                </Text>
+                <Text variant="bodySmall" className={`font-semibold mt-1 ${textColorMap[involvement.type] === "success" ? "text-success" : textColorMap[involvement.type] === "danger" ? "text-danger" : "text-foreground"}`}>
                   {involvement.text}
-                </Typography>
+                </Text>
               </>
             ) : (
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_600SemiBold",
-                  marginTop: 4,
-                }}
-              >
+              <Text variant="bodySmall" color="muted" className="font-semibold mt-1">
                 {involvement.text}
-              </Typography>
+              </Text>
             )}
           </View>
         </Pressable>
-      </SwipeableRow>
+      </View>
     </Animated.View>
   );
 }

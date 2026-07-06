@@ -1,48 +1,33 @@
-/**
- * StatsPlaceholderScreen
- *
- * Temporary screen used by the Stats tab while Phase 7 (Analytics) is built.
- * Shows a warm, on-brand empty state so the tab is functional without a crash.
- */
 import type { JSX } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
-import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { Text } from "@/components/ui/Text";
 
 export default function StatsPlaceholderScreen(): JSX.Element {
   return (
-    <FocusAwareView style={{ flex: 1 }}>
-      <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
-        <StatusBar style="dark" />
+    <FocusAwareView className="flex-1">
+      <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
+        <StatusBar style="light" />
 
-        {/* Header */}
         <View className="px-5 pt-4 pb-6">
-          <Typography type="h2" className="font-heading text-[28px] text-foreground">
+          <Text variant="h2" color="foreground" className="font-heading">
             Stats
-          </Typography>
+          </Text>
         </View>
 
-        {/* Empty state */}
         <View className="flex-1 items-center justify-center px-8 pb-24">
-          <View
-            style={{ backgroundColor: "#F5F0EB" }}
-            className="w-20 h-20 rounded-none items-center justify-center mb-6 border border-border-light"
-          >
-            <icons.BarChart2 size={36} color="#1A1A1A" strokeWidth={1.5} />
+          <View className="w-20 h-20 rounded-2xl bg-surface-2 items-center justify-center mb-6 border border-border">
+            <icons.BarChart2 size={36} color="#FB923C" strokeWidth={1.5} />
           </View>
-          <Typography
-            type="h3"
-            className="font-heading text-[22px] text-foreground text-center mb-2"
-          >
+          <Text variant="h4" color="foreground" className="text-center mb-2">
             Analytics coming soon
-          </Typography>
-          <Typography type="body" className="text-muted-foreground text-center leading-relaxed">
-            Spending trends, category breakdowns, and monthly comparisons are on their way in Phase
-            7.
-          </Typography>
+          </Text>
+          <Text variant="body" color="muted" className="text-center leading-relaxed">
+            Spending trends, category breakdowns, and monthly comparisons are on their way.
+          </Text>
         </View>
       </SafeAreaView>
     </FocusAwareView>

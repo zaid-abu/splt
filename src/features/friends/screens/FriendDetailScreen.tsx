@@ -1,18 +1,16 @@
-import { Alert, Typography } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { FriendRouteParams } from "@/types/navigation";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import type { JSX } from "react";
-import { useMemo, useRef, useCallback } from "react";
+import { useMemo, useRef, useCallback, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, ScrollView, Pressable, Alert as RNAlert } from "react-native";
+import { View, ScrollView, Pressable } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as icons from "lucide-react-native";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useFriends } from "@/features/friends/queries/useFriends";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
-
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 
@@ -21,14 +19,11 @@ import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-
-// ─── Design Tokens (Edge-to-Edge) ───
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
+import { Text } from "@/components/ui/Text";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Spinner } from "@/components/ui/Spinner";
+import { Dialog } from "@/components/ui/Dialog";
 
 const CATEGORY_ICONS: Record<string, keyof typeof icons> = {
   food: "Utensils",
@@ -54,30 +49,16 @@ const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
   other: { bg: "#F1F5F9", icon: "#64748B" },
 };
 
-function SectionLabel({ children }: { children: string }): JSX.Element {
-  return (
-    <Typography
-      style={{
-        fontSize: 11,
-        letterSpacing: 1.4,
-        color: TEXT_SECONDARY,
-        fontFamily: "CrimsonText_700Bold",
-        textTransform: "uppercase",
-        marginBottom: 16,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
-
 export default function FriendDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<FriendRouteParams>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? "";
 
   const optionsSheetRef = useRef<BottomSheetModal>(null);
+  const [reminderDialogVisible, setReminderDialogVisible] = useState(false);
+  const [unfriendDialogVisible, setUnfriendDialogVisible] = useState(false);
 
   const handleOpenOptions = useCallback(() => {
     optionsSheetRef.current?.present();
@@ -97,7 +78,6 @@ export default function FriendDetailScreen(): JSX.Element {
   );
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
-  const isAppLoading = useUIStore((s) => s.isAppLoading);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
   const { data: groups = [] } = useGroups(currentUser?.id);
@@ -105,7 +85,7 @@ export default function FriendDetailScreen(): JSX.Element {
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
 
   const balances = balancesUtil.getUserBalances(
-    currentUser.id,
+    userId,
     undefined,
     groups,
     expenses,
@@ -122,15 +102,14 @@ export default function FriendDetailScreen(): JSX.Element {
       .filter((e) => {
         const friendInvolved = e.paidBy === id || e.splits.some((s) => s.userId === id);
         const currentUserInvolved =
-          e.paidBy === currentUser.id || e.splits.some((s) => s.userId === currentUser.id);
-        // Specifically look for non-group expenses (1-on-1) or group ones involving both
+          e.paidBy === userId || e.splits.some((s) => s.userId === userId);
         return friendInvolved && currentUserInvolved && !e.groupId;
       })
       .map((e) => ({
         id: `exp-${e.id}`,
         type: "expense" as const,
-        userId: currentUser.id,
-        user: currentUser,
+        userId: userId,
+        user: currentUser!,
         expense: e,
         description: e.title,
         date: e.date,
@@ -141,14 +120,14 @@ export default function FriendDetailScreen(): JSX.Element {
       .filter((s) => {
         const friendInvolved = s.fromUserId === id || s.toUserId === id;
         const currentUserInvolved =
-          s.fromUserId === currentUser.id || s.toUserId === currentUser.id;
+          s.fromUserId === userId || s.toUserId === userId;
         return friendInvolved && currentUserInvolved && !s.groupId;
       })
       .map((s) => ({
         id: `set-${s.id}`,
         type: "settlement" as const,
-        userId: currentUser.id,
-        user: currentUser,
+        userId: userId,
+        user: currentUser!,
         settlement: s,
         description: "Settled up",
         date: s.date,
@@ -156,7 +135,7 @@ export default function FriendDetailScreen(): JSX.Element {
       }));
 
     return [...sharedExp, ...sharedSet].sort((a, b) => b.date.getTime() - a.date.getTime());
-  }, [expenses, settlements, id, currentUser.id]);
+  }, [expenses, settlements, id, userId]);
 
   const netBalance = balances.get(id ?? "") || 0;
   const isPositive = netBalance > 0;
@@ -177,7 +156,7 @@ export default function FriendDetailScreen(): JSX.Element {
     });
     return Object.entries(totals)
       .filter(([, amount]) => amount > 0)
-      .sort((a, b) => b[1] - a[1]) // highest first
+      .sort((a, b) => b[1] - a[1])
       .map(([cat, amount]) => ({
         cat,
         amount,
@@ -188,40 +167,28 @@ export default function FriendDetailScreen(): JSX.Element {
 
   if (!friend) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: BG }}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <Alert status="danger" style={{ borderRadius: 0, marginBottom: 16 }}>
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>Friend not found</Alert.Title>
-              <Alert.Description>We couldn&apos;t find this friend.</Alert.Description>
-            </Alert.Content>
-          </Alert>
-          <Pressable
-            onPress={() => router.back()}
-            style={{ padding: 12, backgroundColor: "#8C7A6B", borderRadius: 0 }}
-          >
-            <Typography style={{ color: "#FFF" }}>Go back</Typography>
-          </Pressable>
+      <SafeAreaView className="flex-1 bg-background">
+        <View className="flex-1 items-center justify-center px-6">
+          <EmptyState
+            icon="UserX"
+            title="Friend not found"
+            description="We couldn't find this friend."
+            action={{ label: "Go back", onPress: () => router.back() }}
+          />
         </View>
       </SafeAreaView>
     );
   }
 
+  if (!currentUser) return <></>;
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <View className="flex-1 bg-background">
+      <StatusBar style="light" />
 
-      {/* ── Header ──────────────────────────────────────────────────────── */}
+      {/* Header */}
       <View
-        style={{
-          paddingTop: insets.top + 16,
-          paddingBottom: 24,
-          paddingHorizontal: 24,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        className="flex-row items-center justify-between px-6 pb-6"
+        style={{ paddingTop: insets.top + 16 }}
       >
         <Pressable
           accessibilityRole="button"
@@ -232,156 +199,94 @@ export default function FriendDetailScreen(): JSX.Element {
               router.replace("/(tabs)");
             }
           }}
-          style={({ pressed }) => ({
-            width: 44,
-            height: 44,
-            borderRadius: 0,
-            backgroundColor: "transparent",
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed ? 0.5 : 1,
-          })}
+          className="w-11 h-11 rounded-xl bg-transparent border border-border items-center justify-center active:opacity-50"
         >
-          <icons.ArrowLeft size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          <icons.ArrowLeft size={20} className="text-foreground" strokeWidth={1.5} />
         </Pressable>
 
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-            flex: 1,
-            marginHorizontal: 16,
-          }}
-        >
+        <View className="flex-row items-center justify-center flex-1 mx-4 gap-3">
           <AppUserAvatar user={friend} size="sm" />
-          <Typography
+          <Text
+            variant="h3"
+            color="foreground"
             numberOfLines={1}
-            style={{
-              fontFamily: "UnicaOne_400Regular",
-              fontSize: 28,
-              color: TEXT_PRIMARY,
-              lineHeight: 36,
-              flexShrink: 1,
-              textAlign: "center",
-            }}
+            className="flex-shrink text-center"
           >
             {friend.name}
-          </Typography>
+          </Text>
         </View>
 
         <Pressable
           accessibilityRole="button"
           onPress={handleOpenOptions}
-          style={({ pressed }) => ({
-            width: 44,
-            height: 44,
-            borderRadius: 0,
-            backgroundColor: "transparent",
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed ? 0.5 : 1,
-          })}
+          className="w-11 h-11 rounded-xl bg-transparent border border-border items-center justify-center active:opacity-50"
         >
-          <icons.MoreVertical size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          <icons.MoreVertical size={20} className="text-foreground" strokeWidth={1.5} />
         </Pressable>
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
+        className="flex-1"
         contentContainerStyle={{ paddingBottom: 140 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Balance Hero ─────────────────────────────────────────────── */}
+        {/* Balance Hero */}
         <Animated.View
           entering={FadeInDown.duration(400).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 40, alignItems: "center" }}
+          className="px-6 mb-10 items-center"
         >
           <View
-            style={{
-              width: 80,
-              height: 80,
-              borderRadius: 0,
-              backgroundColor: isSettled ? "transparent" : isPositive ? "#E6F4EA" : "#FCE8E8",
-              borderWidth: isSettled ? 1 : 0,
-              borderColor: SEPARATOR,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 16,
-            }}
+            className={`w-20 h-20 rounded-2xl items-center justify-center mb-4 ${
+              isSettled
+                ? "bg-transparent border border-border"
+                : isPositive
+                  ? "bg-success/10"
+                  : "bg-danger/10"
+            }`}
           >
             {isSettled ? (
-              <icons.Check size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
+              <icons.Check size={32} className="text-foreground" strokeWidth={1.5} />
             ) : isPositive ? (
-              <icons.ArrowDownLeft size={32} color={TEXT_SUCCESS} strokeWidth={2} />
+              <icons.ArrowDownLeft size={32} className="text-success" strokeWidth={2} />
             ) : (
-              <icons.ArrowUpRight size={32} color={TEXT_DANGER} strokeWidth={2} />
+              <icons.ArrowUpRight size={32} className="text-danger" strokeWidth={2} />
             )}
           </View>
 
-          <Typography
-            style={{
-              fontSize: 16,
-              color: TEXT_PRIMARY,
-              fontFamily: "CrimsonText_700Bold",
-              marginBottom: 8,
-            }}
-          >
+          <Text variant="body" weight="bold" color="foreground" className="mb-2">
             {isSettled ? "All settled up!" : isPositive ? "Owes you" : "You owe"}
-          </Typography>
+          </Text>
 
           {!isSettled && (
-            <Typography
-              style={{
-                fontSize: 36,
-                color: isPositive ? TEXT_SUCCESS : TEXT_DANGER,
-                fontFamily: "CrimsonText_700Bold",
-              }}
+            <Text
+              variant="h1"
+              color={isPositive ? "success" : "danger"}
+              className="font-heading"
             >
               {formatAmount(Math.abs(netBalance), preferredCurrency.code)}
-            </Typography>
+            </Text>
           )}
 
           {isPositive && !isSettled && (
             <Pressable
-              onPress={() =>
-                RNAlert.alert(
-                  "Reminder Sent",
-                  `We've sent a friendly reminder to ${friend.name.split(" ")[0]}.`
-                )
-              }
-              style={({ pressed }) => ({
-                marginTop: 16,
-                paddingVertical: 8,
-                paddingHorizontal: 16,
-                borderRadius: 0,
-                borderWidth: 1,
-                borderColor: TEXT_SUCCESS,
-                opacity: pressed ? 0.5 : 1,
-              })}
+              onPress={() => setReminderDialogVisible(true)}
+              className="mt-4 py-2 px-4 rounded-xl border border-success active:opacity-50"
             >
-              <Typography
-                style={{ fontSize: 13, color: TEXT_SUCCESS, fontFamily: "CrimsonText_700Bold" }}
-              >
+              <Text variant="body-sm" weight="bold" color="success">
                 Send Reminder
-              </Typography>
+              </Text>
             </Pressable>
           )}
         </Animated.View>
 
-        {/* ── Category Breakdown ─────────────────────────────────────── */}
+        {/* Category Breakdown */}
         {categorySpending.length > 0 && (
           <Animated.View
             entering={FadeInDown.duration(400).delay(25).springify()}
-            style={{ marginBottom: 40 }}
+            className="mb-10"
           >
-            <View style={{ paddingHorizontal: 24 }}>
-              <SectionLabel>Spending Together</SectionLabel>
+            <View className="px-6 mb-4">
+              <Text variant="label">Spending Together</Text>
             </View>
             <ScrollView
               horizontal
@@ -393,51 +298,21 @@ export default function FriendDetailScreen(): JSX.Element {
                 return (
                   <View
                     key={cat}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      backgroundColor: "transparent",
-                      borderWidth: 1,
-                      borderColor: SEPARATOR,
-                      padding: 12,
-                      borderRadius: 0,
-                      minWidth: 140,
-                    }}
+                    className="flex-row items-center p-3 rounded-xl border border-border min-w-[140px]"
                   >
                     <View
-                      style={{
-                        width: 36,
-                        height: 36,
-                        borderRadius: 0,
-                        backgroundColor: colors.bg,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: 12,
-                      }}
+                      className="w-9 h-9 rounded-xl items-center justify-center mr-3"
+                      style={{ backgroundColor: colors.bg }}
                     >
                       <IconComp size={18} color={colors.icon} strokeWidth={1.5} />
                     </View>
                     <View>
-                      <Typography
-                        style={{
-                          fontSize: 12,
-                          color: TEXT_SECONDARY,
-                          fontFamily: "CrimsonText_600SemiBold",
-                          textTransform: "capitalize",
-                          marginBottom: 2,
-                        }}
-                      >
+                      <Text variant="body-xs" color="muted" className="capitalize mb-0.5">
                         {cat}
-                      </Typography>
-                      <Typography
-                        style={{
-                          fontSize: 14,
-                          color: TEXT_PRIMARY,
-                          fontFamily: "CrimsonText_700Bold",
-                        }}
-                      >
+                      </Text>
+                      <Text variant="body-sm" weight="bold" color="foreground">
                         {formatAmount(amount, preferredCurrency.code)}
-                      </Typography>
+                      </Text>
                     </View>
                   </View>
                 );
@@ -446,246 +321,147 @@ export default function FriendDetailScreen(): JSX.Element {
           </Animated.View>
         )}
 
-        {/* ── Activities ─────────────────────────────────────────────── */}
+        {/* Activities */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(50).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+          className="px-6 mb-10"
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 16,
-            }}
-          >
-            <SectionLabel>Shared Activity</SectionLabel>
-            <Typography
-              style={{
-                fontSize: 13,
-                color: TEXT_PRIMARY,
-                fontFamily: "CrimsonText_700Bold",
-                marginBottom: 16,
-              }}
-            >
+          <View className="flex-row items-center justify-between mb-4">
+            <Text variant="label">Shared Activity</Text>
+            <Text variant="body-sm" weight="bold" color="foreground">
               Total: {sharedActivities.length}
-            </Typography>
+            </Text>
           </View>
 
-          <View>
-            {sharedActivities.length === 0 ? (
-              <View
-                style={{
-                  paddingVertical: 32,
-                  alignItems: "center",
-                  borderTopWidth: 1,
-                  borderBottomWidth: 1,
-                  borderColor: SEPARATOR,
-                }}
-              >
-                <View
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 0,
-                    backgroundColor: "transparent",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 16,
-                    borderWidth: 1,
-                    borderColor: SEPARATOR,
-                  }}
-                >
-                  <icons.Receipt size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          {sharedActivities.length === 0 ? (
+            <EmptyState
+              icon="Receipt"
+              title="No shared activity"
+              description="Add an expense to start tracking"
+            />
+          ) : (
+            <View className="border-t border-border">
+              {sharedActivities.map((activity, idx) => (
+                <View key={activity.id} className="border-b border-border">
+                  <ActivityItem
+                    activity={activity}
+                    index={idx}
+                    isLast={true}
+                  />
                 </View>
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "CrimsonText_700Bold",
-                    marginBottom: 8,
-                  }}
-                >
-                  No shared activity
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
-                  }}
-                >
-                  Add an expense to start tracking
-                </Typography>
-              </View>
-            ) : (
-              <View style={{ borderTopWidth: 1, borderColor: SEPARATOR }}>
-                {sharedActivities.map((activity, idx) => (
-                  <View
-                    key={activity.id}
-                    style={{ borderBottomWidth: 1, borderBottomColor: SEPARATOR }}
-                  >
-                    <ActivityItem
-                      activity={activity}
-                      index={idx}
-                      isLast={true} // Force ActivityItem to not render its own bottom border or padding if possible, wait ActivityItem has padding. We just wrap it.
-                    />
-                  </View>
-                ))}
-              </View>
-            )}
-          </View>
+              ))}
+            </View>
+          )}
         </Animated.View>
       </ScrollView>
 
-      {/* ── Custom Options Bottom Sheet ──────────────────────────────── */}
+      {/* Options Bottom Sheet */}
       <BottomSheetModal
         ref={optionsSheetRef}
         index={0}
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+        backgroundStyle={{ backgroundColor: "#131316", borderRadius: 24 }}
+        handleIndicatorStyle={{ backgroundColor: "#3F3F46", width: 40 }}
       >
         <BottomSheetView
           style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
         >
-          <Typography
-            style={{
-              fontSize: 20,
-              fontFamily: "UnicaOne_400Regular",
-              color: TEXT_PRIMARY,
-              marginBottom: 24,
-            }}
-          >
+          <Text variant="h4" color="foreground" className="mb-6">
             Manage Friendship
-          </Typography>
+          </Text>
 
           <Pressable
             onPress={() => {
               optionsSheetRef.current?.dismiss();
-              RNAlert.alert("Exporting", "Your history is being exported.");
             }}
-            style={({ pressed }) => ({
-              flexDirection: "row",
-              alignItems: "center",
-              paddingVertical: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: SEPARATOR,
-              opacity: pressed ? 0.5 : 1,
-            })}
+            className="flex-row items-center py-4 border-b border-border active:opacity-50"
           >
             <icons.Download
               size={20}
-              color={TEXT_PRIMARY}
+              className="text-foreground"
               strokeWidth={1.5}
               style={{ marginRight: 12 }}
             />
-            <Typography
-              style={{ fontSize: 16, fontFamily: "CrimsonText_600SemiBold", color: TEXT_PRIMARY }}
-            >
+            <Text variant="body" weight="semibold" color="foreground">
               Export History
-            </Typography>
+            </Text>
           </Pressable>
 
           <Pressable
             onPress={() => {
               optionsSheetRef.current?.dismiss();
-              RNAlert.alert("Unfriend", "This feature is coming soon.");
+              setUnfriendDialogVisible(true);
             }}
-            style={({ pressed }) => ({
-              flexDirection: "row",
-              alignItems: "center",
-              paddingVertical: 16,
-              opacity: pressed ? 0.5 : 1,
-            })}
+            className="flex-row items-center py-4 active:opacity-50"
           >
             <icons.UserMinus
               size={20}
-              color={"#E02424"}
+              className="text-danger"
               strokeWidth={1.5}
               style={{ marginRight: 12 }}
             />
-            <Typography
-              style={{ fontSize: 16, fontFamily: "CrimsonText_600SemiBold", color: "#E02424" }}
-            >
+            <Text variant="body" weight="semibold" color="danger">
               Unfriend
-            </Typography>
+            </Text>
           </Pressable>
         </BottomSheetView>
       </BottomSheetModal>
 
-      {/* ── Bottom Action Bar ──────────────────────────────────────────── */}
-      <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingHorizontal: 24,
-          paddingTop: 16,
-          paddingBottom: insets.bottom + 16,
-          flexDirection: "row",
-          gap: 16,
-          backgroundColor: BG,
-          borderTopWidth: 1,
-          borderTopColor: SEPARATOR,
-        }}
-      >
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push(`/settle/${id}`)}
-          disabled={isSettled}
-          style={({ pressed }) => ({
-            flex: 1,
-            height: 56,
-            borderRadius: 0,
-            backgroundColor: isSettled ? "#F5F0EB" : "transparent",
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "row",
-            gap: 12,
-            opacity: isSettled ? 0.3 : pressed ? 0.5 : 1,
-          })}
-        >
-          <icons.Send
-            size={20}
-            color={isSettled ? TEXT_SECONDARY : TEXT_PRIMARY}
-            strokeWidth={1.5}
-          />
-          <Typography
-            style={{
-              fontSize: 16,
-              color: isSettled ? TEXT_SECONDARY : TEXT_PRIMARY,
-              fontFamily: "CrimsonText_700Bold",
-            }}
-          >
-            Settle Up
-          </Typography>
-        </Pressable>
+      {/* Reminder Dialog */}
+      <Dialog
+        visible={reminderDialogVisible}
+        onClose={() => setReminderDialogVisible(false)}
+        title="Reminder Sent"
+        description={`We've sent a friendly reminder to ${friend.name.split(" ")[0]}.`}
+        actions={[
+          { label: "OK", variant: "primary", onPress: () => setReminderDialogVisible(false) },
+        ]}
+      />
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push(`/expense/new?friendId=${id}`)}
-          style={({ pressed }) => ({
-            flex: 1,
-            height: 56,
-            borderRadius: 0,
-            backgroundColor: "#8C7A6B",
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "row",
-            gap: 12,
-            opacity: pressed ? 0.8 : 1,
-          })}
+      {/* Unfriend Dialog */}
+      <Dialog
+        visible={unfriendDialogVisible}
+        onClose={() => setUnfriendDialogVisible(false)}
+        title="Unfriend"
+        description="This feature is coming soon."
+        actions={[
+          { label: "Cancel", variant: "ghost", onPress: () => setUnfriendDialogVisible(false) },
+          { label: "Unfriend", variant: "danger", onPress: () => setUnfriendDialogVisible(false) },
+        ]}
+      />
+
+      {/* Bottom Action Bar */}
+      <View
+        className="absolute bottom-0 left-0 right-0 flex-row gap-4 px-6 pt-4 bg-background border-t border-border"
+        style={{ paddingBottom: insets.bottom + 16 }}
+      >
+        <Button
+          variant="ghost"
+          size="md"
+          disabled={isSettled}
+          leftIcon={
+            <icons.Send
+              size={20}
+              className={isSettled ? "text-muted-foreground" : "text-foreground"}
+              strokeWidth={1.5}
+            />
+          }
+          onPress={() => router.push(`/settle/${id}`)}
+          className="flex-1"
         >
-          <icons.Plus size={20} color="#FFFFFF" strokeWidth={2} />
-          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
-            Add Expense
-          </Typography>
-        </Pressable>
+          Settle Up
+        </Button>
+
+        <Button
+          variant="primary"
+          size="md"
+          leftIcon={<icons.Plus size={20} color="#FAFAFA" strokeWidth={2} />}
+          onPress={() => router.push(`/expense/new?friendId=${id}`)}
+          className="flex-1"
+        >
+          Add Expense
+        </Button>
       </View>
     </View>
   );

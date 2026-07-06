@@ -1,7 +1,6 @@
 import type { JSX } from "react";
 import { useState, useMemo, useCallback } from "react";
-import { View, TextInput, StyleSheet, Pressable, ScrollView, FlatList } from "react-native";
-import { Typography, PressableFeedback } from "heroui-native";
+import { View, Pressable, ScrollView, FlatList } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,15 +15,11 @@ import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
-import { AppLoader } from "@/components/ui/AppLoader";
+import { Text } from "@/components/primitives/Text";
+import { Input } from "@/components/ui/Input";
+import { Spinner } from "@/components/ui/Spinner";
+import { EmptyState } from "@/components/ui/EmptyState";
 import type { Activity } from "@/types";
-
-// --- Design Tokens ---
-const BG = "#F5F0EB";
-const BRAND = "#8C7A6B";
-const BORDER = "#E8E4DF";
-const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_SECONDARY = "#8A8782";
 
 type FilterType = "All" | "Expenses" | "Settlements" | "Groups" | "Friends";
 
@@ -72,27 +67,23 @@ export default function ActivityScreen(): JSX.Element {
       });
     });
     return arr;
-  }, [expenses, settlements]);
+  }, [expenses, settlements, currentUser]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("All");
 
-  // Sort activities by date descending
   const sortedActivities = useMemo(() => {
     return [...activities].sort((a, b) => b.date.getTime() - a.date.getTime());
   }, [activities]);
 
-  // Apply Search & Pill Filters
   const filteredActivities = useMemo(() => {
     let result = sortedActivities;
 
-    // Filter by Search Query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((a) => a.description.toLowerCase().includes(q));
     }
 
-    // Filter by Pill Type
     if (activeFilter !== "All") {
       result = result.filter((a) => {
         switch (activeFilter) {
@@ -113,7 +104,6 @@ export default function ActivityScreen(): JSX.Element {
     return result;
   }, [sortedActivities, searchQuery, activeFilter]);
 
-  // Group activities by month-year
   const groupedActivities = useMemo(() => {
     const groups: Record<string, Activity[]> = {};
     filteredActivities.forEach((activity) => {
@@ -148,16 +138,14 @@ export default function ActivityScreen(): JSX.Element {
     return indices;
   }, [listData]);
 
-  // --- Components ---
-
   const renderFilterPills = () => {
     const filters: FilterType[] = ["All", "Expenses", "Settlements", "Groups", "Friends"];
     return (
-      <View style={styles.filtersContainer}>
+      <View className="mb-6">
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filtersScroll}
+          contentContainerStyle={{ paddingHorizontal: 24, gap: 8 }}
         >
           {filters.map((filter) => {
             const isActive = activeFilter === filter;
@@ -168,23 +156,16 @@ export default function ActivityScreen(): JSX.Element {
                   Haptics.selectionAsync();
                   setActiveFilter(filter);
                 }}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  backgroundColor: isActive ? "#8C7A6B" : "transparent",
-                  borderWidth: 1,
-                  borderColor: isActive ? "#8C7A6B" : BORDER,
-                }}
+                className={`px-4 py-2 rounded-full border ${
+                  isActive ? "bg-primary border-primary" : "bg-transparent border-border"
+                }`}
               >
-                <Typography
-                  style={{
-                    fontSize: 13,
-                    fontFamily: "CrimsonText_700Bold",
-                    color: isActive ? "#FFFFFF" : TEXT_PRIMARY,
-                  }}
+                <Text
+                  variant="bodySmall"
+                  className={`font-bold ${isActive ? "text-foreground" : "text-primary"}`}
                 >
                   {filter}
-                </Typography>
+                </Text>
               </Pressable>
             );
           })}
@@ -194,99 +175,59 @@ export default function ActivityScreen(): JSX.Element {
   };
 
   const renderHeader = () => (
-    <Animated.View entering={FadeInDown.duration(400)} style={{ backgroundColor: BG }}>
+    <Animated.View entering={FadeInDown.duration(400)} className="bg-background z-10">
       {/* ── Header ── */}
-      <View
-        style={{
-          paddingTop: 16,
-          paddingHorizontal: 24,
-          paddingBottom: 24,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          backgroundColor: BG,
-        }}
-      >
-        <Typography
-          style={{
-            fontFamily: "CrimsonText_700Bold",
-            fontSize: 16,
-            color: TEXT_SECONDARY,
-            textTransform: "uppercase",
-            letterSpacing: 2,
-          }}
-        >
+      <View className="pt-4 px-6 pb-6 flex-row items-center justify-between">
+        <Text variant="bodySmall" color="muted" className="font-semibold">
           Timeline
-        </Typography>
+        </Text>
       </View>
 
-      <View
-        style={{
-          paddingHorizontal: 24,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: BORDER,
-        }}
-      >
-        <TextInput
+      <View className="px-6 pb-4 border-b border-border relative">
+        <Input
           value={searchQuery}
           onChangeText={setSearchQuery}
           placeholder="Search activity..."
-          placeholderTextColor={TEXT_SECONDARY}
-          autoCapitalize="none"
-          autoCorrect={false}
-          style={{
-            fontSize: 32,
-            fontFamily: "UnicaOne_400Regular",
-            color: TEXT_PRIMARY,
-            padding: 0,
-          }}
+          leftElement={<icons.Search size={20} className="text-muted-foreground" strokeWidth={1.5} />}
+          rightElement={
+            searchQuery.length > 0 ? (
+              <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
+                <icons.XCircle size={20} className="text-muted-foreground" strokeWidth={1.5} />
+              </Pressable>
+            ) : undefined
+          }
         />
-        {searchQuery.length > 0 && (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => setSearchQuery("")}
-            hitSlop={8}
-            style={({ pressed }) => ({
-              position: "absolute",
-              right: 24,
-              top: 8,
-              opacity: pressed ? 0.5 : 1,
-            })}
-          >
-            <icons.X size={24} color={TEXT_PRIMARY} strokeWidth={1} />
-          </Pressable>
-        )}
       </View>
 
-      {renderFilterPills()}
+      <View className="pt-6">
+        {renderFilterPills()}
+      </View>
 
-      {isAppLoading && <AppLoader />}
+      {isAppLoading && <Spinner size="md" />}
     </Animated.View>
   );
 
   const ListEmptyComponent = useCallback(() => {
     if (isAppLoading) return null;
     return (
-      <View style={styles.emptyContainer}>
-        <View style={styles.emptyBox}>
-          <View style={styles.emptyIconBox}>
-            <icons.Activity size={32} color={TEXT_SECONDARY} />
-          </View>
-          <Typography style={styles.emptyTitle}>No activity found</Typography>
-          <Typography style={styles.emptySubtitle}>
-            {searchQuery || activeFilter !== "All"
+      <View className="px-6 mt-6">
+        <EmptyState
+          icon="Activity"
+          title="No activity found"
+          description={
+            searchQuery || activeFilter !== "All"
               ? "Try adjusting your filters or search term."
-              : "You have no recent activity."}
-          </Typography>
-        </View>
+              : "You have no recent activity."
+          }
+        />
       </View>
     );
   }, [isAppLoading, searchQuery, activeFilter]);
 
   return (
-    <FocusAwareView style={[styles.container, { paddingTop: insets.top }]}>
-      <StatusBar style="dark" />
+    <FocusAwareView className="flex-1 bg-background">
+      <View style={{ paddingTop: insets.top }}>
+      <StatusBar style="light" />
       {renderHeader()}
       <Animated.FlatList
         data={listData}
@@ -297,84 +238,24 @@ export default function ActivityScreen(): JSX.Element {
         renderItem={({ item, index }) => {
           if (item.type === "header") {
             return (
-              <View style={styles.headerContainer}>
-                <Typography style={styles.headerText}>{item.title}</Typography>
+              <View className="bg-background px-6 py-3 z-10 border-b border-border">
+                <Text variant="bodySmall" color="muted" className="font-semibold">
+                  {item.title}
+                </Text>
               </View>
             );
           }
+          const isFirstInGroup = index === 0 || listData[index - 1].type === "header";
           const isNextHeader =
             index === listData.length - 1 || listData[index + 1].type === "header";
-          return <ActivityItem activity={item.activity} index={index} isLast={isNextHeader} />;
+          return <ActivityItem activity={item.activity} index={index} isFirst={isFirstInGroup} isLast={isNextHeader} />;
         }}
         ListEmptyComponent={ListEmptyComponent}
         stickyHeaderIndices={stickyHeaderIndices}
         contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
         showsVerticalScrollIndicator={false}
       />
+      </View>
     </FocusAwareView>
   );
 }
-
-// --- Styles ---
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BG,
-  },
-  filtersContainer: {
-    marginBottom: 24,
-  },
-  filtersScroll: {
-    paddingHorizontal: 24,
-    gap: 8,
-  },
-  headerContainer: {
-    backgroundColor: BG,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    zIndex: 10,
-  },
-  headerText: {
-    fontSize: 13,
-    fontFamily: "CrimsonText_700Bold",
-    color: TEXT_SECONDARY,
-    textTransform: "uppercase",
-    letterSpacing: 1.5,
-  },
-  emptyContainer: {
-    paddingHorizontal: 24,
-    marginTop: 24,
-  },
-  emptyBox: {
-    padding: 32,
-    backgroundColor: "transparent",
-    borderWidth: 1,
-    borderColor: BORDER,
-    alignItems: "center",
-  },
-  emptyIconBox: {
-    width: 64,
-    height: 64,
-    backgroundColor: BG,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: BORDER,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontFamily: "CrimsonText_700Bold",
-    color: TEXT_PRIMARY,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    fontFamily: "CrimsonText_600SemiBold",
-    color: TEXT_SECONDARY,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-});

@@ -1,51 +1,46 @@
-import { Typography } from "heroui-native";
-import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useMemo, useCallback } from "react";
-import { StatusBar } from "expo-status-bar";
 import {
   View,
   RefreshControl,
   TextInput,
-  Pressable,
   ScrollView,
   Share,
-  Alert,
   LayoutAnimation,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-
 import * as Haptics from "expo-haptics";
-
-import { SwipeableRow } from "@/components/layout/SwipeableRow";
-
+import { useRouter } from "expo-router";
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
-import { useGroups } from "@/features/groups/queries/useGroups";
-import { useFriends } from "@/features/friends/queries/useFriends";
-import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
-import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
-import * as balancesUtil from "@/features/settlements/utils/balances";
+
+import { Text } from "@/components/primitives/Text";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Pressable } from "@/components/primitives/Pressable";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { AppLoader } from "@/components/ui/AppLoader";
+import { Spinner } from "@/components/ui/Spinner";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { useGroups } from "@/features/groups/queries/useGroups";
+import { useFriends } from "@/features/friends/queries/useFriends";
+import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
+import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
+import * as balancesUtil from "@/features/settlements/utils/balances";
+import { useQueryClient } from "@tanstack/react-query";
 import type { User } from "@/types";
-
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
 
 export default function FriendsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? "";
+  const queryClient = useQueryClient();
+
   const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
@@ -61,55 +56,28 @@ export default function FriendsScreen(): JSX.Element {
   const [filter, setFilter] = useState<"all" | "owes_you" | "you_owe" | "settled">("all");
 
   const balances = useMemo(
-    () =>
-      balancesUtil.getUserBalances(
-        currentUser.id,
-        undefined,
-        groups,
-        expenses,
-        settlements,
-        preferredCurrency,
-        convertCurrency
-      ),
-    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
+    () => balancesUtil.getUserBalances(userId, undefined, groups, expenses, settlements, preferredCurrency, convertCurrency),
+    [userId, groups, expenses, settlements, preferredCurrency, convertCurrency],
   );
 
   const totalOwedToMe = useMemo(
-    () =>
-      balancesUtil.getTotalOwedToMe(
-        currentUser.id,
-        groups,
-        expenses,
-        settlements,
-        preferredCurrency,
-        convertCurrency
-      ),
-    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
+    () => balancesUtil.getTotalOwedToMe(userId, groups, expenses, settlements, preferredCurrency, convertCurrency),
+    [userId, groups, expenses, settlements, preferredCurrency, convertCurrency],
   );
 
   const totalIOwe = useMemo(
-    () =>
-      balancesUtil.getTotalIOwe(
-        currentUser.id,
-        groups,
-        expenses,
-        settlements,
-        preferredCurrency,
-        convertCurrency
-      ),
-    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
+    () => balancesUtil.getTotalIOwe(userId, groups, expenses, settlements, preferredCurrency, convertCurrency),
+    [userId, groups, expenses, settlements, preferredCurrency, convertCurrency],
   );
 
-  const uniqueFriends = friends;
-
   const filtered = useMemo(() => {
-    let result = uniqueFriends;
+    let result = friends;
     if (search.trim()) {
       result = result.filter((f) => f.name.toLowerCase().includes(search.toLowerCase()));
     }
     if (filter !== "all") {
       result = result.filter((f) => {
-        const bal = balances.get(f.id) || 0;
+        const bal = balances.get(f.id) ?? 0;
         if (filter === "owes_you") return bal > 0;
         if (filter === "you_owe") return bal < 0;
         if (filter === "settled") return bal === 0;
@@ -117,413 +85,154 @@ export default function FriendsScreen(): JSX.Element {
       });
     }
     return result;
-  }, [uniqueFriends, search, filter, balances]);
+  }, [friends, search, filter, balances]);
 
   const getRecentExpense = useCallback(
     (friendId: string) => {
       const shared = expenses.filter((e) => {
-        const involvesCurrentUser =
-          e.paidBy === currentUser.id || e.splits.some((s) => s.userId === currentUser.id);
+        const involvesCurrentUser = e.paidBy === userId || e.splits.some((s) => s.userId === userId);
         const involvesFriend = e.paidBy === friendId || e.splits.some((s) => s.userId === friendId);
         return involvesCurrentUser && involvesFriend;
       });
       if (shared.length === 0) return null;
       return shared.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0];
     },
-    [expenses, currentUser.id]
+    [expenses, userId],
   );
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setTimeout(() => {
-      setRefreshing(false);
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    }, 1000);
-  }, []);
-
-  const ListEmptyComponent = useCallback(
-    () => (
-      <View
-        style={{
-          paddingHorizontal: 24,
-          alignItems: "center",
-          justifyContent: "center",
-          paddingTop: 80,
-        }}
-      >
-        {isLoading ? (
-          <View style={{ paddingTop: 40 }}>
-            <AppLoader />
-          </View>
-        ) : (
-          <View style={{ alignItems: "center" }}>
-            <View
-              style={{
-                width: 120,
-                height: 120,
-                marginBottom: 24,
-                borderRadius: 60,
-                backgroundColor: "#EAE5E0",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <icons.Wallet size={48} color={TEXT_PRIMARY} strokeWidth={1.5} />
-            </View>
-            <Typography
-              style={{
-                fontSize: 24,
-                color: TEXT_PRIMARY,
-                fontFamily: "CrimsonText_700Bold",
-                textAlign: "center",
-                marginBottom: 8,
-              }}
-            >
-              {search || filter !== "all" ? "No friends found" : "Your network is empty"}
-            </Typography>
-            <Typography
-              style={{
-                fontSize: 16,
-                color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_600SemiBold",
-                textAlign: "center",
-                marginBottom: 32,
-                lineHeight: 24,
-              }}
-            >
-              {search || filter !== "all"
-                ? "Try a different search term or filter"
-                : "Add friends to easily split bills, track balances, and settle up in seconds."}
-            </Typography>
-            {!search && (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => {
-                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                  router.push("/expense/new");
-                }}
-                style={({ pressed }) => ({
-                  height: 56,
-                  borderRadius: 0,
-                  backgroundColor: "#8C7A6B",
-                  paddingHorizontal: 32,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: pressed ? 0.8 : 1,
-                  gap: 12,
-                })}
-              >
-                <icons.Plus size={20} color="#FFFFFF" strokeWidth={2} />
-                <Typography
-                  style={{ color: "#FFFFFF", fontSize: 16, fontFamily: "CrimsonText_700Bold" }}
-                >
-                  Add a friend
-                </Typography>
-              </Pressable>
-            )}
-          </View>
-        )}
-      </View>
-    ),
-    [isLoading, search, filter, router]
-  );
+    await queryClient.invalidateQueries();
+    setRefreshing(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [queryClient]);
 
   const renderItem = useCallback(
-    ({ item, index }: { item: User; index: number }) => {
-      const bal = balances.get(item.id) || 0;
-      const isPositive = bal > 0;
-      const isNegative = bal < 0;
+    ({ item }: { item: User }) => {
+      const bal = balances.get(item.id) ?? 0;
       const recentExpense = getRecentExpense(item.id);
 
       return (
         <Animated.View layout={LinearTransition}>
-          <SwipeableRow
-            onDelete={() => {
-              Alert.alert(
-                "Remove Friend?",
-                "Are you sure you want to remove this friend? This action cannot be undone.",
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Remove",
-                    style: "destructive",
-                    onPress: () => {
-                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-                      // TODO: Implement actual backend mutation
-                    },
-                  },
-                ]
-              );
+          <Pressable
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push(`/friend/${item.id}`);
             }}
-            onSettle={
-              bal !== 0
-                ? () => {
-                    router.push({ pathname: "/settle/[id]", params: { id: item.id } });
-                  }
-                : undefined
-            }
-            onRemind={
-              bal > 0
-                ? async () => {
-                    try {
-                      await Share.share({
-                        message: `Hey ${item.name.split(" ")[0]}! Just a quick reminder that you owe me ${formatAmount(Math.abs(bal), preferredCurrency.code)} on Splt. Let me know when you can settle up! 💸`,
-                      });
-                    } catch (error) {
-                      console.log(error);
-                    }
-                  }
-                : undefined
-            }
+            className="flex-row items-center py-5 px-6 bg-surface border-b border-divider active:bg-surface-2"
           >
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push(`/friend/${item.id}`);
-              }}
-              style={({ pressed }) => ({
-                flexDirection: "row",
-                alignItems: "center",
-                paddingVertical: 20,
-                paddingHorizontal: 24,
-                backgroundColor: BG,
-                borderBottomWidth: 1,
-                borderBottomColor: SEPARATOR,
-                opacity: pressed ? 0.5 : 1,
-              })}
-            >
+            <View className="mr-4">
               <AppUserAvatar user={item} size="lg" />
-              <View style={{ flex: 1, marginLeft: 16 }}>
-                <Typography
-                  style={{
-                    fontSize: 20,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "CrimsonText_700Bold",
-                    marginBottom: 2,
-                  }}
-                >
-                  {item.name}
-                </Typography>
-
+            </View>
+            <View className="flex-1">
+              <Text variant="body" className="font-bold mb-0.5">{item.name}</Text>
+              <View>
                 {recentExpense ? (
-                  <Typography
-                    style={{
-                      fontSize: 13,
-                      color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_600SemiBold",
-                      marginBottom: 4,
-                    }}
-                    numberOfLines={1}
-                  >
-                    Last: {recentExpense.title} •{" "}
-                    {formatAmount(recentExpense.amount, recentExpense.currency)}
-                  </Typography>
+                  <Text variant="caption" color="muted" numberOfLines={1}>
+                    Last: {recentExpense.title} • {formatAmount(recentExpense.amount, recentExpense.currency)}
+                  </Text>
                 ) : (
-                  <View style={{ height: 4 }} />
+                  <View className="h-1" />
                 )}
-
                 {bal === 0 ? (
-                  <Typography
-                    style={{
-                      fontSize: 14,
-                      color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_600SemiBold",
-                    }}
-                  >
-                    Settled up
-                  </Typography>
+                  <Text variant="bodySmall" color="muted">Settled up</Text>
                 ) : (
-                  <Typography
-                    style={{
-                      fontSize: 14,
-                      fontFamily: "CrimsonText_700Bold",
-                      color: isPositive ? TEXT_SUCCESS : TEXT_DANGER,
-                    }}
-                  >
-                    {isPositive ? "Owes you " : "You owe "}
+                  <Text variant="bodySmall" className={`font-bold ${bal > 0 ? "text-success" : "text-foreground"}`}>
+                    {bal > 0 ? "Owes you " : "You owe "}
                     {formatAmount(Math.abs(bal), preferredCurrency.code)}
-                  </Typography>
+                  </Text>
                 )}
               </View>
-              <icons.ChevronRight size={24} color={TEXT_SECONDARY} strokeWidth={1} />
-            </Pressable>
-          </SwipeableRow>
+            </View>
+            <View className="ml-2">
+              <icons.ChevronRight size={24} color="#8E8E93" strokeWidth={1} />
+            </View>
+          </Pressable>
         </Animated.View>
       );
     },
-    [balances, preferredCurrency.code, router, getRecentExpense]
+    [balances, preferredCurrency.code, router, getRecentExpense],
   );
 
-  return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
-
-      {/* ── Header ── */}
-      <View
-        style={{
-          paddingTop: insets.top + 16,
-          paddingHorizontal: 24,
-          paddingBottom: 24,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          backgroundColor: BG,
-        }}
-      >
-        <Typography
-          style={{
-            fontFamily: "CrimsonText_700Bold",
-            fontSize: 16,
-            color: TEXT_SECONDARY,
-            textTransform: "uppercase",
-            letterSpacing: 2,
-          }}
-        >
-          Your Network
-        </Typography>
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-            router.push("/friend/new");
-          }}
-          style={({ pressed }) => ({
-            width: 48,
-            height: 48,
-            borderRadius: 0,
-            backgroundColor: "transparent",
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed ? 0.5 : 1,
-          })}
-        >
-          <icons.Plus size={24} color={TEXT_PRIMARY} strokeWidth={1} />
-        </Pressable>
+  const ListEmptyComponent = useCallback(
+    () => (
+      <View className="px-6 items-center justify-center pt-20">
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          <EmptyState
+            icon="Users"
+            title={search || filter !== "all" ? "No friends found" : "Your network is empty"}
+            description={
+              search || filter !== "all"
+                ? "Try a different search term or filter."
+                : "Add friends to easily split bills, track balances, and settle up in seconds."
+            }
+            action={
+              !search
+                ? { label: "Add a Friend", onPress: () => router.push("/friend/new") }
+                : undefined
+            }
+          />
+        )}
       </View>
+    ),
+    [isLoading, search, filter, router],
+  );
 
-      <Animated.View entering={FadeInDown.duration(400)} style={{ flex: 1, backgroundColor: BG }}>
-        <View style={{ marginBottom: 16 }}>
-          {/* Balances Widget */}
-          <View style={{ flexDirection: "row", paddingHorizontal: 24, paddingBottom: 24, gap: 16 }}>
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "transparent",
-                padding: 16,
-                borderWidth: 1,
-                borderColor: SEPARATOR,
-              }}
+  if (!currentUser) return <></>;
+  return (
+    <View className="flex-1 bg-background">
+      <FocusAwareView delay={0} className="flex-1">
+        <View style={{ paddingTop: insets.top + 16, paddingBottom: 24 }} className="px-6">
+          <View className="flex-row items-center justify-between mb-6">
+            <Text variant="screenTitle" className="text-foreground">
+              Friends
+            </Text>
+            <Button
+              variant="ghost"
+              size="sm"
+              onPress={() => router.push("/friend/new")}
+              className="w-11 h-11 rounded-xl items-center justify-center p-0 border border-border"
             >
-              <Typography
-                style={{
-                  fontSize: 12,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_600SemiBold",
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  marginBottom: 8,
-                }}
-              >
-                Owed to you
-              </Typography>
-              <Typography
-                style={{ fontSize: 24, color: TEXT_SUCCESS, fontFamily: "CrimsonText_700Bold" }}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
+              <icons.Plus size={20} className="text-foreground" strokeWidth={1.5} />
+            </Button>
+          </View>
+
+          <View className="flex-row gap-4 mb-6">
+            <View className="flex-1 border border-border rounded-xl p-4 bg-surface">
+              <Text variant="bodySmall" color="muted" className="font-semibold mb-2">Owed to you</Text>
+              <Text variant="amountSmall" className="text-success" numberOfLines={1} adjustsFontSizeToFit>
                 {formatAmount(totalOwedToMe, preferredCurrency.code)}
-              </Typography>
+              </Text>
             </View>
-            <View
-              style={{
-                flex: 1,
-                backgroundColor: "transparent",
-                padding: 16,
-                borderWidth: 1,
-                borderColor: SEPARATOR,
-              }}
-            >
-              <Typography
-                style={{
-                  fontSize: 12,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_600SemiBold",
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  marginBottom: 8,
-                }}
-              >
-                You owe
-              </Typography>
-              <Typography
-                style={{ fontSize: 24, color: TEXT_DANGER, fontFamily: "CrimsonText_700Bold" }}
-                numberOfLines={1}
-                adjustsFontSizeToFit
-              >
+            <View className="flex-1 border border-border rounded-xl p-4 bg-surface">
+              <Text variant="bodySmall" color="muted" className="font-semibold mb-2">You owe</Text>
+              <Text variant="amountSmall" className="text-danger" numberOfLines={1} adjustsFontSizeToFit>
                 {formatAmount(totalIOwe, preferredCurrency.code)}
-              </Typography>
+              </Text>
             </View>
           </View>
 
-          {/* Search */}
-          <View
-            style={{
-              paddingHorizontal: 24,
-              paddingBottom: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: SEPARATOR,
-            }}
-          >
-            <TextInput
+          <View className="mb-4">
+            <Input
               value={search}
               onChangeText={setSearch}
               placeholder="Search friends..."
-              placeholderTextColor={TEXT_SECONDARY}
-              style={{
-                fontSize: 32,
-                fontFamily: "UnicaOne_400Regular",
-                color: TEXT_PRIMARY,
-                padding: 0,
-              }}
+              leftElement={<icons.Search size={20} className="text-muted-foreground" strokeWidth={1.5} />}
+              rightElement={search.length > 0 ? (
+                <Pressable onPress={() => setSearch("")} hitSlop={8}>
+                  <icons.XCircle size={20} className="text-muted-foreground" strokeWidth={1.5} />
+                </Pressable>
+              ) : undefined}
             />
-            {search.length > 0 && (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => setSearch("")}
-                hitSlop={8}
-                style={({ pressed }) => ({
-                  position: "absolute",
-                  right: 24,
-                  top: 8,
-                  opacity: pressed ? 0.5 : 1,
-                })}
-              >
-                <icons.X size={24} color={TEXT_PRIMARY} strokeWidth={1} />
-              </Pressable>
-            )}
           </View>
 
-          {/* Filters */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 24, paddingVertical: 16, gap: 8 }}
-          >
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
             {(["all", "owes_you", "you_owe", "settled"] as const).map((f) => {
               const isSelected = filter === f;
-              const label =
-                f === "all"
-                  ? "All"
-                  : f === "owes_you"
-                    ? "Owes You"
-                    : f === "you_owe"
-                      ? "You Owe"
-                      : "Settled Up";
+              const label = f === "all" ? "All" : f === "owes_you" ? "Owes You" : f === "you_owe" ? "You Owe" : "Settled Up";
               return (
                 <Pressable
                   key={f}
@@ -531,23 +240,13 @@ export default function FriendsScreen(): JSX.Element {
                     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                     setFilter(f);
                   }}
-                  style={{
-                    paddingHorizontal: 16,
-                    paddingVertical: 8,
-                    backgroundColor: isSelected ? "#8C7A6B" : "transparent",
-                    borderWidth: 1,
-                    borderColor: isSelected ? "#8C7A6B" : SEPARATOR,
-                  }}
+                  className={`px-4 py-2 rounded-xl border active:bg-surface-2 ${
+                    isSelected ? "bg-primary border-primary" : "bg-surface border-border"
+                  }`}
                 >
-                  <Typography
-                    style={{
-                      fontSize: 13,
-                      fontFamily: "CrimsonText_700Bold",
-                      color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
-                    }}
-                  >
+                  <Text variant="bodySmall" className={`font-bold ${isSelected ? "text-primary-foreground" : "text-foreground"}`}>
                     {label}
-                  </Typography>
+                  </Text>
                 </Pressable>
               );
             })}
@@ -563,15 +262,10 @@ export default function FriendsScreen(): JSX.Element {
           contentContainerStyle={{ paddingBottom: 120 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={TEXT_PRIMARY}
-              progressViewOffset={10}
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#FB923C" progressViewOffset={10} />
           }
         />
-      </Animated.View>
-    </FocusAwareView>
+      </FocusAwareView>
+    </View>
   );
 }

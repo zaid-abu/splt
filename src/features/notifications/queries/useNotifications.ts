@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { FriendsService } from "@/features/friends/services/api";
 import type { Friendship } from "@/types";
+import { queryKeys } from "@/queries/keys";
 
 export type NotificationType = "friend_request";
 
@@ -15,7 +16,7 @@ export interface AppNotification {
 
 export function useNotifications(userId?: string) {
   return useQuery({
-    queryKey: ["notifications", userId],
+    queryKey: queryKeys.notifications(userId ?? ""),
     queryFn: async () => {
       if (!userId) return [];
 

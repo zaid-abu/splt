@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { View, Pressable, LayoutAnimation } from "react-native";
-import { Typography } from "heroui-native";
 import { PieChart } from "react-native-gifted-charts";
-import { EXPENSE_CATEGORIES, ExpenseCategory } from "@/types";
+import { EXPENSE_CATEGORIES, type ExpenseCategory } from "@/types";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
+import { Text } from "@/components/ui/Text";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface Props {
   data: { category: ExpenseCategory; amount: number }[];
@@ -12,17 +13,16 @@ interface Props {
   currencyCode: string;
 }
 
-// Fixed earthy color palette for categories
 const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
-  food: "#1A1817", // Black/Dark Gray
-  transport: "#8C7A6B", // Primary Sepia
-  accommodation: "#6D5C50", // Darker Sepia
-  entertainment: "#A39B93", // Grayish Sepia
-  shopping: "#B8ACA1", // Light Sepia
-  utilities: "#D0C8C0", // Very Light Sepia
-  health: "#3A312B", // Very Dark Sepia
-  travel: "#4A423C", // Charcoal
-  other: "#E5DFD9", // Border color (Off-white)
+  food: "#FB923C",
+  transport: "#60A5FA",
+  accommodation: "#F472B6",
+  entertainment: "#A78BFA",
+  shopping: "#F87171",
+  utilities: "#34D399",
+  health: "#22D3EE",
+  travel: "#818CF8",
+  other: "#8E8E93",
 };
 
 export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
@@ -30,21 +30,11 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
 
   if (data.length === 0) {
     return (
-      <View
-        style={{
-          paddingVertical: 24,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "transparent",
-        }}
-      >
-        <icons.PieChart size={32} color="#A39B93" strokeWidth={1.5} />
-        <Typography
-          style={{ marginTop: 12, color: "#A39B93", fontFamily: "CrimsonText_600SemiBold" }}
-        >
-          No category data
-        </Typography>
-      </View>
+      <EmptyState
+        icon="PieChart"
+        title="No category data"
+        description="Add some expenses to see your spending breakdown."
+      />
     );
   }
 
@@ -62,30 +52,23 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
   });
 
   return (
-    <View style={{ backgroundColor: "transparent", paddingVertical: 16 }}>
-      <Typography
-        style={{
-          fontSize: 18,
-          fontFamily: "CrimsonText_700Bold",
-          color: "#1A1817",
-          marginBottom: 24,
-        }}
-      >
+    <View className="py-4">
+      <Text variant="h4" color="foreground" className="mb-6">
         Categories
-      </Typography>
+      </Text>
 
-      <View style={{ alignItems: "center", justifyContent: "center" }}>
+      <View className="items-center justify-center">
         <PieChart
           data={chartData}
           donut
           innerRadius={75}
           radius={120}
-          innerCircleColor="#F5F0EB"
+          innerCircleColor="#131316"
           focusOnPress
           onPress={(item: any) => {
             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
             setSelectedCategory((prev) =>
-              prev === item.category ? null : (item.category as ExpenseCategory)
+              prev === item.category ? null : (item.category as ExpenseCategory),
             );
           }}
           centerLabelComponent={() => {
@@ -98,43 +81,20 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
               : "Total";
 
             return (
-              <View style={{ alignItems: "center", justifyContent: "center" }}>
-                <Typography
-                  style={{
-                    fontSize: 10,
-                    color: "#A39B93",
-                    fontFamily: "CrimsonText_600SemiBold",
-                    textTransform: "uppercase",
-                    letterSpacing: 0.5,
-                    textAlign: "center",
-                    width: 110,
-                  }}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
+              <View className="items-center justify-center">
+                <Text variant="label" color="muted" numberOfLines={1} adjustsFontSizeToFit className="text-center w-28">
                   {labelText}
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 18,
-                    color: "#1A1817",
-                    fontFamily: "CrimsonText_700Bold",
-                    marginTop: 2,
-                    textAlign: "center",
-                    width: 120,
-                  }}
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                >
+                </Text>
+                <Text variant="body" weight="bold" color="foreground" numberOfLines={1} adjustsFontSizeToFit className="text-center w-32 mt-0.5">
                   {formatAmount(displayTotal, currencyCode)}
-                </Typography>
+                </Text>
               </View>
             );
           }}
         />
       </View>
 
-      <View style={{ marginTop: 32, gap: 16 }}>
+      <View className="mt-8 gap-4">
         {data.map((item) => {
           const catInfo = EXPENSE_CATEGORIES.find((c) => c.key === item.category);
           const Icon = catInfo ? (icons as any)[catInfo.icon] : icons.Package;
@@ -150,14 +110,10 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
                 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                 setSelectedCategory((prev) => (prev === item.category ? null : item.category));
               }}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                opacity: isFaded ? 0.4 : 1,
-              }}
+              className="flex-row items-center justify-between"
+              style={{ opacity: isFaded ? 0.4 : 1 }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+              <View className="flex-row items-center gap-3">
                 <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color }} />
                 <View
                   style={{
@@ -172,32 +128,17 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
                   <Icon size={16} color={color} strokeWidth={2} />
                 </View>
                 <View>
-                  <Typography
-                    style={{
-                      fontSize: 15,
-                      color: "#1A1817",
-                      fontFamily: "CrimsonText_600SemiBold",
-                    }}
-                  >
+                  <Text variant="body" weight="semibold" color="foreground">
                     {catInfo?.label || "Other"}
-                  </Typography>
-                  <Typography
-                    style={{
-                      fontSize: 12,
-                      color: "#A39B93",
-                      fontFamily: "CrimsonText_600SemiBold",
-                      marginTop: 2,
-                    }}
-                  >
+                  </Text>
+                  <Text variant="body-xs" color="muted" className="mt-0.5">
                     {Math.round((item.amount / totalSpent) * 100)}%
-                  </Typography>
+                  </Text>
                 </View>
               </View>
-              <Typography
-                style={{ fontSize: 15, color: "#1A1817", fontFamily: "CrimsonText_700Bold" }}
-              >
+              <Text variant="body" weight="bold" color="foreground">
                 {formatAmount(item.amount, currencyCode)}
-              </Typography>
+              </Text>
             </Pressable>
           );
         })}

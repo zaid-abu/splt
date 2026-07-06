@@ -8,7 +8,6 @@ import {
   ScrollView,
   TextInput,
 } from "react-native";
-import { Typography, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,17 +36,11 @@ import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useAppToast } from "@/hooks/useAppToast";
+import { Text } from "@/components/ui/Text";
+import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
+import { Card } from "@/components/ui/Card";
 
-// --- Design Tokens ---
-const BG = "#F5F0EB";
-const BRAND = "#8C7A6B";
-const SURFACE = "#FFFFFF";
-const BORDER = "#E8E4DF";
-const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_SECONDARY = "#8A8782";
-const KEYPAD_ACTIVE = "#EAE5E0";
-
-// --- Custom Keypad Component ---
 function KeypadButton({
   val,
   onPress,
@@ -63,24 +56,15 @@ function KeypadButton({
         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
         onPress();
       }}
-      style={({ pressed }) => ({
-        flex: 1,
-        height: 64,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: pressed ? KEYPAD_ACTIVE : "transparent",
-      })}
+      className="flex-1 h-16 items-center justify-center active:bg-surface-2"
     >
       {typeof val === "string" ? (
-        <Typography
-          style={{
-            fontSize: isAction ? 24 : 28,
-            color: TEXT_PRIMARY,
-            fontFamily: "CrimsonText_600SemiBold",
-          }}
+        <Text
+          variant={isAction ? "h3" : "h2"}
+          weight="semibold"
         >
           {val}
-        </Typography>
+        </Text>
       ) : (
         val
       )}
@@ -88,7 +72,6 @@ function KeypadButton({
   );
 }
 
-// --- Main Screen ---
 export default function SettleUpScreen(): JSX.Element {
   const {
     id,
@@ -101,10 +84,7 @@ export default function SettleUpScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { toast } = useAppToast();
   const { currentUser } = useAuth();
-
-  const isGroupRoute = pathname.includes("/group/");
-  const routeGroupId = isGroupRoute ? id : groupId;
-
+  const userId = currentUser?.id ?? "";
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
@@ -114,9 +94,11 @@ export default function SettleUpScreen(): JSX.Element {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const { mutateAsync: addSettlement, isPending: isAddingSettlement } = useAddSettlement();
 
+  const isGroupRoute = pathname.includes("/group/");
+  const routeGroupId = isGroupRoute ? id : groupId;
+
   const targetGroup = groups.find((g) => g.id === routeGroupId);
 
-  // Group-specific debt calculation
   const debtOptions = useMemo(() => {
     if (!isGroupRoute || !targetGroup) return [];
 
@@ -139,20 +121,20 @@ export default function SettleUpScreen(): JSX.Element {
         );
 
     const relevantDebts = pairwiseDebts.filter(
-      (p) => p.fromUserId === currentUser.id || p.toUserId === currentUser.id
+      (p) => p.fromUserId === userId || p.toUserId === userId
     );
 
     return relevantDebts.map((d) => ({
-      friendId: d.fromUserId === currentUser.id ? d.toUserId : d.fromUserId,
+      friendId: d.fromUserId === userId ? d.toUserId : d.fromUserId,
       amount: d.amount,
-      direction: (d.fromUserId === currentUser.id ? "you" : "them") as "you" | "them",
+      direction: (d.fromUserId === userId ? "you" : "them") as "you" | "them",
     }));
   }, [
     isGroupRoute,
     targetGroup,
     expenses,
     settlements,
-    currentUser.id,
+    userId,
     preferredCurrency,
     convertCurrency,
   ]);
@@ -166,7 +148,6 @@ export default function SettleUpScreen(): JSX.Element {
   const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>(defaultFriendId);
   const [showRecipientSelector, setShowRecipientSelector] = useState(false);
 
-  // Keep selectedFriendId synced if defaultFriendId changes (e.g. data loaded late)
   useEffect(() => {
     if (!selectedFriendId && defaultFriendId) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -178,11 +159,10 @@ export default function SettleUpScreen(): JSX.Element {
     combinedFriends.find((f) => f.id === selectedFriendId) ||
     targetGroup?.members.find((m) => m.userId === selectedFriendId)?.user;
 
-  // Calculate overall net balance for non-group route
   const overallBalances = useMemo(() => {
     if (isGroupRoute) return new Map<string, number>();
     return balancesUtil.getUserBalances(
-      currentUser.id,
+      userId,
       undefined,
       groups,
       expenses,
@@ -192,7 +172,7 @@ export default function SettleUpScreen(): JSX.Element {
     );
   }, [
     isGroupRoute,
-    currentUser.id,
+    userId,
     groups,
     expenses,
     settlements,
@@ -213,7 +193,6 @@ export default function SettleUpScreen(): JSX.Element {
     (initialDirection as "you" | "them") || (netBalance < 0 ? "you" : "them");
   const [direction, setDirection] = useState<"you" | "them">(defaultDirection);
 
-  // Sync direction when recipient changes
   useEffect(() => {
     if (!initialDirection) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -230,52 +209,44 @@ export default function SettleUpScreen(): JSX.Element {
   const [note, setNote] = useState("");
   const [showOptional, setShowOptional] = useState(false);
 
-  // Keep amount synced if initial amount/balance changes and user hasn't typed
   useEffect(() => {
     if (!initialAmount && amountStr === "") {
       const amt = Math.abs(netBalance).toFixed(2);
       // eslint-disable-next-line react-hooks/set-state-in-effect
       if (amt !== "0.00") setAmountStr(amt);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [netBalance]);
 
   const sharedGroups = useMemo(() => {
     if (!friend) return [];
     return groups.filter(
       (g) =>
-        g.members.some((m) => m.userId === currentUser.id) &&
+        g.members.some((m) => m.userId === userId) &&
         g.members.some((m) => m.userId === friend.id)
     );
-  }, [groups, currentUser.id, friend]);
+  }, [groups, userId, friend]);
 
   const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>(
     routeGroupId || (sharedGroups.length === 1 ? sharedGroups[0].id : undefined)
   );
 
+  if (!currentUser) return <></>;
+
   if (!friend && (!isGroupRoute || debtOptions.length === 0)) {
     return (
-      <View
-        style={{ flex: 1, backgroundColor: BG, alignItems: "center", justifyContent: "center" }}
-      >
-        <Typography
-          style={{ fontSize: 18, color: TEXT_PRIMARY, fontFamily: "CrimsonText_600SemiBold" }}
-        >
+      <View className="flex-1 bg-background items-center justify-center">
+        <Text variant="h4">
           {isGroupRoute ? "All settled up!" : "Friend not found"}
-        </Typography>
-        <Pressable
-          onPress={() => router.back()}
-          style={{ marginTop: 16, padding: 12, backgroundColor: BRAND, borderRadius: 0 }}
-        >
-          <Typography style={{ color: "#FFF" }}>Go Back</Typography>
-        </Pressable>
+        </Text>
+        <Button variant="primary" className="mt-4" onPress={() => router.back()}>
+          Go Back
+        </Button>
       </View>
     );
   }
 
-  if (!friend) return <View />; // loading state
+  if (!friend) return <View />;
 
-  // Handle Keypad
   const handleKeypad = (val: string) => {
     if (val === "C") {
       setAmountStr("");
@@ -316,8 +287,8 @@ export default function SettleUpScreen(): JSX.Element {
     try {
       await addSettlement({
         groupId: selectedGroupId,
-        fromUserId: direction === "you" ? currentUser.id : friend!.id,
-        toUserId: direction === "you" ? friend!.id : currentUser.id,
+        fromUserId: direction === "you" ? userId : friend!.id,
+        toUserId: direction === "you" ? friend!.id : userId,
         amount: parsedAmount,
         currency: preferredCurrency.code,
         date: new Date(),
@@ -342,97 +313,52 @@ export default function SettleUpScreen(): JSX.Element {
   const rightName = isYouDirection ? friend.name.split(" ")[0] : "You";
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <View className="flex-1 bg-background">
+      <StatusBar style="light" />
       <View
-        style={{
-          paddingTop: insets.top + 16,
-          paddingHorizontal: 24,
-          paddingBottom: 16,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        className="flex-row items-center justify-between px-6 pb-4"
+        style={{ paddingTop: insets.top + 16 }}
       >
-        <Typography
-          style={{ fontFamily: "UnicaOne_400Regular", fontSize: 28, color: TEXT_PRIMARY }}
-        >
-          Settle Up
-        </Typography>
-        <Pressable onPress={() => router.back()} hitSlop={20}>
-          <icons.X size={24} color={TEXT_PRIMARY} />
+        <Text variant="h2">Settle Up</Text>
+        <Pressable onPress={() => router.back()} hitSlop={20} className="active:opacity-50">
+          <icons.X size={24} color="#FAFAFA" />
         </Pressable>
       </View>
 
       <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-        {/* ── Direction Flow Visual ── */}
         <Animated.View
           entering={FadeInDown.duration(400)}
-          style={{ paddingHorizontal: 24, paddingVertical: 24 }}
+          className="px-6 py-6"
         >
-          <View
-            style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
-          >
+          <View className="flex-row items-center justify-between">
             <Animated.View
-              style={{ alignItems: "center", width: 80 }}
+              className="items-center w-20"
               layout={LinearTransition.springify()}
             >
               <AppUserAvatar user={leftUser} size="lg" />
-              <Typography
-                style={{
-                  fontSize: 13,
-                  fontFamily: "CrimsonText_700Bold",
-                  marginTop: 8,
-                  color: TEXT_PRIMARY,
-                }}
-              >
+              <Text variant="body-sm" weight="bold" className="mt-2">
                 {leftName}
-              </Typography>
+              </Text>
             </Animated.View>
 
-            <View style={{ flex: 1, alignItems: "center", paddingHorizontal: 16 }}>
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: BORDER,
-                  width: "100%",
-                  position: "absolute",
-                  top: "50%",
-                  zIndex: -1,
-                }}
-              />
+            <View className="flex-1 items-center px-4">
+              <View className="h-px bg-border w-full absolute top-1/2 -z-10" />
               <Pressable
                 onPress={() => {
                   Haptics.selectionAsync();
                   setDirection((prev) => (prev === "you" ? "them" : "you"));
                 }}
-                style={({ pressed }) => ({
-                  backgroundColor: SURFACE,
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  opacity: pressed ? 0.6 : 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 6,
-                })}
+                className="bg-surface px-3 py-2 flex-row items-center gap-1.5 active:opacity-60"
               >
-                <icons.ArrowRightLeft size={16} color={TEXT_SECONDARY} strokeWidth={2.5} />
-                <Typography
-                  style={{
-                    fontSize: 11,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_700Bold",
-                    textTransform: "uppercase",
-                    letterSpacing: 1,
-                  }}
-                >
+                <icons.ArrowRightLeft size={16} color="#8E8E93" strokeWidth={2.5} />
+                <Text variant="body-xs" weight="bold" color="muted" className="uppercase tracking-widest">
                   Swap
-                </Typography>
+                </Text>
               </Pressable>
             </View>
 
             <Animated.View
-              style={{ alignItems: "center", width: 80 }}
+              className="items-center w-20"
               layout={LinearTransition.springify()}
             >
               {isGroupRoute && debtOptions.length > 1 ? (
@@ -441,59 +367,37 @@ export default function SettleUpScreen(): JSX.Element {
                     Haptics.selectionAsync();
                     setShowRecipientSelector(!showRecipientSelector);
                   }}
-                  style={{ alignItems: "center", opacity: showRecipientSelector ? 0.7 : 1 }}
+                  className="items-center active:opacity-70"
                 >
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                  <View className="flex-row items-center gap-1">
                     <AppUserAvatar user={rightUser} size="lg" />
-                    <icons.ChevronDown size={16} color={TEXT_PRIMARY} />
+                    <icons.ChevronDown size={16} color="#FAFAFA" />
                   </View>
-                  <Typography
-                    style={{
-                      fontSize: 13,
-                      fontFamily: "CrimsonText_700Bold",
-                      marginTop: 8,
-                      color: TEXT_PRIMARY,
-                    }}
-                  >
+                  <Text variant="body-sm" weight="bold" className="mt-2">
                     {rightName}
-                  </Typography>
+                  </Text>
                 </Pressable>
               ) : (
-                <View style={{ alignItems: "center" }}>
+                <View className="items-center">
                   <AppUserAvatar user={rightUser} size="lg" />
-                  <Typography
-                    style={{
-                      fontSize: 13,
-                      fontFamily: "CrimsonText_700Bold",
-                      marginTop: 8,
-                      color: TEXT_PRIMARY,
-                    }}
-                  >
+                  <Text variant="body-sm" weight="bold" className="mt-2">
                     {rightName}
-                  </Typography>
+                  </Text>
                 </View>
               )}
             </Animated.View>
           </View>
         </Animated.View>
 
-        {/* ── Recipient Selector (Groups Only) ── */}
         {showRecipientSelector && debtOptions.length > 1 && (
           <Animated.View
             entering={FadeInDown.duration(300)}
             exiting={FadeOut.duration(200)}
-            style={{ paddingHorizontal: 24, paddingBottom: 16 }}
+            className="px-6 pb-4"
           >
-            <Typography
-              style={{
-                fontSize: 12,
-                color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_600SemiBold",
-                marginBottom: 8,
-              }}
-            >
+            <Text variant="body-xs" color="muted" weight="semibold" className="mb-2">
               Select who you are settling with
-            </Typography>
+            </Text>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -514,28 +418,22 @@ export default function SettleUpScreen(): JSX.Element {
                       setShowRecipientSelector(false);
                       setAmountStr(opt.amount.toFixed(2));
                     }}
-                    style={{
-                      alignItems: "center",
-                      padding: 12,
-                      borderWidth: 1,
-                      borderColor: isSelected ? BRAND : BORDER,
-                      backgroundColor: isSelected ? BRAND : SURFACE,
-                      opacity: isSelected ? 1 : 0.7,
-                      width: 80,
-                    }}
+                    className={`items-center p-3 w-20 border rounded-xl ${
+                      isSelected
+                        ? "border-primary bg-primary"
+                        : "border-border bg-surface"
+                    } active:opacity-70`}
                   >
                     <AppUserAvatar user={optFriend} size="sm" />
-                    <Typography
-                      style={{
-                        fontSize: 11,
-                        fontFamily: "CrimsonText_700Bold",
-                        marginTop: 8,
-                        color: isSelected ? "#FFF" : TEXT_PRIMARY,
-                      }}
+                    <Text
+                      variant="body-xs"
+                      weight="bold"
+                      color={isSelected ? "foreground" : "foreground"}
+                      className="mt-2"
                       numberOfLines={1}
                     >
                       {optFriend.name.split(" ")[0]}
-                    </Typography>
+                    </Text>
                   </Pressable>
                 );
               })}
@@ -543,127 +441,75 @@ export default function SettleUpScreen(): JSX.Element {
           </Animated.View>
         )}
 
-        {/* ── Large Amount Display ── */}
         <Animated.View
           entering={FadeInDown.duration(400)}
-          style={{ alignItems: "center", marginVertical: 32 }}
+          className="items-center my-8"
         >
-          <Typography
-            style={{
-              fontSize: 14,
-              color: TEXT_SECONDARY,
-              fontFamily: "CrimsonText_600SemiBold",
-              marginBottom: 8,
-            }}
-          >
+          <Text variant="body-sm" color="muted" weight="semibold" className="mb-2">
             Amount ({preferredCurrency.code})
-          </Typography>
-          <Typography
-            style={{
-              fontSize: 64,
-              fontFamily: "CrimsonText_700Bold",
-              color: amountStr ? TEXT_PRIMARY : TEXT_SECONDARY,
-              letterSpacing: -2,
-              lineHeight: 72,
-            }}
+          </Text>
+          <Text
+            className="text-[64px] font-bold text-foreground tracking-tight leading-[72px]"
             numberOfLines={1}
             adjustsFontSizeToFit
           >
             {amountStr || "0"}
-          </Typography>
+          </Text>
 
-          {/* Quick Amount Pills */}
           {Math.abs(netBalance) > 0 && (
-            <View style={{ flexDirection: "row", gap: 12, marginTop: 24 }}>
+            <View className="flex-row gap-3 mt-6">
               <Pressable
                 onPress={() => {
                   Haptics.selectionAsync();
                   setAmountStr(Math.abs(netBalance).toFixed(2));
                 }}
-                style={({ pressed }) => ({
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderWidth: 1,
-                  borderColor: BORDER,
-                  borderRadius: 0,
-                  opacity: pressed ? 0.7 : 1,
-                })}
+                className="px-4 py-2 border border-border rounded-xl active:opacity-70"
               >
-                <Typography
-                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-                >
+                <Text variant="body-sm" weight="bold">
                   Full: {Math.abs(netBalance).toFixed(2)}
-                </Typography>
+                </Text>
               </Pressable>
               <Pressable
                 onPress={() => {
                   Haptics.selectionAsync();
                   setAmountStr((Math.abs(netBalance) / 2).toFixed(2));
                 }}
-                style={({ pressed }) => ({
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderWidth: 1,
-                  borderColor: BORDER,
-                  borderRadius: 0,
-                  opacity: pressed ? 0.7 : 1,
-                })}
+                className="px-4 py-2 border border-border rounded-xl active:opacity-70"
               >
-                <Typography
-                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-                >
+                <Text variant="body-sm" weight="bold">
                   Half: {(Math.abs(netBalance) / 2).toFixed(2)}
-                </Typography>
+                </Text>
               </Pressable>
             </View>
           )}
         </Animated.View>
 
-        {/* ── Optional Note/Group Toggle ── */}
-        <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
-          <Pressable onPress={() => setShowOptional(!showOptional)} style={{ padding: 8 }}>
-            <Typography
-              style={{ fontSize: 13, color: BRAND, fontFamily: "CrimsonText_600SemiBold" }}
-            >
+        <View className="px-6 mb-4 items-center">
+          <Pressable onPress={() => setShowOptional(!showOptional)} className="p-2">
+            <Text variant="body-sm" weight="semibold" color="primary">
               {showOptional ? "Hide Options" : "+ Add Note or Group"}
-            </Typography>
+            </Text>
           </Pressable>
 
           {showOptional && (
             <Animated.View
               entering={FadeIn}
               exiting={FadeOut}
-              style={{ width: "100%", marginTop: 16, gap: 16 }}
+              className="w-full mt-4 gap-4"
             >
               <TextInput
                 placeholder="Add a note..."
-                placeholderTextColor={TEXT_SECONDARY}
+                placeholderTextColor="#8E8E93"
                 value={note}
                 onChangeText={setNote}
-                style={{
-                  borderWidth: 1,
-                  borderColor: BORDER,
-                  padding: 16,
-                  borderRadius: 0,
-                  fontSize: 15,
-                  fontFamily: "CrimsonText_600SemiBold",
-                  backgroundColor: SURFACE,
-                }}
+                className="border border-border p-4 rounded-xl text-base font-semibold bg-surface text-foreground"
               />
 
               {sharedGroups.length > 0 && !isGroupRoute && (
                 <View>
-                  <Typography
-                    style={{
-                      fontSize: 12,
-                      color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_600SemiBold",
-                      marginBottom: 8,
-                      marginLeft: 4,
-                    }}
-                  >
+                  <Text variant="body-xs" color="muted" weight="semibold" className="mb-2 ml-1">
                     Link to Group
-                  </Typography>
+                  </Text>
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -671,23 +517,15 @@ export default function SettleUpScreen(): JSX.Element {
                   >
                     <Pressable
                       onPress={() => setSelectedGroupId(undefined)}
-                      style={{
-                        paddingHorizontal: 16,
-                        paddingVertical: 10,
-                        borderWidth: 1,
-                        borderColor: !selectedGroupId ? BRAND : BORDER,
-                        backgroundColor: !selectedGroupId ? BRAND : SURFACE,
-                      }}
+                      className={`px-4 py-2.5 border rounded-xl ${
+                        !selectedGroupId
+                          ? "border-primary bg-primary"
+                          : "border-border bg-surface"
+                      } active:opacity-70`}
                     >
-                      <Typography
-                        style={{
-                          fontSize: 13,
-                          color: !selectedGroupId ? "#FFF" : TEXT_PRIMARY,
-                          fontFamily: "CrimsonText_700Bold",
-                        }}
-                      >
+                      <Text variant="body-sm" weight="bold" color={!selectedGroupId ? "foreground" : "foreground"}>
                         None
-                      </Typography>
+                      </Text>
                     </Pressable>
                     {sharedGroups.map((g) => {
                       const isSelected = selectedGroupId === g.id;
@@ -695,23 +533,15 @@ export default function SettleUpScreen(): JSX.Element {
                         <Pressable
                           key={g.id}
                           onPress={() => setSelectedGroupId(g.id)}
-                          style={{
-                            paddingHorizontal: 16,
-                            paddingVertical: 10,
-                            borderWidth: 1,
-                            borderColor: isSelected ? BRAND : BORDER,
-                            backgroundColor: isSelected ? BRAND : SURFACE,
-                          }}
+                          className={`px-4 py-2.5 border rounded-xl ${
+                            isSelected
+                              ? "border-primary bg-primary"
+                              : "border-border bg-surface"
+                          } active:opacity-70`}
                         >
-                          <Typography
-                            style={{
-                              fontSize: 13,
-                              color: isSelected ? "#FFF" : TEXT_PRIMARY,
-                              fontFamily: "CrimsonText_700Bold",
-                            }}
-                          >
+                          <Text variant="body-sm" weight="bold">
                             {g.name}
-                          </Typography>
+                          </Text>
                         </Pressable>
                       );
                     })}
@@ -722,65 +552,52 @@ export default function SettleUpScreen(): JSX.Element {
           )}
         </View>
 
-        <View style={{ flex: 1 }} />
+        <View className="flex-1" />
 
-        {/* ── Custom Keypad ── */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(200)}
-          style={{ backgroundColor: SURFACE, borderTopWidth: 1, borderTopColor: BORDER }}
+          className="bg-surface border-t border-border"
         >
-          <View style={{ flexDirection: "row" }}>
+          <View className="flex-row">
             <KeypadButton val="1" onPress={() => handleKeypad("1")} />
             <KeypadButton val="2" onPress={() => handleKeypad("2")} />
             <KeypadButton val="3" onPress={() => handleKeypad("3")} />
           </View>
-          <View style={{ flexDirection: "row" }}>
+          <View className="flex-row">
             <KeypadButton val="4" onPress={() => handleKeypad("4")} />
             <KeypadButton val="5" onPress={() => handleKeypad("5")} />
             <KeypadButton val="6" onPress={() => handleKeypad("6")} />
           </View>
-          <View style={{ flexDirection: "row" }}>
+          <View className="flex-row">
             <KeypadButton val="7" onPress={() => handleKeypad("7")} />
             <KeypadButton val="8" onPress={() => handleKeypad("8")} />
             <KeypadButton val="9" onPress={() => handleKeypad("9")} />
           </View>
-          <View style={{ flexDirection: "row" }}>
+          <View className="flex-row">
             <KeypadButton val="." onPress={() => handleKeypad(".")} />
             <KeypadButton val="0" onPress={() => handleKeypad("0")} />
             <KeypadButton
-              val={<icons.Delete size={24} color={TEXT_PRIMARY} />}
+              val={<icons.Delete size={24} color="#FAFAFA" />}
               onPress={() => handleKeypad("<")}
             />
           </View>
         </Animated.View>
 
-        {/* ── Submit Button ── */}
-        <View style={{ backgroundColor: SURFACE, paddingBottom: insets.bottom }}>
+        <View className="bg-surface" style={{ paddingBottom: insets.bottom }}>
           <Pressable
             onPress={handleSubmit}
             disabled={isAddingSettlement}
-            style={({ pressed }) => ({
-              backgroundColor: BRAND,
-              height: 64,
-              justifyContent: "center",
-              alignItems: "center",
-              opacity: pressed || isAddingSettlement ? 0.8 : 1,
-            })}
+            className={`bg-primary h-16 justify-center items-center active:opacity-80 ${
+              isAddingSettlement ? "opacity-80" : ""
+            }`}
           >
             {isAddingSettlement ? (
-              <Spinner color="white" size="sm" />
+              <Spinner size="sm" className="py-0" />
             ) : (
-              <Typography
-                style={{
-                  fontSize: 18,
-                  color: "#FFF",
-                  fontFamily: "CrimsonText_700Bold",
-                  letterSpacing: 1,
-                }}
-              >
+              <Text variant="h4" color="foreground" className="tracking-widest">
                 PAY {preferredCurrency.symbol}
                 {parsedAmount.toFixed(2)}
-              </Typography>
+              </Text>
             )}
           </Pressable>
         </View>

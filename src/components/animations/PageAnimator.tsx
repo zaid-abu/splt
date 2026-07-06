@@ -1,54 +1,47 @@
-import type { JSX, PropsWithChildren } from "react";
-import { useCallback } from "react";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-  Easing,
-} from "react-native-reanimated";
+import type { JSX } from "react";
+import { useState } from "react";
 import { useFocusEffect } from "expo-router";
+import Animated, { FadeIn } from "react-native-reanimated";
 
-interface FocusAwareViewProps extends PropsWithChildren {
+interface PageAnimatorProps {
+  children: React.ReactNode;
   delay?: number;
   className?: string;
-  style?: any;
 }
 
-export function FocusAwareView({
-  children,
-  delay = 0,
-  className,
-  style,
-}: FocusAwareViewProps): JSX.Element {
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(20);
-
-  useFocusEffect(
-    useCallback(() => {
-      // Reset
-      opacity.value = 0;
-      translateY.value = 20;
-
-      const timeout = setTimeout(() => {
-        opacity.value = withTiming(1, { duration: 300 });
-        translateY.value = withTiming(0, { duration: 350, easing: Easing.out(Easing.quad) });
-      }, delay);
-
-      return () => {
-        clearTimeout(timeout);
-        opacity.value = 0;
-        translateY.value = 20;
-      };
-    }, [delay])
-  );
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-    transform: [{ translateY: translateY.value }],
-  }));
+export function PageAnimator({ children, delay = 0, className }: PageAnimatorProps): JSX.Element {
+  const [key] = useState(() => Math.random().toString(36).slice(2));
 
   return (
-    <Animated.View style={[style, animatedStyle]} className={className}>
+    <Animated.View
+      key={key}
+      entering={FadeIn.delay(delay).duration(400)}
+      className={className}
+    >
+      {children}
+    </Animated.View>
+  );
+}
+
+interface FocusAwareViewProps {
+  children: React.ReactNode;
+  delay?: number;
+  className?: string;
+}
+
+export function FocusAwareView({ children, delay = 0, className }: FocusAwareViewProps): JSX.Element {
+  const [focusKey, setFocusKey] = useState(0);
+
+  useFocusEffect(() => {
+    setFocusKey((k) => k + 1);
+  });
+
+  return (
+    <Animated.View
+      key={focusKey}
+      entering={FadeIn.delay(delay).duration(400)}
+      className={className}
+    >
       {children}
     </Animated.View>
   );

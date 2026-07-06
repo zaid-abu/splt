@@ -39,14 +39,12 @@ export const USD_CURRENCY: Currency = {
   code: "USD",
   symbol: "$",
   name: "US Dollar",
-  flag: "🇺🇸",
 };
 
 export const INR_CURRENCY: Currency = {
   code: "INR",
   symbol: "₹",
   name: "Indian Rupee",
-  flag: "🇮🇳",
 };
 
 // ─── Identity converter (no conversion) ──────────────────────────────────────

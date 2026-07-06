@@ -1,15 +1,11 @@
-/**
- * Profile Screen — Edge-to-Edge Editorial Design
- * PURE WHITE background, borderless layout, large typography, minimalist lines.
- */
-import { Switch, Typography } from "heroui-native";
+
 import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { Uniwind } from "uniwind";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View, Pressable } from "react-native";
+import { ScrollView, View, Pressable, Switch } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -22,36 +18,23 @@ import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
+import { Text } from "@/components/primitives/Text";
+import { Card } from "@/components/ui/Card";
+import { formatAmount } from "@/components/ui/AmountDisplay";
 
 import { SettingsItem } from "@/features/profile/components/SettingsItem";
 
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
-const SECTION_PAD = 24;
-
 function SectionLabel({ children }: { children: string }) {
   return (
-    <Typography
-      style={{
-        fontSize: 11,
-        color: TEXT_SECONDARY,
-        fontFamily: "CrimsonText_700Bold",
-        letterSpacing: 1.4,
-        textTransform: "uppercase",
-        marginBottom: 8,
-      }}
-    >
+    <Text variant="sectionLabel" color="muted" className="mb-4 px-1">
       {children}
-    </Typography>
+    </Text>
   );
 }
 
 export default function ProfileScreen(): JSX.Element {
   const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? "";
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
@@ -62,7 +45,7 @@ export default function ProfileScreen(): JSX.Element {
   const setCurrency = useUIStore((s) => s.setCurrency);
 
   const owedToYou = balancesUtil.getTotalOwedToMe(
-    currentUser.id,
+    userId,
     groups,
     expenses,
     settlements,
@@ -71,7 +54,7 @@ export default function ProfileScreen(): JSX.Element {
   );
   const youOwe = Math.abs(
     balancesUtil.getTotalIOwe(
-      currentUser.id,
+      userId,
       groups,
       expenses,
       settlements,
@@ -83,6 +66,7 @@ export default function ProfileScreen(): JSX.Element {
   const { mutate: signOut } = useSignOut();
   const [darkMode, setDarkMode] = useState(true);
   const [notifs, setNotifs] = useState(true);
+  if (!currentUser) return <></>;
 
   const handleCurrencyChange = (currency: Currency) => {
     setCurrency(currency);
@@ -94,171 +78,99 @@ export default function ProfileScreen(): JSX.Element {
   };
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <FocusAwareView className="flex-1 bg-background">
+      <StatusBar style="light" />
 
       {/* Header */}
-      <FocusAwareView
-        delay={0}
-        style={{ paddingTop: insets.top + 16, paddingBottom: 16, paddingHorizontal: SECTION_PAD }}
-      >
-        <Typography
-          style={{
-            fontFamily: "UnicaOne_400Regular",
-            fontSize: 36,
-            color: TEXT_PRIMARY,
-            lineHeight: 44,
-            letterSpacing: -0.5,
-          }}
-        >
-          Profile.
-        </Typography>
+      <FocusAwareView delay={0} className="px-6 pb-4">
+        <View style={{ paddingTop: insets.top + 16 }}>
+          <Text variant="screenTitle" color="foreground">
+            Profile.
+          </Text>
+        </View>
       </FocusAwareView>
 
       <ScrollView
-        style={{ flex: 1 }}
+        className="flex-1"
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* User Stats Edge-to-Edge */}
-        <FocusAwareView
-          delay={100}
-          style={{
-            paddingHorizontal: SECTION_PAD,
-            marginBottom: 40,
-            paddingBottom: 32,
-            borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
-            <AppUserAvatar user={currentUser} size="lg" />
-            <View style={{ marginLeft: 16 }}>
-              <Typography
-                style={{
-                  fontSize: 24,
-                  color: TEXT_PRIMARY,
-                  fontFamily: "CrimsonText_700Bold",
-                  letterSpacing: -0.5,
-                }}
-              >
-                {currentUser.name}
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_600SemiBold",
-                }}
-              >
-                {currentUser.email}
-              </Typography>
+        {/* User Stats Card */}
+        <FocusAwareView delay={100} className="px-6 mb-10">
+          <Card className="p-6">
+            <View className="flex-row items-center mb-8">
+              <AppUserAvatar user={currentUser} size="lg" />
+              <View className="ml-4 flex-1">
+                <Text variant="amountSmall" color="foreground">
+                  {currentUser.name}
+                </Text>
+                <Text variant="bodySmall" color="muted" className="mt-1">
+                  {currentUser.email}
+                </Text>
+              </View>
             </View>
-          </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ flex: 1 }}>
-              <Typography
-                style={{
-                  fontSize: 12,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_700Bold",
-                  textTransform: "uppercase",
-                  letterSpacing: 1.2,
-                  marginBottom: 4,
-                }}
-              >
-                Groups
-              </Typography>
-              <Typography
-                style={{ fontSize: 24, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-              >
-                {groups.length}
-              </Typography>
+            <View className="flex-row items-center justify-between border-t border-border pt-6">
+              <View className="flex-1 items-center">
+                <Text variant="sectionLabel" color="muted" className="mb-1">
+                  Groups
+                </Text>
+                <Text variant="amountSmall" color="foreground">
+                  {groups.length}
+                </Text>
+              </View>
+              <View className="w-px h-10 bg-border mx-2" />
+              <View className="flex-1 items-center">
+                <Text variant="sectionLabel" color="muted" className="mb-1">
+                  Owed
+                </Text>
+                <Text variant="amountSmall" color="success">
+                  +{formatAmount(owedToYou, preferredCurrency.code)}
+                </Text>
+              </View>
+              {youOwe > 0 && (
+                <>
+                  <View className="w-px h-10 bg-border mx-2" />
+                  <View className="flex-1 items-center">
+                    <Text variant="sectionLabel" color="muted" className="mb-1">
+                      Owe
+                    </Text>
+                    <Text variant="amountSmall" color="danger">
+                      -{formatAmount(youOwe, preferredCurrency.code)}
+                    </Text>
+                  </View>
+                </>
+              )}
             </View>
-            <View
-              style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
-            />
-            <View style={{ flex: 1 }}>
-              <Typography
-                style={{
-                  fontSize: 12,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_700Bold",
-                  textTransform: "uppercase",
-                  letterSpacing: 1.2,
-                  marginBottom: 4,
-                }}
-              >
-                Owed
-              </Typography>
-              <Typography
-                style={{ fontSize: 24, color: TEXT_SUCCESS, fontFamily: "CrimsonText_700Bold" }}
-              >
-                +{preferredCurrency.symbol}
-                {owedToYou.toFixed(0)}
-              </Typography>
-            </View>
-            {youOwe > 0 && (
-              <>
-                <View
-                  style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
-                />
-                <View style={{ flex: 1 }}>
-                  <Typography
-                    style={{
-                      fontSize: 12,
-                      color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_700Bold",
-                      textTransform: "uppercase",
-                      letterSpacing: 1.2,
-                      marginBottom: 4,
-                    }}
-                  >
-                    Owe
-                  </Typography>
-                  <Typography
-                    style={{ fontSize: 24, color: TEXT_DANGER, fontFamily: "CrimsonText_700Bold" }}
-                  >
-                    -{preferredCurrency.symbol}
-                    {youOwe.toFixed(0)}
-                  </Typography>
-                </View>
-              </>
-            )}
-          </View>
+          </Card>
         </FocusAwareView>
 
         {/* Preferences */}
-        <FocusAwareView delay={200} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40 }}>
-          <SectionLabel>PREFERENCES</SectionLabel>
-          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
+        <FocusAwareView delay={200} className="px-6 mb-10">
+          <SectionLabel>Preferences</SectionLabel>
+          <Card className="overflow-hidden">
             <SettingsItem
               icon="Moon"
               title="Dark Mode"
               subtitle="Switch between light and dark themes"
-              rightElement={<Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />}
+              rightElement={<Switch value={darkMode} onValueChange={handleThemeToggle} />}
             />
             <SettingsItem
               icon="Bell"
               title="Notifications"
               subtitle="Manage push notifications"
-              rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />}
+              rightElement={<Switch value={notifs} onValueChange={setNotifs} />}
             />
-
-            {/* Custom Edge-to-Edge wrapper for Currency Selector to match the new look */}
-            <View
-              style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}
-            >
+            <View className="py-2 px-4 border-t border-divider">
               <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
             </View>
-          </View>
+          </Card>
         </FocusAwareView>
 
         {/* Account */}
-        <FocusAwareView delay={300} style={{ paddingHorizontal: SECTION_PAD }}>
-          <SectionLabel>ACCOUNT</SectionLabel>
-          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
+        <FocusAwareView delay={300} className="px-6">
+          <SectionLabel>Account</SectionLabel>
+          <Card className="overflow-hidden">
             <SettingsItem
               icon="LogOut"
               title="Sign Out"
@@ -267,7 +179,7 @@ export default function ProfileScreen(): JSX.Element {
               isDanger
               isLast
             />
-          </View>
+          </Card>
         </FocusAwareView>
       </ScrollView>
     </FocusAwareView>

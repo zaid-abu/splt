@@ -1,5 +1,4 @@
-import { View, FlatList, Pressable, ActivityIndicator } from "react-native";
-import { Typography, Skeleton } from "heroui-native";
+import { View, FlatList, Pressable } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
@@ -15,11 +14,10 @@ import { useAcceptFriend, useRejectFriend } from "@/features/friends/queries/use
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
-
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
+import { Text } from "@/components/ui/Text";
+import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 export default function NotificationsScreen(): JSX.Element {
   const router = useRouter();
@@ -50,75 +48,39 @@ export default function NotificationsScreen(): JSX.Element {
           layout={LinearTransition}
           entering={FadeInDown.duration(400).delay(index * 50)}
         >
-          <View style={{ padding: 24, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+          <View className="p-6 border-b border-border">
+            <View className="flex-row items-center mb-4">
               <AppUserAvatar user={friendship.friendUser!} size="md" />
-              <View style={{ flex: 1, marginLeft: 16 }}>
-                <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-                >
+              <View className="flex-1 ml-4">
+                <Text variant="body" weight="bold">
                   {item.title}
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
-                    marginTop: 4,
-                  }}
-                >
+                </Text>
+                <Text variant="body-sm" color="muted" className="mt-1">
                   {item.subtitle}
-                </Typography>
+                </Text>
               </View>
             </View>
-            <View style={{ flexDirection: "row", gap: 12 }}>
-              <Pressable
+            <View className="flex-row gap-3">
+              <Button
+                variant="primary"
+                size="sm"
+                fullWidth
+                loading={isAccepting}
+                disabled={isWorking}
                 onPress={() => handleAccept(friendship.id)}
-                disabled={isWorking}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  height: 48,
-                  backgroundColor: TEXT_PRIMARY,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: pressed || isWorking ? 0.7 : 1,
-                })}
               >
-                {isAccepting ? (
-                  <ActivityIndicator color="#FFF" />
-                ) : (
-                  <Typography
-                    style={{ color: "#FFF", fontSize: 14, fontFamily: "CrimsonText_700Bold" }}
-                  >
-                    Accept
-                  </Typography>
-                )}
-              </Pressable>
-
-              <Pressable
+                Accept
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                fullWidth
+                loading={isRejecting}
+                disabled={isWorking}
                 onPress={() => handleReject(friendship.id)}
-                disabled={isWorking}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  height: 48,
-                  backgroundColor: "transparent",
-                  borderWidth: 1,
-                  borderColor: SEPARATOR,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: pressed || isWorking ? 0.5 : 1,
-                })}
               >
-                {isRejecting ? (
-                  <ActivityIndicator color={TEXT_PRIMARY} />
-                ) : (
-                  <Typography
-                    style={{ color: TEXT_PRIMARY, fontSize: 14, fontFamily: "CrimsonText_700Bold" }}
-                  >
-                    Reject
-                  </Typography>
-                )}
-              </Pressable>
+                Reject
+              </Button>
             </View>
           </View>
         </Animated.View>
@@ -129,43 +91,22 @@ export default function NotificationsScreen(): JSX.Element {
   };
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <FocusAwareView className="flex-1 bg-background">
+      <StatusBar style="light" />
 
-      {/* Header */}
       <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 24,
-          paddingTop: 60,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: SEPARATOR,
-        }}
+        className="flex-row items-center px-6 pb-4 border-b border-border"
+        style={{ paddingTop: 60 }}
       >
-        <Pressable
-          accessibilityRole="button"
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-11 h-11 p-0 mr-4"
           onPress={() => router.back()}
-          style={({ pressed }) => ({
-            width: 44,
-            height: 44,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "transparent",
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            opacity: pressed ? 0.5 : 1,
-            marginRight: 16,
-          })}
         >
-          <icons.ArrowLeft size={20} color={TEXT_PRIMARY} />
-        </Pressable>
-        <Typography
-          style={{ fontSize: 24, fontFamily: "UnicaOne_400Regular", color: TEXT_PRIMARY }}
-        >
-          Notifications
-        </Typography>
+          <icons.ArrowLeft size={20} color="#FAFAFA" />
+        </Button>
+        <Text variant="h2">Notifications</Text>
       </View>
 
       <FlatList
@@ -174,38 +115,15 @@ export default function NotificationsScreen(): JSX.Element {
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 100 }}
         ListEmptyComponent={
-          <View style={{ padding: 40, alignItems: "center", justifyContent: "center" }}>
+          <View className="p-10 items-center justify-center">
             {isLoading ? (
-              <ActivityIndicator size="large" color={TEXT_PRIMARY} />
+              <Spinner />
             ) : (
-              <>
-                <icons.BellOff
-                  size={48}
-                  color={TEXT_SECONDARY}
-                  style={{ marginBottom: 16, opacity: 0.5 }}
-                />
-                <Typography
-                  style={{
-                    fontSize: 18,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "CrimsonText_700Bold",
-                    textAlign: "center",
-                  }}
-                >
-                  All caught up!
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
-                    textAlign: "center",
-                    marginTop: 8,
-                  }}
-                >
-                  You have no new notifications right now.
-                </Typography>
-              </>
+              <EmptyState
+                icon="BellOff"
+                title="All caught up!"
+                description="You have no new notifications right now."
+              />
             )}
           </View>
         }

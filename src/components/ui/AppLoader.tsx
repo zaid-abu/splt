@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import { View } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,7 +9,7 @@ import Animated, {
   withSequence,
   Easing,
 } from "react-native-reanimated";
-import { Typography } from "heroui-native";
+import { Text } from "@/components/primitives/Text";
 
 interface AppLoaderProps {
   fullScreen?: boolean;
@@ -26,56 +26,33 @@ export function AppLoader({ fullScreen = false }: AppLoaderProps): JSX.Element {
         easing: Easing.bezier(0.4, 0, 0.2, 1),
       }),
       -1,
-      false
+      false,
     );
-
     scale.value = withRepeat(
       withSequence(
         withTiming(0.7, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
-        withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) })
+        withTiming(1, { duration: 1000, easing: Easing.inOut(Easing.ease) }),
       ),
       -1,
-      true
+      true,
     );
-  }, []);
+  }, [rotation, scale]);
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      transform: [{ rotate: `${rotation.value}deg` }, { scale: scale.value }],
-    };
-  });
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value}deg` }, { scale: scale.value }],
+  }));
 
   return (
-    <View style={[styles.container, fullScreen && styles.fullScreen]}>
-      <Animated.View style={[styles.box, animatedStyle]} />
-      <Typography style={styles.text}>LOADING</Typography>
+    <View
+      className={`items-center justify-center p-6 ${fullScreen ? "flex-1 bg-background" : ""}`}
+    >
+      <Animated.View
+        style={animatedStyle}
+        className="w-6 h-6 border-[1.5px] border-primary bg-transparent mb-4"
+      />
+      <Text className="text-base text-primary font-heading tracking-[4px] uppercase">
+        LOADING
+      </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 24,
-  },
-  fullScreen: {
-    flex: 1,
-    backgroundColor: "#F5F0EB",
-  },
-  box: {
-    width: 24,
-    height: 24,
-    borderWidth: 1.5,
-    borderColor: "#8C7A6B",
-    backgroundColor: "transparent",
-    marginBottom: 16,
-  },
-  text: {
-    fontFamily: "UnicaOne_400Regular",
-    fontSize: 16,
-    color: "#8C7A6B",
-    letterSpacing: 4,
-    textTransform: "uppercase",
-  },
-});

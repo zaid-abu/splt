@@ -1,23 +1,17 @@
-import { PressableFeedback, Typography } from "heroui-native";
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useDeleteGroup } from "@/features/groups/queries/useGroups";
 
-import { SwipeableRow } from "@/components/layout/SwipeableRow";
+import { Text } from "@/components/primitives/Text";
+import { Pressable } from "@/components/primitives/Pressable";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import * as icons from "lucide-react-native";
 import type { Group } from "@/types";
 
-// ─── Design Tokens ───
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
-
-const GROUP_BG_PALETTE = ["#FAFAFA", "#F8F8F8"];
+const GROUP_BG_PALETTE = [
+  "#2D1A0C", "#0C1A2D", "#2D0C1F", "#1C0C2D",
+  "#0C2D1A", "#0C2D2D", "#2D0C0C", "#0C0C2D",
+];
 
 function getGroupColor(id: string): string {
   const idx = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % GROUP_BG_PALETTE.length;
@@ -48,104 +42,49 @@ export function GroupCard({
   const iconBg = getGroupColor(group.id);
   const memberCount = group.members.length;
 
+  let subAmountColor: "success" | "danger" | "muted" = "muted";
   let subAmountText = "";
-  let subAmountColor = TEXT_SECONDARY;
 
   if (balance < 0) {
     subAmountText = `You owe ${formatAmount(Math.abs(balance), currency)}`;
-    subAmountColor = TEXT_DANGER;
+    subAmountColor = "danger";
   } else if (balance > 0) {
     subAmountText = `Owes you ${formatAmount(balance, currency)}`;
-    subAmountColor = TEXT_SUCCESS;
+    subAmountColor = "success";
   } else {
     subAmountText = "Settled up";
   }
 
   return (
     <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
-      <SwipeableRow onDelete={() => deleteGroup(group.id)}>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onPress}
-          style={({ pressed }) => ({
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 24,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
-            backgroundColor: BG,
-            opacity: pressed ? 0.5 : 1,
-          })}
+      <Pressable 
+        onPress={onPress} 
+        className={`flex-row items-center py-4 px-4 active:bg-surface-2 ${!isLast ? "border-b border-border" : ""}`}
+      >
+        <View
+          style={{ backgroundColor: iconBg }}
+          className="w-12 h-12 rounded-xl items-center justify-center shrink-0 mr-4"
         >
-          {/* Leading Icon */}
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 0,
-              backgroundColor: iconBg,
-              borderWidth: 1,
-              borderColor: SEPARATOR,
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 16,
-              flexShrink: 0,
-            }}
-          >
-            <Typography
-              style={{
-                fontSize: 20,
-                textAlign: "center",
-                color: TEXT_PRIMARY,
-              }}
-              numberOfLines={1}
-            >
-              {group.icon && group.icon.length <= 2
-                ? group.icon
-                : group.name.substring(0, 1).toUpperCase()}
-            </Typography>
-          </View>
+          <Text variant="sectionLabel" className="text-center text-foreground" numberOfLines={1}>
+            {group.icon && group.icon.length <= 2
+              ? group.icon
+              : group.name.substring(0, 1).toUpperCase()}
+          </Text>
+        </View>
 
-          {/* Title & Subtitle */}
-          <View style={{ flex: 1, marginRight: 12 }}>
-            <Typography
-              numberOfLines={1}
-              style={{
-                fontSize: 16,
-                color: TEXT_PRIMARY,
-                fontFamily: "CrimsonText_700Bold",
-                letterSpacing: -0.3,
-              }}
-            >
-              {group.name}
-            </Typography>
-            <Typography
-              style={{
-                fontSize: 14,
-                color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_600SemiBold",
-                marginTop: 4,
-              }}
-            >
-              {memberCount} participant{memberCount !== 1 ? "s" : ""}
-            </Typography>
-          </View>
+        <View className="flex-1 mr-3">
+          <Text variant="body" className="font-bold text-foreground mb-1" numberOfLines={1}>{group.name}</Text>
+          <Text variant="bodySmall" color="muted">
+            {memberCount} participant{memberCount !== 1 ? "s" : ""}
+          </Text>
+        </View>
 
-          {/* Trailing Balance */}
-          <View style={{ alignItems: "flex-end" }}>
-            <Typography
-              style={{
-                fontSize: 14,
-                color: subAmountColor,
-                fontFamily: "CrimsonText_700Bold",
-              }}
-            >
-              {subAmountText}
-            </Typography>
-          </View>
-        </Pressable>
-      </SwipeableRow>
+        <View className="items-end">
+          <Text variant="bodySmall" className={`font-bold ${subAmountColor === "success" ? "text-success" : subAmountColor === "danger" ? "text-danger" : "text-muted"}`}>
+            {subAmountText}
+          </Text>
+        </View>
+      </Pressable>
     </Animated.View>
   );
 }

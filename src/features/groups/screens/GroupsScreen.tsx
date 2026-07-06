@@ -1,23 +1,21 @@
-/**
- * Groups Screen
- *
- * Flatter design (no shadows), smooth animations, strict reference alignment based on design.json
- */
-import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, TextInput, Pressable } from "react-native";
+import { View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-
 import * as icons from "lucide-react-native";
-import { FlashList } from "@shopify/flash-list";
-import { FocusAwareView } from "@/components/animations/PageAnimator";
 import Animated, { LinearTransition } from "react-native-reanimated";
 
+import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { Text } from "@/components/primitives/Text";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Card } from "@/components/ui/Card";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Spinner } from "@/components/ui/Spinner";
+
 import { GroupCard } from "@/features/groups/components/GroupCard";
-import { AppLoader } from "@/components/ui/AppLoader";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -26,17 +24,11 @@ import { useUserSettlements } from "@/features/settlements/queries/useSettlement
 import * as balancesUtil from "@/features/settlements/utils/balances";
 import type { Group } from "@/types";
 
-// ─── Design Tokens ───
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
-const SECTION_PAD = 24;
-
 export default function GroupsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? "";
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
@@ -50,7 +42,7 @@ export default function GroupsScreen(): JSX.Element {
   const activeGroups = useMemo(() => {
     return groups.map((group) => {
       const balancesMap = balancesUtil.getUserBalances(
-        currentUser.id,
+        userId,
         group.id,
         groups,
         expenses,
@@ -64,178 +56,68 @@ export default function GroupsScreen(): JSX.Element {
       }
       return { group, netBalance };
     });
-  }, [groups, currentUser.id, expenses, settlements, preferredCurrency, convertCurrency]);
+  }, [groups, userId, expenses, settlements, preferredCurrency, convertCurrency]);
 
   const filtered = search.trim()
     ? activeGroups.filter((g) => g.group.name.toLowerCase().includes(search.toLowerCase()))
     : activeGroups;
 
-  const ListHeaderComponent = useCallback(
+  const HeaderComponent = useCallback(
     () => (
-      <View
-        style={{ paddingHorizontal: SECTION_PAD, marginBottom: 24, marginTop: insets.top + 16 }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 24,
-          }}
-        >
-          <Typography
-            style={{
-              fontFamily: "UnicaOne_400Regular",
-              fontSize: 36,
-              color: TEXT_PRIMARY,
-              lineHeight: 44,
-              letterSpacing: -0.5,
-            }}
-          >
-            Groups.
-          </Typography>
-          <Pressable
-            accessibilityRole="button"
+      <View style={{ marginTop: insets.top + 16, marginBottom: 24 }} className="px-6">
+        <View className="flex-row justify-between mb-6">
+          <Text variant="screenTitle" className="text-foreground">Groups</Text>
+          <Button
+            variant="ghost"
+            size="sm"
             onPress={() => router.push("/group/new")}
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: "transparent",
-              borderRadius: 0,
-              borderWidth: 1,
-              borderColor: SEPARATOR,
-              opacity: pressed ? 0.5 : 1,
-            })}
+            className="w-11 h-11 rounded-xl items-center justify-center p-0"
           >
-            <icons.Plus size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
-          </Pressable>
+            
+              <icons.Plus size={20} className="text-foreground" strokeWidth={1.5} />
+            
+          </Button>
         </View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: BG,
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            borderRadius: 0,
-            height: 56,
-            paddingHorizontal: 16,
-          }}
-        >
-          <icons.Search size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
-          <TextInput
-            value={search}
-            onChangeText={setSearch}
-            placeholder="Search your groups..."
-            placeholderTextColor={TEXT_SECONDARY}
-            style={{
-              flex: 1,
-              marginLeft: 12,
-              fontFamily: "CrimsonText_600SemiBold",
-              color: TEXT_PRIMARY,
-              fontSize: 16,
-            }}
-          />
-          {search.length > 0 && (
-            <Pressable accessibilityRole="button" onPress={() => setSearch("")} hitSlop={8}>
-              <icons.XCircle size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
-            </Pressable>
-          )}
-        </View>
+        <Input
+          value={search}
+          onChangeText={setSearch}
+          placeholder="Search your groups..."
+          leftElement={
+              <icons.Search size={20} className="text-muted-foreground" strokeWidth={1.5} />
+            }
+          rightElement={search.length > 0 ? (
+                <Pressable onPress={() => setSearch("")} hitSlop={8}>
+                  <icons.XCircle size={20} className="text-muted-foreground" strokeWidth={1.5} />
+                </Pressable>
+              ) : undefined}
+        />
       </View>
     ),
     [search, insets.top, router]
   );
 
-  const ListEmptyComponent = useCallback(
+  const EmptyComponent = useCallback(
     () => (
-      <View style={{ paddingHorizontal: SECTION_PAD }}>
+      <View className="px-6">
         {isLoading ? (
-          <View style={{ paddingTop: 40 }}>
-            <AppLoader />
-          </View>
+          <Spinner size="md" className="pt-10" />
+        ) : search ? (
+          <EmptyState
+            icon="Search"
+            title="No groups found"
+            description="Try a different search term"
+          />
         ) : (
-          <View
-            style={{
-              marginTop: 32,
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 32,
+          <EmptyState
+            icon="Users"
+            title="No groups found"
+            description="Create a group with friends to start splitting expenses easily."
+            action={{
+              label: "Create Group",
+              onPress: () => router.push("/group/new"),
             }}
-          >
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 0,
-                backgroundColor: "#F0EBE1", // slightly darker secondary background for contrast
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-                borderWidth: 1,
-                borderColor: SEPARATOR,
-              }}
-            >
-              <icons.Users size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
-            </View>
-            <Typography
-              style={{
-                fontSize: 20,
-                color: TEXT_PRIMARY,
-                marginBottom: 8,
-                fontFamily: "CrimsonText_700Bold",
-                textAlign: "center",
-                letterSpacing: -0.5,
-              }}
-            >
-              No groups found
-            </Typography>
-            <Typography
-              style={{
-                fontSize: 15,
-                color: TEXT_SECONDARY,
-                textAlign: "center",
-                fontFamily: "CrimsonText_600SemiBold",
-              }}
-            >
-              {search
-                ? "Try a different search term"
-                : "Create a group with friends to start splitting expenses easily."}
-            </Typography>
-            {!search && (
-              <Pressable
-                onPress={() => router.push("/group/new")}
-                style={({ pressed }) => ({
-                  marginTop: 32,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: "transparent",
-                  height: 56,
-                  borderRadius: 0,
-                  borderWidth: 1,
-                  borderColor: TEXT_PRIMARY,
-                  paddingHorizontal: 32,
-                  opacity: pressed ? 0.5 : 1,
-                })}
-              >
-                <icons.Plus size={20} color={TEXT_PRIMARY} strokeWidth={2} />
-                <Typography
-                  style={{
-                    color: TEXT_PRIMARY,
-                    fontSize: 16,
-                    fontFamily: "CrimsonText_700Bold",
-                    marginLeft: 8,
-                  }}
-                >
-                  Create Group
-                </Typography>
-              </Pressable>
-            )}
-          </View>
+          />
         )}
       </View>
     ),
@@ -247,17 +129,13 @@ export default function GroupsScreen(): JSX.Element {
       const isLast = index === filtered.length - 1;
 
       return (
-        <Animated.View layout={LinearTransition.springify()}>
+        <Animated.View layout={LinearTransition.springify()} className="px-6">
           <View
-            style={{
-              backgroundColor: BG,
-              borderTopWidth: index === 0 ? 1 : 0,
-              borderTopColor: SEPARATOR,
-            }}
+            className={`bg-surface ${index === 0 ? "rounded-t-2xl border-t" : ""} ${isLast ? "rounded-b-2xl border-b mb-4" : ""} border-x border-border`}
           >
             <GroupCard
               group={item.group}
-              currentUserId={currentUser.id}
+              currentUserId={userId}
               balance={item.netBalance}
               currency={preferredCurrency.code}
               index={index}
@@ -268,22 +146,24 @@ export default function GroupsScreen(): JSX.Element {
         </Animated.View>
       );
     },
-    [currentUser.id, filtered.length, preferredCurrency.code, router]
+    [userId, filtered.length, preferredCurrency.code, router]
   );
 
+  if (!currentUser) return <></>;
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <View className="flex-1 bg-background">
+      <StatusBar style="light" />
 
-      <FocusAwareView delay={0} style={{ flex: 1 }}>
-        <FlashList
+      <FocusAwareView delay={0} className="flex-1">
+        <Animated.FlatList
           data={filtered}
           renderItem={renderItem}
-          ListHeaderComponent={ListHeaderComponent}
-          ListEmptyComponent={ListEmptyComponent}
+          keyExtractor={(item) => item.group.id}
+          itemLayoutAnimation={LinearTransition}
+          ListHeaderComponent={HeaderComponent}
+          ListEmptyComponent={EmptyComponent}
           contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
-          extraData={{ filteredLength: filtered.length }}
         />
       </FocusAwareView>
     </View>

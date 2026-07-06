@@ -1,13 +1,16 @@
 import { Stack, SplashScreen } from "expo-router";
 import type { JSX } from "react";
 import { useEffect } from "react";
-import { useFonts, UnicaOne_400Regular } from "@expo-google-fonts/unica-one";
+import { useFonts } from "expo-font";
+import { Anton_400Regular } from "@expo-google-fonts/anton";
 import {
-  CrimsonText_400Regular,
-  CrimsonText_400Regular_Italic,
-  CrimsonText_600SemiBold,
-  CrimsonText_700Bold,
-} from "@expo-google-fonts/crimson-text";
+  DMSans_400Regular,
+  DMSans_400Regular_Italic,
+  DMSans_500Medium,
+  DMSans_500Medium_Italic,
+  DMSans_700Bold,
+  DMSans_700Bold_Italic,
+} from "@expo-google-fonts/dm-sans";
 
 import { AppProvider } from "@/providers/AppProvider";
 import "../global.css";
@@ -18,11 +21,13 @@ SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout(): JSX.Element | null {
   const [loaded] = useFonts({
-    UnicaOne_400Regular,
-    CrimsonText_400Regular,
-    CrimsonText_400Regular_Italic,
-    CrimsonText_600SemiBold,
-    CrimsonText_700Bold,
+    Anton_400Regular,
+    DMSans_400Regular,
+    DMSans_400Regular_Italic,
+    DMSans_500Medium,
+    DMSans_500Medium_Italic,
+    DMSans_700Bold,
+    DMSans_700Bold_Italic,
   });
 
   useEffect(() => {

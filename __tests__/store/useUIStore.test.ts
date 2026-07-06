@@ -110,7 +110,7 @@ describe("useUIStore.fetchExchangeRates", () => {
 
   it("updates exchange rates on successful fetch", async () => {
     const mockRates = { USD: 1, EUR: 0.9, GBP: 0.8 };
-    global.fetch = jest.fn().mockResolvedValue({
+    (globalThis as any).fetch = jest.fn().mockResolvedValue({
       json: jest.fn().mockResolvedValue({ result: "success", rates: mockRates }),
     } as any);
 
@@ -120,7 +120,7 @@ describe("useUIStore.fetchExchangeRates", () => {
 
   it("keeps fallback rates when fetch fails", async () => {
     const originalRates = { ...useUIStore.getState().exchangeRates };
-    global.fetch = jest.fn().mockRejectedValue(new Error("Network error"));
+    (globalThis as any).fetch = jest.fn().mockRejectedValue(new Error("Network error"));
 
     await useUIStore.getState().fetchExchangeRates();
     // Rates should remain unchanged
@@ -129,7 +129,7 @@ describe("useUIStore.fetchExchangeRates", () => {
 
   it("keeps fallback rates when response result is not success", async () => {
     const originalRates = { ...useUIStore.getState().exchangeRates };
-    global.fetch = jest.fn().mockResolvedValue({
+    (globalThis as any).fetch = jest.fn().mockResolvedValue({
       json: jest.fn().mockResolvedValue({ result: "error" }),
     } as any);
 

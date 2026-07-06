@@ -7,30 +7,34 @@ import {
   toExpenseUpdate,
   type ExpenseRow,
 } from "@/services/api/mappers";
+import { handleSupabaseError } from "@/services/api/errors";
 
 const expenseSelect = "*, paidByUser:users!paid_by(*), splits:expense_splits(*, user:users(*))";
 
 export const expensesApi = {
-  async fetchGroupExpenses(groupId: string): Promise<Expense[]> {
+  async fetchGroupExpenses(groupId: string, page: number = 0, limit: number = 20): Promise<Expense[]> {
+    const offset = page * limit;
     const { data, error } = await supabase
       .from("expenses")
       .select(expenseSelect)
       .eq("group_id", groupId)
       .order("date", { ascending: false })
+      .range(offset, offset + limit - 1)
       .returns<ExpenseRow[]>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to fetch group expenses");
     return data?.map(mapExpense) ?? [];
   },
 
-  async fetchUserExpenses(userId: string): Promise<Expense[]> {
+  async fetchUserExpenses(userId: string, page: number = 0, limit: number = 20): Promise<Expense[]> {
+    const offset = page * limit;
     // 1. Get all expense IDs the user is part of
     const { data: splitsData, error: splitsError } = await supabase
       .from("expense_splits")
       .select("expense_id")
       .eq("user_id", userId);
 
-    if (splitsError) throw splitsError;
+    if (splitsError) handleSupabaseError(splitsError, "Failed to fetch user expense splits");
 
     if (!splitsData || splitsData.length === 0) return [];
 
@@ -42,9 +46,10 @@ export const expensesApi = {
       .select(expenseSelect)
       .in("id", expenseIds)
       .order("date", { ascending: false })
+      .range(offset, offset + limit - 1)
       .returns<ExpenseRow[]>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to fetch group expenses");
     return data?.map(mapExpense) ?? [];
   },
 
@@ -56,7 +61,7 @@ export const expensesApi = {
       .single()
       .returns<ExpenseRow>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to fetch group expenses");
     return mapExpense(data);
   },
 
@@ -70,7 +75,7 @@ export const expensesApi = {
       .select()
       .single();
 
-    if (expError) throw expError;
+    if (expError) handleSupabaseError(expError, "Failed to create expense");
 
     // 2. Insert splits if provided
     if (splits && splits.length > 0) {
@@ -78,7 +83,7 @@ export const expensesApi = {
 
       const { error: splitError } = await supabase.from("expense_splits").insert(splitsToInsert);
 
-      if (splitError) throw splitError;
+      if (splitError) handleSupabaseError(splitError, "Failed to create expense splits");
     }
 
     // 3. Return full expense via fetchExpense to get joined data
@@ -95,7 +100,7 @@ export const expensesApi = {
         .update(toExpenseUpdate(coreData))
         .eq("id", expenseId);
 
-      if (expError) throw expError;
+      if (expError) handleSupabaseError(expError, "Failed to update expense");
     }
 
     // 2. Update splits if provided (simplified as delete and recreate)
@@ -107,7 +112,7 @@ export const expensesApi = {
 
         const { error: splitError } = await supabase.from("expense_splits").insert(splitsToInsert);
 
-        if (splitError) throw splitError;
+        if (splitError) handleSupabaseError(splitError, "Failed to update expense splits");
       }
     }
 
@@ -117,6 +122,6 @@ export const expensesApi = {
 
   async deleteExpense(expenseId: string): Promise<void> {
     const { error } = await supabase.from("expenses").delete().eq("id", expenseId);
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to fetch group expenses");
   },
 };

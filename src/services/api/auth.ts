@@ -1,6 +1,7 @@
 import { supabase } from "@/services/supabase/client";
 import type { User } from "@/types";
 import { mapUser } from "./mappers";
+import { handleSupabaseError } from "./errors";
 
 export interface SignUpData {
   email: string;
@@ -28,7 +29,7 @@ export const AuthService = {
       },
     });
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to sign up");
     return authData;
   },
 
@@ -39,18 +40,18 @@ export const AuthService = {
       password: password ?? "",
     });
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to sign in");
     return authData;
   },
 
   async signOut() {
     const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to sign out");
   },
 
   async getSession() {
     const { data, error } = await supabase.auth.getSession();
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to get session");
     return data.session;
   },
 

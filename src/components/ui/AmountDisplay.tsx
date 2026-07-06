@@ -5,7 +5,7 @@
  *
  * @see https://heroui.com/docs/native/components/text.mdx
  */
-import { Typography } from "heroui-native";
+import { Text } from "@/components/primitives/Text";
 import type { JSX } from "react";
 import { View } from "react-native";
 
@@ -59,19 +59,18 @@ export function AmountDisplay({
   // Map size to Typography type
   const typeMap = { sm: "body-xs", md: "body-sm", lg: "body", xl: "h4" } as const;
   const type = typeMap[size];
-
   const prefix = showSign && !isZero ? (isNeg ? "-" : "+") : isNeg ? "-" : "";
   const formatted = formatAmount(amount, currency);
 
   return (
     <View style={{ flexDirection: "row", alignItems: "baseline", gap: 2 }}>
-      <Typography type={type} className={`font-medium ${colorClass}`}>
+      <Text variant={size === "lg" ? "amountLarge" : size === "md" ? "sectionLabel" : "body"} className={colorClass}>
         {prefix}
         {formatted}
-      </Typography>
-      <Typography type="body-xs" className="text-muted">
+      </Text>
+      <Text variant={size === "sm" ? "caption" : "bodySmall"} color="muted" className="ml-1">
         {currency}
-      </Typography>
+      </Text>
     </View>
   );
 }

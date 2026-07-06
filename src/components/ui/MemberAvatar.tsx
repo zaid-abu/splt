@@ -1,33 +1,23 @@
-/**
- * AppUserAvatar — HeroUI Avatar compound component.
- *
- * Uses Avatar + Avatar.Fallback (initials-based).
- * Avatar.Image is optional — omitted when no photo URL.
- *
- * @see https://heroui.com/docs/native/components/avatar.mdx
- */
-import type { AvatarSize } from "heroui-native";
 import type { JSX } from "react";
 import { View } from "react-native";
-import { Avatar, Typography, useThemeColor } from "heroui-native";
-
+import { Text } from "@/components/primitives/Text";
 import type { User } from "@/types";
 import { getStringColor, hexToPastel } from "@/utils/theme";
 
+export { AvatarStack } from "./AvatarStack";
+
 interface AppUserAvatarProps {
   user: User;
-  size?: AvatarSize;
-  /** When provided, overrides color with balance-based semantic color */
+  size?: "sm" | "md" | "lg";
   balance?: number;
 }
 
 export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps): JSX.Element {
-  const successColor = useThemeColor("success" as any) as unknown as string;
-  const dangerColor = useThemeColor("danger" as any) as unknown as string;
-  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
-  const secondaryColor = useThemeColor("secondary" as any) as unknown as string;
+  const successColor = "#22C55E";
+  const dangerColor = "#EF4444";
+  const mutedColor = "#8E8E93";
 
-  let bg, textColor;
+  let bg: string, textColor: string;
   if (balance !== undefined) {
     if (balance > 0) {
       bg = hexToPastel(successColor, 0.85);
@@ -36,8 +26,8 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
       bg = hexToPastel(dangerColor, 0.85);
       textColor = dangerColor;
     } else {
-      bg = secondaryColor;
-      textColor = mutedForeground;
+      bg = "#26262D";
+      textColor = mutedColor;
     }
   } else {
     textColor = getStringColor(user.id);
@@ -45,107 +35,28 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
   }
 
   const sizeMap = {
-    sm: { size: 32, font: 12 },
-    md: { size: 40, font: 16 },
-    lg: { size: 48, font: 18 },
-  };
+    sm: { size: 32, font: "bodySmall" },
+    md: { size: 40, font: "body" },
+    lg: { size: 48, font: "sectionLabel" },
+  } as const;
 
-  const dims = sizeMap[size as keyof typeof sizeMap] || sizeMap.md;
+  const dims = sizeMap[size] ?? sizeMap.md;
 
   return (
-    <Avatar
-      size={size}
+    <View
       style={{
         backgroundColor: bg,
         width: dims.size,
         height: dims.size,
-        borderRadius: 0,
+        borderRadius: 8,
         borderWidth: 1,
-        borderColor: "#E8E4DF",
+        borderColor: "#26262D",
       }}
+      className="items-center justify-center overflow-hidden"
     >
-      <Avatar.Fallback>
-        <Typography
-          style={{
-            color: textColor,
-            fontFamily: "CrimsonText_700Bold",
-            fontSize: dims.font,
-            letterSpacing: -0.5,
-          }}
-        >
-          {user.initials}
-        </Typography>
-      </Avatar.Fallback>
-    </Avatar>
-  );
-}
-
-/**
- * Overlapping avatar stack with +N overflow pill.
- * Each avatar offset by -10px to create stack effect.
- * Uses standard views to guarantee perfect circle rendering and borders.
- */
-export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number }): JSX.Element {
-  const visible = users.slice(0, max);
-  const overflow = users.length - max;
-  const secondaryColor = useThemeColor("secondary" as any) as unknown as string;
-  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
-
-  return (
-    <View style={{ flexDirection: "row", alignItems: "center" }}>
-      {visible.map((user, idx) => {
-        const textColor = getStringColor(user.id);
-        const bg = hexToPastel(textColor, 0.85);
-
-        return (
-          <Avatar
-            key={user.id}
-            size="sm"
-            style={{
-              backgroundColor: bg,
-              marginLeft: idx === 0 ? 0 : -8,
-              zIndex: visible.length - idx,
-              borderWidth: 2,
-              borderColor: "white",
-              borderRadius: 0,
-              width: 32,
-              height: 32,
-            }}
-          >
-            <Avatar.Fallback>
-              <Typography
-                style={{ color: textColor, fontFamily: "CrimsonText_700Bold", fontSize: 12 }}
-              >
-                {user.initials}
-              </Typography>
-            </Avatar.Fallback>
-          </Avatar>
-        );
-      })}
-      {overflow > 0 && (
-        <Avatar
-          size="sm"
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 0,
-            backgroundColor: secondaryColor,
-            marginLeft: -8,
-            alignItems: "center",
-            justifyContent: "center",
-            borderWidth: 2,
-            borderColor: "white",
-          }}
-        >
-          <Avatar.Fallback>
-            <Typography
-              style={{ color: mutedForeground, fontFamily: "CrimsonText_700Bold", fontSize: 11 }}
-            >
-              +{overflow}
-            </Typography>
-          </Avatar.Fallback>
-        </Avatar>
-      )}
+      <Text variant={dims.font} className="font-bold tracking-tight" style={{ color: textColor }}>
+        {user.initials}
+      </Text>
     </View>
   );
 }

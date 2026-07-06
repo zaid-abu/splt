@@ -1,13 +1,15 @@
-import { Alert, Typography } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, ScrollView, Pressable } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeIn, FadeInDown, LinearTransition, Easing } from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
+import { Text } from "@/components/primitives/Text";
+import { Button } from "@/components/ui/Button";
+import { EmptyState } from "@/components/ui/EmptyState";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
@@ -21,32 +23,6 @@ import { calculateTotalGroupExpenses } from "@/features/groups/utils/calculation
 import { BalanceCard } from "@/features/dashboard/components/BalanceCard";
 import type { Expense, User } from "@/types";
 
-// ─── Design Tokens (Edge-to-Edge) ───
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
-
-function SectionLabel({ children }: { children: string }): JSX.Element {
-  return (
-    <Typography
-      style={{
-        fontSize: 11,
-        letterSpacing: 1.4,
-        color: TEXT_SECONDARY,
-        fontFamily: "CrimsonText_700Bold",
-        textTransform: "uppercase",
-        marginBottom: 16,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
-
-// ─── TransactionRow Constants ───
 const CATEGORY_ICONS: Record<string, keyof typeof icons> = {
   food: "Utensils",
   transport: "Car",
@@ -71,7 +47,6 @@ const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
   other: { bg: "#F1F5F9", icon: "#64748B" },
 };
 
-// ─── TransactionRow ───
 interface TransactionRowProps {
   expense: Expense;
   currentUserId: string;
@@ -102,17 +77,17 @@ function TransactionRow({
   const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
 
   let subAmountText = "";
-  let subAmountColor = TEXT_DANGER;
+  let subAmountColor: "danger" | "success" = "danger";
 
   if (iPaid) {
     const lentAmount = expense.amount - myShare;
     if (lentAmount > 0) {
       subAmountText = formatAmount(lentAmount, expense.currency);
-      subAmountColor = TEXT_SUCCESS;
+      subAmountColor = "success";
     }
   } else if (myShare > 0) {
     subAmountText = formatAmount(myShare, expense.currency);
-    subAmountColor = TEXT_DANGER;
+    subAmountColor = "danger";
   }
 
   const dateStr = expense.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -121,100 +96,43 @@ function TransactionRow({
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      style={({ pressed }) => ({
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: SEPARATOR,
-        opacity: pressed ? 0.5 : 1,
-      })}
+      className={`flex-row items-center py-4 px-4 bg-surface active:opacity-50 ${isLast ? "" : "border-b border-border"}`}
     >
       <View
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 0,
-          backgroundColor: colors.bg,
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: 16,
-          flexShrink: 0,
-        }}
+        style={{ backgroundColor: colors.bg }}
+        className="w-12 h-12 rounded-xl items-center justify-center mr-4 shrink-0 relative"
       >
         <IconComp size={24} color={colors.icon} strokeWidth={1.5} />
         {paidByUser && (
-          <View
-            style={{
-              position: "absolute",
-              bottom: -4,
-              right: -4,
-              width: 20,
-              height: 20,
-              borderRadius: 10,
-              backgroundColor: BG,
-              borderWidth: 2,
-              borderColor: BG,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Typography
-              style={{ fontSize: 10, color: TEXT_PRIMARY, textAlign: "center", lineHeight: 14 }}
-            >
+          <View className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-background border-2 border-background items-center justify-center">
+            <Text variant="caption" color="primary" className="text-center">
               {paidByUser.name.charAt(0).toUpperCase()}
-            </Typography>
+            </Text>
           </View>
         )}
       </View>
 
-      <View style={{ flex: 1, marginRight: 12 }}>
-        <Typography
-          numberOfLines={1}
-          style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-        >
+      <View className="flex-1 mr-3">
+        <Text variant="body" className="font-bold" color="foreground" numberOfLines={1}>
           {expense.title}
-        </Typography>
-        <Typography
-          style={{
-            fontSize: 14,
-            color: TEXT_SECONDARY,
-            fontFamily: "CrimsonText_600SemiBold",
-            marginTop: 4,
-          }}
-        >
+        </Text>
+        <Text variant="bodySmall" color="muted" className="mt-1">
           {paidByName} paid
-        </Typography>
+        </Text>
       </View>
 
-      <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
-        <Typography
-          style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-        >
+      <View className="items-end shrink-0">
+        <Text variant="body" className="font-bold" color="foreground">
           {formatAmount(expense.amount, expense.currency)}
-        </Typography>
+        </Text>
         {!!subAmountText ? (
-          <Typography
-            style={{
-              fontSize: 14,
-              color: subAmountColor,
-              fontFamily: "CrimsonText_700Bold",
-              marginTop: 4,
-            }}
-          >
+          <Text variant="bodySmall" color={subAmountColor} className="font-bold mt-1">
             {subAmountText}
-          </Typography>
+          </Text>
         ) : (
-          <Typography
-            style={{
-              fontSize: 14,
-              color: TEXT_SECONDARY,
-              fontFamily: "CrimsonText_600SemiBold",
-              marginTop: 4,
-            }}
-          >
+          <Text variant="bodySmall" color="muted" className="mt-1">
             {dateStr}
-          </Typography>
+          </Text>
         )}
       </View>
     </Pressable>
@@ -226,6 +144,7 @@ export default function GroupDetailScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? "";
 
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: allExpenses = [] } = useUserExpenses(currentUser?.id);
@@ -273,58 +192,53 @@ export default function GroupDetailScreen(): JSX.Element {
   const oweUsers = useMemo(() => {
     if (!group) return [];
     return groupDebts
-      .filter((d) => d.fromUserId === currentUser.id)
+      .filter((d) => d.fromUserId === userId)
       .map((d) => group.members.find((m) => m.userId === d.toUserId)?.user)
       .filter(Boolean) as User[];
-  }, [groupDebts, currentUser.id, group]);
+  }, [groupDebts, userId, group]);
 
   const owedUsers = useMemo(() => {
     if (!group) return [];
     return groupDebts
-      .filter((d) => d.toUserId === currentUser.id)
+      .filter((d) => d.toUserId === userId)
       .map((d) => group.members.find((m) => m.userId === d.fromUserId)?.user)
       .filter(Boolean) as User[];
-  }, [groupDebts, currentUser.id, group]);
+  }, [groupDebts, userId, group]);
 
   const youOwe = useMemo(
     () =>
       groupDebts
-        .filter((d) => d.fromUserId === currentUser.id)
+        .filter((d) => d.fromUserId === userId)
         .reduce((acc, curr) => acc + curr.amount, 0),
-    [groupDebts, currentUser.id]
+    [groupDebts, userId]
   );
 
   const owedToYou = useMemo(
     () =>
       groupDebts
-        .filter((d) => d.toUserId === currentUser.id)
+        .filter((d) => d.toUserId === userId)
         .reduce((acc, curr) => acc + curr.amount, 0),
-    [groupDebts, currentUser.id]
+    [groupDebts, userId]
   );
 
   const userById = useMemo(() => {
     const map = new Map<string, User>();
-    group?.members.forEach((m) => map.set(m.userId, m.user));
+    group?.members.forEach((m) => m.userId && map.set(m.userId, m.user));
     return map;
   }, [group]);
 
+  if (!currentUser) return <></>;
+
   if (!group) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: BG }}>
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <Alert status="danger" style={{ borderRadius: 0, marginBottom: 16 }}>
-            <Alert.Indicator />
-            <Alert.Content>
-              <Alert.Title>Group not found</Alert.Title>
-              <Alert.Description>This group may have been deleted.</Alert.Description>
-            </Alert.Content>
-          </Alert>
-          <Pressable
-            onPress={() => router.back()}
-            style={{ padding: 12, backgroundColor: "#8C7A6B", borderRadius: 0 }}
-          >
-            <Typography style={{ color: "#FFF" }}>Go back</Typography>
-          </Pressable>
+      <SafeAreaView className="flex-1 bg-background">
+        <View className="flex-1 items-center justify-center p-6">
+          <EmptyState
+            icon="AlertCircle"
+            title="Group not found"
+            description="This group may have been deleted."
+            action={{ label: "Go back", onPress: () => router.back() }}
+          />
         </View>
       </SafeAreaView>
     );
@@ -333,19 +247,12 @@ export default function GroupDetailScreen(): JSX.Element {
   const GroupIcon = (icons as any)[group.icon] || icons.Users;
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <View className="flex-1 bg-background">
+      <StatusBar style="light" />
 
-      {/* ── Header ──────────────────────────────────────────────────────── */}
       <View
-        style={{
-          paddingTop: insets.top + 16,
-          paddingBottom: 24,
-          paddingHorizontal: 24,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
+        className="flex-row items-center justify-between px-6 pb-6"
+        style={{ paddingTop: insets.top + 16 }}
       >
         <Pressable
           accessibilityRole="button"
@@ -356,183 +263,93 @@ export default function GroupDetailScreen(): JSX.Element {
               router.replace("/(tabs)");
             }
           }}
-          style={({ pressed }) => ({
-            width: 44,
-            height: 44,
-            borderRadius: 0,
-            backgroundColor: "transparent",
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed ? 0.5 : 1,
-          })}
+          className="w-11 h-11 items-center justify-center bg-transparent border border-border rounded-xl active:opacity-50"
         >
-          <icons.ArrowLeft size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          <icons.ArrowLeft size={20} color="#FB923C" strokeWidth={1.5} />
         </Pressable>
 
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-            flex: 1,
-            marginHorizontal: 16,
-          }}
-        >
-          <GroupIcon size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
-          <Typography
-            numberOfLines={1}
-            style={{
-              fontFamily: "UnicaOne_400Regular",
-              fontSize: 28,
-              color: TEXT_PRIMARY,
-              lineHeight: 36,
-              flexShrink: 1,
-              textAlign: "center",
-            }}
-          >
+        <View className="flex-row items-center justify-center gap-3 flex-1 mx-4">
+          <GroupIcon size={24} color="#FB923C" strokeWidth={1.5} />
+          <Text variant="screenTitle" color="primary" numberOfLines={1} className="shrink-1 text-center">
             {group.name}
-          </Typography>
+          </Text>
         </View>
 
         <Pressable
           accessibilityRole="button"
           onPress={() => router.push(`/group/${group.id}/settings`)}
-          style={({ pressed }) => ({
-            width: 44,
-            height: 44,
-            borderRadius: 0,
-            backgroundColor: "transparent",
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed ? 0.5 : 1,
-          })}
+          className="w-11 h-11 items-center justify-center bg-transparent border border-border rounded-xl active:opacity-50"
         >
-          <icons.Settings size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          <icons.Settings size={20} color="#FB923C" strokeWidth={1.5} />
         </Pressable>
       </View>
 
       <ScrollView
-        style={{ flex: 1 }}
+        className="flex-1"
         contentContainerStyle={{ paddingBottom: 140 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Balance Cards ─────────────────────────────────────────────── */}
         <Animated.View
           entering={FadeInDown.duration(400).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+          className="px-6 mb-10"
         >
-          <BalanceCard
-            youOwe={youOwe}
-            owedToYou={owedToYou}
-            currencyCode={group.currency}
-            oweUsers={oweUsers}
-            owedUsers={owedUsers}
-            onOwePress={() => router.push(`/group/${group.id}/settle`)}
-            onOwedPress={() => router.push(`/group/${group.id}/settle`)}
-          />
+          <View className="bg-surface border border-border rounded-2xl overflow-hidden">
+            <BalanceCard
+              youOwe={youOwe}
+              owedToYou={owedToYou}
+              currencyCode={group.currency}
+              oweUsers={oweUsers}
+              owedUsers={owedUsers}
+              onOwePress={() => router.push(`/group/${group.id}/settle`)}
+              onOwedPress={() => router.push(`/group/${group.id}/settle`)}
+            />
+          </View>
         </Animated.View>
 
-        {/* ── Group Balances ────────────────────────────────────────────── */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(50).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+          className="px-6 mb-10"
         >
-          <SectionLabel>Group Balances</SectionLabel>
-          <View>
+          <Text variant="sectionLabel" className="mb-4 px-1">
+            Group Balances
+          </Text>
+          <View className="bg-surface border border-border rounded-2xl overflow-hidden">
             {groupDebts.length === 0 ? (
-              <View
-                style={{
-                  paddingVertical: 24,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderTopWidth: 1,
-                  borderBottomWidth: 1,
-                  borderColor: SEPARATOR,
-                }}
-              >
-                <View
-                  style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 0,
-                    backgroundColor: "transparent",
-                    borderWidth: 1,
-                    borderColor: SEPARATOR,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 16,
-                  }}
-                >
-                  <icons.Check size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                </View>
-                <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-                >
-                  All settled up!
-                </Typography>
-              </View>
+              <EmptyState
+                icon="Check"
+                title="All settled up!"
+              />
             ) : (
               groupDebts.map((debt, idx) => {
                 const fromUser = group.members.find((m) => m.userId === debt.fromUserId)?.user;
                 const toUser = group.members.find((m) => m.userId === debt.toUserId)?.user;
                 if (!fromUser || !toUser) return null;
 
-                const isMeOwe = fromUser.id === currentUser.id;
-                const isOweMe = toUser.id === currentUser.id;
-                const amountColor = isMeOwe ? TEXT_DANGER : isOweMe ? TEXT_SUCCESS : TEXT_PRIMARY;
+                const isMeOwe = fromUser.id === userId;
+                const isOweMe = toUser.id === userId;
+                const amountColor = isMeOwe ? "danger" : isOweMe ? "success" : "primary";
+                const isLast = idx === groupDebts.length - 1;
 
                 return (
                   <Pressable
                     key={`${debt.fromUserId}-${debt.toUserId}`}
                     accessibilityRole="button"
-                    style={({ pressed }) => ({
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingVertical: 16,
-                      borderBottomWidth: 1,
-                      borderBottomColor: SEPARATOR,
-                      opacity: pressed ? 0.5 : 1,
-                    })}
+                    className={`flex-row items-center justify-between py-4 px-4 bg-surface active:opacity-50 ${isLast ? "" : "border-b border-border"}`}
                   >
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+                    <View className="flex-row items-center gap-4">
                       <AppUserAvatar user={fromUser} size="md" />
                       <View>
-                        <Typography
-                          style={{
-                            fontSize: 16,
-                            color: TEXT_PRIMARY,
-                            fontFamily: "CrimsonText_700Bold",
-                          }}
-                        >
+                        <Text variant="body" className="font-bold" color="foreground">
                           {isMeOwe ? "You" : fromUser.name}
-                        </Typography>
-                        <Typography
-                          style={{
-                            fontSize: 14,
-                            color: TEXT_SECONDARY,
-                            fontFamily: "CrimsonText_600SemiBold",
-                            marginTop: 4,
-                          }}
-                        >
+                        </Text>
+                        <Text variant="bodySmall" color="muted" className="mt-1">
                           owes {isOweMe ? "you" : toUser.name.split(" ")[0]}
-                        </Typography>
+                        </Text>
                       </View>
                     </View>
-                    <Typography
-                      style={{
-                        fontSize: 18,
-                        color: amountColor,
-                        fontFamily: "CrimsonText_700Bold",
-                      }}
-                    >
+                    <Text variant="sectionLabel" className="font-bold" color={amountColor}>
                       {formatAmount(debt.amount, group.currency)}
-                    </Typography>
+                    </Text>
                   </Pressable>
                 );
               })
@@ -540,87 +357,33 @@ export default function GroupDetailScreen(): JSX.Element {
           </View>
         </Animated.View>
 
-        {/* ── Transactions ─────────────────────────────────────────────── */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(100).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+          className="px-6 mb-10"
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              marginBottom: 16,
-            }}
-          >
-            <SectionLabel>Transactions</SectionLabel>
-            <Typography
-              style={{
-                fontSize: 13,
-                color: TEXT_PRIMARY,
-                fontFamily: "CrimsonText_700Bold",
-                marginBottom: 16,
-              }}
-            >
+          <View className="flex-row items-center justify-between mb-4 px-1">
+            <Text variant="sectionLabel">Transactions</Text>
+            <Text variant="bodySmall" className="font-bold" color="primary">
               Total: {formatAmount(totalExpensesInGroupCurrency, group.currency)}
-            </Typography>
+            </Text>
           </View>
 
-          <View>
+          <View className="bg-surface border border-border rounded-2xl overflow-hidden">
             {expenses.length === 0 ? (
-              <View
-                style={{
-                  paddingVertical: 32,
-                  alignItems: "center",
-                  borderTopWidth: 1,
-                  borderBottomWidth: 1,
-                  borderColor: SEPARATOR,
-                }}
-              >
-                <View
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 0,
-                    backgroundColor: "transparent",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 16,
-                    borderWidth: 1,
-                    borderColor: SEPARATOR,
-                  }}
-                >
-                  <icons.Receipt size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                </View>
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "CrimsonText_700Bold",
-                    marginBottom: 8,
-                  }}
-                >
-                  No expenses yet
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
-                  }}
-                >
-                  Add the first expense for this group
-                </Typography>
-              </View>
+              <EmptyState
+                icon="Receipt"
+                title="No expenses yet"
+                description="Add the first expense for this group"
+              />
             ) : (
               expenses.map((expense, idx) => {
-                const mySplit = expense.splits.find((s) => s.userId === currentUser.id);
+                const mySplit = expense.splits.find((s) => s.userId === userId);
                 const paidByUser = userById.get(expense.paidBy);
                 return (
                   <TransactionRow
                     key={expense.id}
                     expense={expense}
-                    currentUserId={currentUser.id}
+                    currentUserId={userId}
                     paidByUser={paidByUser}
                     myShare={mySplit?.amount ?? 0}
                     isLast={idx === expenses.length - 1}
@@ -633,68 +396,31 @@ export default function GroupDetailScreen(): JSX.Element {
         </Animated.View>
       </ScrollView>
 
-      {/* ── Bottom Action Bar ──────────────────────────────────────────── */}
       <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingHorizontal: 24,
-          paddingTop: 16,
-          paddingBottom: insets.bottom + 16,
-          flexDirection: "row",
-          gap: 16,
-          backgroundColor: BG,
-          borderTopWidth: 1,
-          borderTopColor: SEPARATOR,
-        }}
+        className="absolute bottom-0 left-0 right-0 px-6 pt-4 flex-row gap-4 bg-background border-t border-border"
+        style={{ paddingBottom: insets.bottom + 16 }}
       >
-        <Pressable
-          accessibilityRole="button"
+        <Button
+          variant="secondary"
+          size="md"
+          fullWidth
+          leftIcon={<icons.Handshake size={20} color="#FB923C" strokeWidth={1.5} />}
           onPress={() => router.push(`/group/${group.id}/settle`)}
-          style={({ pressed }) => ({
-            flex: 1,
-            height: 56,
-            borderRadius: 0,
-            backgroundColor: "transparent",
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "row",
-            gap: 12,
-            opacity: pressed ? 0.5 : 1,
-          })}
+          className="flex-1"
         >
-          <icons.Handshake size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
-          <Typography
-            style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-          >
-            Settle Up
-          </Typography>
-        </Pressable>
+          Settle Up
+        </Button>
 
-        <Pressable
-          accessibilityRole="button"
+        <Button
+          variant="primary"
+          size="md"
+          fullWidth
+          leftIcon={<icons.Plus size={20} color="#FAFAFA" strokeWidth={2} />}
           onPress={() => router.push(`/expense/new?groupId=${group.id}`)}
-          style={({ pressed }) => ({
-            flex: 1,
-            height: 56,
-            borderRadius: 0,
-            backgroundColor: "#8C7A6B",
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "row",
-            gap: 12,
-            opacity: pressed ? 0.8 : 1,
-          })}
+          className="flex-1"
         >
-          <icons.Plus size={20} color="#FFFFFF" strokeWidth={2} />
-          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
-            Add Expense
-          </Typography>
-        </Pressable>
+          Add Expense
+        </Button>
       </View>
     </View>
   );

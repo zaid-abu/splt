@@ -21,7 +21,7 @@ const mockFrom = supabase.from as jest.Mock;
  */
 function makeChain(terminalResult: { data: unknown; error: unknown }) {
   const chain: Record<string, any> = {};
-  const methods = ["select", "eq", "in", "or", "order", "returns", "insert", "update", "delete", "single", "maybeSingle", "limit"];
+  const methods = ["select", "eq", "in", "or", "order", "returns", "insert", "update", "delete", "single", "maybeSingle", "limit", "range"];
   methods.forEach((m) => {
     chain[m] = jest.fn().mockReturnValue(chain);
   });

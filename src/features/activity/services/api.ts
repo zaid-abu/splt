@@ -1,6 +1,7 @@
 import { supabase } from "@/services/supabase/client";
 import type { Activity } from "@/types";
 import { mapActivity, toActivityInsert, type ActivityRow } from "@/services/api/mappers";
+import { handleSupabaseError } from "@/services/api/errors";
 
 const activitySelect =
   "*, user:users(*), group:groups(*), expense:expenses(*), settlement:settlements(*)";
@@ -14,7 +15,7 @@ export const activitiesApi = {
       .order("date", { ascending: false })
       .returns<ActivityRow[]>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to fetch activities");
     return data?.map(mapActivity) ?? [];
   },
 
@@ -26,12 +27,12 @@ export const activitiesApi = {
       .single()
       .returns<ActivityRow>();
 
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to log activity");
     return mapActivity(data);
   },
 
   async deleteActivity(activityId: string): Promise<void> {
     const { error } = await supabase.from("activities").delete().eq("id", activityId);
-    if (error) throw error;
+    if (error) handleSupabaseError(error, "Failed to delete activity");
   },
 };

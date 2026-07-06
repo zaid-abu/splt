@@ -1,11 +1,5 @@
-/**
- * Add Expense Screen
- *
- * Rewritten using Edge-to-Edge Editorial design system.
- */
 import DateTimePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
-import { Typography, Spinner, Popover } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseNewRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
@@ -20,7 +14,7 @@ import {
   Pressable,
   TextInput,
 } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
@@ -28,9 +22,8 @@ import { useGroups } from "@/features/groups/queries/useGroups";
 import { useFriends } from "@/features/friends/queries/useFriends";
 import {
   useUserExpenses,
-  useAddExpense,
-  useUpdateExpense,
 } from "@/features/expenses/queries/useExpenses";
+import { useAddExpense, useUpdateExpense } from "@/features/expenses/mutations/useExpenseMutations";
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -43,11 +36,10 @@ import {
 } from "@/features/expenses/components/ExpenseFormParticipants";
 import { ExpenseFormSelectors } from "@/features/expenses/components/ExpenseFormSplits";
 import { useAppToast } from "@/hooks/useAppToast";
-
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
+import { Text } from "@/components/ui/Text";
+import { Button } from "@/components/ui/Button";
+import { Spinner } from "@/components/ui/Spinner";
+import { BottomSheet } from "@/components/ui/BottomSheet";
 
 export default function AddExpenseScreen(): JSX.Element {
   const {
@@ -58,6 +50,7 @@ export default function AddExpenseScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
+  const userId = currentUser?.id ?? "";
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: friendsList = [] } = useFriends(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
@@ -68,7 +61,7 @@ export default function AddExpenseScreen(): JSX.Element {
   const { toast } = useAppToast();
 
   const { state, actions } = useExpenseForm({
-    currentUser,
+    currentUser: currentUser!,
     groups,
     friends: friendsList,
     expenses,
@@ -91,33 +84,21 @@ export default function AddExpenseScreen(): JSX.Element {
     });
   }, []);
 
+  if (!currentUser) return <></>;
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <View className="flex-1 bg-background">
+      <StatusBar style="light" />
       <KeyboardAvoidingView
-        style={{ flex: 1 }}
+        className="flex-1"
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
         <View
-          style={{
-            paddingTop: insets.top + 16,
-            paddingBottom: 24,
-            paddingHorizontal: 24,
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+          className="flex-row items-center justify-between px-6 pb-6"
+          style={{ paddingTop: insets.top + 16 }}
         >
-          <Typography
-            style={{
-              fontFamily: "UnicaOne_400Regular",
-              fontSize: 28,
-              color: TEXT_PRIMARY,
-              lineHeight: 36,
-            }}
-          >
+          <Text variant="h2">
             {state.existingExpense ? "Edit Expense" : "Add Expense"}
-          </Typography>
+          </Text>
           <Pressable
             onPress={() => {
               if (router.canGoBack()) {
@@ -127,22 +108,20 @@ export default function AddExpenseScreen(): JSX.Element {
               }
             }}
             accessibilityRole="button"
-            style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
+            className="p-2 active:opacity-50"
           >
-            <icons.X size={24} color={TEXT_SECONDARY} strokeWidth={1.5} />
+            <icons.X size={24} color="#8E8E93" strokeWidth={1.5} />
           </Pressable>
         </View>
 
         <ScrollView
-          style={{ flex: 1 }}
+          className="flex-1"
           contentContainerStyle={{ paddingBottom: 120 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           {!isReady ? (
-            <View style={{ alignItems: "center", justifyContent: "center", paddingVertical: 80 }}>
-              <Spinner />
-            </View>
+            <Spinner className="py-20" />
           ) : (
             <View>
               {!(initialGroupId || initialFriendId) && !state.selectionConfirmed && (
@@ -163,67 +142,31 @@ export default function AddExpenseScreen(): JSX.Element {
                 />
               )}
 
-              {/* ── Context pill (Selected Group/Friend) ── */}
               {(state.selectedGroup || state.selectedFriends.length > 0) &&
                 state.selectionConfirmed &&
                 !(initialGroupId || initialFriendId) && (
                   <Animated.View
                     entering={FadeInUp.duration(300)}
-                    style={{ paddingHorizontal: 24, marginBottom: 40 }}
+                    className="px-6 mb-10"
                   >
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        paddingVertical: 16,
-                        borderBottomWidth: 1,
-                        borderBottomColor: SEPARATOR,
-                      }}
-                    >
-                      <View
-                        style={{ flexDirection: "row", alignItems: "center", gap: 16, flex: 1 }}
-                      >
-                        <View
-                          style={{
-                            width: 48,
-                            height: 48,
-                            borderRadius: 0,
-                            backgroundColor: "transparent",
-                            borderWidth: 1,
-                            borderColor: SEPARATOR,
-                            alignItems: "center",
-                            justifyContent: "center",
-                          }}
-                        >
+                    <View className="flex-row items-center py-4 border-b border-border">
+                      <View className="flex-row items-center gap-4 flex-1">
+                        <View className="w-12 h-12 rounded-xl bg-transparent border border-border items-center justify-center">
                           {state.selectedGroup ? (
-                            <icons.Users size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                            <icons.Users size={24} color="#FAFAFA" strokeWidth={1.5} />
                           ) : (
-                            <icons.User size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                            <icons.User size={24} color="#FAFAFA" strokeWidth={1.5} />
                           )}
                         </View>
-                        <View style={{ flex: 1 }}>
-                          <Typography
-                            numberOfLines={1}
-                            style={{
-                              fontSize: 20,
-                              color: TEXT_PRIMARY,
-                              fontFamily: "CrimsonText_700Bold",
-                            }}
-                          >
+                        <View className="flex-1">
+                          <Text variant="h4" numberOfLines={1}>
                             {state.selectedGroup
                               ? state.selectedGroup.name
                               : state.selectedFriends.map((f) => f.name.split(" ")[0]).join(", ")}
-                          </Typography>
-                          <Typography
-                            style={{
-                              fontSize: 13,
-                              color: TEXT_SECONDARY,
-                              fontFamily: "CrimsonText_600SemiBold",
-                              marginTop: 4,
-                            }}
-                          >
+                          </Text>
+                          <Text variant="body-sm" color="muted" className="mt-1">
                             Currency: {state.expenseCurrency}
-                          </Typography>
+                          </Text>
                         </View>
                       </View>
                       <Pressable
@@ -233,88 +176,39 @@ export default function AddExpenseScreen(): JSX.Element {
                           actions.setSelectedFriendIds([]);
                           actions.setSelectionConfirmed(false);
                         }}
-                        style={({ pressed }) => ({
-                          paddingHorizontal: 16,
-                          paddingVertical: 8,
-                          backgroundColor: "transparent",
-                          borderWidth: 1,
-                          borderColor: SEPARATOR,
-                          borderRadius: 0,
-                          opacity: pressed ? 0.5 : 1,
-                        })}
+                        className="px-4 py-2 bg-transparent border border-border rounded-xl active:opacity-50"
                       >
-                        <Typography
-                          style={{
-                            fontSize: 13,
-                            color: TEXT_PRIMARY,
-                            fontFamily: "CrimsonText_700Bold",
-                          }}
-                        >
+                        <Text variant="body-sm" weight="bold">
                           Change
-                        </Typography>
+                        </Text>
                       </Pressable>
                     </View>
                   </Animated.View>
                 )}
 
-              {/* ── Pre-selected Context Pill ── */}
               {((initialGroupId && state.selectedGroup) ||
                 (initialFriendId && state.selectedFriends.length > 0)) && (
-                <View style={{ paddingHorizontal: 24, marginBottom: 40 }}>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      paddingVertical: 16,
-                      borderBottomWidth: 1,
-                      borderBottomColor: SEPARATOR,
-                    }}
-                  >
-                    <View
-                      style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 0,
-                        backgroundColor: "transparent",
-                        borderWidth: 1,
-                        borderColor: SEPARATOR,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: 16,
-                      }}
-                    >
+                <View className="px-6 mb-10">
+                  <View className="flex-row items-center py-4 border-b border-border">
+                    <View className="w-12 h-12 rounded-xl bg-transparent border border-border items-center justify-center mr-4">
                       {state.selectedGroup ? (
-                        <icons.Users size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                        <icons.Users size={24} color="#FAFAFA" strokeWidth={1.5} />
                       ) : (
-                        <icons.User size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                        <icons.User size={24} color="#FAFAFA" strokeWidth={1.5} />
                       )}
                     </View>
                     <View>
-                      <Typography
-                        numberOfLines={1}
-                        style={{
-                          fontSize: 20,
-                          color: TEXT_PRIMARY,
-                          fontFamily: "CrimsonText_700Bold",
-                        }}
-                      >
+                      <Text variant="h4" numberOfLines={1}>
                         {state.selectedGroup
                           ? state.selectedGroup.name
                           : state.selectedFriends[0].name}
-                      </Typography>
-                      <Typography
-                        style={{
-                          fontSize: 13,
-                          color: TEXT_SECONDARY,
-                          fontFamily: "CrimsonText_600SemiBold",
-                          marginTop: 4,
-                        }}
-                      >
+                      </Text>
+                      <Text variant="body-sm" color="muted" className="mt-1">
                         Currency:{" "}
                         {state.selectedGroup
                           ? state.selectedGroup.currency
                           : preferredCurrency.code}
-                      </Typography>
+                      </Text>
                     </View>
                   </View>
                 </View>
@@ -323,77 +217,35 @@ export default function AddExpenseScreen(): JSX.Element {
               {(state.selectedGroup || state.selectedFriends.length > 0) &&
                 state.selectionConfirmed && (
                   <Animated.View entering={FadeInUp.duration(300).delay(100)}>
-                    {/* ── Amount & Title ────────────── */}
-                    <View style={{ paddingHorizontal: 24, marginBottom: 40, alignItems: "center" }}>
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          marginBottom: 24,
-                        }}
-                      >
-                        <Typography
-                          style={{
-                            fontSize: 40,
-                            color: TEXT_SECONDARY,
-                            fontFamily: "CrimsonText_700Bold",
-                            marginRight: 8,
-                            marginTop: 4,
-                          }}
-                        >
+                    <View className="px-6 mb-10 items-center">
+                      <View className="flex-row items-center justify-center mb-6">
+                        <Text variant="h1" color="muted" className="mr-2 mt-1">
                           {state.expenseCurrency}
-                        </Typography>
+                        </Text>
                         <TextInput
                           placeholder="0.00"
-                          placeholderTextColor={TEXT_SECONDARY}
+                          placeholderTextColor="#8E8E93"
                           value={state.amount}
                           onChangeText={actions.setAmount}
                           keyboardType="decimal-pad"
-                          style={{
-                            fontSize: 72,
-                            color: TEXT_PRIMARY,
-                            fontFamily: "CrimsonText_700Bold",
-                            textAlign: "center",
-                            minWidth: 120,
-                          }}
+                          className="text-7xl text-foreground font-bold text-center min-w-[120px]"
                         />
                       </View>
 
-                      <View
-                        style={{
-                          width: "100%",
-                          borderBottomWidth: 1,
-                          borderBottomColor: SEPARATOR,
-                          paddingBottom: 16,
-                        }}
-                      >
+                      <View className="w-full border-b border-border pb-4">
                         <TextInput
                           placeholder="What was it for? (e.g. Dinner, Uber)"
-                          placeholderTextColor={TEXT_SECONDARY}
+                          placeholderTextColor="#8E8E93"
                           value={state.title}
                           onChangeText={actions.setTitle}
                           autoCapitalize="sentences"
-                          style={{
-                            height: 48,
-                            fontSize: 20,
-                            color: TEXT_PRIMARY,
-                            fontFamily: "CrimsonText_700Bold",
-                            textAlign: "center",
-                          }}
+                          className="h-12 text-xl text-foreground font-bold text-center"
                         />
                       </View>
                     </View>
 
-                    {/* ── Currency, Date & Receipt ────────────── */}
-                    <View style={{ paddingHorizontal: 24, marginBottom: 40 }}>
-                      <View
-                        style={{
-                          paddingVertical: 16,
-                          borderBottomWidth: 1,
-                          borderBottomColor: SEPARATOR,
-                        }}
-                      >
+                    <View className="px-6 mb-10">
+                      <View className="py-4 border-b border-border">
                         <CurrencySelector
                           label="Currency"
                           value={state.expenseCurrency}
@@ -404,98 +256,52 @@ export default function AddExpenseScreen(): JSX.Element {
                         />
                       </View>
 
-                      <Popover
-                        isOpen={state.showDatePicker}
-                        onOpenChange={actions.setShowDatePicker}
+                      <Pressable
+                        accessibilityRole="button"
+                        onPress={() => actions.setShowDatePicker(!state.showDatePicker)}
+                        className="py-4 flex-row items-center border-b border-border active:opacity-50"
                       >
-                        <Popover.Trigger asChild>
-                          <Pressable
-                            accessibilityRole="button"
-                            style={({ pressed }) => ({
-                              paddingVertical: 16,
-                              flexDirection: "row",
-                              alignItems: "center",
-                              borderBottomWidth: 1,
-                              borderBottomColor: SEPARATOR,
-                              opacity: pressed ? 0.5 : 1,
-                            })}
-                          >
-                            <icons.Calendar size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                            <Typography
-                              style={{
-                                flex: 1,
-                                marginLeft: 16,
-                                fontSize: 16,
-                                color: TEXT_PRIMARY,
-                                fontFamily: "CrimsonText_600SemiBold",
-                              }}
-                            >
-                              {dayjs(state.expenseDate).format("MMMM D, YYYY")}
-                            </Typography>
-                            <icons.ChevronRight
-                              size={20}
-                              color={TEXT_SECONDARY}
-                              strokeWidth={1.5}
-                            />
-                          </Pressable>
-                        </Popover.Trigger>
-                        <Popover.Portal>
-                          <Popover.Overlay />
-                          <Popover.Content
-                            presentation="popover"
-                            placement="top"
-                            width={340}
-                            className="bg-[#F5F0EB] rounded-none p-2 border border-[#E8E4DF] shadow-lg"
-                          >
-                            <Popover.Arrow fill="#F5F0EB" />
-                            <DateTimePicker
-                              mode="single"
-                              date={dayjs(state.expenseDate)}
-                              onChange={(params: any) => {
-                                if (params.date) {
-                                  actions.setExpenseDate(dayjs(params.date).toDate());
-                                  setTimeout(() => actions.setShowDatePicker(false), 300);
-                                }
-                              }}
-                              styles={{
-                                selected: { backgroundColor: "#8C7A6B", borderRadius: 0 },
-                                today: { backgroundColor: SEPARATOR, borderRadius: 0 },
-                                day_label: { color: TEXT_PRIMARY, fontSize: 15 },
-                                header: { paddingBottom: 12 },
-                                month_selector_label: { color: TEXT_PRIMARY, fontSize: 16 },
-                                year_selector_label: { color: TEXT_PRIMARY, fontSize: 16 },
-                                weekday_label: { color: TEXT_SECONDARY },
-                              }}
-                            />
-                          </Popover.Content>
-                        </Popover.Portal>
-                      </Popover>
+                        <icons.Calendar size={24} color="#FAFAFA" strokeWidth={1.5} />
+                        <Text variant="body" weight="semibold" className="flex-1 ml-4">
+                          {dayjs(state.expenseDate).format("MMMM D, YYYY")}
+                        </Text>
+                        <icons.ChevronRight size={20} color="#8E8E93" strokeWidth={1.5} />
+                      </Pressable>
+
+                      {state.showDatePicker && (
+                        <View className="bg-surface-2 border border-border rounded-xl p-2 mt-2">
+                          <DateTimePicker
+                            mode="single"
+                            date={dayjs(state.expenseDate)}
+                            onChange={(params: any) => {
+                              if (params.date) {
+                                actions.setExpenseDate(dayjs(params.date).toDate());
+                                setTimeout(() => actions.setShowDatePicker(false), 300);
+                              }
+                            }}
+                            styles={{
+                              selected: { backgroundColor: "#FB923C", borderRadius: 8 },
+                              today: { backgroundColor: "#26262D", borderRadius: 8 },
+                              day_label: { color: "#FAFAFA", fontSize: 15 },
+                              header: { paddingBottom: 12 },
+                              month_selector_label: { color: "#FAFAFA", fontSize: 16 },
+                              year_selector_label: { color: "#FAFAFA", fontSize: 16 },
+                              weekday_label: { color: "#8E8E93" },
+                            }}
+                          />
+                        </View>
+                      )}
 
                       <Pressable
                         accessibilityRole="button"
                         onPress={() => {}}
-                        style={({ pressed }) => ({
-                          paddingVertical: 16,
-                          flexDirection: "row",
-                          alignItems: "center",
-                          borderBottomWidth: 1,
-                          borderBottomColor: SEPARATOR,
-                          opacity: pressed ? 0.5 : 1,
-                        })}
+                        className="py-4 flex-row items-center border-b border-border active:opacity-50"
                       >
-                        <icons.Camera size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                        <Typography
-                          style={{
-                            flex: 1,
-                            marginLeft: 16,
-                            fontSize: 16,
-                            color: TEXT_PRIMARY,
-                            fontFamily: "CrimsonText_600SemiBold",
-                          }}
-                        >
+                        <icons.Camera size={24} color="#FAFAFA" strokeWidth={1.5} />
+                        <Text variant="body" weight="semibold" className="flex-1 ml-4">
                           Attach Receipt
-                        </Typography>
-                        <icons.ChevronRight size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+                        </Text>
+                        <icons.ChevronRight size={20} color="#8E8E93" strokeWidth={1.5} />
                       </Pressable>
                     </View>
 
@@ -507,7 +313,7 @@ export default function AddExpenseScreen(): JSX.Element {
                       splitMethod={state.splitMethod}
                       setSplitMethod={actions.setSplitMethod}
                       participants={state.participants}
-                      currentUserId={currentUser.id}
+                      currentUserId={userId}
                     />
 
                     <ExpenseFormParticipants
@@ -524,7 +330,7 @@ export default function AddExpenseScreen(): JSX.Element {
                       setCustomAmounts={actions.setCustomAmounts}
                       customPercentages={state.customPercentages}
                       setCustomPercentages={actions.setCustomPercentages}
-                      currentUserId={currentUser.id}
+                      currentUserId={userId}
                     />
                   </Animated.View>
                 )}
@@ -532,76 +338,34 @@ export default function AddExpenseScreen(): JSX.Element {
           )}
         </ScrollView>
 
-        {/* ── Fixed Submit Button ─────────────────────────────── */}
         <View
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            paddingHorizontal: 24,
-            paddingTop: 16,
-            paddingBottom: insets.bottom + 16,
-            backgroundColor: BG,
-          }}
+          className="absolute bottom-0 left-0 right-0 px-6 pt-4 bg-background"
+          style={{ paddingBottom: insets.bottom + 16 }}
         >
           {!state.selectionConfirmed ? (
-            <Pressable
-              accessibilityRole="button"
+            <Button
+              variant="primary"
+              fullWidth
+              size="lg"
+              disabled={!state.selectedGroup && state.selectedFriends.length === 0}
               onPress={() => {
                 if (state.selectedGroupId || state.selectedFriendIds.length > 0) {
                   actions.setSelectionConfirmed(true);
                 }
               }}
-              disabled={!state.selectedGroup && state.selectedFriends.length === 0}
-              style={({ pressed }) => ({
-                height: 56,
-                borderRadius: 0,
-                backgroundColor:
-                  !state.selectedGroup && state.selectedFriends.length === 0
-                    ? SEPARATOR
-                    : TEXT_PRIMARY,
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "row",
-                opacity: pressed ? 0.8 : 1,
-              })}
             >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color:
-                    !state.selectedGroup && state.selectedFriends.length === 0
-                      ? TEXT_SECONDARY
-                      : "#FFFFFF",
-                  fontFamily: "CrimsonText_700Bold",
-                }}
-              >
-                Continue
-              </Typography>
-            </Pressable>
+              Continue
+            </Button>
           ) : (
-            <Pressable
-              accessibilityRole="button"
+            <Button
+              variant="primary"
+              fullWidth
+              size="lg"
+              loading={state.loading}
               onPress={actions.handleSubmit}
-              disabled={state.loading}
-              style={({ pressed }) => ({
-                height: 56,
-                borderRadius: 0,
-                backgroundColor: "#8C7A6B",
-                alignItems: "center",
-                justifyContent: "center",
-                flexDirection: "row",
-                opacity: pressed || state.loading ? 0.8 : 1,
-              })}
             >
-              {state.loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
-              <Typography
-                style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}
-              >
-                {state.existingExpense ? "Save Changes" : "Add Expense"}
-              </Typography>
-            </Pressable>
+              {state.existingExpense ? "Save Changes" : "Add Expense"}
+            </Button>
           )}
         </View>
       </KeyboardAvoidingView>

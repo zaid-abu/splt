@@ -4,10 +4,8 @@ import {
   ScrollView,
   Pressable,
   LayoutAnimation,
-  ActivityIndicator,
   RefreshControl,
 } from "react-native";
-import { Typography } from "heroui-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
@@ -18,6 +16,8 @@ import { useUIStore } from "@/store/useUIStore";
 import { useAnalytics, type AnalyticsPeriod } from "../hooks/useAnalytics";
 import { CategoryBreakdown } from "../components/CategoryBreakdown";
 import { TopExpenses } from "../components/TopExpenses";
+import { Text } from "@/components/ui/Text";
+import { Spinner } from "@/components/ui/Spinner";
 
 const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "week", label: "Week" },
@@ -52,31 +52,17 @@ export default function AnalyticsScreen() {
     }
   }, [refetch]);
 
-  const BG = "#F5F0EB";
-  const TEXT_PRIMARY = "#1A1817";
-  const TEXT_SECONDARY = "#A39B93";
-
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <FocusAwareView className="flex-1 bg-background">
+      <StatusBar style="light" />
       <View
-        style={{
-          paddingTop: insets.top + 24,
-          backgroundColor: BG,
-          borderBottomWidth: 1,
-          borderBottomColor: "#E5DFD9",
-          zIndex: 10,
-        }}
+        className="bg-background border-b border-border"
+        style={{ paddingTop: insets.top + 24 }}
       >
-        <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
-          <Typography
-            style={{ fontSize: 32, fontFamily: "UnicaOne_400Regular", color: TEXT_PRIMARY }}
-          >
-            Analytics
-          </Typography>
+        <View className="px-6 mb-6">
+          <Text variant="h2">Analytics</Text>
         </View>
 
-        {/* Period Selector */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -91,23 +77,19 @@ export default function AnalyticsScreen() {
                   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                   setPeriod(p.key);
                 }}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  backgroundColor: isSelected ? "#8C7A6B" : "transparent",
-                  borderWidth: 1,
-                  borderColor: isSelected ? "#8C7A6B" : "#E5DFD9",
-                }}
+                className={`px-4 py-2 border rounded-xl ${
+                  isSelected
+                    ? "bg-primary border-primary"
+                    : "bg-transparent border-border"
+                } active:opacity-70`}
               >
-                <Typography
-                  style={{
-                    fontSize: 13,
-                    fontFamily: "CrimsonText_700Bold",
-                    color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
-                  }}
+                <Text
+                  variant="body-sm"
+                  weight="bold"
+                  color={isSelected ? "foreground" : "foreground"}
                 >
                   {p.label}
-                </Typography>
+                </Text>
               </Pressable>
             );
           })}
@@ -121,41 +103,22 @@ export default function AnalyticsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={TEXT_PRIMARY}
+            tintColor="#FAFAFA"
             progressViewOffset={10}
           />
         }
       >
         {isLoading ? (
-          <View style={{ padding: 40, alignItems: "center" }}>
-            <ActivityIndicator size="large" color="#8C7A6B" />
-          </View>
+          <Spinner className="py-10" />
         ) : (
-          <View style={{ paddingHorizontal: 24, gap: 24 }}>
-            {/* Total Spent Hero */}
-            <View style={{ backgroundColor: "transparent", paddingVertical: 16 }}>
-              <Typography
-                style={{
-                  fontSize: 12,
-                  color: "#A39B93",
-                  fontFamily: "CrimsonText_600SemiBold",
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  marginBottom: 8,
-                }}
-              >
+          <View className="px-6 gap-6">
+            <View className="py-4">
+              <Text variant="label" className="mb-2">
                 Total Spent
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 36,
-                  color: "#1A1817",
-                  fontFamily: "CrimsonText_700Bold",
-                  lineHeight: 44,
-                }}
-              >
+              </Text>
+              <Text variant="h1">
                 {formatAmount(totalSpent, preferredCurrency.code)}
-              </Typography>
+              </Text>
             </View>
 
             <CategoryBreakdown

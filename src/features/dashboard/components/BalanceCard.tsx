@@ -1,42 +1,20 @@
 /**
- * BalanceCard — Premium Edge-to-Edge Design
+ * BalanceCard — Dark-first design with user avatars and settle action.
  */
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import { View } from "react-native";
 import * as icons from "lucide-react-native";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import type { User } from "@/types";
-
-const BG = "transparent";
-const TEXT_PRIMARY = "#000000";
-const TEXT_MUTED = "#8A8782";
-const SEPARATOR = "#E8E4DF";
-const AMOUNT_OWE = "#000000";
-const AMOUNT_OWED = "#4CAF82";
-
-function SectionLabel({ children }: { children: string }): JSX.Element {
-  return (
-    <Typography
-      style={{
-        fontSize: 10,
-        letterSpacing: 1.2,
-        color: TEXT_MUTED,
-        fontFamily: "CrimsonText_700Bold",
-        textTransform: "uppercase",
-        marginBottom: 8,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Text } from "@/components/primitives/Text";
+import { AvatarStack } from "@/components/ui/AvatarStack";
 
 interface HalfCardProps {
   label: string;
   amount: number;
   currencyCode: string;
-  amountColor: string;
+  amountColor: "foreground" | "success" | "danger";
   users: User[];
   onPress: () => void;
   accessibilityLabel: string;
@@ -55,105 +33,49 @@ function HalfCard({
   showSettleButton,
   onSettlePress,
 }: HalfCardProps): JSX.Element {
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   const a = Math.abs(amount);
   let valStr = a.toFixed(2);
   if (a >= 1_000_000) valStr = `${(a / 1_000_000).toFixed(1)}M`;
   else if (a >= 10_000) valStr = `${(a / 1_000).toFixed(1)}K`;
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      onPress={onPress}
-      // eslint-disable-next-line
-      onPressIn={() => (scale.value = withSpring(0.97, { damping: 15, stiffness: 300 }))}
-      // eslint-disable-next-line
-      onPressOut={() => (scale.value = withSpring(1, { damping: 15, stiffness: 300 }))}
-      style={{ flex: 1 }}
-    >
-      <Animated.View
-        style={[
-          {
-            flex: 1,
-            paddingVertical: 12,
-            paddingHorizontal: 12,
-            backgroundColor: "transparent",
-            borderRadius: 16,
-          },
-          animatedStyle,
-        ]}
-      >
-        <SectionLabel>{label}</SectionLabel>
+    <Card onPress={onPress} bordered={false} accessibilityLabel={accessibilityLabel} className="flex-1 py-4 px-4">
+      <Text variant="bodySmall" color="muted" className="font-semibold">{label}</Text>
 
-        {/* Amount + Currency */}
-        <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 16 }}>
-          <Typography
-            style={{
-              fontSize: 32,
-              color: amountColor,
-              fontFamily: "CrimsonText_700Bold",
-              lineHeight: 40,
-              letterSpacing: -1,
-            }}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-          >
-            {valStr}
-          </Typography>
-          <Typography
-            style={{
-              fontSize: 14,
-              color: TEXT_MUTED,
-              fontFamily: "CrimsonText_600SemiBold",
-              marginLeft: 4,
-            }}
-          >
-            {currencyCode}
-          </Typography>
-        </View>
-
-        {/* Action row */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "flex-end",
-            minHeight: 28,
-          }}
+      <View className="flex-row items-baseline mb-3">
+        <Text
+          variant="screenTitle"
+          className={amountColor === "foreground" ? "text-foreground" : amountColor === "success" ? "text-success" : "text-danger"}
+          numberOfLines={1}
+          adjustsFontSizeToFit
         >
-          {showSettleButton && users.length > 0 && amount > 0 ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={(e) => {
-                e.stopPropagation();
-                onSettlePress?.();
-              }}
-              style={({ pressed }) => ({
-                backgroundColor: SEPARATOR,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 0,
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <Typography
-                style={{ fontSize: 12, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-              >
-                Settle
-              </Typography>
-            </Pressable>
-          ) : (
-            <icons.ArrowUpRight size={18} color={amountColor} strokeWidth={2.5} />
-          )}
+          {valStr}
+        </Text>
+        <Text variant="bodySmall" color="muted" className="font-semibold ml-1">
+          {currencyCode}
+        </Text>
+      </View>
+
+      {users.length > 0 && (
+        <View className="flex-row mb-3">
+          <AvatarStack users={users} max={3} />
         </View>
-      </Animated.View>
-    </Pressable>
+      )}
+
+      <View className="flex-row justify-end min-h-[28px]">
+        {showSettleButton && users.length > 0 && amount > 0 ? (
+          <Button variant="secondary" size="sm" onPress={onSettlePress}>
+            Settle
+          </Button>
+        ) : (
+          <icons.ArrowUpRight
+            size={18}
+            className={amountColor === "success" ? "text-success" : "text-foreground"}
+            strokeWidth={2.5}
+          />
+        )}
+      </View>
+    </Card>
   );
 }
 
@@ -179,91 +101,46 @@ export function BalanceCard({
   onSettlePress,
 }: BalanceCardProps): JSX.Element {
   const isAllSettled = youOwe === 0 && owedToYou === 0;
-  const netBalance = owedToYou - youOwe;
 
   if (isAllSettled) {
     return (
-      <View
-        style={{
-          backgroundColor: "transparent",
-          paddingVertical: 32,
-          paddingHorizontal: 16,
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <View
-          style={{
-            width: 64,
-            height: 64,
-            borderRadius: 0,
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            backgroundColor: "transparent",
-            alignItems: "center",
-            justifyContent: "center",
-            marginBottom: 16,
-          }}
-        >
-          <icons.Check size={32} color={AMOUNT_OWED} strokeWidth={2.5} />
+      <Card bordered className="items-center justify-center py-8 px-4">
+        <View className="w-16 h-16 rounded-2xl border border-border items-center justify-center mb-4">
+          <icons.Check size={32} className="text-success" strokeWidth={2.5} />
         </View>
-        <Typography
-          style={{
-            fontSize: 24,
-            color: TEXT_PRIMARY,
-            fontFamily: "CrimsonText_700Bold",
-            marginBottom: 8,
-          }}
-        >
-          All settled up!
-        </Typography>
-        <Typography
-          style={{ fontSize: 15, color: TEXT_MUTED, fontFamily: "CrimsonText_600SemiBold" }}
-        >
+        <Text variant="sectionLabel" className="mb-2 text-foreground">All settled up!</Text>
+        <Text variant="bodySmall" color="muted" className="text-center">
           You don&apos;t owe anyone, and no one owes you.
-        </Typography>
-      </View>
+        </Text>
+      </Card>
     );
   }
 
   return (
-    <View
-      style={{
-        backgroundColor: BG,
-        paddingVertical: 16,
-        flexDirection: "row",
-        alignItems: "stretch",
-        position: "relative",
-      }}
-    >
+    <Card bordered className="flex-row items-stretch p-0">
       <HalfCard
         label="YOU OWE"
         amount={youOwe}
         currencyCode={currencyCode}
-        amountColor={AMOUNT_OWE}
+        amountColor="foreground"
         users={oweUsers}
         onPress={onOwePress}
         accessibilityLabel={`You owe ${youOwe} ${currencyCode}`}
-        showSettleButton={true}
+        showSettleButton
         onSettlePress={onSettlePress}
       />
 
-      {/* Divider */}
-      <View
-        style={{ width: 1, backgroundColor: SEPARATOR, marginVertical: 12, marginHorizontal: 4 }}
-      />
+      <View className="w-px bg-divider my-3" />
 
       <HalfCard
         label="YOU ARE OWED"
         amount={owedToYou}
         currencyCode={currencyCode}
-        amountColor={AMOUNT_OWED}
+        amountColor="success"
         users={owedUsers}
         onPress={onOwedPress}
         accessibilityLabel={`You are owed ${owedToYou} ${currencyCode}`}
       />
-
-      {/* Net Balance Pill */}
-    </View>
+    </Card>
   );
 }

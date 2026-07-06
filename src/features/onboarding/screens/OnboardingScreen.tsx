@@ -1,23 +1,20 @@
 import React, { useRef, useState } from "react";
 import { View, FlatList, Dimensions, Platform } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Button, Typography, PressableFeedback } from "heroui-native";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 
 import { ONBOARDING_SLIDES } from "../constants/slides";
 import { OnboardingSlide } from "../components/OnboardingSlide";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useUIStore } from "@/store/useUIStore";
+import { Text } from "@/components/ui/Text";
+import { Button } from "@/components/ui/Button";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
 
 export function OnboardingScreen() {
   const insets = useSafeAreaInsets();
@@ -60,98 +57,78 @@ export function OnboardingScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <View className="flex-1 bg-background">
+      <StatusBar style="light" />
 
-      {/* Top Bar */}
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "space-between",
-          alignItems: "center",
-          paddingHorizontal: 24,
-          paddingTop: insets.top + 16,
-          zIndex: 10,
-        }}
-      >
-        <View style={{ flexDirection: "row", gap: 4 }}>
-          {ONBOARDING_SLIDES.map((_, idx) => (
-            <View
-              key={idx}
-              style={{
-                width: idx === currentIndex ? 24 : 8,
-                height: 4,
-                backgroundColor: idx === currentIndex ? TEXT_PRIMARY : "#D6D2CD",
-              }}
-            />
-          ))}
-        </View>
-        <PressableFeedback accessibilityRole="button" onPress={handleSkip} hitSlop={16}>
-          <Typography
-            style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "CrimsonText_700Bold" }}
+      <SafeAreaView edges={["top"]} className="flex-1">
+        <View className="flex-row justify-between items-center px-6 pt-4 z-10">
+          <View className="flex-row gap-1">
+            {ONBOARDING_SLIDES.map((_, idx) => (
+              <View
+                key={idx}
+                className={
+                  idx === currentIndex
+                    ? "w-6 h-1 bg-foreground rounded-full"
+                    : "w-2 h-1 bg-divider rounded-full"
+                }
+              />
+            ))}
+          </View>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="border-0 px-0"
+            onPress={handleSkip}
+            haptic={Haptics.ImpactFeedbackStyle.Medium}
           >
             Skip
-          </Typography>
-        </PressableFeedback>
-      </View>
+          </Button>
+        </View>
 
-      <FlatList
-        ref={flatListRef}
-        data={ONBOARDING_SLIDES}
-        keyExtractor={(item) => item.id}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        bounces={false}
-        onMomentumScrollEnd={onMomentumScrollEnd}
-        scrollEventThrottle={16}
-        renderItem={({ item, index }) => (
-          <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
-            <OnboardingSlide item={item} width={SCREEN_WIDTH} />
+        <FlatList
+          ref={flatListRef}
+          data={ONBOARDING_SLIDES}
+          keyExtractor={(item) => item.id}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          bounces={false}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+          scrollEventThrottle={16}
+          renderItem={({ item, index }) => (
+            <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
+              <OnboardingSlide item={item} width={SCREEN_WIDTH} />
 
-            {/* If it's the last slide, render the Currency Selector at the bottom of the slide */}
-            {index === ONBOARDING_SLIDES.length - 1 && (
-              <Animated.View
-                entering={FadeIn.delay(600).duration(400)}
-                style={{ paddingHorizontal: 32, paddingBottom: 64 }}
-              >
-                <CurrencySelector
-                  label="DEFAULT CURRENCY"
-                  value={preferredCurrency.code}
-                  onChange={setCurrency}
-                />
-              </Animated.View>
-            )}
-          </View>
-        )}
-      />
+              {index === ONBOARDING_SLIDES.length - 1 && (
+                <Animated.View
+                  entering={FadeIn.delay(600).duration(400)}
+                  className="px-8 pb-16"
+                >
+                  <CurrencySelector
+                    label="DEFAULT CURRENCY"
+                    value={preferredCurrency.code}
+                    onChange={setCurrency}
+                  />
+                </Animated.View>
+              )}
+            </View>
+          )}
+        />
 
-      {/* Footer */}
-      <View
-        style={{
-          paddingHorizontal: 32,
-          paddingTop: 16,
-          paddingBottom: Math.max(insets.bottom, 24),
-          backgroundColor: BG,
-        }}
-      >
-        <PressableFeedback
-          accessibilityRole="button"
-          style={{
-            width: "100%",
-            height: 56,
-            borderRadius: 0,
-            backgroundColor: TEXT_PRIMARY,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          onPress={handleNext}
+        <View
+          className="px-8 pt-4"
+          style={{ paddingBottom: Math.max(insets.bottom, 24) }}
         >
-          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
+          <Button
+            fullWidth
+            size="lg"
+            onPress={handleNext}
+            haptic={Haptics.ImpactFeedbackStyle.Light}
+          >
             {currentIndex === ONBOARDING_SLIDES.length - 1 ? "Get Started" : "Next"}
-          </Typography>
-        </PressableFeedback>
-      </View>
+          </Button>
+        </View>
+      </SafeAreaView>
     </View>
   );
 }

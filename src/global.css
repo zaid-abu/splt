@@ -5,231 +5,65 @@
 @source "../node_modules/heroui-native/lib";
 @source "../node_modules/heroui-native/src";
 
-/* ─── Body font utilities ──────────────────────────────────────────────────── */
-@utility font-normal {
-  font-family: "CrimsonText_400Regular";
-}
-
-@utility font-medium {
-  font-family: "CrimsonText_600SemiBold";
-}
-
-@utility font-semibold {
-  font-family: "CrimsonText_600SemiBold";
-}
-
-@utility font-bold {
-  font-family: "CrimsonText_700Bold";
-}
-
-@utility font-black {
-  font-family: "CrimsonText_700Bold";
-}
-
-/* ─── Heading font utilities (DM Serif Display) ────────────────────────────── */
-@utility font-heading {
-  font-family: "UnicaOne_400Regular";
-}
-
-@utility font-heading-italic {
-  font-family: "UnicaOne_400Regular";
-}
-
-/* ─── Tailwind theme bridge ────────────────────────────────────────────────── */
 @theme {
-  --color-primary: var(--color-primary);
-  --color-primary-light: var(--color-primary-light);
-  --color-primary-dark: var(--color-primary-dark);
-  --color-primary-foreground: var(--color-primary-foreground);
+  /* === Core Palette === */
+  --color-background: #F5F5F7;          /* Light gray app background */
+  --color-surface: #FFFFFF;             /* White card surfaces */
+  --color-surface-2: #F0F0F5;          /* Secondary surface */
+  --color-surface-3: #E8E8F0;          /* Tertiary surface */
+  --color-foreground: #1A1A2E;         /* Primary text (dark navy) */
+  --color-muted-foreground: #8E8EA0;   /* Secondary text */
+  --color-border: #E5E5EE;             /* Borders */
+  --color-divider: #F0F0F5;            /* Dividers */
 
-  --color-secondary: var(--color-secondary);
-  --color-secondary-light: var(--color-secondary-light);
-  --color-secondary-dark: var(--color-secondary-dark);
-  --color-secondary-foreground: var(--color-secondary-foreground);
+  /* === Brand: Deep Purple Gradient === */
+  --color-primary: #3D2B82;            /* Deep purple (from reference) */
+  --color-primary-light: #5B3FA0;      /* Lighter purple */
+  --color-primary-dark: #2B1F5E;       /* Darker purple/navy */
+  --color-primary-foreground: #FFFFFF;
+  --color-primary-soft: rgba(61, 43, 130, 0.08);
 
-  --color-accent-red: var(--color-accent-red);
-  --color-accent-green: var(--color-accent-green);
-  --color-accent-purple: var(--color-accent-purple);
-  --color-accent-pink: var(--color-accent-pink);
-  --color-accent-orange: var(--color-accent-orange);
+  /* === Accent === */
+  --color-accent: #6C5CE7;             /* Vibrant purple accent */
+  --color-accent-foreground: #FFFFFF;
 
-  /* Legacy accent aliases kept for backwards compatibility */
-  --color-accent-purple-light: var(--color-accent-purple);
-  --color-accent-purple-medium: var(--color-accent-purple);
-  --color-accent-blue: var(--color-accent-purple);
+  /* === Semantic === */
+  --color-success: #00C48C;            /* Green for positive amounts */
+  --color-success-foreground: #FFFFFF;
+  --color-success-soft: rgba(0, 196, 140, 0.10);
+  
+  --color-danger: #FF4757;             /* Red for negative/owed */
+  --color-danger-foreground: #FFFFFF;
+  --color-danger-soft: rgba(255, 71, 87, 0.10);
+  
+  --color-warning: #FFBE0B;
+  --color-warning-foreground: #1A1A2E;
 
-  --color-background: var(--color-background);
-  --color-surface: var(--color-surface);
-  --color-surface-secondary: var(--color-surface-secondary);
+  /* === Typography === */
+  --font-heading: "DMSans_700Bold", sans-serif;
+  --font-body: "DMSans_400Regular", sans-serif;
+  --font-display: "CrimsonText_600SemiBold", serif;
 
-  --color-text-primary: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-text-disabled: var(--color-text-disabled);
-  --color-text-inverse: var(--color-text-inverse);
+  /* === Radii === */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-2xl: 32px;
+  --radius-full: 9999px;
 
-  --color-border-light: var(--color-border-light);
-  --color-border-main: var(--color-border-main);
-
-  /* New Input variables */
-  --color-input: var(--color-input);
-  --color-input-foreground: var(--color-input-foreground);
-
-  /* Aliases for backwards compatibility */
-  --color-foreground: var(--color-text-primary);
-  --color-surface-tertiary: var(--color-border-light);
-  --color-accent: var(--color-accent-red);
-  --color-accent-foreground: #ffffff;
-  --color-success: var(--color-accent-green);
-  --color-warning: var(--color-warning);
-  --color-danger: var(--color-accent-red);
-  --color-muted: var(--color-border-main);
-  --color-muted-foreground: var(--color-text-secondary);
-  --color-tertiary-foreground: var(--color-text-tertiary);
-  --color-border: var(--color-border-main);
-
-  --font-family-heading: var(--font-family-heading);
-  --font-family-body: var(--font-family-body);
-
-  --text-xs: var(--text-xs);
-  --text-sm: var(--text-sm);
-  --text-md: var(--text-md);
-  --text-lg: var(--text-lg);
-  --text-xl: var(--text-xl);
-  --text-xxl: var(--text-xxl);
-  --text-xxxl: var(--text-xxxl);
-
-  --spacing-xxs: var(--spacing-xxs);
-  --spacing-xs: var(--spacing-xs);
-  --spacing-sm: var(--spacing-sm);
-  --spacing-md: var(--spacing-md);
-  --spacing-lg: var(--spacing-lg);
-  --spacing-xl: var(--spacing-xl);
-  --spacing-xxl: var(--spacing-xxl);
-
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
-  --radius-xxl: var(--radius-xxl);
-  --radius-pill: var(--radius-pill);
+  /* === Spacing === */
+  --spacing-safe-top: env(safe-area-inset-top);
+  --spacing-safe-bottom: env(safe-area-inset-bottom);
 }
 
-/* ─── Light mode (default) ─────────────────────────────────────────────────── */
-@layer base {
-  :root {
-    /* ── Primary — dark charcoal CTA (replaces purple) */
-    --color-primary: #1a1a1a;
-    --color-primary-light: #3a3a3a;
-    --color-primary-dark: #000000;
-    --color-primary-foreground: #ffffff;
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-    /* ── Secondary — soft warm off-white */
-    --color-secondary: #efeee9;
-    --color-secondary-light: #f9f6f2;
-    --color-secondary-dark: #e0d9d0;
-    --color-secondary-foreground: #1a1a1a;
-
-    /* ── Accent palette */
-    --color-accent-red: #e85d5d; /* Debt / "you owe" indicator */
-    --color-accent-green: #4caf82; /* Positive balance */
-    --color-accent-purple: #c4a8e0; /* Group icon backgrounds */
-    --color-accent-pink: #e8c4c4; /* Avatar ring accent */
-    --color-accent-orange: #f5a623; /* Warning highlights */
-
-    /* ── Backgrounds */
-    --color-background: #f7f6f1; /* Warm cream app background */
-    --color-surface: #fefdfa; /* White cards */
-    --color-surface-secondary: #f4f3ee; /* Slightly warmer off-white (cardAlt) */
-
-    /* ── Input Fields */
-    --color-input: #5d5c5a;
-    --color-input-foreground: #ffffff;
-
-    /* ── Text */
-    --color-text-primary: #1a1a1a;
-    --color-text-secondary: #6e6d68;
-    --color-text-tertiary: #9b9a94;
-    --color-text-disabled: #b7b6b0;
-    --color-text-inverse: #ffffff;
-
-    /* ── Borders */
-    --color-border-light: #edebe4; /* Warm border (subtle) */
-    --color-border-main: #e7e5de; /* Default border */
-
-    /* ── Semantic */
-    --color-success: #4caf82;
-    --color-danger: #e85d5d;
-    --color-warning: #f5a623;
-
-    /* ── Typography */
-    --font-family-heading: "UnicaOne_400Regular";
-    --font-family-body: "CrimsonText_400Regular";
-
-    --text-xs: 12px;
-    --text-sm: 14px;
-    --text-md: 16px;
-    --text-lg: 20px;
-    --text-xl: 24px;
-    --text-xxl: 32px;
-    --text-xxxl: 40px;
-
-    /* ── Spacing */
-    --spacing-xxs: 4px;
-    --spacing-xs: 8px;
-    --spacing-sm: 12px;
-    --spacing-md: 16px;
-    --spacing-lg: 20px; /* Section horizontal padding matches reference */
-    --spacing-xl: 32px;
-    --spacing-xxl: 48px;
-
-    /* ── Border Radius (reduced from old 32/40 pill-style) */
-    --radius-sm: 8px;
-    --radius-md: 12px; /* buttons / inputs */
-    --radius-lg: 16px; /* cards — was 24px */
-    --radius-xl: 16px; /* was 32px */
-    --radius-xxl: 20px; /* was 40px */
-    --radius-pill: 9999px;
-  }
-
-  /* ─── Dark mode prep ─────────────────────────────────────────────────────── */
-  :root.dark {
-    /* ── Primary stays charcoal / shifts to off-white in dark */
-    --color-primary: #f5f0eb;
-    --color-primary-light: #ffffff;
-    --color-primary-dark: #e0dbd5;
-    --color-primary-foreground: #121212;
-
-    /* ── Secondary */
-    --color-secondary: #2a2a2a;
-    --color-secondary-light: #333333;
-    --color-secondary-dark: #1e1e1e;
-    --color-secondary-foreground: #f5f0eb;
-
-    /* ── Accents remain vibrant in dark mode */
-    --color-accent-red: #e85d5d;
-    --color-accent-green: #4caf82;
-    --color-accent-purple: #c4a8e0;
-    --color-accent-pink: #e8c4c4;
-    --color-accent-orange: #f5a623;
-
-    /* ── Backgrounds */
-    --color-background: #121212;
-    --color-surface: #1e1e1e;
-    --color-surface-secondary: #252525;
-
-    /* ── Text */
-    --color-text-primary: #f5f0eb;
-    --color-text-secondary: #9e9e9e;
-    --color-text-disabled: #555555;
-    --color-text-inverse: #1a1a1a;
-
-    /* ── Borders */
-    --color-border-light: #2e2e2e;
-    --color-border-main: #3a3a3a;
-
-    /* ── Semantic */
-    --color-success: #4caf82;
-    --color-danger: #e85d5d;
-    --color-warning: #f5a623;
-  }
+body {
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
