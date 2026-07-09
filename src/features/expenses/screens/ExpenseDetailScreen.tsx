@@ -4,12 +4,11 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View, Pressable, Dimensions } from "react-native";
+import { ScrollView, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState, useRef, useCallback } from "react";
+import { useRef, useCallback } from "react";
 import * as icons from "lucide-react-native";
-import * as Haptics from "expo-haptics";
-import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses, useDeleteExpense } from "@/features/expenses/queries/useExpenses";
@@ -26,8 +25,9 @@ const BG = "#F5F0EB";
 const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
 const SEPARATOR = "#E8E4DF";
-
-const { height: SCREEN_HEIGHT } = Dimensions.get("window");
+const BRAND = "#8C7A6B";
+const CARD_RADIUS = 16;
+const PILL_RADIUS = 999;
 
 export default function ExpenseDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<ExpenseRouteParams>();
@@ -98,8 +98,8 @@ export default function ExpenseDetailScreen(): JSX.Element {
             marginTop: 24,
             paddingHorizontal: 24,
             paddingVertical: 12,
-            backgroundColor: "#8C7A6B",
-            borderRadius: 0,
+            backgroundColor: BRAND,
+            borderRadius: PILL_RADIUS,
             opacity: pressed ? 0.8 : 1,
           })}
         >
@@ -149,8 +149,8 @@ export default function ExpenseDetailScreen(): JSX.Element {
           style={({ pressed }) => ({
             width: 44,
             height: 44,
-            borderRadius: 0,
-            backgroundColor: "transparent",
+            borderRadius: PILL_RADIUS,
+            backgroundColor: "#FFFFFF",
             borderWidth: 1,
             borderColor: SEPARATOR,
             alignItems: "center",
@@ -170,8 +170,8 @@ export default function ExpenseDetailScreen(): JSX.Element {
             style={({ pressed }) => ({
               width: 44,
               height: 44,
-              borderRadius: 0,
-              backgroundColor: "transparent",
+              borderRadius: PILL_RADIUS,
+              backgroundColor: "#FFFFFF",
               borderWidth: 1,
               borderColor: SEPARATOR,
               alignItems: "center",
@@ -188,8 +188,8 @@ export default function ExpenseDetailScreen(): JSX.Element {
             style={({ pressed }) => ({
               width: 44,
               height: 44,
-              borderRadius: 0,
-              backgroundColor: "transparent",
+              borderRadius: PILL_RADIUS,
+              backgroundColor: "#FFFFFF",
               borderWidth: 1,
               borderColor: SEPARATOR,
               alignItems: "center",
@@ -484,8 +484,8 @@ export default function ExpenseDetailScreen(): JSX.Element {
               style={{
                 paddingVertical: 24,
                 paddingHorizontal: 24,
-                backgroundColor: "#8C7A6B",
-                borderRadius: 0,
+                backgroundColor: BRAND,
+                borderRadius: CARD_RADIUS,
               }}
             >
               <Typography
@@ -541,6 +541,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                     marginTop: 24,
                     height: 48,
                     backgroundColor: "#FFFFFF",
+                    borderRadius: PILL_RADIUS,
                     alignItems: "center",
                     justifyContent: "center",
                     opacity: pressed ? 0.8 : 1,
@@ -599,6 +600,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 height: 48,
                 borderWidth: 1,
                 borderColor: SEPARATOR,
+                borderRadius: PILL_RADIUS,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.5 : 1,
@@ -622,6 +624,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 flex: 1,
                 height: 48,
                 backgroundColor: "#E02424",
+                borderRadius: PILL_RADIUS,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.8 : 1,

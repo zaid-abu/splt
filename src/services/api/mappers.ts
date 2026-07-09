@@ -50,6 +50,7 @@ export function mapUser(row: DbUser): User {
     avatar: row.avatar ?? undefined,
     initials: row.initials,
     defaultCurrency: row.default_currency,
+    createdAt: new Date(row.created_at),
   };
 }
 

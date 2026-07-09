@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { useState, useRef, useEffect, useCallback, useMemo } from "react";
+import { useState, useRef, useCallback, useMemo } from "react";
 import { View, Keyboard, Pressable } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useRouter } from "expo-router";
@@ -11,8 +11,8 @@ import BottomSheet, {
   BottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import { ScrollView } from "react-native-gesture-handler";
-import Animated, { LinearTransition, FadeIn, FadeOut } from "react-native-reanimated";
-import { Button, Typography, Spinner } from "heroui-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { Typography, Spinner } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -24,6 +24,7 @@ import type { Currency, User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { IconButton, PrimaryButton, SectionLabel, UI } from "@/components/ui/native-ui";
 
 const GROUP_ICONS = [
   "Home",
@@ -43,10 +44,10 @@ const GROUP_ICONS = [
   "Target",
 ];
 
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
+const BG = UI.color.bg;
+const TEXT_PRIMARY = UI.color.textStrong;
+const TEXT_SECONDARY = UI.color.muted;
+const SEPARATOR = UI.color.border;
 
 export default function NewGroupScreen(): JSX.Element {
   const router = useRouter();
@@ -201,14 +202,12 @@ export default function NewGroupScreen(): JSX.Element {
                 Create new group
               </Typography>
               <View style={{ flex: 1, alignItems: "flex-end" }}>
-                <Pressable
-                  accessibilityRole="button"
+                <IconButton
+                  icon={icons.X}
+                  accessibilityLabel="Close create group"
                   onPress={() => bottomSheetRef.current?.close()}
-                  hitSlop={12}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
-                >
-                  <icons.X size={24} color={TEXT_SECONDARY} />
-                </Pressable>
+                  style={{ width: 40, height: 40 }}
+                />
               </View>
             </View>
 
@@ -218,26 +217,19 @@ export default function NewGroupScreen(): JSX.Element {
             >
               {/* ── Title Input ────────────────────────────────────────── */}
               <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-                <Typography
-                  style={{
-                    fontSize: 11,
-                    color: TEXT_SECONDARY,
-                    marginBottom: 8,
-                    letterSpacing: 1.4,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  TITLE
-                </Typography>
+                <View style={{ marginBottom: 8 }}>
+                  <SectionLabel>Title</SectionLabel>
+                </View>
                 <View
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    backgroundColor: "transparent",
+                    backgroundColor: UI.color.control,
                     paddingVertical: 12,
-                    borderBottomWidth: 1,
-                    borderBottomColor: SEPARATOR,
+                    paddingHorizontal: 16,
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
+                    borderRadius: UI.radius.lg,
                   }}
                 >
                   <IconComponent size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
@@ -306,12 +298,12 @@ export default function NewGroupScreen(): JSX.Element {
                           style={{
                             width: 56,
                             height: 56,
-                            borderRadius: 0,
+                            borderRadius: UI.radius.lg,
                             alignItems: "center",
                             justifyContent: "center",
-                            backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                            backgroundColor: isSelected ? UI.color.text : iconBg,
                             borderWidth: 1,
-                            borderColor: isSelected ? "#8C7A6B" : SEPARATOR,
+                            borderColor: isSelected ? UI.color.text : SEPARATOR,
                           }}
                         >
                           <Ico
@@ -336,17 +328,7 @@ export default function NewGroupScreen(): JSX.Element {
                     marginBottom: 16,
                   }}
                 >
-                  <Typography
-                    style={{
-                      fontSize: 11,
-                      color: TEXT_SECONDARY,
-                      letterSpacing: 1.4,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    PARTICIPANTS
-                  </Typography>
+                  <SectionLabel>Participants</SectionLabel>
                   <Pressable
                     accessibilityRole="button"
                     onPress={openSearchSheet}
@@ -378,8 +360,10 @@ export default function NewGroupScreen(): JSX.Element {
                     style={{
                       width: 40,
                       height: 40,
-                      borderRadius: 0,
-                      backgroundColor: SEPARATOR,
+                      borderRadius: UI.radius.md,
+                      backgroundColor: UI.color.control,
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
                       alignItems: "center",
                       justifyContent: "center",
                       marginRight: 16,
@@ -438,18 +422,9 @@ export default function NewGroupScreen(): JSX.Element {
 
               {/* ── Currency ───────────────────────────────────────────── */}
               <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-                <Typography
-                  style={{
-                    fontSize: 11,
-                    color: TEXT_SECONDARY,
-                    marginBottom: 16,
-                    letterSpacing: 1.4,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  CURRENCY
-                </Typography>
+                <View style={{ marginBottom: 16 }}>
+                  <SectionLabel>Currency</SectionLabel>
+                </View>
                 <View
                   style={{ borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingBottom: 8 }}
                 >
@@ -467,21 +442,11 @@ export default function NewGroupScreen(): JSX.Element {
                 backgroundColor: BG,
               }}
             >
-              <Pressable
-                accessibilityRole="button"
+              <PrimaryButton
                 onPress={handleCreate}
-                disabled={loading}
-                style={({ pressed }) => ({
-                  width: "100%",
-                  height: 56,
-                  borderRadius: 0,
-                  backgroundColor: "#8C7A6B",
-                  marginBottom: 12,
-                  justifyContent: "center",
-                  alignItems: "center",
-                  flexDirection: "row",
-                  opacity: pressed || loading ? 0.8 : 1,
-                })}
+                disabled={!name.trim() || loading}
+                loading={loading}
+                style={{ width: "100%", minHeight: 56, marginBottom: 12 }}
               >
                 {loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
                 <Typography
@@ -493,7 +458,7 @@ export default function NewGroupScreen(): JSX.Element {
                 >
                   Create group
                 </Typography>
-              </Pressable>
+              </PrimaryButton>
               <Typography
                 style={{
                   fontSize: 13,

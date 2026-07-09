@@ -1,15 +1,13 @@
 import type { JSX } from "react";
 import { useState, useMemo, useCallback } from "react";
-import { View, TextInput, StyleSheet, Pressable, ScrollView, FlatList } from "react-native";
-import { Typography, PressableFeedback } from "heroui-native";
-import { useRouter } from "expo-router";
+import { View, TextInput, StyleSheet, Pressable, ScrollView } from "react-native";
+import { Typography } from "heroui-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
-import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import { useAuth } from "@/context/AppContext";
@@ -23,7 +21,6 @@ import type { Activity } from "@/types";
 const BG = "#F5F0EB";
 const SURFACE = "#FFFCF8";
 const CONTROL = "#FFFFFF";
-const BRAND = "#8C7A6B";
 const BORDER = "#E8E4DF";
 const TEXT_PRIMARY = "#1A1A1A";
 const TEXT_SECONDARY = "#8A8782";
@@ -35,11 +32,9 @@ type FilterType = "All" | "Expenses" | "Settlements" | "Groups" | "Friends";
 type ListItem = { type: "header"; title: string } | { type: "item"; activity: Activity };
 
 export default function ActivityScreen(): JSX.Element {
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
-  const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [], isLoading: isLoadingExpenses } = useUserExpenses(currentUser?.id);
   const { data: settlements = [], isLoading: isLoadingSettlements } = useUserSettlements(
     currentUser?.id
@@ -76,7 +71,7 @@ export default function ActivityScreen(): JSX.Element {
       });
     });
     return arr;
-  }, [expenses, settlements]);
+  }, [currentUser, expenses, settlements]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("All");
@@ -223,7 +218,7 @@ export default function ActivityScreen(): JSX.Element {
             color: TEXT_PRIMARY,
           }}
         >
-          Timeline
+          Activity
         </Typography>
       </View>
 

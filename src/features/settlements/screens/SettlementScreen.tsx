@@ -3,8 +3,6 @@ import { useState, useMemo, useEffect } from "react";
 import {
   View,
   Pressable,
-  KeyboardAvoidingView,
-  Platform,
   ScrollView,
   TextInput,
 } from "react-native";
@@ -168,6 +166,7 @@ export default function SettleUpScreen(): JSX.Element {
   // Keep selectedFriendId synced if defaultFriendId changes (e.g. data loaded late)
   useEffect(() => {
     if (!selectedFriendId && defaultFriendId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedFriendId(defaultFriendId);
     }
   }, [defaultFriendId, selectedFriendId]);
@@ -214,6 +213,7 @@ export default function SettleUpScreen(): JSX.Element {
   // Sync direction when recipient changes
   useEffect(() => {
     if (!initialDirection) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDirection(netBalance < 0 ? "you" : "them");
     }
   }, [netBalance, initialDirection]);
@@ -231,6 +231,7 @@ export default function SettleUpScreen(): JSX.Element {
   useEffect(() => {
     if (!initialAmount && amountStr === "") {
       const amt = Math.abs(netBalance).toFixed(2);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (amt !== "0.00") setAmountStr(amt);
     }
   }, [netBalance, initialAmount, amountStr]);
@@ -772,6 +773,37 @@ export default function SettleUpScreen(): JSX.Element {
 
           {/* ── Submit Button ── */}
           <View style={{ padding: 24, paddingBottom: Math.max(insets.bottom, 24) }}>
+            <View
+              style={{
+                backgroundColor: "#F5F0EB",
+                borderWidth: 1,
+                borderColor: BORDER,
+                borderRadius: CARD_RADIUS,
+                paddingHorizontal: 16,
+                paddingVertical: 12,
+                marginBottom: 12,
+              }}
+            >
+              <Typography
+                style={{
+                  fontSize: 13,
+                  color: TEXT_SECONDARY,
+                  fontFamily: "IBMPlexSans_500Medium",
+                  marginBottom: 4,
+                }}
+              >
+                Recording payment
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: 15,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                {leftName} pays {rightName}
+              </Typography>
+            </View>
             <Pressable
               onPress={handleSubmit}
               disabled={isAddingSettlement}
@@ -795,7 +827,7 @@ export default function SettleUpScreen(): JSX.Element {
                     letterSpacing: 1,
                   }}
                 >
-                  PAY {preferredCurrency.symbol}
+                  Record {preferredCurrency.symbol}
                   {parsedAmount.toFixed(2)}
                 </Typography>
               )}

@@ -1,6 +1,5 @@
 import React, { forwardRef, useState, useEffect, useMemo, useCallback } from "react";
-import type { JSX } from "react";
-import { View, FlatList, Pressable, TextInput, Keyboard } from "react-native";
+import { View, FlatList, Pressable } from "react-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetTextInput } from "@gorhom/bottom-sheet";
 import { Typography, Spinner } from "heroui-native";
 import * as icons from "lucide-react-native";
@@ -14,6 +13,7 @@ import { useFriends, useAllFriendships, useAddFriend } from "@/features/friends/
 import type { User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { EmptyState, UI } from "@/components/ui/native-ui";
 
 interface UserSearchBottomSheetProps {
   onSelect: (user: User) => void;
@@ -21,10 +21,10 @@ interface UserSearchBottomSheetProps {
   title?: string;
 }
 
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
+const BG = UI.color.bg;
+const TEXT_PRIMARY = UI.color.textStrong;
+const TEXT_SECONDARY = UI.color.muted;
+const SEPARATOR = UI.color.border;
 
 export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBottomSheetProps>(
   ({ onSelect, excludeUserIds = [], title = "Add Member" }, ref) => {
@@ -100,7 +100,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
         // Reset state
         setSearchQuery("");
         setDebouncedQuery("");
-      } catch (err) {
+      } catch {
         toast.show({
           label: "Error",
           description: "Failed to add user.",
@@ -173,10 +173,10 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                 height: 40,
                 paddingHorizontal: isExcluded ? 16 : 0,
                 width: isExcluded ? undefined : 40,
-                backgroundColor: isExcluded ? "#E8E4DF" : "#8C7A6B",
+                backgroundColor: isExcluded ? UI.color.subtle : UI.color.text,
                 alignItems: "center",
                 justifyContent: "center",
-                borderRadius: 0,
+                borderRadius: UI.radius.pill,
                 opacity: pressed || (!!isProcessing && !isProcessingThis) ? 0.5 : 1,
               })}
             >
@@ -240,9 +240,10 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                backgroundColor: "transparent",
+                backgroundColor: UI.color.control,
                 borderWidth: 1,
                 borderColor: SEPARATOR,
+                borderRadius: UI.radius.lg,
                 height: 48,
                 paddingHorizontal: 16,
               }}
@@ -293,83 +294,17 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                 }}
               >
                 {isSearchingActive && !isSearching ? (
-                  <>
-                    <View
-                      style={{
-                        width: 64,
-                        height: 64,
-                        borderRadius: 0,
-                        backgroundColor: "transparent",
-                        borderWidth: 1,
-                        borderColor: SEPARATOR,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: 16,
-                      }}
-                    >
-                      <icons.UserX size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                    </View>
-                    <Typography
-                      style={{
-                        fontSize: 16,
-                        color: TEXT_PRIMARY,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      No users found
-                    </Typography>
-                    <Typography
-                      style={{
-                        fontSize: 15,
-                        color: TEXT_SECONDARY,
-                        fontFamily: "IBMPlexSans_500Medium",
-                        textAlign: "center",
-                      }}
-                    >
-                      No users matching &quot;{debouncedQuery}&quot;
-                    </Typography>
-                  </>
+                  <EmptyState
+                    icon={icons.UserX}
+                    title="No users found"
+                    subtitle={`No users matching "${debouncedQuery}"`}
+                  />
                 ) : !isSearchingActive ? (
-                  <>
-                    <View
-                      style={{
-                        width: 64,
-                        height: 64,
-                        borderRadius: 0,
-                        backgroundColor: "transparent",
-                        borderWidth: 1,
-                        borderColor: SEPARATOR,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: 16,
-                      }}
-                    >
-                      <icons.Users size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                    </View>
-                    <Typography
-                      style={{
-                        fontSize: 16,
-                        color: TEXT_PRIMARY,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      No friends yet
-                    </Typography>
-                    <Typography
-                      style={{
-                        fontSize: 15,
-                        color: TEXT_SECONDARY,
-                        fontFamily: "IBMPlexSans_500Medium",
-                        textAlign: "center",
-                      }}
-                    >
-                      Search for users to add them to your group.
-                    </Typography>
-                  </>
+                  <EmptyState
+                    icon={icons.Users}
+                    title="No friends yet"
+                    subtitle="Search for users to add them to your group."
+                  />
                 ) : null}
               </View>
             }

@@ -76,8 +76,6 @@ export default function RootLayout(): JSX.Element | null {
         <Stack.Screen
           name="expense/new"
           options={{
-            presentation: "transparentModal",
-            animation: "fade",
             headerShown: false,
           }}
         />

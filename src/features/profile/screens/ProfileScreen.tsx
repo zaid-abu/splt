@@ -1,13 +1,11 @@
 import { Switch, Typography } from "heroui-native";
-import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { Uniwind } from "uniwind";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View, Pressable } from "react-native";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import * as icons from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
@@ -26,10 +24,9 @@ const SURFACE = "#FFFCF8";
 const CONTROL = "#FFFFFF";
 const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
+const TEXT_DANGER = "#E85D5D";
 const TEXT_SUCCESS = "#4CAF82";
 const SEPARATOR = "#E8E4DF";
-const BRAND = "#8C7A6B";
 const CARD_RADIUS = 18;
 const PILL_RADIUS = 999;
 const SECTION_PAD = 24;
@@ -263,10 +260,7 @@ export default function ProfileScreen(): JSX.Element {
               rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />}
             />
             <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
-              <CurrencySelector
-                selectedCurrency={preferredCurrency}
-                onSelect={handleCurrencyChange}
-              />
+              <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
             </View>
           </View>
         </FocusAwareView>
@@ -292,7 +286,9 @@ export default function ProfileScreen(): JSX.Element {
                 lineHeight: 20,
               }}
             >
-              Account created on {currentUser.createdAt.toLocaleDateString()}
+              {currentUser.createdAt
+                ? `Account created on ${currentUser.createdAt.toLocaleDateString()}`
+                : "Account details are synced with your profile."}
             </Typography>
 
             <Pressable

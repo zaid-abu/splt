@@ -142,7 +142,7 @@ export default function GroupsScreen(): JSX.Element {
               letterSpacing: -0.5,
             }}
           >
-            Groups.
+            Groups
           </Typography>
           <Pressable
             accessibilityRole="button"

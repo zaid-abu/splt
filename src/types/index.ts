@@ -60,6 +60,7 @@ export interface User {
   avatar?: string;
   initials: string;
   defaultCurrency: string;
+  createdAt?: Date;
 }
 
 export type FriendshipStatus = "pending" | "accepted" | "blocked";

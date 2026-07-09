@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, View, FlatList, Pressable, TextInput } from "react-native";
+import { KeyboardAvoidingView, Platform, View, FlatList, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
@@ -12,14 +12,16 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { useAddFriend, useAllFriendships } from "@/features/friends/queries/useFriends";
 import { useAuth } from "@/context/AppContext";
 import { useSearchUsers } from "@/features/users/queries/useUsers";
-import type { User, Friendship } from "@/types";
+import type { User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { EmptyState, IconButton, SearchField, UI } from "@/components/ui/native-ui";
 
 // ─── Design Tokens ───
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
+const BG = UI.color.bg;
+const TEXT_PRIMARY = UI.color.textStrong;
+const TEXT_SECONDARY = UI.color.muted;
+const SEPARATOR = UI.color.border;
 
 export default function NewFriendScreen(): JSX.Element {
   const router = useRouter();
@@ -103,20 +105,8 @@ export default function NewFriendScreen(): JSX.Element {
             borderBottomColor: SEPARATOR,
           }}
         >
-          <View
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: 0,
-              backgroundColor: "transparent",
-              borderWidth: 1,
-              borderColor: SEPARATOR,
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 16,
-            }}
-          >
-            <Typography style={{ fontSize: 18, color: TEXT_PRIMARY }}>{item.initials}</Typography>
+          <View style={{ marginRight: 16 }}>
+            <AppUserAvatar user={item} size="md" />
           </View>
 
           <View style={{ flex: 1, marginRight: 12 }}>
@@ -147,12 +137,16 @@ export default function NewFriendScreen(): JSX.Element {
               height: 44,
               paddingHorizontal: isRequested || isAdded ? 16 : 0,
               width: isRequested || isAdded ? undefined : 44,
-              backgroundColor: isAdded ? "#4CAF82" : isRequested ? "transparent" : "#8C7A6B",
+              backgroundColor: isAdded
+                ? UI.color.success
+                : isRequested
+                  ? UI.color.control
+                  : UI.color.text,
               borderWidth: isRequested ? 1 : 0,
               borderColor: SEPARATOR,
               alignItems: "center",
               justifyContent: "center",
-              borderRadius: 0,
+              borderRadius: UI.radius.pill,
               opacity: pressed || (!!addingUserId && !isAdding) ? 0.5 : 1,
             })}
           >
@@ -204,7 +198,9 @@ export default function NewFriendScreen(): JSX.Element {
         >
           Add Friend
         </Typography>
-        <Pressable
+        <IconButton
+          icon={icons.X}
+          accessibilityLabel="Close add friend"
           onPress={() => {
             if (router.canGoBack()) {
               router.back();
@@ -212,11 +208,7 @@ export default function NewFriendScreen(): JSX.Element {
               router.replace("/(tabs)");
             }
           }}
-          accessibilityRole="button"
-          style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
-        >
-          <icons.X size={24} color={TEXT_SECONDARY} strokeWidth={1.5} />
-        </Pressable>
+        />
       </View>
 
       <KeyboardAvoidingView
@@ -232,41 +224,14 @@ export default function NewFriendScreen(): JSX.Element {
             borderBottomColor: SEPARATOR,
           }}
         >
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              backgroundColor: "transparent",
-              borderWidth: 1,
-              borderColor: SEPARATOR,
-              height: 56,
-              paddingHorizontal: 16,
-            }}
-          >
-            <icons.Search size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
-            <TextInput
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              placeholder="Search by name or email..."
-              placeholderTextColor={TEXT_SECONDARY}
-              autoCapitalize="none"
-              autoFocus
-              style={{
-                flex: 1,
-                marginLeft: 12,
-                fontFamily: "IBMPlexSans_500Medium",
-                color: TEXT_PRIMARY,
-                fontSize: 16,
-              }}
-            />
-            {isSearching ? (
-              <Spinner size="sm" color={TEXT_SECONDARY} />
-            ) : searchQuery.length > 0 ? (
-              <Pressable accessibilityRole="button" onPress={() => setSearchQuery("")} hitSlop={8}>
-                <icons.XCircle size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
-              </Pressable>
-            ) : null}
-          </View>
+          <SearchField
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onClear={() => setSearchQuery("")}
+            placeholder="Search by name or email..."
+            autoFocus
+            rightElement={isSearching ? <Spinner size="sm" color={TEXT_SECONDARY} /> : undefined}
+          />
         </View>
 
         {/* Results */}
@@ -287,42 +252,11 @@ export default function NewFriendScreen(): JSX.Element {
             >
               {debouncedQuery.length >= 2 && !isSearching ? (
                 <>
-                  <View
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 0,
-                      backgroundColor: "transparent",
-                      borderWidth: 1,
-                      borderColor: SEPARATOR,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginBottom: 16,
-                    }}
-                  >
-                    <icons.UserX size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                  </View>
-                  <Typography
-                    style={{
-                      fontSize: 16,
-                      color: TEXT_PRIMARY,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                      textAlign: "center",
-                      marginBottom: 8,
-                    }}
-                  >
-                    No users found
-                  </Typography>
-                  <Typography
-                    style={{
-                      fontSize: 15,
-                      color: TEXT_SECONDARY,
-                      fontFamily: "IBMPlexSans_500Medium",
-                      textAlign: "center",
-                    }}
-                  >
-                    No users matching &quot;{debouncedQuery}&quot;
-                  </Typography>
+                  <EmptyState
+                    icon={icons.UserX}
+                    title="No users found"
+                    subtitle={`No users matching "${debouncedQuery}"`}
+                  />
                 </>
               ) : debouncedQuery.length > 0 ? (
                 <Typography
@@ -336,33 +270,11 @@ export default function NewFriendScreen(): JSX.Element {
                   Keep typing to search...
                 </Typography>
               ) : (
-                <View style={{ alignItems: "center" }}>
-                  <View
-                    style={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: 0,
-                      backgroundColor: "transparent",
-                      borderWidth: 1,
-                      borderColor: SEPARATOR,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginBottom: 16,
-                    }}
-                  >
-                    <icons.Users size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
-                  </View>
-                  <Typography
-                    style={{
-                      fontSize: 15,
-                      color: TEXT_SECONDARY,
-                      fontFamily: "IBMPlexSans_500Medium",
-                      textAlign: "center",
-                    }}
-                  >
-                    Find friends by their name or email address.
-                  </Typography>
-                </View>
+                <EmptyState
+                  icon={icons.Users}
+                  title="Find friends"
+                  subtitle="Search by name or email address to send a friend request."
+                />
               )}
             </View>
           }
