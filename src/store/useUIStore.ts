@@ -1,4 +1,6 @@
 import { create } from "zustand";
+import { persist, createJSONStorage } from "zustand/middleware";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Currency, CURRENCIES } from "@/types";
 
 const FALLBACK_RATES: Record<string, number> = {
@@ -37,33 +39,45 @@ export interface UIState {
   convertCurrency: (amount: number, from: string, to: string) => number;
 }
 
-export const useUIStore = create<UIState>((set, get) => ({
-  isAppLoading: false,
-  setIsAppLoading: (loading) => set({ isAppLoading: loading }),
+export const useUIStore = create<UIState>()(
+  persist(
+    (set, get) => ({
+      isAppLoading: false,
+      setIsAppLoading: (loading) => set({ isAppLoading: loading }),
 
-  preferredCurrency: CURRENCIES.find((c) => c.code === "USD") ?? CURRENCIES[0]!,
-  setCurrency: (currency) => set({ preferredCurrency: currency }),
+      preferredCurrency: CURRENCIES.find((c) => c.code === "USD") ?? CURRENCIES[0]!,
+      setCurrency: (currency) => set({ preferredCurrency: currency }),
 
-  exchangeRates: FALLBACK_RATES,
-  setExchangeRates: (rates) => set({ exchangeRates: rates }),
+      exchangeRates: FALLBACK_RATES,
+      setExchangeRates: (rates) => set({ exchangeRates: rates }),
 
-  fetchExchangeRates: async () => {
-    try {
-      const res = await fetch("https://open.er-api.com/v6/latest/USD");
-      const data = await res.json();
-      if (data && data.result === "success" && data.rates) {
-        set({ exchangeRates: data.rates });
-      }
-    } catch (err) {
-      console.warn("Failed to fetch live rates, using fallbacks:", err);
+      fetchExchangeRates: async () => {
+        try {
+          const res = await fetch("https://open.er-api.com/v6/latest/USD");
+          const data = await res.json();
+          if (data && data.result === "success" && data.rates) {
+            set({ exchangeRates: data.rates });
+          }
+        } catch (err) {
+          console.warn("Failed to fetch live rates, using fallbacks:", err);
+        }
+      },
+
+      convertCurrency: (amount, from, to) => {
+        if (from === to) return amount;
+        const { exchangeRates } = get();
+        const rateFrom = exchangeRates[from] || FALLBACK_RATES[from] || 1;
+        const rateTo = exchangeRates[to] || FALLBACK_RATES[to] || 1;
+        return (amount / rateFrom) * rateTo;
+      },
+    }),
+    {
+      name: "splt-ui-store",
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        preferredCurrency: state.preferredCurrency,
+        exchangeRates: state.exchangeRates,
+      }),
     }
-  },
-
-  convertCurrency: (amount, from, to) => {
-    if (from === to) return amount;
-    const { exchangeRates } = get();
-    const rateFrom = exchangeRates[from] || FALLBACK_RATES[from] || 1;
-    const rateTo = exchangeRates[to] || FALLBACK_RATES[to] || 1;
-    return (amount / rateFrom) * rateTo;
-  },
-}));
+  )
+);

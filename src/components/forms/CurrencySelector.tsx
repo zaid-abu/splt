@@ -293,7 +293,11 @@ export function CurrencySelector({
               style={styles.searchInput}
             />
             {search.length > 0 ? (
-              <PressableFeedback accessibilityRole="button" hitSlop={8} onPress={() => setSearch("")}>
+              <PressableFeedback
+                accessibilityRole="button"
+                hitSlop={8}
+                onPress={() => setSearch("")}
+              >
                 <icons.XCircle size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
               </PressableFeedback>
             ) : null}
@@ -309,7 +313,9 @@ export function CurrencySelector({
             ListEmptyComponent={
               <View style={styles.emptyCard}>
                 <Typography style={styles.emptyTitle}>No currencies found</Typography>
-                <Typography style={styles.emptyText}>Try a different code, name, or symbol.</Typography>
+                <Typography style={styles.emptyText}>
+                  Try a different code, name, or symbol.
+                </Typography>
               </View>
             }
           />
@@ -351,7 +357,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   triggerSymbolShell: {
-    width: 48,
+    width: 52,
     height: 48,
     borderRadius: 18,
     backgroundColor: CONTROL_SURFACE,
@@ -359,10 +365,9 @@ const styles = StyleSheet.create({
     borderColor: BORDER,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 6,
   },
   triggerSymbolText: {
-    fontSize: 18,
+    fontSize: 16,
     color: TEXT_PRIMARY,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
@@ -469,7 +474,7 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   symbolShell: {
-    width: 48,
+    width: 52,
     height: 48,
     borderRadius: 18,
     backgroundColor: CONTROL_SURFACE,
@@ -477,7 +482,6 @@ const styles = StyleSheet.create({
     borderColor: BORDER,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 6,
   },
   symbolShellCurrent: {
     backgroundColor: "#F4E8DC",
@@ -487,7 +491,7 @@ const styles = StyleSheet.create({
     borderColor: TEXT_PRIMARY,
   },
   symbolText: {
-    fontSize: 18,
+    fontSize: 16,
     color: TEXT_PRIMARY,
     fontFamily: "IBMPlexSans_600SemiBold",
   },

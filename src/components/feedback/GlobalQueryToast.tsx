@@ -26,7 +26,7 @@ export function GlobalQueryToast(): null {
     const unsubscribeQuery = queryClient.getQueryCache().subscribe((event) => {
       if (event.type === "updated" && event.query.state.status === "error") {
         const error = event.query.state.error;
-        const key = (error as Error)?.message || (event.query.queryHash);
+        const key = (error as Error)?.message || event.query.queryHash;
         if (error && !seenErrors.current.has(key)) {
           seenErrors.current.add(key);
           toast.show({

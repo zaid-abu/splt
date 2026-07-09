@@ -1,20 +1,28 @@
-import { Typography } from "heroui-native";
+import { Typography, Switch } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator, Pressable } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  ActivityIndicator,
+  Pressable,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useSignUp } from "@/features/auth/hooks/useAuthMutations";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerSchema, type RegisterFormData } from "@/validation/schemas";
 import { FormInput } from "@/components/forms/FormInput";
+import { PasswordStrengthMeter } from "@/components/forms/PasswordStrengthMeter";
 import { useAppToast } from "@/hooks/useAppToast";
 import { UI } from "@/components/ui/native-ui";
 
@@ -26,11 +34,14 @@ export default function RegisterScreen(): JSX.Element {
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
 
   const { control, handleSubmit } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
   });
+
+  const watchedPassword = useWatch({ control, name: "password" });
 
   const onSubmit = async (data: RegisterFormData): Promise<void> => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -58,6 +69,8 @@ export default function RegisterScreen(): JSX.Element {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
   };
 
+  const submitDisabled = isPending || !termsAccepted;
+
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
@@ -78,6 +91,7 @@ export default function RegisterScreen(): JSX.Element {
         >
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel="Go back"
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
             hitSlop={8}
             style={({ pressed }) => ({
@@ -172,10 +186,12 @@ export default function RegisterScreen(): JSX.Element {
                   placeholder="••••••••"
                   secureTextEntry={!showPassword}
                   autoComplete="new-password"
+                  accessibilityHint="Create a strong password with at least 6 characters"
                   leftElement={<icons.Lock size={18} color={UI.color.muted} />}
                   rightElement={
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel={showPassword ? "Hide password" : "Show password"}
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setShowPassword(!showPassword);
@@ -191,6 +207,7 @@ export default function RegisterScreen(): JSX.Element {
                     </Pressable>
                   }
                 />
+                <PasswordStrengthMeter password={watchedPassword ?? ""} />
               </Animated.View>
 
               <Animated.View entering={FadeInDown.delay(600).duration(600)}>
@@ -205,6 +222,7 @@ export default function RegisterScreen(): JSX.Element {
                   rightElement={
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel={showConfirmPassword ? "Hide password" : "Show password"}
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setShowConfirmPassword(!showConfirmPassword);
@@ -222,13 +240,61 @@ export default function RegisterScreen(): JSX.Element {
                 />
               </Animated.View>
 
+              {/* Terms toggle */}
               <Animated.View
                 entering={FadeInDown.delay(700).duration(600)}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  paddingVertical: 4,
+                }}
+              >
+                <Switch
+                  isSelected={termsAccepted}
+                  onSelectedChange={setTermsAccepted}
+                  accessibilityLabel="Accept terms of service"
+                />
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="View terms of service"
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    // TODO: Navigate to terms page
+                  }}
+                  hitSlop={8}
+                  style={{ flex: 1 }}
+                >
+                  <Typography
+                    style={{
+                      fontSize: 14,
+                      color: UI.color.muted,
+                      fontFamily: "IBMPlexSans_400Regular",
+                      lineHeight: 20,
+                    }}
+                  >
+                    I agree to the{" "}
+                    <Typography
+                      style={{
+                        fontSize: 14,
+                        color: UI.color.text,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
+                      Terms of Service
+                    </Typography>
+                  </Typography>
+                </Pressable>
+              </Animated.View>
+
+              <Animated.View
+                entering={FadeInDown.delay(800).duration(600)}
                 style={{ marginTop: 24 }}
               >
                 <Pressable
                   accessibilityRole="button"
-                  disabled={isPending}
+                  accessibilityLabel="Create account"
+                  disabled={submitDisabled}
                   style={({ pressed }) => ({
                     width: "100%",
                     height: 56,
@@ -238,13 +304,17 @@ export default function RegisterScreen(): JSX.Element {
                     justifyContent: "center",
                     flexDirection: "row",
                     gap: 8,
-                    opacity: pressed || isPending ? 0.7 : 1,
+                    opacity: submitDisabled ? 0.45 : pressed ? 0.7 : 1,
                   })}
                   onPress={handleSubmit(onSubmit, onInvalid)}
                 >
                   {isPending && <ActivityIndicator color="#FFFFFF" />}
                   <Typography
-                    style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+                    style={{
+                      fontSize: 16,
+                      color: "#FFFFFF",
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
                   >
                     {isPending ? "Creating account\u2026" : "Create Account"}
                   </Typography>
@@ -257,7 +327,7 @@ export default function RegisterScreen(): JSX.Element {
 
           {/* Footer */}
           <Animated.View
-            entering={FadeInDown.delay(800).duration(600)}
+            entering={FadeInDown.delay(900).duration(600)}
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -274,6 +344,7 @@ export default function RegisterScreen(): JSX.Element {
             </Typography>
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="Sign in instead"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push("/(auth)/login");
@@ -282,7 +353,11 @@ export default function RegisterScreen(): JSX.Element {
               style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
             >
               <Typography
-                style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+                style={{
+                  fontSize: 16,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
               >
                 Sign in
               </Typography>

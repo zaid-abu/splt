@@ -10,10 +10,7 @@ type FriendshipJoinRow = Tables<"friendships"> & {
   friend: DbUserRow;
 };
 
-function mapFriendshipWithUser(
-  row: FriendshipJoinRow,
-  userId: string
-): Friendship {
+function mapFriendshipWithUser(row: FriendshipJoinRow, userId: string): Friendship {
   const isUserInitiator = row.user_id === userId;
   const friendData = isUserInitiator ? row.friend : row.user;
 
@@ -30,9 +27,7 @@ function mapFriendshipWithUser(
   };
 }
 
-function mapPendingFriendshipRow(
-  row: FriendshipJoinRow
-): Friendship {
+function mapPendingFriendshipRow(row: FriendshipJoinRow): Friendship {
   const status = row.status as Friendship["status"];
 
   return {
@@ -80,11 +75,7 @@ export const FriendsService = {
     );
   },
 
-  async addFriend(
-    userId: string,
-    friendId: string,
-    groupId?: string
-  ): Promise<Friendship> {
+  async addFriend(userId: string, friendId: string, groupId?: string): Promise<Friendship> {
     const { data: existing } = await supabase
       .from("friendships")
       .select("*")
@@ -145,9 +136,7 @@ export const FriendsService = {
 
     if (error) throw error;
 
-    return (data || []).map((row) =>
-      mapPendingFriendshipRow(row as unknown as FriendshipJoinRow)
-    );
+    return (data || []).map((row) => mapPendingFriendshipRow(row as unknown as FriendshipJoinRow));
   },
 
   async acceptFriendship(friendshipId: string): Promise<void> {
@@ -160,19 +149,13 @@ export const FriendsService = {
   },
 
   async rejectFriendship(friendshipId: string): Promise<void> {
-    const { error } = await supabase
-      .from("friendships")
-      .delete()
-      .eq("id", friendshipId);
+    const { error } = await supabase.from("friendships").delete().eq("id", friendshipId);
 
     if (error) throw error;
   },
 
   async removeFriendship(friendshipId: string): Promise<void> {
-    const { error } = await supabase
-      .from("friendships")
-      .delete()
-      .eq("id", friendshipId);
+    const { error } = await supabase.from("friendships").delete().eq("id", friendshipId);
 
     if (error) throw error;
   },

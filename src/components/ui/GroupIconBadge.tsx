@@ -40,7 +40,9 @@ function getPaletteIndex(seed: string): number {
 }
 
 function getFallbackLabel(group: Group): string {
-  return group.icon && group.icon.length <= 2 ? group.icon : group.name.substring(0, 1).toUpperCase();
+  return group.icon && group.icon.length <= 2
+    ? group.icon
+    : group.name.substring(0, 1).toUpperCase();
 }
 
 export function getGroupTone(group: Group): GroupTone {
@@ -57,8 +59,7 @@ export function GroupIconBadge({
   const dims = SIZE_MAP[size] ?? SIZE_MAP.md;
   const tone = getGroupTone(group);
   const GroupIconComp = (icons as any)[group.icon] as
-    | React.ComponentType<{ size: number; color: string; strokeWidth: number }>
-    | undefined;
+    React.ComponentType<{ size: number; color: string; strokeWidth: number }> | undefined;
   const contentRadius = Math.max(dims.radius - dims.inset, 10);
 
   return (

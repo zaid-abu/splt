@@ -2,11 +2,7 @@ import type { JSX } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
-
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
-const TEXT_DANGER = "#E02424";
+import { UI } from "@/components/ui/native-ui";
 
 interface SettingsItemProps {
   icon?: keyof typeof icons;
@@ -40,34 +36,35 @@ export function SettingsItem({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
+        paddingHorizontal: 20,
         paddingVertical: 16,
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: SEPARATOR,
+        borderBottomColor: UI.color.border,
         opacity: pressed || disabled ? 0.5 : 1,
       })}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 16, flex: 1 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 14, flex: 1 }}>
         {Icon && (
           <View
             style={{
               width: 40,
               height: 40,
-              borderRadius: 0,
-              backgroundColor: "transparent",
+              borderRadius: UI.radius.lg,
+              backgroundColor: UI.color.control,
               alignItems: "center",
               justifyContent: "center",
               borderWidth: 1,
-              borderColor: isDanger ? TEXT_DANGER : SEPARATOR,
+              borderColor: isDanger ? UI.color.danger : UI.color.border,
             }}
           >
-            <Icon size={20} color={isDanger ? TEXT_DANGER : TEXT_PRIMARY} strokeWidth={1.5} />
+            <Icon size={20} color={isDanger ? UI.color.danger : UI.color.text} strokeWidth={1.5} />
           </View>
         )}
         <View style={{ flex: 1 }}>
           <Typography
             style={{
               fontSize: 16,
-              color: isDanger ? TEXT_DANGER : TEXT_PRIMARY,
+              color: isDanger ? UI.color.danger : UI.color.text,
               fontFamily: "IBMPlexSans_600SemiBold",
               letterSpacing: -0.3,
             }}
@@ -78,7 +75,7 @@ export function SettingsItem({
             <Typography
               style={{
                 fontSize: 13,
-                color: TEXT_SECONDARY,
+                color: UI.color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 marginTop: 2,
               }}
@@ -88,7 +85,9 @@ export function SettingsItem({
           )}
         </View>
       </View>
-      {rightElement && <View style={{ marginLeft: 16 }}>{rightElement}</View>}
+      {rightElement && (
+        <View style={{ marginLeft: 16, justifyContent: "center" }}>{rightElement}</View>
+      )}
     </Pressable>
   );
 }

@@ -25,7 +25,14 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatActivityDate } from "@/utils/date";
 import { getBalanceCopy } from "@/utils/balance";
-import { UI, ScreenHeader, MetricCell, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
+import {
+  UI,
+  ScreenHeader,
+  MetricCell,
+  SearchField,
+  FilterPill,
+  EmptyState,
+} from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import {
@@ -74,8 +81,6 @@ type DisplayItem =
       sectionCount: number;
     };
 
-
-
 function IconButton({
   icon: Icon,
   label,
@@ -109,8 +114,6 @@ function IconButton({
     </Pressable>
   );
 }
-
-
 
 export default function FriendsScreen(): JSX.Element {
   const router = useRouter();
@@ -418,7 +421,7 @@ export default function FriendsScreen(): JSX.Element {
 
   const renderHeader = useCallback(
     () => (
-      <View style={{ paddingBottom: 18 }}>
+      <View>
         <View style={{ paddingHorizontal: UI.space.page, marginBottom: 16 }}>
           <View
             style={{
@@ -649,7 +652,12 @@ export default function FriendsScreen(): JSX.Element {
         )}
 
         <View style={{ paddingHorizontal: UI.space.page, marginBottom: 12 }}>
-          <SearchField value={search} onChangeText={setSearch} onClear={() => setSearch("")} placeholder="Search friends or email" />
+          <SearchField
+            value={search}
+            onChangeText={setSearch}
+            onClear={() => setSearch("")}
+            placeholder="Search friends or email"
+          />
         </View>
 
         <ScrollView
@@ -709,10 +717,13 @@ export default function FriendsScreen(): JSX.Element {
           <View style={{ marginTop: 20 }}>
             <EmptyState
               icon={icons.Users}
-              title={hasActiveFilters ? "No friends match this view" : "Add the people you split with"}
-              subtitle={hasActiveFilters
-                ? "Try a different name, email, or balance filter."
-                : "Friends and shared-group contacts will appear here with balances and recent activity."
+              title={
+                hasActiveFilters ? "No friends match this view" : "Add the people you split with"
+              }
+              subtitle={
+                hasActiveFilters
+                  ? "Try a different name, email, or balance filter."
+                  : "Friends and shared-group contacts will appear here with balances and recent activity."
               }
             />
             <View style={{ marginTop: 16, alignItems: "center" }}>
@@ -963,7 +974,7 @@ export default function FriendsScreen(): JSX.Element {
         data={displayRows}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
-        itemLayoutAnimation={LinearTransition}
+        keyboardShouldPersistTaps="handled"
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
         contentContainerStyle={{ paddingBottom: 120 }}

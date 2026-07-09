@@ -396,6 +396,8 @@ function ContextSummary({
   );
 }
 
+const ERROR = "#E02424";
+
 function AmountCard({
   amount,
   onAmountChange,
@@ -403,6 +405,8 @@ function AmountCard({
   title,
   onTitleChange,
   category,
+  amountError,
+  titleError,
 }: {
   amount: string;
   onAmountChange: (value: string) => void;
@@ -410,6 +414,8 @@ function AmountCard({
   title: string;
   onTitleChange: (value: string) => void;
   category: ExpenseCategory;
+  amountError?: string;
+  titleError?: string;
 }): JSX.Element {
   return (
     <SurfaceCard style={styles.amountCard}>
@@ -430,9 +436,21 @@ function AmountCard({
           placeholderTextColor={MUTED}
           keyboardType="decimal-pad"
           returnKeyType="done"
-          style={styles.amountInput}
+          style={[styles.amountInput, amountError ? { borderColor: ERROR } : undefined]}
         />
       </View>
+      {amountError && (
+        <Typography
+          style={{
+            marginTop: 4,
+            color: ERROR,
+            fontSize: 13,
+            fontFamily: "IBMPlexSans_500Medium",
+          }}
+        >
+          {amountError}
+        </Typography>
+      )}
 
       <TextInput
         value={title}
@@ -441,8 +459,20 @@ function AmountCard({
         placeholderTextColor={MUTED}
         autoCapitalize="sentences"
         returnKeyType="done"
-        style={styles.titleInput}
+        style={[styles.titleInput, titleError ? { borderColor: ERROR } : undefined]}
       />
+      {titleError && (
+        <Typography
+          style={{
+            marginTop: 4,
+            color: ERROR,
+            fontSize: 13,
+            fontFamily: "IBMPlexSans_500Medium",
+          }}
+        >
+          {titleError}
+        </Typography>
+      )}
     </SurfaceCard>
   );
 }
@@ -1049,13 +1079,45 @@ export default function NewExpenseScreen(): JSX.Element {
                 }}
               />
 
+              {(state.errors.members || state.errors.split) && (
+                <View
+                  style={{
+                    backgroundColor: "#FFF7F5",
+                    borderWidth: 1,
+                    borderColor: "#E85D5D",
+                    borderRadius: 12,
+                    padding: 14,
+                    marginBottom: 12,
+                  }}
+                >
+                  <Typography
+                    style={{
+                      fontSize: 13,
+                      color: "#E85D5D",
+                      fontFamily: "IBMPlexSans_500Medium",
+                      lineHeight: 18,
+                    }}
+                  >
+                    {state.errors.members || state.errors.split}
+                  </Typography>
+                </View>
+              )}
+
               <AmountCard
                 amount={state.amount}
-                onAmountChange={actions.setAmount}
+                onAmountChange={(v) => {
+                  actions.setErrors((prev) => ({ ...prev, amount: "" }));
+                  actions.setAmount(v);
+                }}
                 currency={state.expenseCurrency}
                 title={state.title}
-                onTitleChange={actions.setTitle}
+                onTitleChange={(v) => {
+                  actions.setErrors((prev) => ({ ...prev, title: "" }));
+                  actions.setTitle(v);
+                }}
                 category={state.category}
+                amountError={state.errors.amount}
+                titleError={state.errors.title}
               />
 
               <PreviewCard

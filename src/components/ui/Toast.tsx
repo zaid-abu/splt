@@ -2,28 +2,27 @@ import type { JSX } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
+import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
+import { UI } from "@/components/ui/native-ui";
 
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
-
-// Helper to extract options passed to show()
 export function CustomToast({ props, options }: { props: any; options: any }): JSX.Element {
   const isDanger = options.variant === "danger";
   const isSuccess = options.variant === "success";
 
   const IconComponent = isDanger ? icons.AlertCircle : isSuccess ? icons.CheckCircle : icons.Info;
-  const iconColor = isDanger ? "#E04F4F" : isSuccess ? "#4CAF82" : TEXT_PRIMARY;
+  const iconColor = isDanger ? UI.color.danger : isSuccess ? UI.color.success : UI.color.text;
 
   return (
-    <View
+    <Animated.View
+      entering={FadeInDown.duration(300).springify()}
+      exiting={FadeOutUp.duration(200)}
       style={{
-        backgroundColor: BG,
+        backgroundColor: UI.color.surface,
         borderWidth: 1,
-        borderColor: SEPARATOR,
+        borderColor: UI.color.border,
+        borderRadius: UI.radius.lg,
         paddingHorizontal: 16,
-        paddingVertical: 12,
+        paddingVertical: 14,
         flexDirection: "row",
         alignItems: "center",
         minHeight: 56,
@@ -41,12 +40,13 @@ export function CustomToast({ props, options }: { props: any; options: any }): J
         style={{
           width: 40,
           height: 40,
+          borderRadius: 14,
+          backgroundColor: UI.color.control,
           alignItems: "center",
           justifyContent: "center",
-          marginRight: 12,
-          backgroundColor: "transparent",
           borderWidth: 1,
-          borderColor: SEPARATOR,
+          borderColor: UI.color.border,
+          marginRight: 14,
         }}
       >
         <IconComponent size={20} color={iconColor} strokeWidth={1.5} />
@@ -55,7 +55,11 @@ export function CustomToast({ props, options }: { props: any; options: any }): J
         {!!options.label && (
           <Typography
             numberOfLines={1}
-            style={{ fontSize: 15, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+            style={{
+              fontSize: 15,
+              color: UI.color.text,
+              fontFamily: "IBMPlexSans_600SemiBold",
+            }}
           >
             {options.label}
           </Typography>
@@ -65,7 +69,7 @@ export function CustomToast({ props, options }: { props: any; options: any }): J
             numberOfLines={2}
             style={{
               fontSize: 13,
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 2,
             }}
@@ -76,14 +80,24 @@ export function CustomToast({ props, options }: { props: any; options: any }): J
       </View>
       <Pressable
         accessibilityRole="button"
+        accessibilityLabel="Dismiss"
         onPress={() => props.hide(props.id)}
+        hitSlop={8}
         style={({ pressed }) => ({
-          padding: 8,
-          opacity: pressed ? 0.5 : 1,
+          width: 32,
+          height: 32,
+          borderRadius: UI.radius.pill,
+          backgroundColor: UI.color.control,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          alignItems: "center",
+          justifyContent: "center",
+          marginLeft: 12,
+          opacity: pressed ? 0.6 : 1,
         })}
       >
-        <icons.X size={16} color={TEXT_SECONDARY} strokeWidth={2} />
+        <icons.X size={14} color={UI.color.muted} strokeWidth={2} />
       </Pressable>
-    </View>
+    </Animated.View>
   );
 }

@@ -19,7 +19,8 @@ export const ONBOARDING_SLIDES: OnboardingSlideData[] = [
   {
     id: "groups",
     title: "Shared\nGroups",
-    description: "Create groups for trips, roommates, or nights out. Every expense stays organized.",
+    description:
+      "Create groups for trips, roommates, or nights out. Every expense stays organized.",
     icon: "UsersRound",
     tagline: "Split with anyone",
   },

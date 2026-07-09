@@ -1,8 +1,6 @@
 import { Switch, Typography } from "heroui-native";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
-import { Uniwind } from "uniwind";
 import type { JSX } from "react";
-import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -51,16 +49,8 @@ export default function ProfileScreen(): JSX.Element {
   );
 
   const { mutate: signOut } = useSignOut();
-  const [darkMode, setDarkMode] = useState(true);
-  const [notifs, setNotifs] = useState(true);
-
   const handleCurrencyChange = (currency: Currency) => {
     setCurrency(currency);
-  };
-
-  const handleThemeToggle = (value: boolean) => {
-    setDarkMode(value);
-    Uniwind.setTheme(value ? "dark" : "light");
   };
 
   return (
@@ -122,10 +112,7 @@ export default function ProfileScreen(): JSX.Element {
             </View>
 
             <View style={{ flexDirection: "row", gap: 10 }}>
-              <MetricCell
-                label="Groups"
-                value={String(groups.length)}
-              />
+              <MetricCell label="Groups" value={String(groups.length)} />
               <MetricCell
                 label="Owed"
                 value={`+${preferredCurrency.symbol}${owedToYou.toFixed(0)}`}
@@ -162,21 +149,34 @@ export default function ProfileScreen(): JSX.Element {
               borderRadius: UI.radius.lg,
               borderWidth: 1,
               borderColor: UI.color.border,
+              marginBottom: 12,
             }}
           >
             <SettingsItem
               icon="Moon"
               title="Dark Mode"
-              subtitle="Switch between light and dark themes"
-              rightElement={<Switch isSelected={darkMode} onSelectedChange={handleThemeToggle} />}
+              subtitle="Coming soon"
+              disabled
+              rightElement={<Switch isSelected={false} />}
             />
             <SettingsItem
               icon="Bell"
               title="Notifications"
-              subtitle="Manage push notifications"
-              rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />}
+              subtitle="Coming soon"
+              disabled
+              isLast
+              rightElement={<Switch isSelected={false} />}
             />
-            <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+          </View>
+          <View
+            style={{
+              backgroundColor: UI.color.surface,
+              borderRadius: UI.radius.lg,
+              borderWidth: 1,
+              borderColor: UI.color.border,
+            }}
+          >
+            <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
               <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
             </View>
           </View>

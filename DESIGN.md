@@ -108,6 +108,7 @@ The core aesthetic is native-mobile restraint with editorial warmth. Surfaces ar
 This system explicitly rejects the anti-references captured in [PRODUCT.md](/Users/abuzaid/Documents/Projects/splt/PRODUCT.md:1): it is **not flashy fintech with aggressive growth-product cues**, **not a gamified social app competing for attention**, and **not cold accounting software that feels dense, corporate, or spreadsheet-led**.
 
 **Key Characteristics:**
+
 - Warm neutral surfaces with low-chroma contrast
 - Near-black text and restrained semantic accents
 - Familiar native controls with soft editorial polish
@@ -119,15 +120,19 @@ This system explicitly rejects the anti-references captured in [PRODUCT.md](/Use
 The palette is a warm-neutral product system anchored by charcoal ink, soft ivory surfaces, and tightly scoped semantic accents.
 
 ### Primary
+
 - **Charcoal Ink** (`#1A1A1A`): Primary CTA fill, active navigation state, high-priority headings, and the strongest text value across the app.
 
 ### Secondary
+
 - **Warm Ivory** (`#FEFDFA`): Default card and sheet surface, used to create soft separation from the warmer app background without reading as stark white.
 
 ### Tertiary
+
 - **Taupe Signal** (`#8C7A6B`): Minor brand accent for “Change” affordances and low-volume emphasis where semantic red/green would be wrong.
 
 ### Neutral
+
 - **Warm Canvas** (`#F7F6F1`): App background and main page field.
 - **Soft Surface** (`#F4F3EE`): Secondary panel fill and alternate neutral layer.
 - **Plain White** (`#FFFFFF`): Control interior and high-clarity action surfaces.
@@ -137,6 +142,7 @@ The palette is a warm-neutral product system anchored by charcoal ink, soft ivor
 - **Subtle Ink** (`#9B9A94`): Tertiary labels and de-emphasized metadata.
 
 ### Semantic
+
 - **Debt Red** (`#E85D5D`): Amounts the user owes, destructive emphasis, danger status.
 - **Credit Green** (`#4CAF82`): Amounts owed to the user, success status, positive resolution.
 - **Alert Amber** (`#F5A623`): Warning emphasis and cautionary highlights.
@@ -144,6 +150,7 @@ The palette is a warm-neutral product system anchored by charcoal ink, soft ivor
 - **Blush Ring** (`#E8C4C4`): Soft accent around avatars or decorative social details.
 
 ### Named Rules
+
 **The Semantic Accent Rule.** Red, green, and amber exist to carry meaning, not decoration. If a color does not communicate balance, status, selection, or affordance, it should likely be neutral instead.
 
 **The No Purple Reversal Rule.** The older purple-heavy look is retired. Lilac may appear in contained icon or avatar treatments, but never as the dominant brand color, screen wash, or CTA field.
@@ -157,6 +164,7 @@ The palette is a warm-neutral product system anchored by charcoal ink, soft ivor
 **Character:** The pairing is clean and modern, with a small amount of editorial lift. Sora handles greetings, modal titles, and higher-level screen headings; IBM Plex Sans carries the working UI so forms, lists, balances, and controls stay familiar and crisp.
 
 ### Hierarchy
+
 - **Display** (600, 32px, 1.15): Reserved for hero moments, greetings, major numeric moments, and primary screen titles that need warmth without theatrics.
 - **Headline** (600, 24px, 1.2): Modal titles, section-leading headings, and important empty-state headlines.
 - **Title** (600, 16px, 1.35): Row titles, button labels, field headlines, and the default strong UI text role.
@@ -164,6 +172,7 @@ The palette is a warm-neutral product system anchored by charcoal ink, soft ivor
 - **Label** (600, 11px, 0.1em tracking, uppercase when used as a section label): Section tags, compact metadata, and categorical markers.
 
 ### Named Rules
+
 **The Weight-Not-Scale Rule.** Hierarchy should come primarily from weight, spacing, and placement, not from oversized type jumps. This is a task-first product UI; type should organize work, not perform.
 
 **The Uppercase Restraint Rule.** Small uppercase labels are valid for section structure and metadata only. Never turn whole screens into tracked uppercase scaffolding.
@@ -173,15 +182,18 @@ The palette is a warm-neutral product system anchored by charcoal ink, soft ivor
 Splt is flat by default. Most depth comes from warm background layering, 1px borders, and semantic grouping rather than large shadows. True lift appears sparingly on structural chrome like the custom tab bar and transient feedback like toast, where the user benefits from clear separation from the page underneath.
 
 ### Shadow Vocabulary
+
 - **Chrome Lift** (`shadowColor: #000; shadowOffset: 0 -1px; shadowOpacity: 0.05; shadowRadius: 8; elevation: 8`): Used on the bottom tab bar so navigation reads as persistent chrome, not content.
 - **Toast Lift** (`shadowColor: #000; shadowOffset: 0 4px; shadowOpacity: 0.1; shadowRadius: 8; elevation: 5`): Used for transient feedback that must sit above content without feeling heavy.
 
 ### Named Rules
+
 **The Flat-By-Default Rule.** Cards, rows, and inputs should rest on borders and tonal contrast first. Reach for shadow only when the element must behave as chrome or overlay, not as ordinary content.
 
 ## 5. Components
 
 ### Buttons
+
 - **Character:** Softly assertive, compact, and native-feeling.
 - **Shape:** Pill for primary and secondary actions (`9999px`), with compact height around 40px for inline actions.
 - **Primary:** Charcoal fill with white text, semibold IBM Plex Sans, centered content, and no decorative outline.
@@ -189,10 +201,12 @@ Splt is flat by default. Most depth comes from warm background layering, 1px bor
 - **Secondary / Ghost:** White background, warm border, charcoal text. Used for alternate actions like “View balances.”
 
 ### Chips
+
 - **Style:** Rounded pill chips with soft border and neutral fill, sometimes carrying small semantic labels like “Current” or “Popular.”
 - **State:** Selected chips invert into darker or more distinct fills; metadata chips stay quiet and compact.
 
 ### Cards / Containers
+
 - **Corner Style:** Rounded but controlled (`16px` outer cards, `12px` inner panels, occasional `14px` icons or status shells).
 - **Background:** Ivory or plain white over a warm canvas. Alternate panels may use tinted red or green neutrals to signal debt and credit.
 - **Shadow Strategy:** No ambient card shadows by default. Borders and tonal shifts do the work.
@@ -200,16 +214,19 @@ Splt is flat by default. Most depth comes from warm background layering, 1px bor
 - **Internal Padding:** Usually `14px` to `20px`, with tighter spacing in rows and more generous spacing in summary blocks.
 
 ### Inputs / Fields
+
 - **Style:** Either rounded-rectangle cards (`16px`) or pill search fields (`9999px`), always with clean warm borders and readable dark text.
 - **Focus:** Focus is expressed through context, open state, or modal presentation more than glowing outlines. Search and selection flows rely on clear field shape and surrounding sheet structure.
 - **Error / Disabled:** Error states should use debt red intentionally; disabled text belongs in the subtle neutral range, never low-contrast gray on tinted fills.
 
 ### Navigation
+
 - **Style:** Custom bottom tab bar with solid white background, 1px warm top border, thin lucide icons, no text labels, and a tiny active dot below the selected icon.
 - **States:** Inactive tabs use muted gray; active tabs shift to charcoal with slightly heavier stroke. The center add action stays outline-based, not a floating FAB.
 - **Platform Treatment:** Safe-area-aware and edge-aligned. On Android the bar gets a small structural shadow; on iOS it remains crisp and quiet.
 
 ### Bottom Sheets
+
 - **Style:** Full-width warm sheets with square top edge treatment (`borderRadius: 0`) and a soft neutral handle indicator.
 - **Content:** Sora title, IBM Plex supporting copy, bordered search or input cards, and list rows with consistent 16px rounding.
 - **Behavior:** Sheets are working surfaces, not theatrical modals. Keyboard handling and dismiss affordances matter more than ornament.
@@ -217,6 +234,7 @@ Splt is flat by default. Most depth comes from warm background layering, 1px bor
 ## 6. Do's and Don'ts
 
 ### Do:
+
 - **Do** keep primary actions in `#1A1A1A` with white text, and reserve semantic reds and greens for actual money or status meaning.
 - **Do** use `16px` as the default card radius, `12px` for inner panels, and `9999px` only for pills, chips, and compact action buttons.
 - **Do** preserve the warm-canvas layering of `#F7F6F1` background, `#FEFDFA` surface, and `#FFFFFF` control interiors.
@@ -224,6 +242,7 @@ Splt is flat by default. Most depth comes from warm background layering, 1px bor
 - **Do** keep navigation, sheets, and list rows aligned with native mobile expectations on both iOS and Android.
 
 ### Don't:
+
 - **Don't** build **flashy fintech with aggressive growth-product cues**: no neon accents, oversized numeric bravado, or hyper-saturated CTA fields.
 - **Don't** make it **a gamified social app competing for attention**: no celebratory confetti UI, noisy badges everywhere, or playful color for its own sake.
 - **Don't** make it **cold accounting software that feels dense, corporate, or spreadsheet-led**: avoid cold grays, rigid grid-heavy presentation, and finance-dashboard tropes.

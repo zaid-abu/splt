@@ -46,12 +46,22 @@ export default function NotificationsScreen(): JSX.Element {
           layout={LinearTransition}
           entering={FadeInDown.duration(400).delay(index * 50)}
         >
-          <View style={{ padding: UI.space.page, borderBottomWidth: 1, borderBottomColor: UI.color.border }}>
+          <View
+            style={{
+              padding: UI.space.page,
+              borderBottomWidth: 1,
+              borderBottomColor: UI.color.border,
+            }}
+          >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
               <AppUserAvatar user={friendship.friendUser!} size="md" />
               <View style={{ flex: 1, marginLeft: 16 }}>
                 <Typography
-                  style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 16,
+                    color: UI.color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
                   {item.title}
                 </Typography>
@@ -111,7 +121,11 @@ export default function NotificationsScreen(): JSX.Element {
                   <ActivityIndicator color={UI.color.text} />
                 ) : (
                   <Typography
-                    style={{ color: UI.color.text, fontSize: 14, fontFamily: "IBMPlexSans_600SemiBold" }}
+                    style={{
+                      color: UI.color.text,
+                      fontSize: 14,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
                   >
                     Reject
                   </Typography>
@@ -132,10 +146,7 @@ export default function NotificationsScreen(): JSX.Element {
 
       {/* Safe-area-aware header */}
       <View style={{ paddingTop: insets.top }}>
-        <ScreenHeader
-          title="Notifications"
-          onBackPress={() => router.back()}
-        />
+        <ScreenHeader title="Notifications" onBackPress={() => router.back()} />
       </View>
 
       <FlatList

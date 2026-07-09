@@ -133,7 +133,11 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
                   </View>
                 </View>
                 <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 16,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
                   {formatAmount(expense.myShareInPrefCurrency, currencyCode)}
                 </Typography>

@@ -534,10 +534,8 @@ export default function FriendDetailScreen(): JSX.Element {
 
         <View
           style={{
-            flexDirection: "row",
             alignItems: "center",
             justifyContent: "center",
-            gap: 12,
             flex: 1,
             marginHorizontal: 16,
           }}
@@ -551,9 +549,22 @@ export default function FriendDetailScreen(): JSX.Element {
               color: TEXT_PRIMARY,
               flexShrink: 1,
               textAlign: "center",
+              marginTop: 4,
             }}
           >
             {friend.name}
+          </Typography>
+          <Typography
+            numberOfLines={1}
+            style={{
+              fontSize: 13,
+              color: TEXT_SECONDARY,
+              fontFamily: "IBMPlexSans_500Medium",
+              textAlign: "center",
+              marginTop: 1,
+            }}
+          >
+            {friend.email}
           </Typography>
         </View>
 
@@ -662,6 +673,8 @@ export default function FriendDetailScreen(): JSX.Element {
                   {isPositive ? `${friend.name} owes you` : `You owe ${friend.name}`}
                 </Typography>
                 <Typography
+                  numberOfLines={1}
+                  adjustsFontSizeToFit
                   style={{
                     fontSize: 40,
                     color: isPositive ? TEXT_SUCCESS : TEXT_DANGER,

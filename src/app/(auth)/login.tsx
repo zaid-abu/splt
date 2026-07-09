@@ -5,7 +5,14 @@ import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator, Pressable } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  ActivityIndicator,
+  Pressable,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import { useForm } from "react-hook-form";
@@ -77,6 +84,7 @@ export default function LoginScreen(): JSX.Element {
         >
           <Pressable
             accessibilityRole="button"
+            accessibilityLabel="Go back"
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
             hitSlop={8}
             style={({ pressed }) => ({
@@ -132,7 +140,7 @@ export default function LoginScreen(): JSX.Element {
                   maxWidth: 280,
                 }}
               >
-                Enter your details to sign in to your account.
+                Sign in and pick up where you left off.
               </Typography>
             </Animated.View>
 
@@ -162,7 +170,11 @@ export default function LoginScreen(): JSX.Element {
                 >
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+                    accessibilityLabel="Forgot password"
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push("/(auth)/forgot-password");
+                    }}
                     hitSlop={8}
                     style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                   >
@@ -184,10 +196,12 @@ export default function LoginScreen(): JSX.Element {
                   placeholder="••••••••"
                   secureTextEntry={!showPassword}
                   autoComplete="password"
+                  accessibilityHint="Enter your password"
                   leftElement={<icons.Lock size={18} color={UI.color.muted} />}
                   rightElement={
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityLabel={showPassword ? "Hide password" : "Show password"}
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setShowPassword(!showPassword);
@@ -211,6 +225,7 @@ export default function LoginScreen(): JSX.Element {
               >
                 <Pressable
                   accessibilityRole="button"
+                  accessibilityLabel="Sign in"
                   disabled={isPending}
                   style={({ pressed }) => ({
                     width: "100%",
@@ -227,7 +242,11 @@ export default function LoginScreen(): JSX.Element {
                 >
                   {isPending && <ActivityIndicator color="#FFFFFF" />}
                   <Typography
-                    style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+                    style={{
+                      fontSize: 16,
+                      color: "#FFFFFF",
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
                   >
                     {isPending ? "Signing in\u2026" : "Sign In"}
                   </Typography>
@@ -257,6 +276,7 @@ export default function LoginScreen(): JSX.Element {
             </Typography>
             <Pressable
               accessibilityRole="button"
+              accessibilityLabel="Create an account"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push("/(auth)/register");
@@ -265,7 +285,11 @@ export default function LoginScreen(): JSX.Element {
               style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
             >
               <Typography
-                style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+                style={{
+                  fontSize: 16,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
               >
                 Create one
               </Typography>

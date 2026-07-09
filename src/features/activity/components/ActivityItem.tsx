@@ -8,7 +8,8 @@ import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 
-import { useDeleteActivity } from "@/features/activity/queries/useActivities";
+import { useDeleteExpense } from "@/features/expenses/queries/useExpenses";
+import { useDeleteSettlement } from "@/features/settlements/queries/useSettlements";
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -29,9 +30,11 @@ interface ActivityItemProps {
 
 export function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
   const { currentUser } = useAuth();
-  const { mutateAsync: deleteActivity } = useDeleteActivity();
+  const { mutateAsync: deleteExpense } = useDeleteExpense();
+  const { mutateAsync: deleteSettlement } = useDeleteSettlement();
   const router = useRouter();
   const sheetRef = useRef<BottomSheetModal>(null);
+  const confirmSheetRef = useRef<BottomSheetModal>(null);
   const insets = useSafeAreaInsets();
 
   const involvement = useMemo(() => {
@@ -53,11 +56,26 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
       if (exp.paidBy === currentUser.id) {
         const owedToYou = exp.amount - mySplit.amount;
         if (owedToYou > 0) {
-          return { type: "positive" as const, text: "You lent", amount: owedToYou, showAmount: true };
+          return {
+            type: "positive" as const,
+            text: "You lent",
+            amount: owedToYou,
+            showAmount: true,
+          };
         }
-        return { type: "neutral" as const, text: "You paid your share", amount: 0, showAmount: false };
+        return {
+          type: "neutral" as const,
+          text: "You paid your share",
+          amount: 0,
+          showAmount: false,
+        };
       } else {
-        return { type: "negative" as const, text: "You owe", amount: mySplit.amount, showAmount: true };
+        return {
+          type: "negative" as const,
+          text: "You owe",
+          amount: mySplit.amount,
+          showAmount: true,
+        };
       }
     }
 
@@ -67,7 +85,12 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
         return { type: "neutral" as const, text: "You paid", amount: set.amount, showAmount: true };
       }
       if (set.toUserId === currentUser.id) {
-        return { type: "positive" as const, text: "You received", amount: set.amount, showAmount: true };
+        return {
+          type: "positive" as const,
+          text: "You received",
+          amount: set.amount,
+          showAmount: true,
+        };
       }
       return { type: "neutral" as const, text: "Not involved", amount: 0, showAmount: false };
     }
@@ -150,17 +173,28 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteTap = () => {
     sheetRef.current?.dismiss();
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    setTimeout(async () => {
-      try {
-        await deleteActivity(activity.id);
-      } catch {
-        // error handled by query client
-      }
-    }, 300);
+    setTimeout(() => {
+      confirmSheetRef.current?.present();
+    }, 350);
   };
+
+  const handleConfirmDelete = async () => {
+    confirmSheetRef.current?.dismiss();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    try {
+      if (activity.type === "expense" && activity.expense) {
+        await deleteExpense(activity.expense.id);
+      } else if (activity.type === "settlement" && activity.settlement) {
+        await deleteSettlement(activity.settlement.id);
+      }
+    } catch {
+      // handled by query client
+    }
+  };
+
+  const canDelete = activity.type === "expense" || activity.type === "settlement";
 
   return (
     <Animated.View entering={FadeInDown.delay((index % 10) * 40).springify()}>
@@ -175,10 +209,9 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
           paddingHorizontal: 16,
           borderBottomWidth: isLast ? 0 : 1,
           borderBottomColor: SEPARATOR,
-          backgroundColor: pressed ? "#FBF7F2" : "transparent",
+          backgroundColor: pressed ? UI.color.subtle : "transparent",
         })}
       >
-        {/* Icon badge */}
         <View
           style={{
             width: 44,
@@ -194,7 +227,6 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
           <IconComponent size={22} color={iconColors[involvement.type]} strokeWidth={1.5} />
         </View>
 
-        {/* Title + subtitle */}
         <View style={{ flex: 1, marginRight: 10 }}>
           <Typography
             numberOfLines={1}
@@ -220,7 +252,6 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
           </Typography>
         </View>
 
-        {/* Amount */}
         <View style={{ alignItems: "flex-end", maxWidth: 110 }}>
           {involvement.showAmount ? (
             <Typography
@@ -250,7 +281,6 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
           </Typography>
         </View>
 
-        {/* Chevron */}
         <icons.ChevronRight
           size={14}
           color={TEXT_SECONDARY}
@@ -259,7 +289,6 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
         />
       </Pressable>
 
-      {/* Bottom Sheet — Activity Detail */}
       <BottomSheetModal
         ref={sheetRef}
         index={0}
@@ -276,7 +305,6 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
             gap: 20,
           }}
         >
-          {/* Activity summary */}
           <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
             <View
               style={{
@@ -313,7 +341,6 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
             </View>
           </View>
 
-          {/* Amount highlight */}
           {involvement.showAmount && (
             <View style={{ alignItems: "center", paddingVertical: 8 }}>
               <Typography
@@ -340,7 +367,6 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
             </View>
           )}
 
-          {/* Actions */}
           <View style={{ gap: 12 }}>
             {activity.type !== "group_created" && activity.type !== "member_joined" && (
               <Pressable
@@ -365,14 +391,82 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
                 </Typography>
               </Pressable>
             )}
+            {canDelete && (
+              <Pressable
+                onPress={handleDeleteTap}
+                style={({ pressed }) => ({
+                  height: 52,
+                  borderRadius: UI.radius.pill,
+                  backgroundColor: UI.color.control,
+                  borderWidth: 1,
+                  borderColor: UI.color.danger,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed ? 0.65 : 1,
+                })}
+              >
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: UI.color.danger,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  Delete
+                </Typography>
+              </Pressable>
+            )}
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
+
+      {/* Confirmation sheet */}
+      <BottomSheetModal
+        ref={confirmSheetRef}
+        index={0}
+        enableDynamicSizing
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+      >
+        <BottomSheetView
+          style={{
+            paddingHorizontal: UI.space.page,
+            paddingTop: 24,
+            paddingBottom: insets.bottom + 24,
+          }}
+        >
+          <Typography
+            style={{
+              fontSize: 22,
+              color: TEXT_PRIMARY,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              marginBottom: 8,
+            }}
+          >
+            Delete {activity.type === "expense" ? "Expense" : "Payment"}?
+          </Typography>
+          <Typography
+            style={{
+              fontSize: 16,
+              color: TEXT_SECONDARY,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginBottom: 24,
+              lineHeight: 22,
+            }}
+          >
+            Are you sure you want to delete "{activity.description}"? This cannot be undone.
+          </Typography>
+          <View style={{ flexDirection: "row", gap: 12 }}>
             <Pressable
-              onPress={handleDelete}
+              onPress={() => confirmSheetRef.current?.dismiss()}
               style={({ pressed }) => ({
+                flex: 1,
                 height: 52,
                 borderRadius: UI.radius.pill,
-                backgroundColor: UI.color.control,
                 borderWidth: 1,
-                borderColor: UI.color.danger,
+                borderColor: SEPARATOR,
+                backgroundColor: UI.color.control,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.65 : 1,
@@ -381,7 +475,29 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
               <Typography
                 style={{
                   fontSize: 16,
-                  color: UI.color.danger,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                Cancel
+              </Typography>
+            </Pressable>
+            <Pressable
+              onPress={handleConfirmDelete}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 52,
+                borderRadius: UI.radius.pill,
+                backgroundColor: UI.color.danger,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: "#FFFFFF",
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >

@@ -184,7 +184,11 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                 <Spinner size="sm" color="white" />
               ) : isExcluded ? (
                 <Typography
-                  style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 14,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
                   Added
                 </Typography>

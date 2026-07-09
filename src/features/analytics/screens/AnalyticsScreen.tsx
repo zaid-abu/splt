@@ -128,9 +128,7 @@ export default function AnalyticsScreen() {
         }}
       >
         <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 18 }}>
-          <Typography
-            style={{ fontSize: 32, fontFamily: "Sora_600SemiBold", color: TEXT_PRIMARY }}
-          >
+          <Typography style={{ fontSize: 32, fontFamily: "Sora_600SemiBold", color: TEXT_PRIMARY }}>
             Analytics
           </Typography>
         </View>

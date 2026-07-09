@@ -177,6 +177,7 @@ export function useExpenseForm({
   const [loading, setLoading] = useState(false);
   const [expenseDate, setExpenseDate] = useState<Date>(existingExpense?.date || new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [included, setIncluded] = useState<Record<string, boolean>>(() =>
     getExistingIncludedMap(existingExpense)
@@ -276,62 +277,29 @@ export function useExpenseForm({
   const remainingPercent = Math.max(0, 100 - currentPercentSum);
 
   async function handleSubmit(): Promise<void> {
+    const newErrors: Record<string, string> = {};
+
     if (!selectedGroup && selectedFriends.length === 0) {
-      toast.show({
-        label: "Error",
-        description: "Please select a group or friend",
-        variant: "danger",
-        placement: "top",
-      });
-      return;
+      newErrors.context = "Please select a group or friend";
     }
     if (!title.trim()) {
-      toast.show({
-        label: "Error",
-        description: "Please enter a title",
-        variant: "danger",
-        placement: "top",
-      });
-      return;
+      newErrors.title = "Please enter a title";
     }
     if (!parsedAmount || parsedAmount <= 0) {
-      toast.show({
-        label: "Error",
-        description: "Please enter a valid amount",
-        variant: "danger",
-        placement: "top",
-      });
-      return;
+      newErrors.amount = "Please enter a valid amount";
     }
     if (includedMembers.length === 0) {
-      toast.show({
-        label: "Error",
-        description: "Include at least one member",
-        variant: "danger",
-        placement: "top",
-      });
-      return;
+      newErrors.members = "Include at least one member";
     }
-
     if (splitMethod === "custom" && Math.abs(currentCustomSum - parsedAmount) > 0.01) {
-      toast.show({
-        label: "Error",
-        description: `Custom amounts must equal exactly ${formatAmount(parsedAmount, expenseCurrency)}.`,
-        variant: "danger",
-        placement: "top",
-      });
-      return;
+      newErrors.split = `Custom amounts must equal exactly ${formatAmount(parsedAmount, expenseCurrency)}.`;
+    }
+    if (splitMethod === "percentage" && Math.abs(currentPercentSum - 100) > 0.01) {
+      newErrors.split = "Percentages must add up to exactly 100%.";
     }
 
-    if (splitMethod === "percentage" && Math.abs(currentPercentSum - 100) > 0.01) {
-      toast.show({
-        label: "Error",
-        description: "Percentages must add up to exactly 100%.",
-        variant: "danger",
-        placement: "top",
-      });
-      return;
-    }
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
     try {
@@ -420,6 +388,7 @@ export function useExpenseForm({
       remainingCustom,
       currentPercentSum,
       remainingPercent,
+      errors,
     },
     actions: {
       setSelectedGroupId,
@@ -441,6 +410,7 @@ export function useExpenseForm({
       setCustomPercentages,
       handleSubmit,
       setCurrency,
+      setErrors,
     },
   };
 }

@@ -14,7 +14,14 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import { GroupCard } from "@/features/groups/components/GroupCard";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { UI, ScreenHeader, MetricCell, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
+import {
+  UI,
+  ScreenHeader,
+  MetricCell,
+  SearchField,
+  FilterPill,
+  EmptyState,
+} from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -106,36 +113,10 @@ export default function GroupsScreen(): JSX.Element {
 
   const ListHeaderComponent = useCallback(
     () => (
-      <View style={{ paddingTop: insets.top + 16 }}>
-        <ScreenHeader
-          title="Groups"
-          rightAction={
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push("/group/new")}
-              style={({ pressed }) => ({
-                width: 44,
-                height: 44,
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: UI.color.control,
-                borderRadius: UI.radius.pill,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                opacity: pressed ? 0.5 : 1,
-              })}
-            >
-              <icons.Plus size={20} color={UI.color.text} strokeWidth={1.5} />
-            </Pressable>
-          }
-        />
-
+      <View>
         <View style={{ paddingHorizontal: UI.space.page, marginBottom: 16 }}>
           <View style={{ flexDirection: "row", gap: 10 }}>
-            <MetricCell
-              label="Groups"
-              value={String(activeGroups.length)}
-            />
+            <MetricCell label="Groups" value={String(activeGroups.length)} />
             <MetricCell
               label="You owe"
               value={formatAmount(totals.youOwe, preferredCurrency.code)}
@@ -158,7 +139,15 @@ export default function GroupsScreen(): JSX.Element {
           />
         </View>
 
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: UI.space.page, marginBottom: 20 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            flexWrap: "wrap",
+            gap: 8,
+            paddingHorizontal: UI.space.page,
+            marginBottom: 20,
+          }}
+        >
           {FILTERS.map((item) => (
             <FilterPill
               key={item.key}
@@ -170,7 +159,7 @@ export default function GroupsScreen(): JSX.Element {
         </View>
       </View>
     ),
-    [activeGroups.length, filter, insets.top, preferredCurrency.code, router, search, totals]
+    [activeGroups.length, filter, preferredCurrency.code, search, totals]
   );
 
   const ListEmptyComponent = useCallback(
@@ -260,6 +249,31 @@ export default function GroupsScreen(): JSX.Element {
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
+
+      <View style={{ paddingTop: insets.top + 16 }}>
+        <ScreenHeader
+          title="Groups"
+          rightAction={
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push("/group/new")}
+              style={({ pressed }) => ({
+                width: 44,
+                height: 44,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: UI.color.control,
+                borderRadius: UI.radius.pill,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <icons.Plus size={20} color={UI.color.text} strokeWidth={1.5} />
+            </Pressable>
+          }
+        />
+      </View>
 
       <FocusAwareView delay={0} style={{ flex: 1 }}>
         <FlashList

@@ -27,6 +27,12 @@ export function useSignUp() {
   });
 }
 
+export function useResetPassword() {
+  return useMutation({
+    mutationFn: (email: string) => AuthService.resetPassword(email),
+  });
+}
+
 export function useSignOut() {
   const queryClient = useQueryClient();
 

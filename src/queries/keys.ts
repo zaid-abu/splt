@@ -35,7 +35,8 @@ export const queryKeys = {
   allFriendships: (userId?: string) => ["friends", "list", userId, "all-friendships"] as const,
 
   // Users
-  userSearch: (query: string, currentUserId?: string) => ["users", "search", query, currentUserId] as const,
+  userSearch: (query: string, currentUserId?: string) =>
+    ["users", "search", query, currentUserId] as const,
 
   // Notifications
   notifications: (userId?: string) => ["notifications", userId] as const,

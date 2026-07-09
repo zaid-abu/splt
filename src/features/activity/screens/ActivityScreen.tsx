@@ -6,7 +6,7 @@ import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 
-import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import { useAuth } from "@/context/AppContext";
@@ -16,8 +16,6 @@ import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { UI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
 import type { Activity, ActivityFilterType } from "@/types";
-
-
 
 export default function ActivityScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
@@ -113,42 +111,6 @@ export default function ActivityScreen(): JSX.Element {
 
   const FILTERS: ActivityFilterType[] = ["All", "Expenses", "Settlements", "Groups", "Friends"];
 
-  const renderFilterPills = () => (
-    <View style={{ marginBottom: 24 }}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: UI.space.page, gap: 8 }}
-      >
-        {FILTERS.map((filter) => (
-          <FilterPill
-            key={filter}
-            label={filter}
-            isActive={activeFilter === filter}
-            onPress={() => setActiveFilter(filter)}
-          />
-        ))}
-      </ScrollView>
-    </View>
-  );
-
-  const renderSearchAndFilters = () => (
-    <Animated.View entering={FadeInDown.duration(400)} style={{ backgroundColor: UI.color.bg }}>
-      <View style={{ paddingHorizontal: UI.space.page, paddingBottom: 24 }}>
-        <SearchField
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          onClear={() => setSearchQuery("")}
-          placeholder="Search activity..."
-        />
-      </View>
-
-      {renderFilterPills()}
-
-      {isAppLoading && <AppLoader />}
-    </Animated.View>
-  );
-
   const ListEmptyComponent = useCallback(() => {
     if (isAppLoading) return null;
     return (
@@ -171,10 +133,37 @@ export default function ActivityScreen(): JSX.Element {
       <StatusBar style="dark" />
       <ScreenHeader title="Activity" />
 
+      {/* Search + filters — outside FlatList so the input never unmounts on data change */}
+      <View style={{ backgroundColor: UI.color.bg }}>
+        <View style={{ paddingHorizontal: UI.space.page, paddingBottom: 20 }}>
+          <SearchField
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onClear={() => setSearchQuery("")}
+            placeholder="Search activity..."
+          />
+        </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: UI.space.page, gap: 8, paddingBottom: 20 }}
+        >
+          {FILTERS.map((filter) => (
+            <FilterPill
+              key={filter}
+              label={filter}
+              isActive={activeFilter === filter}
+              onPress={() => setActiveFilter(filter)}
+            />
+          ))}
+        </ScrollView>
+        {isAppLoading && <AppLoader />}
+      </View>
+
       <Animated.FlatList
         data={groupedActivities}
         keyExtractor={(item) => item.title}
-        itemLayoutAnimation={LinearTransition}
+        keyboardShouldPersistTaps="handled"
         renderItem={({ item: section }: { item: { title: string; data: Activity[] } }) => (
           <View style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
             {/* Month header */}
@@ -213,7 +202,6 @@ export default function ActivityScreen(): JSX.Element {
             </View>
           </View>
         )}
-        ListHeaderComponent={renderSearchAndFilters}
         ListEmptyComponent={ListEmptyComponent}
         contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
         showsVerticalScrollIndicator={false}

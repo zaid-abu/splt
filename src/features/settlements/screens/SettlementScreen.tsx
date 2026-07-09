@@ -12,12 +12,7 @@ import { Typography, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, {
-  FadeInDown,
-  FadeIn,
-  FadeOut,
-  LinearTransition,
-} from "react-native-reanimated";
+import Animated, { FadeInDown, FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 
@@ -32,6 +27,7 @@ import * as balancesUtil from "@/features/settlements/utils/balances";
 import { useFriends } from "@/features/friends/queries/useFriends";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
+import { CURRENCIES } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useAppToast } from "@/hooks/useAppToast";
 import { ScreenHeader } from "@/components/ui/native-ui";
@@ -178,6 +174,7 @@ export default function SettleUpScreen(): JSX.Element {
       ? Math.abs(netBalance).toFixed(2)
       : "";
   const [amountStr, setAmountStr] = useState(initialAmtStr === "0.00" ? "" : initialAmtStr);
+  const [amountError, setAmountError] = useState("");
   const [note, setNote] = useState("");
   const [showOptional, setShowOptional] = useState(false);
 
@@ -213,9 +210,17 @@ export default function SettleUpScreen(): JSX.Element {
         </Typography>
         <Pressable
           onPress={() => router.back()}
-          style={{ marginTop: 16, padding: 14, paddingHorizontal: 24, backgroundColor: BRAND, borderRadius: PILL_RADIUS }}
+          style={{
+            marginTop: 16,
+            padding: 14,
+            paddingHorizontal: 24,
+            backgroundColor: BRAND,
+            borderRadius: PILL_RADIUS,
+          }}
         >
-          <Typography style={{ color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold" }}>Go Back</Typography>
+          <Typography style={{ color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
+            Go Back
+          </Typography>
         </Pressable>
       </View>
     );
@@ -224,6 +229,7 @@ export default function SettleUpScreen(): JSX.Element {
   if (!friend) return <View />;
 
   const handleAmountChange = (text: string) => {
+    setAmountError("");
     const cleaned = text.replace(/[^0-9.]/g, "");
     const parts = cleaned.split(".");
     if (parts.length > 2) return;
@@ -235,12 +241,7 @@ export default function SettleUpScreen(): JSX.Element {
 
   async function handleSubmit() {
     if (!parsedAmount || parsedAmount <= 0) {
-      toast.show({
-        label: "Error",
-        description: "Please enter a valid amount.",
-        variant: "danger",
-        placement: "top",
-      });
+      setAmountError("Please enter a valid amount.");
       return;
     }
     try {
@@ -249,7 +250,7 @@ export default function SettleUpScreen(): JSX.Element {
         fromUserId: direction === "you" ? currentUser.id : friend!.id,
         toUserId: direction === "you" ? friend!.id : currentUser.id,
         amount: parsedAmount,
-        currency: preferredCurrency.code,
+        currency: settlementCurrency,
         date: new Date(),
         note: note.trim(),
       });
@@ -266,6 +267,11 @@ export default function SettleUpScreen(): JSX.Element {
   }
 
   const isYouDirection = direction === "you";
+  const settlementCurrency =
+    isGroupRoute && targetGroup?.currency ? targetGroup.currency : preferredCurrency.code;
+  const settlementCurrencyObj =
+    CURRENCIES.find((c) => c.code === settlementCurrency) ?? preferredCurrency;
+
   const leftUser = isYouDirection ? currentUser : friend;
   const rightUser = isYouDirection ? friend : currentUser;
   const leftName = isYouDirection ? "You" : friend.name.split(" ")[0];
@@ -277,10 +283,9 @@ export default function SettleUpScreen(): JSX.Element {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <StatusBar style="dark" />
-      <ScreenHeader
-        title="Settle Up"
-        onBackPress={() => router.back()}
-      />
+      <View style={{ paddingTop: insets.top }}>
+        <ScreenHeader title="Settle Up" onBackPress={() => router.back()} />
+      </View>
 
       <ScrollView
         contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
@@ -482,7 +487,7 @@ export default function SettleUpScreen(): JSX.Element {
               marginBottom: 8,
             }}
           >
-            Amount ({preferredCurrency.code})
+            Amount ({settlementCurrency})
           </Typography>
 
           <View
@@ -504,7 +509,7 @@ export default function SettleUpScreen(): JSX.Element {
                 marginRight: 8,
               }}
             >
-              {preferredCurrency.symbol}
+              {settlementCurrencyObj.symbol}
             </Typography>
             <TextInput
               value={amountStr}
@@ -525,6 +530,20 @@ export default function SettleUpScreen(): JSX.Element {
             />
           </View>
 
+          {amountError ? (
+            <Typography
+              style={{
+                marginTop: 12,
+                color: "#E85D5D",
+                fontSize: 13,
+                fontFamily: "IBMPlexSans_500Medium",
+                textAlign: "center",
+              }}
+            >
+              {amountError}
+            </Typography>
+          ) : null}
+
           {/* Quick Amount Pills */}
           {Math.abs(netBalance) > 0 && (
             <View style={{ flexDirection: "row", gap: 12, marginTop: 24 }}>
@@ -544,9 +563,13 @@ export default function SettleUpScreen(): JSX.Element {
                 })}
               >
                 <Typography
-                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 13,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
-                  Full: {formatAmount(Math.abs(netBalance), preferredCurrency.code)}
+                  Full: {formatAmount(Math.abs(netBalance), settlementCurrency)}
                 </Typography>
               </Pressable>
               <Pressable
@@ -565,9 +588,13 @@ export default function SettleUpScreen(): JSX.Element {
                 })}
               >
                 <Typography
-                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 13,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
-                  Half: {(Math.abs(netBalance) / 2).toFixed(2)}
+                  Half: {formatAmount(Math.abs(netBalance) / 2, settlementCurrency)}
                 </Typography>
               </Pressable>
             </View>
@@ -577,9 +604,7 @@ export default function SettleUpScreen(): JSX.Element {
         {/* Optional Note/Group */}
         <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
           <Pressable onPress={() => setShowOptional(!showOptional)} style={{ padding: 8 }}>
-            <Typography
-              style={{ fontSize: 13, color: BRAND, fontFamily: "IBMPlexSans_500Medium" }}
-            >
+            <Typography style={{ fontSize: 13, color: BRAND, fontFamily: "IBMPlexSans_500Medium" }}>
               {showOptional ? "Hide Options" : "+ Add Note or Group"}
             </Typography>
           </Pressable>
@@ -747,7 +772,7 @@ export default function SettleUpScreen(): JSX.Element {
                 letterSpacing: 1,
               }}
             >
-              Record {preferredCurrency.symbol}
+              Record {settlementCurrencyObj.symbol}
               {parsedAmount.toFixed(2)}
             </Typography>
           )}

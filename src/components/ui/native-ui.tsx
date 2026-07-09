@@ -202,7 +202,11 @@ interface ScreenHeaderProps {
   rightAction?: ReactNode;
 }
 
-export function ScreenHeader({ title, onBackPress, rightAction }: ScreenHeaderProps): React.JSX.Element {
+export function ScreenHeader({
+  title,
+  onBackPress,
+  rightAction,
+}: ScreenHeaderProps): React.JSX.Element {
   return (
     <View
       style={{
@@ -215,11 +219,7 @@ export function ScreenHeader({ title, onBackPress, rightAction }: ScreenHeaderPr
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
         {onBackPress && (
-          <IconButton
-            icon={icons.ArrowLeft}
-            onPress={onBackPress}
-            accessibilityLabel="Go back"
-          />
+          <IconButton icon={icons.ArrowLeft} onPress={onBackPress} accessibilityLabel="Go back" />
         )}
         <Typography
           style={{

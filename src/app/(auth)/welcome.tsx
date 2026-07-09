@@ -8,6 +8,8 @@ import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { UI } from "@/components/ui/native-ui";
 
+const FEATURES = ["Record expenses in seconds", "See balances at a glance", "Settle up with ease"];
+
 export default function WelcomeScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -33,7 +35,7 @@ export default function WelcomeScreen(): JSX.Element {
         </Animated.View>
 
         {/* Hero */}
-        <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+        <Animated.View entering={FadeInDown.delay(300).duration(600)} style={{ marginBottom: 56 }}>
           <Typography
             style={{
               fontFamily: "Sora_600SemiBold",
@@ -41,22 +43,37 @@ export default function WelcomeScreen(): JSX.Element {
               color: UI.color.textStrong,
               lineHeight: 58,
               letterSpacing: -0.02,
-              marginBottom: 16,
+              marginBottom: 20,
             }}
           >
             Welcome{"\n"}to SPLT
           </Typography>
-          <Typography
-            style={{
-              fontFamily: "IBMPlexSans_400Regular",
-              fontSize: 18,
-              color: UI.color.muted,
-              lineHeight: 26,
-              maxWidth: 280,
-            }}
-          >
-            The elegant way to split bills, track expenses, and settle up with friends.
-          </Typography>
+
+          {/* Feature hints */}
+          <View style={{ gap: 10 }}>
+            {FEATURES.map((feature, index) => (
+              <View key={feature} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                <View
+                  style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: 2,
+                    backgroundColor: UI.color.muted,
+                  }}
+                />
+                <Typography
+                  style={{
+                    fontFamily: "IBMPlexSans_400Regular",
+                    fontSize: 16,
+                    color: UI.color.muted,
+                    lineHeight: 22,
+                  }}
+                >
+                  {feature}
+                </Typography>
+              </View>
+            ))}
+          </View>
         </Animated.View>
       </View>
 
@@ -71,6 +88,7 @@ export default function WelcomeScreen(): JSX.Element {
       >
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel="Get started with SPLT"
           style={({ pressed }) => ({
             width: "100%",
             height: 56,
@@ -85,13 +103,16 @@ export default function WelcomeScreen(): JSX.Element {
             router.push("/(auth)/register");
           }}
         >
-          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
+          <Typography
+            style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+          >
             Get Started
           </Typography>
         </Pressable>
 
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel="Log in to your account"
           style={({ pressed }) => ({
             width: "100%",
             height: 56,

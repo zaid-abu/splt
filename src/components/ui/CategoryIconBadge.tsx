@@ -33,8 +33,9 @@ const SIZE_MAP = {
 
 function getCategoryIconName(category: string): keyof typeof icons {
   return (
-    EXPENSE_CATEGORIES.find((item) => item.key === category)?.icon as keyof typeof icons | undefined
-  ) || "Package";
+    (EXPENSE_CATEGORIES.find((item) => item.key === category)?.icon as
+      keyof typeof icons | undefined) || "Package"
+  );
 }
 
 export function getCategoryTone(category: string): CategoryTone {

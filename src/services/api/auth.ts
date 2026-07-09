@@ -54,6 +54,13 @@ export const AuthService = {
     return data.session;
   },
 
+  async resetPassword(email: string): Promise<void> {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: "splt://auth/callback",
+    });
+    if (error) throw error;
+  },
+
   async getCurrentUser(): Promise<User | null> {
     const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
     if (sessionError || !sessionData.session) return null;

@@ -2,11 +2,7 @@ import type { JSX, ReactNode, RefObject } from "react";
 import { useCallback, useRef } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
-import {
-  BottomSheetModal,
-  BottomSheetBackdrop,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UI } from "@/components/ui/native-ui";
 

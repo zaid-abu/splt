@@ -96,7 +96,9 @@ export default function ExpenseDetailScreen(): JSX.Element {
             opacity: pressed ? 0.8 : 1,
           })}
         >
-          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
+          <Typography
+            style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+          >
             Go back
           </Typography>
         </Pressable>
@@ -278,7 +280,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 Date
               </Typography>
               <Typography
-                style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+                style={{
+                  fontSize: 16,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
               >
                 {dateStr}
               </Typography>
@@ -303,7 +309,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
               <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <AppUserAvatar user={expense.paidByUser} size="sm" />
                 <Typography
-                  style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 16,
+                    color: UI.color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
                   {paidByMe ? "You" : expense.paidByUser.name}
                 </Typography>
@@ -328,7 +338,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   Group
                 </Typography>
                 <Typography
-                  style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 16,
+                    color: UI.color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
                   {group.name}
                 </Typography>
@@ -394,7 +408,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
               }}
             >
               <Typography
-                style={{ fontSize: 11, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+                style={{
+                  fontSize: 11,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
               >
                 {expense.splitMethod === "equal" ? "EQUAL" : "CUSTOM"}
               </Typography>
@@ -541,7 +559,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   })}
                 >
                   <Typography
-                    style={{ fontSize: 15, color: UI.color.brand, fontFamily: "IBMPlexSans_600SemiBold" }}
+                    style={{
+                      fontSize: 15,
+                      color: UI.color.brand,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
                   >
                     Settle Your Share
                   </Typography>
@@ -562,7 +584,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
         handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
       >
         <BottomSheetView
-          style={{ paddingHorizontal: UI.space.page, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
+          style={{
+            paddingHorizontal: UI.space.page,
+            paddingTop: 24,
+            paddingBottom: insets.bottom + 24,
+          }}
         >
           <Typography
             style={{
@@ -600,7 +626,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
               })}
             >
               <Typography
-                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: UI.color.text }}
+                style={{
+                  fontSize: 16,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: UI.color.text,
+                }}
               >
                 Cancel
               </Typography>

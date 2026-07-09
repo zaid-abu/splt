@@ -238,28 +238,30 @@ export function BalanceCard({
         >
           You don&apos;t owe anyone, and no one owes you.
         </Typography>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onViewBalancesPress}
-          style={({ pressed }) => ({
-            marginTop: 16,
-            paddingHorizontal: 18,
-            minHeight: 44,
-            borderRadius: 999,
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            backgroundColor: "#FFFFFF",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed ? 0.75 : 1,
-          })}
-        >
-          <Typography
-            style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+        {onViewBalancesPress && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onViewBalancesPress}
+            style={({ pressed }) => ({
+              marginTop: 16,
+              paddingHorizontal: 18,
+              minHeight: 44,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              backgroundColor: "#FFFFFF",
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: pressed ? 0.75 : 1,
+            })}
           >
-            View balances
-          </Typography>
-        </Pressable>
+            <Typography
+              style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+            >
+              View balances
+            </Typography>
+          </Pressable>
+        )}
       </View>
     );
   }
@@ -355,27 +357,29 @@ export function BalanceCard({
           </Pressable>
         )}
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={onViewBalancesPress}
-          style={({ pressed }) => ({
-            flex: 1,
-            minHeight: 44,
-            borderRadius: 999,
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            backgroundColor: "#FFFFFF",
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed ? 0.75 : 1,
-          })}
-        >
-          <Typography
-            style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+        {onViewBalancesPress && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onViewBalancesPress}
+            style={({ pressed }) => ({
+              flex: 1,
+              minHeight: 44,
+              borderRadius: 999,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              backgroundColor: "#FFFFFF",
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: pressed ? 0.75 : 1,
+            })}
           >
-            View balances
-          </Typography>
-        </Pressable>
+            <Typography
+              style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+            >
+              View balances
+            </Typography>
+          </Pressable>
+        )}
       </View>
     </View>
   );

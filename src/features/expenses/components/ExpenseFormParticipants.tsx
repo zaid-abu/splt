@@ -183,7 +183,11 @@ export function ExpenseSelectionTabs({
                 >
                   <AppUserAvatar user={f} size="sm" />
                   <Typography
-                    style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                    style={{
+                      fontSize: 14,
+                      color: TEXT_PRIMARY,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
                   >
                     {f.name.split(" ")[0]}
                   </Typography>
@@ -197,9 +201,9 @@ export function ExpenseSelectionTabs({
 
       <View style={{ marginBottom: 24 }}>
         <SectionLabel>{selectionTab === "friends" ? "Friends" : "Groups"}</SectionLabel>
-        
-        {((selectionTab === "friends" && filteredFriends.length === 0) ||
-          (selectionTab === "groups" && filteredGroups.length === 0)) ? (
+
+        {(selectionTab === "friends" && filteredFriends.length === 0) ||
+        (selectionTab === "groups" && filteredGroups.length === 0) ? (
           <View
             style={{
               padding: 24,
@@ -514,7 +518,11 @@ export function ExpenseFormParticipants({
                   }}
                 >
                   <Typography
-                    style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                    style={{
+                      fontSize: 13,
+                      color: TEXT_PRIMARY,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
                   >
                     {formatAmount(equalShare, expenseCurrency)}
                   </Typography>
