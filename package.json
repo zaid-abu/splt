@@ -15,8 +15,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@expo-google-fonts/ibm-plex-sans": "^0.4.1",
-    "@expo-google-fonts/sora": "^0.4.2",
+
     "@expo/metro-runtime": "~56.0.13",
     "@gorhom/bottom-sheet": "^5.2.14",
     "@hookform/resolvers": "^5.4.0",

@@ -2,12 +2,7 @@ import { Stack, SplashScreen } from "expo-router";
 import type { JSX } from "react";
 import { useEffect } from "react";
 import { Text, TextInput } from "react-native";
-import { useFonts, Sora_600SemiBold } from "@expo-google-fonts/sora";
-import {
-  IBMPlexSans_400Regular,
-  IBMPlexSans_500Medium,
-  IBMPlexSans_600SemiBold,
-} from "@expo-google-fonts/ibm-plex-sans";
+import { useFonts } from "expo-font";
 
 import { AppProvider } from "@/providers/AppProvider";
 import "../global.css";
@@ -37,10 +32,10 @@ TextInputComponent.defaultProps = {
 
 export default function RootLayout(): JSX.Element | null {
   const [loaded] = useFonts({
-    Sora_600SemiBold,
-    IBMPlexSans_400Regular,
-    IBMPlexSans_500Medium,
-    IBMPlexSans_600SemiBold,
+    Sora_600SemiBold: require("@/assets/fonts/Sora-SemiBold.ttf"),
+    IBMPlexSans_400Regular: require("@/assets/fonts/IBMPlexSans-Regular.ttf"),
+    IBMPlexSans_500Medium: require("@/assets/fonts/IBMPlexSans-Medium.ttf"),
+    IBMPlexSans_600SemiBold: require("@/assets/fonts/IBMPlexSans-SemiBold.ttf"),
   });
 
   useEffect(() => {
