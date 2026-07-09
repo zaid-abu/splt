@@ -7,7 +7,6 @@ import BottomSheet, {
   BottomSheetBackdrop,
   BottomSheetScrollView,
   BottomSheetTextInput,
-  BottomSheetModalProvider,
   BottomSheetModal,
 } from "@gorhom/bottom-sheet";
 import { ScrollView } from "react-native-gesture-handler";
@@ -25,24 +24,7 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { IconButton, PrimaryButton, SectionLabel, UI } from "@/components/ui/native-ui";
-
-const GROUP_ICONS = [
-  "Home",
-  "Plane",
-  "Pizza",
-  "PartyPopper",
-  "Tent",
-  "Gamepad2",
-  "Briefcase",
-  "Music",
-  "Dumbbell",
-  "Coffee",
-  "Car",
-  "Film",
-  "ShoppingCart",
-  "Mountain",
-  "Target",
-];
+import { GROUP_ICONS } from "@/constants/icons";
 
 const BG = UI.color.bg;
 const TEXT_PRIMARY = UI.color.textStrong;
@@ -165,9 +147,8 @@ export default function NewGroupScreen(): JSX.Element {
   const IconComponent = (icons as any)[icon] || icons.HelpCircle;
 
   return (
-    <BottomSheetModalProvider>
-      <View style={{ flex: 1 }}>
-        <StatusBar style="light" />
+    <View style={{ flex: 1, backgroundColor: BG }}>
+      <StatusBar style="dark" />
         <BottomSheet
           ref={bottomSheetRef}
           snapPoints={snapPoints}
@@ -480,6 +461,5 @@ export default function NewGroupScreen(): JSX.Element {
           title="Add to Group"
         />
       </View>
-    </BottomSheetModalProvider>
   );
 }

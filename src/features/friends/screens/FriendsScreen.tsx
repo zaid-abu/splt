@@ -23,11 +23,12 @@ import { SwipeableRow } from "@/components/layout/SwipeableRow";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { formatActivityDate } from "@/utils/date";
+import { getBalanceCopy } from "@/utils/balance";
 import { UI, ScreenHeader, MetricCell, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import {
-  friendKeys,
   useAcceptFriend,
   useAllFriendships,
   useFriends,
@@ -40,7 +41,7 @@ import * as balancesUtil from "@/features/settlements/utils/balances";
 import { useAppToast } from "@/hooks/useAppToast";
 import { queryKeys } from "@/queries/keys";
 import { useUIStore } from "@/store/useUIStore";
-import type { Expense, Friendship, User } from "@/types";
+import type { Expense, Friendship, User, FriendFilter, FriendSectionKey } from "@/types";
 
 const TEXT_PRIMARY = UI.color.text;
 const TEXT_SECONDARY = UI.color.muted;
@@ -50,9 +51,6 @@ const SEPARATOR = UI.color.border;
 const CONTROL_SURFACE = UI.color.control;
 const CARD_RADIUS = UI.radius.lg;
 const SECTION_PAD = UI.space.page;
-
-type FriendFilter = "all" | "owes_you" | "you_owe" | "settled";
-type FriendSectionKey = "owes_you" | "you_owe" | "settled";
 
 type FriendListItem = {
   friend: User;
@@ -76,46 +74,7 @@ type DisplayItem =
       sectionCount: number;
     };
 
-function formatActivityDate(value: Date | string): string {
-  const date = new Date(value);
-  const now = new Date();
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
-  const daysAgo = Math.round((startOfToday - startOfDate) / 86_400_000);
 
-  if (daysAgo === 0) return "today";
-  if (daysAgo === 1) return "yesterday";
-  if (daysAgo > 1 && daysAgo < 7) return `${daysAgo} days ago`;
-
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
-
-function getBalanceCopy(balance: number, currencyCode: string) {
-  if (balance > 0) {
-    return {
-      label: "Owes you",
-      amount: formatAmount(balance, currencyCode),
-      color: TEXT_SUCCESS,
-      bg: "#F5FCF8",
-    };
-  }
-
-  if (balance < 0) {
-    return {
-      label: "You owe",
-      amount: formatAmount(Math.abs(balance), currencyCode),
-      color: TEXT_DANGER,
-      bg: "#FFF7F5",
-    };
-  }
-
-  return {
-    label: "Settled",
-    amount: "No balance",
-    color: TEXT_SECONDARY,
-    bg: CONTROL_SURFACE,
-  };
-}
 
 function IconButton({
   icon: Icon,
@@ -350,7 +309,7 @@ export default function FriendsScreen(): JSX.Element {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     Promise.all([
-      queryClient.invalidateQueries({ queryKey: friendKeys.all }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends }),
       queryClient.invalidateQueries({ queryKey: queryKeys.groups }),
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses }),
       queryClient.invalidateQueries({ queryKey: queryKeys.settlements }),

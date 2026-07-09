@@ -1,19 +1,7 @@
 import { useMemo } from "react";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
-import type { Expense, ExpenseCategory } from "@/types";
+import type { Expense, ExpenseCategory, AnalyticsPeriod, CategoryData, TrendData } from "@/types";
 import dayjs from "dayjs";
-
-export type AnalyticsPeriod = "week" | "month" | "3mo" | "year" | "all";
-
-export interface CategoryData {
-  category: ExpenseCategory;
-  amount: number;
-}
-
-export interface TrendData {
-  label: string;
-  value: number;
-}
 
 export type AnalyticsExpense = Expense & { myShareInPrefCurrency: number };
 

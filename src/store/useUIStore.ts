@@ -38,10 +38,10 @@ export interface UIState {
 }
 
 export const useUIStore = create<UIState>((set, get) => ({
-  isAppLoading: true,
+  isAppLoading: false,
   setIsAppLoading: (loading) => set({ isAppLoading: loading }),
 
-  preferredCurrency: CURRENCIES.find((c) => c.code === "INR") ?? CURRENCIES[0]!,
+  preferredCurrency: CURRENCIES.find((c) => c.code === "USD") ?? CURRENCIES[0]!,
   setCurrency: (currency) => set({ preferredCurrency: currency }),
 
   exchangeRates: FALLBACK_RATES,

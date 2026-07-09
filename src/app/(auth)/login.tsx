@@ -1,11 +1,11 @@
-import { Button, Typography, PressableFeedback } from "heroui-native";
+import { Typography } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import { useForm } from "react-hook-form";
@@ -16,11 +16,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginSchema, type LoginFormData } from "@/validation/schemas";
 import { FormInput } from "@/components/forms/FormInput";
 import { useAppToast } from "@/hooks/useAppToast";
-
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
+import { UI } from "@/components/ui/native-ui";
 
 export default function LoginScreen(): JSX.Element {
   const router = useRouter();
@@ -62,40 +58,41 @@ export default function LoginScreen(): JSX.Element {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* Fixed Header */}
+        {/* Fixed header with back */}
         <View
           style={{
             paddingTop: insets.top + 16,
             paddingHorizontal: 32,
             paddingBottom: 16,
-            backgroundColor: BG,
+            backgroundColor: UI.color.bg,
             zIndex: 10,
           }}
         >
-          <PressableFeedback
+          <Pressable
             accessibilityRole="button"
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: 0,
+            hitSlop={8}
+            style={({ pressed }) => ({
+              width: 44,
+              height: 44,
+              borderRadius: UI.radius.pill,
               borderWidth: 1,
-              borderColor: SEPARATOR,
+              borderColor: UI.color.border,
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "transparent",
-            }}
-            hitSlop={8}
+              backgroundColor: UI.color.control,
+              opacity: pressed ? 0.6 : 1,
+            })}
           >
-            <icons.ArrowLeft size={20} color={TEXT_PRIMARY} />
-          </PressableFeedback>
+            <icons.ArrowLeft size={20} color={UI.color.text} />
+          </Pressable>
         </View>
 
         <ScrollView
@@ -109,7 +106,7 @@ export default function LoginScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
         >
           <View style={{ flex: 1 }}>
-            {/* Editorial Header */}
+            {/* Editorial header */}
             <Animated.View
               entering={FadeInDown.delay(200).duration(600)}
               style={{ marginBottom: 48 }}
@@ -117,10 +114,10 @@ export default function LoginScreen(): JSX.Element {
               <Typography
                 style={{
                   fontFamily: "Sora_600SemiBold",
-                  fontSize: 56,
-                  color: TEXT_PRIMARY,
-                  lineHeight: 64,
-                  letterSpacing: -0.5,
+                  fontSize: 44,
+                  color: UI.color.textStrong,
+                  lineHeight: 50,
+                  letterSpacing: -0.02,
                   marginBottom: 16,
                 }}
               >
@@ -129,13 +126,13 @@ export default function LoginScreen(): JSX.Element {
               <Typography
                 style={{
                   fontFamily: "IBMPlexSans_400Regular",
-                  fontSize: 20,
-                  color: TEXT_SECONDARY,
-                  lineHeight: 28,
+                  fontSize: 18,
+                  color: UI.color.muted,
+                  lineHeight: 26,
                   maxWidth: 280,
                 }}
               >
-                Enter your details to securely sign in to your account.
+                Enter your details to sign in to your account.
               </Typography>
             </Animated.View>
 
@@ -150,7 +147,7 @@ export default function LoginScreen(): JSX.Element {
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
-                  leftElement={<icons.Mail size={18} color={TEXT_SECONDARY} />}
+                  leftElement={<icons.Mail size={18} color={UI.color.muted} />}
                 />
               </Animated.View>
 
@@ -163,21 +160,22 @@ export default function LoginScreen(): JSX.Element {
                     zIndex: 10,
                   }}
                 >
-                  <PressableFeedback
+                  <Pressable
                     accessibilityRole="button"
                     onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
                     hitSlop={8}
+                    style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                   >
                     <Typography
                       style={{
                         fontSize: 13,
-                        color: TEXT_PRIMARY,
+                        color: UI.color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
                       Forgot Password?
                     </Typography>
-                  </PressableFeedback>
+                  </Pressable>
                 </View>
                 <FormInput
                   control={control}
@@ -186,22 +184,23 @@ export default function LoginScreen(): JSX.Element {
                   placeholder="••••••••"
                   secureTextEntry={!showPassword}
                   autoComplete="password"
-                  leftElement={<icons.Lock size={18} color={TEXT_SECONDARY} />}
+                  leftElement={<icons.Lock size={18} color={UI.color.muted} />}
                   rightElement={
-                    <PressableFeedback
+                    <Pressable
                       accessibilityRole="button"
                       onPress={() => {
                         Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                         setShowPassword(!showPassword);
                       }}
                       hitSlop={8}
+                      style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
                     >
                       {showPassword ? (
-                        <icons.EyeOff size={18} color={TEXT_SECONDARY} />
+                        <icons.EyeOff size={18} color={UI.color.muted} />
                       ) : (
-                        <icons.Eye size={18} color={TEXT_SECONDARY} />
+                        <icons.Eye size={18} color={UI.color.muted} />
                       )}
-                    </PressableFeedback>
+                    </Pressable>
                   }
                 />
               </Animated.View>
@@ -210,110 +209,38 @@ export default function LoginScreen(): JSX.Element {
                 entering={FadeInDown.delay(500).duration(600)}
                 style={{ marginTop: 24 }}
               >
-                <PressableFeedback
+                <Pressable
                   accessibilityRole="button"
-                  style={{
+                  disabled={isPending}
+                  style={({ pressed }) => ({
                     width: "100%",
                     height: 56,
-                    borderRadius: 0,
-                    backgroundColor: TEXT_PRIMARY,
+                    borderRadius: UI.radius.pill,
+                    backgroundColor: UI.color.text,
                     alignItems: "center",
                     justifyContent: "center",
                     flexDirection: "row",
                     gap: 8,
-                    opacity: isPending ? 0.7 : 1,
-                  }}
+                    opacity: pressed || isPending ? 0.7 : 1,
+                  })}
                   onPress={handleSubmit(onSubmit, onInvalid)}
-                  isDisabled={isPending}
                 >
                   {isPending && <ActivityIndicator color="#FFFFFF" />}
                   <Typography
                     style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
-                    {isPending ? "Signing in…" : "Sign In"}
+                    {isPending ? "Signing in\u2026" : "Sign In"}
                   </Typography>
-                </PressableFeedback>
-              </Animated.View>
-
-              {/* Divider */}
-              <Animated.View
-                entering={FadeInDown.delay(600).duration(600)}
-                style={{ flexDirection: "row", alignItems: "center", gap: 16, marginVertical: 16 }}
-              >
-                <View style={{ flex: 1, height: 1, backgroundColor: SEPARATOR }} />
-                <Typography
-                  style={{
-                    fontSize: 12,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    letterSpacing: 1.2,
-                    textTransform: "uppercase",
-                  }}
-                >
-                  or
-                </Typography>
-                <View style={{ flex: 1, height: 1, backgroundColor: SEPARATOR }} />
-              </Animated.View>
-
-              <Animated.View
-                entering={FadeInDown.delay(700).duration(600)}
-                style={{ flexDirection: "row", gap: 16 }}
-              >
-                <PressableFeedback
-                  accessibilityRole="button"
-                  style={{
-                    flex: 1,
-                    height: 56,
-                    borderRadius: 0,
-                    backgroundColor: "transparent",
-                    borderWidth: 1,
-                    borderColor: SEPARATOR,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexDirection: "row",
-                    gap: 8,
-                  }}
-                  onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-                >
-                  <icons.Globe size={20} color={TEXT_PRIMARY} />
-                  <Typography
-                    style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
-                  >
-                    Google
-                  </Typography>
-                </PressableFeedback>
-                <PressableFeedback
-                  accessibilityRole="button"
-                  style={{
-                    flex: 1,
-                    height: 56,
-                    borderRadius: 0,
-                    backgroundColor: "transparent",
-                    borderWidth: 1,
-                    borderColor: SEPARATOR,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexDirection: "row",
-                    gap: 8,
-                  }}
-                  onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-                >
-                  <icons.Apple size={20} color={TEXT_PRIMARY} />
-                  <Typography
-                    style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
-                  >
-                    Apple
-                  </Typography>
-                </PressableFeedback>
+                </Pressable>
               </Animated.View>
             </View>
           </View>
 
           <View style={{ flex: 1 }} />
 
-          {/* Footer links */}
+          {/* Footer */}
           <Animated.View
-            entering={FadeInDown.delay(800).duration(600)}
+            entering={FadeInDown.delay(600).duration(600)}
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -324,24 +251,25 @@ export default function LoginScreen(): JSX.Element {
             }}
           >
             <Typography
-              style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "IBMPlexSans_500Medium" }}
+              style={{ fontSize: 16, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" }}
             >
               Don&apos;t have an account?
             </Typography>
-            <PressableFeedback
+            <Pressable
               accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                 router.push("/(auth)/register");
               }}
               hitSlop={8}
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
             >
               <Typography
-                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 Create one
               </Typography>
-            </PressableFeedback>
+            </Pressable>
           </Animated.View>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -15,9 +15,7 @@ import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { UI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
-import type { Activity } from "@/types";
-
-type FilterType = "All" | "Expenses" | "Settlements" | "Groups" | "Friends";
+import type { Activity, ActivityFilterType } from "@/types";
 
 
 
@@ -64,7 +62,7 @@ export default function ActivityScreen(): JSX.Element {
   }, [currentUser, expenses, settlements]);
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeFilter, setActiveFilter] = useState<FilterType>("All");
+  const [activeFilter, setActiveFilter] = useState<ActivityFilterType>("All");
 
   const sortedActivities = useMemo(() => {
     return [...activities].sort((a, b) => b.date.getTime() - a.date.getTime());
@@ -113,7 +111,7 @@ export default function ActivityScreen(): JSX.Element {
     return Object.entries(groups).map(([title, data]) => ({ title, data }));
   }, [filteredActivities]);
 
-  const FILTERS: FilterType[] = ["All", "Expenses", "Settlements", "Groups", "Friends"];
+  const FILTERS: ActivityFilterType[] = ["All", "Expenses", "Settlements", "Groups", "Friends"];
 
   const renderFilterPills = () => (
     <View style={{ marginBottom: 24 }}>

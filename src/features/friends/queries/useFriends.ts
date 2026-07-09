@@ -3,18 +3,13 @@ import { FriendsService } from "../services/api";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import type { User } from "@/types";
 import { useMemo } from "react";
-
-export const friendKeys = {
-  all: ["friends"] as const,
-  lists: () => [...friendKeys.all, "list"] as const,
-  list: (userId?: string) => [...friendKeys.lists(), userId] as const,
-};
+import { queryKeys } from "@/queries/keys";
 
 // This hook returns the combined list of explicit friends + group-derived friends
 export function useFriends(userId?: string) {
   // 1. Fetch explicit friendships
   const friendsQuery = useQuery({
-    queryKey: friendKeys.list(userId),
+    queryKey: queryKeys.friendList(userId),
     queryFn: () => FriendsService.getFriends(userId!),
     enabled: !!userId,
   });
@@ -55,7 +50,7 @@ export function useFriends(userId?: string) {
 
 export function useAllFriendships(userId?: string) {
   return useQuery({
-    queryKey: [...friendKeys.list(userId), "all-friendships"],
+    queryKey: queryKeys.allFriendships(userId),
     queryFn: () => FriendsService.getAllFriendships(userId!),
     enabled: !!userId,
   });
@@ -75,7 +70,7 @@ export function useAddFriend() {
       groupId?: string;
     }) => FriendsService.addFriend(userId, friendId, groupId),
     onSuccess: (_, { userId }) => {
-      queryClient.invalidateQueries({ queryKey: friendKeys.list(userId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friendList(userId) });
     },
   });
 }
@@ -87,8 +82,8 @@ export function useAcceptFriend() {
     mutationFn: ({ friendshipId }: { friendshipId: string }) =>
       FriendsService.acceptFriendship(friendshipId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: friendKeys.all });
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications() });
     },
   });
 }
@@ -100,8 +95,8 @@ export function useRejectFriend() {
     mutationFn: ({ friendshipId }: { friendshipId: string }) =>
       FriendsService.rejectFriendship(friendshipId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: friendKeys.all });
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications() });
     },
   });
 }
@@ -113,8 +108,8 @@ export function useRemoveFriend() {
     mutationFn: ({ friendshipId }: { friendshipId: string }) =>
       FriendsService.removeFriendship(friendshipId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: friendKeys.all });
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.friends });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications() });
     },
   });
 }

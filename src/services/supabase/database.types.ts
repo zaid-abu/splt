@@ -190,6 +190,28 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["users"]["Insert"]>;
         Relationships: [];
       };
+      friendships: {
+        Row: {
+          id: string;
+          user_id: string;
+          friend_id: string;
+          status: "pending" | "accepted" | "rejected";
+          metadata: Json | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          friend_id: string;
+          status?: "pending" | "accepted" | "rejected";
+          metadata?: Json | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["friendships"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;

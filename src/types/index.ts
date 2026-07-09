@@ -156,3 +156,34 @@ export interface Balance {
   net: number;
   currency: string;
 }
+
+// ─── Screen-specific filter types ───────────────────────────────────────────
+export type ActivityFilterType = "All" | "Expenses" | "Settlements" | "Groups" | "Friends";
+export type FriendFilter = "all" | "owes_you" | "you_owe" | "settled";
+export type FriendSectionKey = "owes_you" | "you_owe" | "settled";
+export type GroupFilter = "all" | "owe" | "owed" | "settled";
+
+// ─── Analytics types ────────────────────────────────────────────────────────
+export type AnalyticsPeriod = "week" | "month" | "3mo" | "year" | "all";
+
+export interface CategoryData {
+  category: ExpenseCategory;
+  amount: number;
+}
+
+export interface TrendData {
+  label: string;
+  value: number;
+}
+
+// ─── Notification types ─────────────────────────────────────────────────────
+export type NotificationType = "friend_request";
+
+export interface AppNotification {
+  id: string;
+  type: NotificationType;
+  title: string;
+  subtitle: string;
+  date: Date;
+  data?: Friendship;
+}

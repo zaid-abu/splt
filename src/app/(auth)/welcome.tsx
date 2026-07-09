@@ -1,50 +1,46 @@
-import { Button, Typography, PressableFeedback } from "heroui-native";
+import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
+import { View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
+import { UI } from "@/components/ui/native-ui";
 
 export default function WelcomeScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
-      {/* Top Content (Wordmark + Typography) */}
+      {/* Brand wordmark */}
       <View style={{ flex: 1, paddingHorizontal: 32, paddingTop: insets.top + 60 }}>
         <Animated.View entering={FadeIn.delay(100).duration(800)}>
           <Typography
             style={{
-              color: TEXT_PRIMARY,
-              fontSize: 28,
+              color: UI.color.textStrong,
+              fontSize: 22,
               fontFamily: "Sora_600SemiBold",
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              marginBottom: 64,
+              letterSpacing: 3,
+              marginBottom: 80,
             }}
           >
             SPLT.
           </Typography>
         </Animated.View>
 
+        {/* Hero */}
         <Animated.View entering={FadeInDown.delay(300).duration(600)}>
           <Typography
             style={{
               fontFamily: "Sora_600SemiBold",
-              fontSize: 64,
-              color: TEXT_PRIMARY,
-              lineHeight: 72,
-              letterSpacing: -0.5,
+              fontSize: 52,
+              color: UI.color.textStrong,
+              lineHeight: 58,
+              letterSpacing: -0.02,
               marginBottom: 16,
             }}
           >
@@ -53,9 +49,9 @@ export default function WelcomeScreen(): JSX.Element {
           <Typography
             style={{
               fontFamily: "IBMPlexSans_400Regular",
-              fontSize: 20,
-              color: TEXT_SECONDARY,
-              lineHeight: 28,
+              fontSize: 18,
+              color: UI.color.muted,
+              lineHeight: 26,
               maxWidth: 280,
             }}
           >
@@ -64,25 +60,26 @@ export default function WelcomeScreen(): JSX.Element {
         </Animated.View>
       </View>
 
-      {/* Bottom Actions */}
+      {/* Bottom actions */}
       <Animated.View
         entering={FadeInDown.delay(500).duration(600)}
         style={{
           paddingHorizontal: 32,
           paddingBottom: Math.max(insets.bottom + 16, 48),
-          gap: 16,
+          gap: 14,
         }}
       >
-        <PressableFeedback
+        <Pressable
           accessibilityRole="button"
-          style={{
+          style={({ pressed }) => ({
             width: "100%",
             height: 56,
-            borderRadius: 0,
-            backgroundColor: TEXT_PRIMARY,
+            borderRadius: UI.radius.pill,
+            backgroundColor: UI.color.text,
             alignItems: "center",
             justifyContent: "center",
-          }}
+            opacity: pressed ? 0.75 : 1,
+          })}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
             router.push("/(auth)/register");
@@ -91,31 +88,32 @@ export default function WelcomeScreen(): JSX.Element {
           <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
             Get Started
           </Typography>
-        </PressableFeedback>
+        </Pressable>
 
-        <PressableFeedback
+        <Pressable
           accessibilityRole="button"
-          style={{
+          style={({ pressed }) => ({
             width: "100%",
             height: 56,
-            borderRadius: 0,
+            borderRadius: UI.radius.pill,
             backgroundColor: "transparent",
             borderWidth: 1,
-            borderColor: SEPARATOR,
+            borderColor: UI.color.border,
             alignItems: "center",
             justifyContent: "center",
-          }}
+            opacity: pressed ? 0.65 : 1,
+          })}
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push("/(auth)/login");
           }}
         >
           <Typography
-            style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+            style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
           >
-            Log in to existing account
+            Log in
           </Typography>
-        </PressableFeedback>
+        </Pressable>
       </Animated.View>
     </View>
   );

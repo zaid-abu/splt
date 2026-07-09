@@ -21,9 +21,7 @@ import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
-import type { Group } from "@/types";
-
-type GroupFilter = "all" | "owe" | "owed" | "settled";
+import type { Group, GroupFilter } from "@/types";
 
 const FILTERS: { key: GroupFilter; label: string }[] = [
   { key: "all", label: "All" },

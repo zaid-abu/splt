@@ -19,7 +19,8 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 
-import { useAnalytics, type AnalyticsPeriod } from "../hooks/useAnalytics";
+import { useAnalytics } from "../hooks/useAnalytics";
+import type { AnalyticsPeriod } from "@/types";
 import { CategoryBreakdown } from "../components/CategoryBreakdown";
 import { TopExpenses } from "../components/TopExpenses";
 

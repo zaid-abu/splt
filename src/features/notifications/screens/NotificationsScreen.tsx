@@ -7,10 +7,8 @@ import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 
-import {
-  useNotifications,
-  AppNotification,
-} from "@/features/notifications/queries/useNotifications";
+import { useNotifications } from "@/features/notifications/queries/useNotifications";
+import type { AppNotification } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { useAcceptFriend, useRejectFriend } from "@/features/friends/queries/useFriends";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";

@@ -12,7 +12,6 @@ import { useUIStore } from "@/store/useUIStore";
 import { queryClient } from "@/lib/queryClient";
 import { GlobalQueryToast } from "@/components/feedback/GlobalQueryToast";
 
-// Force light theme application-wide
 Appearance.setColorScheme("light");
 
 interface AppProviderProps {
@@ -20,22 +19,17 @@ interface AppProviderProps {
 }
 
 export function AppProvider({ children }: AppProviderProps): JSX.Element {
-  const setIsAppLoading = useUIStore((s) => s.setIsAppLoading);
   const fetchExchangeRates = useUIStore((s) => s.fetchExchangeRates);
 
   useEffect(() => {
     fetchExchangeRates();
-    const timer = setTimeout(() => {
-      setIsAppLoading(false);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [fetchExchangeRates, setIsAppLoading]);
+  }, [fetchExchangeRates]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <HeroUINativeProvider config={{ devInfo: { stylingPrinciples: false } }}>
+          <HeroUINativeProvider>
             <GlobalQueryToast />
             <BottomSheetModalProvider>
               <AuthProvider>{children}</AuthProvider>

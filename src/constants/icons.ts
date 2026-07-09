@@ -1,0 +1,17 @@
+export const GROUP_ICONS = [
+  "Home",
+  "Plane",
+  "Pizza",
+  "PartyPopper",
+  "Tent",
+  "Gamepad2",
+  "Briefcase",
+  "Music",
+  "Dumbbell",
+  "Coffee",
+  "Car",
+  "Film",
+  "ShoppingCart",
+  "Mountain",
+  "Target",
+] as const;

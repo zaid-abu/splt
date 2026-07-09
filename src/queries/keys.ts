@@ -28,4 +28,15 @@ export const queryKeys = {
   // Balances
   userBalances: (userId: string) => ["balances", "user", userId] as const,
   groupBalances: (groupId: string) => ["balances", "group", groupId] as const,
+
+  // Friends
+  friends: ["friends"] as const,
+  friendList: (userId?: string) => ["friends", "list", userId] as const,
+  allFriendships: (userId?: string) => ["friends", "list", userId, "all-friendships"] as const,
+
+  // Users
+  userSearch: (query: string, currentUserId?: string) => ["users", "search", query, currentUserId] as const,
+
+  // Notifications
+  notifications: (userId?: string) => ["notifications", userId] as const,
 } as const;

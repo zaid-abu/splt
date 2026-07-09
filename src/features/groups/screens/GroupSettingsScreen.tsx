@@ -35,15 +35,14 @@ import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBo
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
-import { useDataStore } from "@/store/useDataStore";
 import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
+import { GROUP_ICONS } from "@/constants/icons";
 
 const BG = "#F5F0EB";
 const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
 const SEPARATOR = "#E8E4DF";
 
 function SectionLabel({ children, style }: { children: string; style?: any }): JSX.Element {
@@ -66,23 +65,6 @@ function SectionLabel({ children, style }: { children: string; style?: any }): J
   );
 }
 
-const GROUP_ICONS = [
-  "Home",
-  "Plane",
-  "Pizza",
-  "PartyPopper",
-  "Tent",
-  "Gamepad2",
-  "Briefcase",
-  "Music",
-  "Dumbbell",
-  "Coffee",
-  "Car",
-  "Film",
-  "ShoppingCart",
-  "Mountain",
-  "Target",
-];
 
 export default function GroupSettingsScreen(): JSX.Element {
   const { id } = useLocalSearchParams<GroupSettingsRouteParams>();
@@ -227,7 +209,7 @@ export default function GroupSettingsScreen(): JSX.Element {
         variant: "success",
         placement: "top",
       });
-    } catch (e: any) {
+    } catch {
       toast.show({
         label: "Error",
         description: "Failed to remove member.",
@@ -262,10 +244,10 @@ export default function GroupSettingsScreen(): JSX.Element {
           placement: "top",
         });
       }
-    } catch (e: any) {
+    } catch {
       toast.show({
         label: "Error",
-        description: e.message || "Failed to add member.",
+        description: "Failed to add member.",
         variant: "danger",
         placement: "top",
       });
@@ -275,18 +257,14 @@ export default function GroupSettingsScreen(): JSX.Element {
   }
 
   async function handleDeleteGroup() {
-    console.log("Delete group button pressed!");
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     try {
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-      console.log("Attempting to delete group with ID:", group?.id);
       await deleteGroup(group!.id);
-      console.log("Delete group successful! Navigating to groups tab...");
       router.replace("/(tabs)/groups");
-    } catch (e: any) {
-      console.error("Delete group failed with error:", e);
+    } catch {
       toast.show({
         label: "Error",
-        description: e?.message || JSON.stringify(e) || "Failed to delete group",
+        description: "Failed to delete group",
         variant: "danger",
         placement: "top",
       });

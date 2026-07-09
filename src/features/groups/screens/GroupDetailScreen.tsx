@@ -2,7 +2,6 @@ import { Alert, Typography } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
-import { useCallback, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
 import { View, ScrollView, Pressable } from "react-native";
 import { useSafeAreaInsets, SafeAreaView } from "react-native-safe-area-context";
@@ -10,19 +9,13 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
+import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { UI, MetricCell } from "@/components/ui/native-ui";
+import { UI } from "@/components/ui/native-ui";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
-import { useUIStore } from "@/store/useUIStore";
-import { useGroups } from "@/features/groups/queries/useGroups";
-import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
-import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
-import * as balancesUtil from "@/features/settlements/utils/balances";
-import { calculateTotalGroupExpenses } from "@/features/groups/utils/calculations";
+import { useGroupDetailData } from "@/features/groups/hooks/useGroupDetailData";
 import { BalanceCard } from "@/features/dashboard/components/BalanceCard";
-import type { Expense, User } from "@/types";
 
 function SectionLabel({ children }: { children: string }): JSX.Element {
   return (
@@ -41,221 +34,23 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
   );
 }
 
-function TransactionRow({
-  expense,
-  currentUserId,
-  paidByUser,
-  myShare,
-  isLast,
-  onPress,
-}: {
-  expense: Expense;
-  currentUserId: string;
-  paidByUser?: User;
-  myShare: number;
-  isLast: boolean;
-  onPress: () => void;
-}): JSX.Element {
-  const iPaid = expense.paidBy === currentUserId;
-  const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
-
-  let subAmountText = "";
-  let subAmountColor: string = UI.color.text;
-
-  if (iPaid) {
-    const lentAmount = expense.amount - myShare;
-    if (lentAmount > 0) {
-      subAmountText = formatAmount(lentAmount, expense.currency);
-      subAmountColor = UI.color.success;
-    }
-  } else if (myShare > 0) {
-    subAmountText = formatAmount(myShare, expense.currency);
-    subAmountColor = UI.color.danger;
-  }
-
-  const dateStr = expense.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
-
-  return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="button"
-      style={({ pressed }) => ({
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 16,
-        paddingHorizontal: 16,
-        borderRadius: UI.radius.lg,
-        backgroundColor: pressed ? "#FBF7F2" : "transparent",
-        borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: UI.color.border,
-      })}
-    >
-      <View style={{ marginRight: 16, flexShrink: 0 }}>
-        <CategoryIconBadge category={expense.category} size="md" />
-        {paidByUser && (
-          <View
-            style={{
-              position: "absolute",
-              bottom: -4,
-              right: -4,
-              width: 20,
-              height: 20,
-              borderRadius: UI.radius.pill,
-              backgroundColor: UI.color.bg,
-              borderWidth: 2,
-              borderColor: UI.color.bg,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Typography
-              style={{ fontSize: 10, color: UI.color.text, textAlign: "center", lineHeight: 14 }}
-            >
-              {paidByUser.name.charAt(0).toUpperCase()}
-            </Typography>
-          </View>
-        )}
-      </View>
-
-      <View style={{ flex: 1, marginRight: 12 }}>
-        <Typography
-          numberOfLines={1}
-          style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
-        >
-          {expense.title}
-        </Typography>
-        <Typography
-          style={{
-            fontSize: 14,
-            color: UI.color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
-            marginTop: 4,
-          }}
-        >
-          {paidByName} paid
-        </Typography>
-      </View>
-
-      <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
-        <Typography
-          style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
-        >
-          {formatAmount(expense.amount, expense.currency)}
-        </Typography>
-        {!!subAmountText ? (
-          <Typography
-            style={{
-              fontSize: 14,
-              color: subAmountColor,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              marginTop: 4,
-            }}
-          >
-            {subAmountText}
-          </Typography>
-        ) : (
-          <Typography
-            style={{
-              fontSize: 14,
-              color: UI.color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
-              marginTop: 4,
-            }}
-          >
-            {dateStr}
-          </Typography>
-        )}
-      </View>
-    </Pressable>
-  );
-}
-
 export default function GroupDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<GroupRouteParams>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
-  const { data: groups = [] } = useGroups(currentUser?.id);
-  const { data: allExpenses = [] } = useUserExpenses(currentUser?.id);
-  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
-
-  const convertCurrency = useUIStore((s) => s.convertCurrency);
-  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
-
-  const group = useMemo(() => groups.find((g) => g.id === id), [groups, id]);
-
-  const expenses = useMemo(
-    () =>
-      allExpenses
-        .filter((e) => e.groupId === id)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-    [allExpenses, id]
-  );
-
-  const totalExpensesInGroupCurrency = useMemo(
-    () => calculateTotalGroupExpenses(expenses, group?.currency ?? "USD", convertCurrency),
-    [expenses, group, convertCurrency]
-  );
-
-  const groupDebts = useMemo(() => {
-    if (!group) return [];
-    return group.simplifyDebts
-      ? balancesUtil.getSimplifiedDebts(
-          group.id,
-          expenses,
-          settlements,
-          group,
-          preferredCurrency,
-          convertCurrency
-        )
-      : balancesUtil.getExactPairwiseDebts(
-          group.id,
-          expenses,
-          settlements,
-          group,
-          preferredCurrency,
-          convertCurrency
-        );
-  }, [group, expenses, settlements, preferredCurrency, convertCurrency]);
-
-  const oweUsers = useMemo(() => {
-    if (!group) return [];
-    return groupDebts
-      .filter((d) => d.fromUserId === currentUser.id)
-      .map((d) => group.members.find((m) => m.userId === d.toUserId)?.user)
-      .filter(Boolean) as User[];
-  }, [groupDebts, currentUser.id, group]);
-
-  const owedUsers = useMemo(() => {
-    if (!group) return [];
-    return groupDebts
-      .filter((d) => d.toUserId === currentUser.id)
-      .map((d) => group.members.find((m) => m.userId === d.fromUserId)?.user)
-      .filter(Boolean) as User[];
-  }, [groupDebts, currentUser.id, group]);
-
-  const youOwe = useMemo(
-    () =>
-      groupDebts
-        .filter((d) => d.fromUserId === currentUser.id)
-        .reduce((acc, curr) => acc + curr.amount, 0),
-    [groupDebts, currentUser.id]
-  );
-
-  const owedToYou = useMemo(
-    () =>
-      groupDebts
-        .filter((d) => d.toUserId === currentUser.id)
-        .reduce((acc, curr) => acc + curr.amount, 0),
-    [groupDebts, currentUser.id]
-  );
-
-  const userById = useMemo(() => {
-    const map = new Map<string, User>();
-    group?.members.forEach((m) => map.set(m.userId, m.user));
-    return map;
-  }, [group]);
+  const {
+    group,
+    expenses,
+    totalExpensesInGroupCurrency,
+    groupDebts,
+    oweUsers,
+    owedUsers,
+    youOwe,
+    owedToYou,
+    userById,
+  } = useGroupDetailData(id || "", currentUser?.id);
 
   if (!group) {
     return (
@@ -597,6 +392,7 @@ export default function GroupDetailScreen(): JSX.Element {
                       myShare={mySplit?.amount ?? 0}
                       isLast={idx === expenses.length - 1}
                       onPress={() => router.push(`/expense/${expense.id}`)}
+                      showAvatarBadge
                     />
                   );
                 })}
