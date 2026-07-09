@@ -148,7 +148,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
             <View style={{ flex: 1, marginLeft: 16, marginRight: 12 }}>
               <Typography
                 numberOfLines={1}
-                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 {item.name}
               </Typography>
@@ -157,7 +157,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                 style={{
                   fontSize: 14,
                   color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_600SemiBold",
+                  fontFamily: "IBMPlexSans_500Medium",
                   marginTop: 4,
                 }}
               >
@@ -184,7 +184,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                 <Spinner size="sm" color="white" />
               ) : isExcluded ? (
                 <Typography
-                  style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "CrimsonText_700Bold" }}
+                  style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   Added
                 </Typography>
@@ -201,12 +201,14 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
       <BottomSheetModal
         ref={ref}
         index={0}
-        snapPoints={["85%"]}
+        snapPoints={["90%"]}
         enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: "#D6D2CD", width: 40 }}
-        keyboardBehavior="extend"
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
       >
         <View style={{ flex: 1 }}>
           {/* Header */}
@@ -219,7 +221,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
             }}
           >
             <Typography
-              style={{ fontSize: 24, color: TEXT_PRIMARY, fontFamily: "UnicaOne_400Regular" }}
+              style={{ fontSize: 24, color: TEXT_PRIMARY, fontFamily: "Sora_600SemiBold" }}
             >
               {title}
             </Typography>
@@ -255,7 +257,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                 style={{
                   flex: 1,
                   marginLeft: 12,
-                  fontFamily: "CrimsonText_600SemiBold",
+                  fontFamily: "IBMPlexSans_500Medium",
                   color: TEXT_PRIMARY,
                   fontSize: 16,
                 }}
@@ -311,7 +313,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                       style={{
                         fontSize: 16,
                         color: TEXT_PRIMARY,
-                        fontFamily: "CrimsonText_700Bold",
+                        fontFamily: "IBMPlexSans_600SemiBold",
                         textAlign: "center",
                         marginBottom: 8,
                       }}
@@ -322,7 +324,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                       style={{
                         fontSize: 15,
                         color: TEXT_SECONDARY,
-                        fontFamily: "CrimsonText_600SemiBold",
+                        fontFamily: "IBMPlexSans_500Medium",
                         textAlign: "center",
                       }}
                     >
@@ -350,7 +352,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                       style={{
                         fontSize: 16,
                         color: TEXT_PRIMARY,
-                        fontFamily: "CrimsonText_700Bold",
+                        fontFamily: "IBMPlexSans_600SemiBold",
                         textAlign: "center",
                         marginBottom: 8,
                       }}
@@ -361,7 +363,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                       style={{
                         fontSize: 15,
                         color: TEXT_SECONDARY,
-                        fontFamily: "CrimsonText_600SemiBold",
+                        fontFamily: "IBMPlexSans_500Medium",
                         textAlign: "center",
                       }}
                     >

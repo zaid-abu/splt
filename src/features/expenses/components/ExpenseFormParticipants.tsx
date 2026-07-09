@@ -1,5 +1,6 @@
 import React from "react";
-import { View, ScrollView, TextInput, Pressable } from "react-native";
+import { View, TextInput, Pressable } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import { Typography, Checkbox } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
@@ -8,20 +9,26 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import type { User, Group, SplitMethod } from "@/types";
 
+const BG = "#F5F0EB";
+const SURFACE = "#FFFCF8";
+const CONTROL = "#FFFFFF";
 const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
 const TEXT_SUCCESS = "#4CAF82";
+const TEXT_DANGER = "#E85D5D";
 const SEPARATOR = "#E8E4DF";
+const BRAND = "#8C7A6B";
+const CARD_RADIUS = 18;
+const PILL_RADIUS = 999;
 
 function SectionLabel({ children }: { children: string }) {
   return (
     <Typography
       style={{
         fontSize: 11,
-        letterSpacing: 1.4,
+        letterSpacing: 1.2,
         color: TEXT_SECONDARY,
-        fontFamily: "CrimsonText_700Bold",
+        fontFamily: "IBMPlexSans_600SemiBold",
         textTransform: "uppercase",
         marginBottom: 16,
       }}
@@ -63,22 +70,23 @@ export function ExpenseSelectionTabs({
   groups,
 }: SelectionTabsProps) {
   return (
-    <Animated.View entering={FadeInDown.duration(300)} style={{ marginBottom: 32 }}>
-      <View style={{ paddingHorizontal: 24 }}>
-        <SectionLabel>Who is this with?</SectionLabel>
-      </View>
-
-      <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
+    <Animated.View entering={FadeInDown.duration(300)}>
+      <View style={{ marginBottom: 24 }}>
+        <SectionLabel>Search</SectionLabel>
         <View
           style={{
+            height: 52,
             flexDirection: "row",
             alignItems: "center",
-            borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
-            paddingBottom: 12,
+            paddingHorizontal: 16,
+            borderRadius: PILL_RADIUS,
+            borderWidth: 1,
+            borderColor: SEPARATOR,
+            backgroundColor: CONTROL,
+            gap: 12,
           }}
         >
-          <icons.Search size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          <icons.Search size={18} color={TEXT_SECONDARY} strokeWidth={1.8} />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -86,74 +94,35 @@ export function ExpenseSelectionTabs({
             placeholderTextColor={TEXT_SECONDARY}
             style={{
               flex: 1,
-              marginLeft: 16,
-              fontFamily: "CrimsonText_600SemiBold",
+              fontFamily: "IBMPlexSans_500Medium",
               color: TEXT_PRIMARY,
-              fontSize: 18,
+              fontSize: 16,
+              padding: 0,
             }}
           />
           {searchQuery.length > 0 && (
             <Pressable accessibilityRole="button" onPress={() => setSearchQuery("")} hitSlop={8}>
-              <icons.XCircle size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+              <icons.XCircle size={18} color={TEXT_SECONDARY} strokeWidth={1.8} />
             </Pressable>
           )}
         </View>
       </View>
 
-      {selectedFriends.length > 0 && (
-        <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ gap: 8 }}
-          >
-            {selectedFriends.map((f) => (
-              <View
-                key={f.id}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  backgroundColor: "transparent",
-                  borderWidth: 1,
-                  borderColor: SEPARATOR,
-                  paddingLeft: 4,
-                  paddingRight: 12,
-                  paddingVertical: 4,
-                  borderRadius: 0,
-                  gap: 8,
-                }}
-              >
-                <AppUserAvatar user={f} size="sm" />
-                <Typography
-                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-                >
-                  {f.name.split(" ")[0]}
-                </Typography>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setSelectedFriendIds((prev) => prev.filter((id) => id !== f.id))}
-                  style={{ padding: 4, marginLeft: 4 }}
-                >
-                  <icons.X size={14} color={TEXT_PRIMARY} strokeWidth={3} />
-                </Pressable>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-      )}
-
-      {/* ── Tabs ────────────────────────── */}
-      <View style={{ paddingHorizontal: 24, marginBottom: 24 }}>
+      <View style={{ marginBottom: 24 }}>
+        <SectionLabel>Type</SectionLabel>
         <View
           style={{
             flexDirection: "row",
-            backgroundColor: "transparent",
-            borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
+            backgroundColor: CONTROL,
+            borderWidth: 1,
+            borderColor: SEPARATOR,
+            borderRadius: PILL_RADIUS,
+            padding: 4,
+            gap: 4,
           }}
         >
           {(["friends", "groups"] as const).map((tab) => {
-            const isSelected = selectionTab === tab;
+            const active = selectionTab === tab;
             return (
               <Pressable
                 key={tab}
@@ -161,19 +130,20 @@ export function ExpenseSelectionTabs({
                 onPress={() => setSelectionTab(tab)}
                 style={({ pressed }) => ({
                   flex: 1,
-                  paddingVertical: 12,
+                  height: 40,
+                  borderRadius: PILL_RADIUS,
                   alignItems: "center",
-                  borderBottomWidth: 2,
-                  borderBottomColor: isSelected ? "#8C7A6B" : "transparent",
-                  opacity: pressed ? 0.5 : 1,
+                  justifyContent: "center",
+                  backgroundColor: active ? TEXT_PRIMARY : "transparent",
+                  opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <Typography
                   style={{
+                    color: active ? "#FFFFFF" : TEXT_PRIMARY,
                     fontSize: 14,
-                    fontFamily: "CrimsonText_700Bold",
-                    color: isSelected ? TEXT_PRIMARY : TEXT_SECONDARY,
                     textTransform: "capitalize",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
                   {tab}
@@ -184,10 +154,76 @@ export function ExpenseSelectionTabs({
         </View>
       </View>
 
-      <View style={{ paddingHorizontal: 24 }}>
-        <View>
-          {selectionTab === "friends" &&
-            (filteredFriends.length > 0 ? (
+      {selectedFriends.length > 0 && !selectedGroupId && (
+        <View style={{ marginBottom: 24 }}>
+          <SectionLabel>Selected friends</SectionLabel>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            <View style={{ flexDirection: "row", gap: 8, paddingRight: 24 }}>
+              {selectedFriends.map((f) => (
+                <Pressable
+                  key={f.id}
+                  accessibilityRole="button"
+                  onPress={() => setSelectedFriendIds((prev) => prev.filter((id) => id !== f.id))}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    height: 42,
+                    paddingHorizontal: 14,
+                    borderRadius: PILL_RADIUS,
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
+                    backgroundColor: CONTROL,
+                    gap: 8,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <AppUserAvatar user={f} size="sm" />
+                  <Typography
+                    style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  >
+                    {f.name.split(" ")[0]}
+                  </Typography>
+                  <icons.X size={16} color={TEXT_SECONDARY} strokeWidth={1.8} />
+                </Pressable>
+              ))}
+            </View>
+          </ScrollView>
+        </View>
+      )}
+
+      <View style={{ marginBottom: 24 }}>
+        <SectionLabel>{selectionTab === "friends" ? "Friends" : "Groups"}</SectionLabel>
+        
+        {((selectionTab === "friends" && filteredFriends.length === 0) ||
+          (selectionTab === "groups" && filteredGroups.length === 0)) ? (
+          <View
+            style={{
+              padding: 24,
+              borderRadius: CARD_RADIUS,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              backgroundColor: SURFACE,
+              alignItems: "center",
+            }}
+          >
+            <Typography style={{ color: TEXT_SECONDARY, fontFamily: "IBMPlexSans_500Medium" }}>
+              No matching {selectionTab} found.
+            </Typography>
+          </View>
+        ) : (
+          <View
+            style={{
+              borderRadius: CARD_RADIUS,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              backgroundColor: SURFACE,
+            }}
+          >
+            {selectionTab === "friends" &&
               filteredFriends.map((f, idx) => {
                 const isSelected = selectedFriendIds.includes(f.id);
                 return (
@@ -204,53 +240,54 @@ export function ExpenseSelectionTabs({
                     style={({ pressed }) => ({
                       flexDirection: "row",
                       alignItems: "center",
-                      paddingVertical: 16,
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
                       borderBottomWidth: idx < filteredFriends.length - 1 ? 1 : 0,
                       borderBottomColor: SEPARATOR,
-                      opacity: pressed ? 0.5 : 1,
+                      backgroundColor: pressed ? "#FBF7F2" : "transparent",
                     })}
                   >
                     <AppUserAvatar user={f} size="md" />
-                    <Typography
-                      style={{
-                        flex: 1,
-                        fontSize: 16,
-                        color: TEXT_PRIMARY,
-                        fontFamily: "CrimsonText_700Bold",
-                        marginLeft: 16,
-                      }}
-                    >
-                      {f.name}
-                    </Typography>
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <Typography
+                        style={{
+                          fontSize: 15,
+                          color: TEXT_PRIMARY,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
+                        {f.name}
+                      </Typography>
+                      <Typography
+                        style={{
+                          fontSize: 13,
+                          color: TEXT_SECONDARY,
+                          fontFamily: "IBMPlexSans_500Medium",
+                          marginTop: 2,
+                        }}
+                      >
+                        Friend
+                      </Typography>
+                    </View>
                     <View
                       style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: 12,
-                        borderWidth: isSelected ? 0 : 2,
+                        width: 22,
+                        height: 22,
+                        borderRadius: 999,
+                        borderWidth: isSelected ? 0 : 1,
                         borderColor: SEPARATOR,
-                        backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                        backgroundColor: isSelected ? BRAND : "transparent",
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      {isSelected && <icons.Check size={14} color="#FFFFFF" strokeWidth={3} />}
+                      {isSelected && <icons.Check size={13} color="#FFFFFF" strokeWidth={3} />}
                     </View>
                   </Pressable>
                 );
-              })
-            ) : (
-              <View style={{ padding: 32, alignItems: "center" }}>
-                <Typography
-                  style={{ color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
-                >
-                  No friends found.
-                </Typography>
-              </View>
-            ))}
+              })}
 
-          {selectionTab === "groups" &&
-            (filteredGroups.length > 0 ? (
+            {selectionTab === "groups" &&
               filteredGroups.map((g, idx) => {
                 const GroupIcon = (icons as any)[g.icon] || icons.Users;
                 const isSelected = selectedGroupId === g.id;
@@ -266,100 +303,68 @@ export function ExpenseSelectionTabs({
                     style={({ pressed }) => ({
                       flexDirection: "row",
                       alignItems: "center",
-                      paddingVertical: 16,
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
                       borderBottomWidth: idx < filteredGroups.length - 1 ? 1 : 0,
                       borderBottomColor: SEPARATOR,
-                      opacity: pressed ? 0.5 : 1,
+                      backgroundColor: pressed ? "#FBF7F2" : "transparent",
                     })}
                   >
                     <View
                       style={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: 0,
-                        backgroundColor: "transparent",
+                        width: 44,
+                        height: 44,
+                        borderRadius: 14,
+                        backgroundColor: CONTROL,
                         borderWidth: 1,
                         borderColor: SEPARATOR,
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      <GroupIcon size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                      <GroupIcon size={18} color={TEXT_PRIMARY} strokeWidth={1.8} />
                     </View>
-                    <Typography
-                      style={{
-                        flex: 1,
-                        fontSize: 16,
-                        color: TEXT_PRIMARY,
-                        fontFamily: "CrimsonText_700Bold",
-                        marginLeft: 16,
-                      }}
-                    >
-                      {g.name}
-                    </Typography>
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <Typography
+                        style={{
+                          fontSize: 15,
+                          color: TEXT_PRIMARY,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
+                        {g.name}
+                      </Typography>
+                      <Typography
+                        style={{
+                          fontSize: 13,
+                          color: TEXT_SECONDARY,
+                          fontFamily: "IBMPlexSans_500Medium",
+                          marginTop: 2,
+                        }}
+                      >
+                        {g.members.length} members • {g.currency}
+                      </Typography>
+                    </View>
                     <View
                       style={{
-                        width: 24,
-                        height: 24,
-                        borderRadius: 12,
-                        borderWidth: isSelected ? 0 : 2,
+                        width: 22,
+                        height: 22,
+                        borderRadius: 999,
+                        borderWidth: isSelected ? 0 : 1,
                         borderColor: SEPARATOR,
-                        backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                        backgroundColor: isSelected ? BRAND : "transparent",
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      {isSelected && <icons.Check size={14} color="#FFFFFF" strokeWidth={3} />}
+                      {isSelected && <icons.Check size={13} color="#FFFFFF" strokeWidth={3} />}
                     </View>
                   </Pressable>
                 );
-              })
-            ) : (
-              <View style={{ padding: 32, alignItems: "center" }}>
-                <Typography
-                  style={{ color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
-                >
-                  No groups found.
-                </Typography>
-              </View>
-            ))}
-        </View>
-      </View>
-
-      {groups.length === 0 && uniqueFriends.length === 0 && (
-        <View style={{ paddingHorizontal: 24, marginTop: 32 }}>
-          <View
-            style={{
-              padding: 24,
-              alignItems: "center",
-              borderTopWidth: 1,
-              borderBottomWidth: 1,
-              borderColor: SEPARATOR,
-            }}
-          >
-            <Typography
-              style={{
-                fontSize: 16,
-                color: TEXT_PRIMARY,
-                fontFamily: "CrimsonText_700Bold",
-                marginBottom: 8,
-              }}
-            >
-              No groups or friends yet
-            </Typography>
-            <Typography
-              style={{
-                fontSize: 14,
-                color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_600SemiBold",
-                textAlign: "center",
-              }}
-            >
-              Create a group first to add expenses.
-            </Typography>
+              })}
           </View>
-        </View>
-      )}
+        )}
+      </View>
     </Animated.View>
   );
 }
@@ -404,22 +409,32 @@ export function ExpenseFormParticipants({
   currentUserId,
 }: ExpenseParticipantsProps) {
   return (
-    <View style={{ paddingHorizontal: 24, marginBottom: 32 }}>
+    <View style={{ marginBottom: 32 }}>
       <View
         style={{
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "center",
-          marginBottom: 8,
+          marginBottom: 16,
         }}
       >
-        <SectionLabel>Participants</SectionLabel>
+        <Typography
+          style={{
+            fontSize: 11,
+            letterSpacing: 1.2,
+            color: TEXT_SECONDARY,
+            fontFamily: "IBMPlexSans_600SemiBold",
+            textTransform: "uppercase",
+          }}
+        >
+          Participants
+        </Typography>
 
         {splitMethod === "custom" && parsedAmount > 0 && (
           <Typography
             style={{
               fontSize: 12,
-              fontFamily: "CrimsonText_700Bold",
+              fontFamily: "IBMPlexSans_600SemiBold",
               color: remainingCustom === 0 ? TEXT_SUCCESS : TEXT_DANGER,
             }}
           >
@@ -430,7 +445,7 @@ export function ExpenseFormParticipants({
           <Typography
             style={{
               fontSize: 12,
-              fontFamily: "CrimsonText_700Bold",
+              fontFamily: "IBMPlexSans_600SemiBold",
               color: remainingPercent === 0 ? TEXT_SUCCESS : TEXT_DANGER,
             }}
           >
@@ -439,7 +454,14 @@ export function ExpenseFormParticipants({
         )}
       </View>
 
-      <View>
+      <View
+        style={{
+          borderRadius: CARD_RADIUS,
+          borderWidth: 1,
+          borderColor: SEPARATOR,
+          backgroundColor: SURFACE,
+        }}
+      >
         {participants.map((u, idx) => {
           const isIncluded = included[u.id] ?? true;
           return (
@@ -448,7 +470,8 @@ export function ExpenseFormParticipants({
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                paddingVertical: 16,
+                paddingVertical: 14,
+                paddingHorizontal: 16,
                 borderBottomWidth: idx < participants.length - 1 ? 1 : 0,
                 borderBottomColor: SEPARATOR,
                 opacity: isIncluded ? 1 : 0.5,
@@ -456,21 +479,24 @@ export function ExpenseFormParticipants({
             >
               <Checkbox
                 isSelected={isIncluded}
-                onSelectedChange={(v) => setIncluded((prev) => ({ ...prev, [u.id]: v }))}
+                onSelectedChange={(v) => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  setIncluded((prev) => ({ ...prev, [u.id]: v }));
+                }}
                 style={{ marginRight: 16 }}
               >
                 <Checkbox.Indicator />
               </Checkbox>
 
-              <AppUserAvatar user={u} size="md" />
+              <AppUserAvatar user={u} size="sm" />
 
               <Typography
                 style={{
                   flex: 1,
-                  marginLeft: 16,
-                  fontSize: 16,
+                  marginLeft: 12,
+                  fontSize: 15,
                   color: TEXT_PRIMARY,
-                  fontFamily: "CrimsonText_700Bold",
+                  fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
                 {u.id === currentUserId ? "You" : u.name}
@@ -479,16 +505,16 @@ export function ExpenseFormParticipants({
               {splitMethod === "equal" && isIncluded && parsedAmount > 0 && (
                 <View
                   style={{
-                    backgroundColor: "transparent",
+                    backgroundColor: CONTROL,
                     borderWidth: 1,
                     borderColor: SEPARATOR,
-                    paddingHorizontal: 12,
-                    paddingVertical: 6,
-                    borderRadius: 0,
+                    paddingHorizontal: 10,
+                    paddingVertical: 4,
+                    borderRadius: PILL_RADIUS,
                   }}
                 >
                   <Typography
-                    style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                    style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     {formatAmount(equalShare, expenseCurrency)}
                   </Typography>
@@ -504,15 +530,15 @@ export function ExpenseFormParticipants({
                     onChangeText={(v) => setCustomAmounts((prev) => ({ ...prev, [u.id]: v }))}
                     keyboardType="decimal-pad"
                     style={{
-                      backgroundColor: "transparent",
-                      height: 48,
+                      backgroundColor: CONTROL,
+                      height: 42,
                       borderRadius: 12,
                       paddingHorizontal: 12,
                       borderWidth: 1,
                       borderColor: SEPARATOR,
-                      fontSize: 18,
+                      fontSize: 15,
                       color: TEXT_PRIMARY,
-                      fontFamily: "CrimsonText_700Bold",
+                      fontFamily: "IBMPlexSans_600SemiBold",
                       textAlign: "right",
                     }}
                   />
@@ -521,7 +547,7 @@ export function ExpenseFormParticipants({
 
               {splitMethod === "percentage" && isIncluded && (
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                  <View style={{ width: 80 }}>
+                  <View style={{ width: 70 }}>
                     <TextInput
                       placeholder="0"
                       placeholderTextColor={TEXT_SECONDARY}
@@ -529,24 +555,24 @@ export function ExpenseFormParticipants({
                       onChangeText={(v) => setCustomPercentages((prev) => ({ ...prev, [u.id]: v }))}
                       keyboardType="decimal-pad"
                       style={{
-                        backgroundColor: "transparent",
-                        height: 48,
+                        backgroundColor: CONTROL,
+                        height: 42,
                         borderRadius: 12,
                         paddingHorizontal: 12,
                         borderWidth: 1,
                         borderColor: SEPARATOR,
-                        fontSize: 18,
+                        fontSize: 15,
                         color: TEXT_PRIMARY,
-                        fontFamily: "CrimsonText_700Bold",
+                        fontFamily: "IBMPlexSans_600SemiBold",
                         textAlign: "right",
                       }}
                     />
                   </View>
                   <Typography
                     style={{
-                      fontSize: 16,
+                      fontSize: 14,
                       color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_700Bold",
+                      fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
                     %

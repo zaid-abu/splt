@@ -51,7 +51,7 @@ export function FormInput<T extends FieldValues>({
               style={{
                 fontSize: 11,
                 color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_700Bold",
+                fontFamily: "IBMPlexSans_600SemiBold",
                 letterSpacing: 1.4,
                 textTransform: "uppercase",
                 marginBottom: 8,
@@ -97,7 +97,7 @@ export function FormInput<T extends FieldValues>({
                 backgroundColor: "transparent",
                 borderWidth: 0,
                 fontSize: 16,
-                fontFamily: "CrimsonText_600SemiBold",
+                fontFamily: "IBMPlexSans_500Medium",
                 color: TEXT_PRIMARY,
                 paddingLeft: leftElement ? 48 : 16,
                 paddingRight: rightElement ? 48 : 16,
@@ -117,7 +117,7 @@ export function FormInput<T extends FieldValues>({
                 marginTop: 6,
                 color: TEXT_SECONDARY,
                 fontSize: 13,
-                fontFamily: "CrimsonText_400Regular",
+                fontFamily: "IBMPlexSans_400Regular",
               }}
             >
               {description}
@@ -129,7 +129,7 @@ export function FormInput<T extends FieldValues>({
                 marginTop: 6,
                 color: TEXT_DANGER,
                 fontSize: 13,
-                fontFamily: "CrimsonText_600SemiBold",
+                fontFamily: "IBMPlexSans_500Medium",
               }}
             >
               {error.message}

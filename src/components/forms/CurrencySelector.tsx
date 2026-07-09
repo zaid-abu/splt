@@ -1,73 +1,116 @@
-import React, { useCallback, useMemo, useRef, useState, memo } from "react";
-import { View, TextInput, StyleSheet, Keyboard } from "react-native";
-import { BottomSheetModal, BottomSheetBackdrop, BottomSheetFlatList } from "@gorhom/bottom-sheet";
-import * as icons from "lucide-react-native";
+import React, { memo, useCallback, useMemo, useRef, useState } from "react";
+import { Keyboard, StyleSheet, View } from "react-native";
+import {
+  BottomSheetBackdrop,
+  BottomSheetFlatList,
+  BottomSheetModal,
+  BottomSheetTextInput,
+} from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
-import { Typography, PressableFeedback } from "heroui-native";
+import * as icons from "lucide-react-native";
+import { PressableFeedback, Typography } from "heroui-native";
 
 import type { Currency } from "@/types";
 import { CURRENCIES } from "@/types";
 
-// --- Design Tokens ---
 const BG = "#F5F0EB";
-const BRAND = "#8C7A6B";
-const SURFACE = "#FFFFFF";
+const SURFACE = "#FFFCF8";
+const CONTROL_SURFACE = "#FFFFFF";
 const BORDER = "#E8E4DF";
-const TEXT_PRIMARY = "#1A1A1A";
+const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
+const BRAND = "#8C7A6B";
+const CARD_RADIUS = 16;
+const PILL_RADIUS = 999;
+const POPULAR_CODES = ["USD", "EUR", "GBP", "INR", "JPY"];
 
-// --- Props ---
 interface CurrencySelectorProps {
   value: string;
   onChange: (currency: Currency) => void;
   label?: string;
 }
 
-// --- Memoized List Item ---
-// Extremely important for performance when rendering hundreds of currencies.
+type CurrencyListEntry =
+  | { key: string; type: "section"; label: string }
+  | { key: string; type: "currency"; currency: Currency; emphasis?: "current" | "popular" };
+
 const CurrencyListItem = memo(
   ({
     currency,
     isSelected,
+    emphasis,
     onPress,
   }: {
     currency: Currency;
     isSelected: boolean;
-    onPress: (c: Currency) => void;
+    emphasis?: "current" | "popular";
+    onPress: (currency: Currency) => void;
   }) => {
+    const isCurrent = emphasis === "current";
+
     return (
       <PressableFeedback
         accessibilityRole="button"
         onPress={() => {
-          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+          Haptics.selectionAsync();
           onPress(currency);
         }}
       >
-        <View style={[styles.itemContainer, isSelected && styles.itemContainerSelected]}>
+        <View
+          style={[
+            styles.itemContainer,
+            isCurrent && styles.itemCurrent,
+            isSelected && styles.itemSelected,
+          ]}
+        >
           <View style={styles.itemLeft}>
-            <View style={[styles.symbolBox, isSelected && styles.symbolBoxSelected]}>
-              <Typography style={styles.symbolText} numberOfLines={1} adjustsFontSizeToFit>
+            <View
+              style={[
+                styles.symbolShell,
+                isCurrent && styles.symbolShellCurrent,
+                isSelected && styles.symbolShellSelected,
+              ]}
+            >
+              <Typography style={[styles.symbolText, isSelected && styles.symbolTextSelected]}>
                 {currency.symbol}
               </Typography>
             </View>
+
             <View style={styles.textContainer}>
-              <Typography style={[styles.codeText, isSelected && styles.textSelected]}>
-                {currency.code}
-              </Typography>
+              <View style={styles.codeRow}>
+                <Typography style={styles.codeText}>{currency.code}</Typography>
+                {isCurrent && !isSelected ? (
+                  <View style={styles.metaPill}>
+                    <Typography style={styles.metaPillText}>Current</Typography>
+                  </View>
+                ) : null}
+                {emphasis === "popular" && !isCurrent && !isSelected ? (
+                  <View style={styles.metaPill}>
+                    <Typography style={styles.metaPillText}>Popular</Typography>
+                  </View>
+                ) : null}
+              </View>
               <Typography style={styles.nameText}>{currency.name}</Typography>
             </View>
           </View>
-          {isSelected && <icons.Check size={20} color={TEXT_PRIMARY} />}
+
+          {isSelected ? (
+            <View style={styles.selectedBadge}>
+              <icons.Check size={14} color="#FFFFFF" strokeWidth={2.4} />
+            </View>
+          ) : (
+            <icons.ChevronRight size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
+          )}
         </View>
       </PressableFeedback>
     );
   },
-  (prevProps, nextProps) => prevProps.isSelected === nextProps.isSelected
+  (prevProps, nextProps) =>
+    prevProps.isSelected === nextProps.isSelected && prevProps.emphasis === nextProps.emphasis
 );
 
 CurrencyListItem.displayName = "CurrencyListItem";
 
-// --- Main Component ---
 export function CurrencySelector({
   value,
   onChange,
@@ -76,15 +119,66 @@ export function CurrencySelector({
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [search, setSearch] = useState("");
 
-  const selectedCurrency = CURRENCIES.find((c) => c.code === value) || CURRENCIES[0];
+  const selectedCurrency = CURRENCIES.find((currency) => currency.code === value) ?? CURRENCIES[0];
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    if (!q) return CURRENCIES;
-    return CURRENCIES.filter(
-      (c) => c.code.toLowerCase().includes(q) || c.name.toLowerCase().includes(q)
-    );
+  const filteredCurrencies = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    if (!query) return CURRENCIES;
+
+    return CURRENCIES.filter((currency) => {
+      const haystack = [currency.code, currency.name, currency.symbol].join(" ").toLowerCase();
+      return haystack.includes(query);
+    });
   }, [search]);
+
+  const listData = useMemo<CurrencyListEntry[]>(() => {
+    if (search.trim()) {
+      return [
+        { key: "section-results", type: "section", label: "Results" },
+        ...filteredCurrencies.map((currency) => ({
+          key: currency.code,
+          type: "currency" as const,
+          currency,
+          emphasis: currency.code === selectedCurrency.code ? "current" : undefined,
+        })),
+      ];
+    }
+
+    const popularSet = new Set(POPULAR_CODES);
+    const currentSection = [
+      {
+        key: selectedCurrency.code,
+        type: "currency" as const,
+        currency: selectedCurrency,
+        emphasis: "current" as const,
+      },
+    ];
+    const popularSection = CURRENCIES.filter(
+      (currency) => popularSet.has(currency.code) && currency.code !== selectedCurrency.code
+    ).map((currency) => ({
+      key: `popular-${currency.code}`,
+      type: "currency" as const,
+      currency,
+      emphasis: "popular" as const,
+    }));
+    const allSection = CURRENCIES.filter(
+      (currency) => currency.code !== selectedCurrency.code && !popularSet.has(currency.code)
+    ).map((currency) => ({
+      key: `all-${currency.code}`,
+      type: "currency" as const,
+      currency,
+    }));
+
+    return [
+      { key: "section-current", type: "section", label: "Current currency" },
+      ...currentSection,
+      { key: "section-popular", type: "section", label: "Popular picks" },
+      ...popularSection,
+      { key: "section-all", type: "section", label: "All currencies" },
+      ...allSection,
+    ];
+  }, [filteredCurrencies, search, selectedCurrency]);
 
   const handlePresentModalPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -106,6 +200,7 @@ export function CurrencySelector({
         {...props}
         disappearsOnIndex={-1}
         appearsOnIndex={0}
+        opacity={0.4}
         pressBehavior="close"
       />
     ),
@@ -113,250 +208,356 @@ export function CurrencySelector({
   );
 
   const handleSelect = useCallback(
-    (c: Currency) => {
-      onChange(c);
+    (currency: Currency) => {
+      onChange(currency);
       bottomSheetModalRef.current?.dismiss();
     },
     [onChange]
   );
 
+  const renderItem = useCallback(
+    ({ item }: { item: CurrencyListEntry }) => {
+      if (item.type === "section") {
+        return <Typography style={styles.sectionLabel}>{item.label}</Typography>;
+      }
+
+      return (
+        <CurrencyListItem
+          currency={item.currency}
+          isSelected={item.currency.code === value}
+          emphasis={item.emphasis}
+          onPress={handleSelect}
+        />
+      );
+    },
+    [handleSelect, value]
+  );
+
   return (
     <View style={styles.container}>
-      {label && <Typography style={styles.label}>{label}</Typography>}
+      {label ? <Typography style={styles.label}>{label}</Typography> : null}
 
       <PressableFeedback accessibilityRole="button" onPress={handlePresentModalPress}>
         <View style={styles.triggerContainer}>
           <View style={styles.triggerLeft}>
-            <View style={styles.triggerSymbolBox}>
-              <Typography style={styles.triggerSymbolText} numberOfLines={1} adjustsFontSizeToFit>
-                {selectedCurrency.symbol}
+            <View style={styles.triggerSymbolShell}>
+              <Typography style={styles.triggerSymbolText}>{selectedCurrency.symbol}</Typography>
+            </View>
+
+            <View style={styles.triggerTextWrap}>
+              <Typography style={styles.triggerCodeText}>{selectedCurrency.code}</Typography>
+              <Typography numberOfLines={1} style={styles.triggerNameText}>
+                {selectedCurrency.name}
               </Typography>
             </View>
-            <Typography style={styles.triggerText}>
-              {selectedCurrency.code} — {selectedCurrency.name}
-            </Typography>
           </View>
-          <icons.ChevronDown size={20} color={TEXT_SECONDARY} />
+
+          <View style={styles.triggerAdornment}>
+            <Typography style={styles.triggerChangeText}>Change</Typography>
+            <icons.ChevronDown size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
+          </View>
         </View>
       </PressableFeedback>
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
         index={0}
-        snapPoints={["75%", "95%"]}
+        snapPoints={["82%"]}
         enableDynamicSizing={false}
         onChange={handleSheetChanges}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: BORDER, width: 40 }}
+        keyboardBehavior="interactive"
+        keyboardBlurBehavior="restore"
+        android_keyboardInputMode="adjustResize"
       >
         <View style={styles.modalContent}>
-          <Typography style={styles.modalTitle}>Select Currency</Typography>
-
-          <View style={styles.searchContainer}>
-            <View style={styles.searchBox}>
-              <icons.Search size={20} color={TEXT_SECONDARY} />
-              <TextInput
-                value={search}
-                onChangeText={setSearch}
-                placeholder="Search currencies…"
-                placeholderTextColor={TEXT_SECONDARY}
-                autoCapitalize="none"
-                autoCorrect={false}
-                style={styles.searchInput}
-              />
-              {search.length > 0 && (
-                <PressableFeedback
-                  accessibilityRole="button"
-                  onPress={() => setSearch("")}
-                  hitSlop={8}
-                >
-                  <icons.XCircle size={18} color={TEXT_SECONDARY} />
-                </PressableFeedback>
-              )}
-            </View>
+          <View style={styles.headerBlock}>
+            <Typography style={styles.modalTitle}>Select currency</Typography>
+            <Typography style={styles.modalSubtitle}>
+              This sets the default money format for the group or expense.
+            </Typography>
           </View>
 
-          <View style={styles.listWrapper}>
-            <BottomSheetFlatList
-              data={filtered}
-              keyExtractor={(item) => item.code}
-              showsVerticalScrollIndicator={true}
-              keyboardShouldPersistTaps="handled"
-              initialNumToRender={20}
-              maxToRenderPerBatch={20}
-              windowSize={5}
-              contentContainerStyle={{ paddingBottom: 40 }}
-              renderItem={({ item }) => (
-                <CurrencyListItem
-                  currency={item}
-                  isSelected={item.code === value}
-                  onPress={handleSelect}
-                />
-              )}
-              ListEmptyComponent={
-                <View style={styles.emptyContainer}>
-                  <Typography style={styles.emptyText}>No currencies found</Typography>
-                </View>
-              }
+          <View style={styles.searchCard}>
+            <icons.Search size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
+            <BottomSheetTextInput
+              value={search}
+              onChangeText={setSearch}
+              placeholder="Search by code, name, or symbol"
+              placeholderTextColor={TEXT_SECONDARY}
+              autoCapitalize="none"
+              autoCorrect={false}
+              autoFocus
+              style={styles.searchInput}
             />
+            {search.length > 0 ? (
+              <PressableFeedback accessibilityRole="button" hitSlop={8} onPress={() => setSearch("")}>
+                <icons.XCircle size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
+              </PressableFeedback>
+            ) : null}
           </View>
+
+          <BottomSheetFlatList
+            data={listData}
+            keyExtractor={(item) => item.key}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={
+              <View style={styles.emptyCard}>
+                <Typography style={styles.emptyTitle}>No currencies found</Typography>
+                <Typography style={styles.emptyText}>Try a different code, name, or symbol.</Typography>
+              </View>
+            }
+          />
         </View>
       </BottomSheetModal>
     </View>
   );
 }
 
-// --- Styles (Bypassing Tailwind for maximum performance) ---
 const styles = StyleSheet.create({
   container: {
     gap: 8,
   },
   label: {
-    fontSize: 12,
+    marginLeft: 4,
+    fontSize: 11,
+    letterSpacing: 1.2,
     color: TEXT_SECONDARY,
-    fontFamily: "CrimsonText_700Bold",
+    fontFamily: "IBMPlexSans_600SemiBold",
     textTransform: "uppercase",
-    letterSpacing: 1.5,
-    marginLeft: 8,
   },
   triggerContainer: {
-    backgroundColor: SURFACE,
-    height: 56,
-    borderRadius: 0,
+    minHeight: 72,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: CARD_RADIUS,
     borderWidth: 1,
     borderColor: BORDER,
+    backgroundColor: SURFACE,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 16,
-  },
-  triggerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
     gap: 12,
   },
-  triggerSymbolBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 0,
-    backgroundColor: BG,
+  triggerLeft: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+  },
+  triggerSymbolShell: {
+    width: 48,
+    height: 48,
+    borderRadius: 18,
+    backgroundColor: CONTROL_SURFACE,
+    borderWidth: 1,
+    borderColor: BORDER,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 4,
+    paddingHorizontal: 6,
   },
   triggerSymbolText: {
-    fontSize: 14,
-    fontFamily: "CrimsonText_700Bold",
+    fontSize: 18,
     color: TEXT_PRIMARY,
+    fontFamily: "IBMPlexSans_600SemiBold",
   },
-  triggerText: {
-    fontSize: 15,
-    fontFamily: "CrimsonText_700Bold",
+  triggerTextWrap: {
+    flex: 1,
+    gap: 2,
+  },
+  triggerCodeText: {
+    fontSize: 16,
     color: TEXT_PRIMARY,
+    fontFamily: "IBMPlexSans_600SemiBold",
+  },
+  triggerNameText: {
+    fontSize: 14,
+    color: TEXT_SECONDARY,
+    fontFamily: "IBMPlexSans_500Medium",
+  },
+  triggerAdornment: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  triggerChangeText: {
+    fontSize: 13,
+    color: BRAND,
+    fontFamily: "IBMPlexSans_600SemiBold",
   },
   modalContent: {
     flex: 1,
     paddingHorizontal: 24,
     paddingTop: 8,
   },
+  headerBlock: {
+    marginBottom: 18,
+  },
   modalTitle: {
     fontSize: 24,
-    fontFamily: "CrimsonText_700Bold",
     color: TEXT_PRIMARY,
-    marginBottom: 24,
+    fontFamily: "Sora_600SemiBold",
   },
-  searchContainer: {
-    marginBottom: 16,
+  modalSubtitle: {
+    marginTop: 8,
+    fontSize: 14,
+    lineHeight: 20,
+    color: TEXT_SECONDARY,
+    fontFamily: "IBMPlexSans_500Medium",
   },
-  searchBox: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: SURFACE,
-    height: 48,
-    borderRadius: 0,
+  searchCard: {
+    height: 52,
+    marginBottom: 18,
     paddingHorizontal: 16,
+    borderRadius: PILL_RADIUS,
     borderWidth: 1,
     borderColor: BORDER,
+    backgroundColor: CONTROL_SURFACE,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   searchInput: {
     flex: 1,
-    marginLeft: 12,
+    paddingVertical: 0,
     fontSize: 16,
-    fontFamily: "CrimsonText_600SemiBold",
     color: TEXT_PRIMARY,
+    fontFamily: "IBMPlexSans_500Medium",
   },
-  listWrapper: {
-    flex: 1,
-    backgroundColor: SURFACE,
+  listContent: {
+    paddingBottom: 40,
+  },
+  sectionLabel: {
+    marginTop: 8,
+    marginBottom: 10,
+    fontSize: 11,
+    letterSpacing: 1.2,
+    color: TEXT_SECONDARY,
+    fontFamily: "IBMPlexSans_600SemiBold",
+    textTransform: "uppercase",
+  },
+  itemContainer: {
+    minHeight: 76,
+    marginBottom: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    borderRadius: CARD_RADIUS,
     borderWidth: 1,
     borderColor: BORDER,
-    borderBottomWidth: 0,
-  },
-  // List Item Styles
-  itemContainer: {
+    backgroundColor: SURFACE,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    backgroundColor: SURFACE,
+    gap: 12,
   },
-  itemContainerSelected: {
-    backgroundColor: BG,
+  itemCurrent: {
+    backgroundColor: "#F7F1EA",
+  },
+  itemSelected: {
+    borderColor: TEXT_PRIMARY,
+    backgroundColor: "#F0ECE7",
   },
   itemLeft: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: 16,
-    flex: 1,
+    gap: 14,
   },
-  symbolBox: {
-    width: 44,
-    height: 44,
-    borderRadius: 0,
-    backgroundColor: BG,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 4,
+  symbolShell: {
+    width: 48,
+    height: 48,
+    borderRadius: 18,
+    backgroundColor: CONTROL_SURFACE,
     borderWidth: 1,
     borderColor: BORDER,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 6,
   },
-  symbolBoxSelected: {
-    backgroundColor: BRAND,
-    borderColor: BRAND,
+  symbolShellCurrent: {
+    backgroundColor: "#F4E8DC",
+  },
+  symbolShellSelected: {
+    backgroundColor: TEXT_PRIMARY,
+    borderColor: TEXT_PRIMARY,
   },
   symbolText: {
-    fontSize: 16,
-    fontFamily: "CrimsonText_700Bold",
+    fontSize: 18,
     color: TEXT_PRIMARY,
+    fontFamily: "IBMPlexSans_600SemiBold",
+  },
+  symbolTextSelected: {
+    color: "#FFFFFF",
   },
   textContainer: {
     flex: 1,
-    paddingRight: 16,
+    paddingRight: 8,
+  },
+  codeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
   },
   codeText: {
     fontSize: 16,
-    fontFamily: "CrimsonText_700Bold",
     color: TEXT_PRIMARY,
+    fontFamily: "IBMPlexSans_600SemiBold",
   },
   nameText: {
-    fontSize: 13,
-    fontFamily: "CrimsonText_600SemiBold",
+    marginTop: 3,
+    fontSize: 14,
     color: TEXT_SECONDARY,
-    marginTop: 2,
+    fontFamily: "IBMPlexSans_500Medium",
   },
-  textSelected: {
-    color: TEXT_PRIMARY,
+  metaPill: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: PILL_RADIUS,
+    backgroundColor: CONTROL_SURFACE,
+    borderWidth: 1,
+    borderColor: BORDER,
   },
-  emptyContainer: {
-    padding: 32,
+  metaPillText: {
+    fontSize: 11,
+    color: TEXT_SECONDARY,
+    fontFamily: "IBMPlexSans_600SemiBold",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  selectedBadge: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: TEXT_PRIMARY,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyCard: {
+    marginTop: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 24,
+    borderRadius: CARD_RADIUS,
+    borderWidth: 1,
+    borderColor: BORDER,
+    backgroundColor: SURFACE,
     alignItems: "center",
   },
+  emptyTitle: {
+    fontSize: 16,
+    color: TEXT_PRIMARY,
+    fontFamily: "IBMPlexSans_600SemiBold",
+  },
   emptyText: {
-    fontSize: 15,
+    marginTop: 6,
+    fontSize: 14,
     color: TEXT_SECONDARY,
-    fontFamily: "CrimsonText_600SemiBold",
+    fontFamily: "IBMPlexSans_500Medium",
+    textAlign: "center",
   },
 });

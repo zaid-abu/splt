@@ -7,32 +7,32 @@
 
 /* ─── Body font utilities ──────────────────────────────────────────────────── */
 @utility font-normal {
-  font-family: "CrimsonText_400Regular";
+  font-family: "IBMPlexSans_400Regular";
 }
 
 @utility font-medium {
-  font-family: "CrimsonText_600SemiBold";
+  font-family: "IBMPlexSans_500Medium";
 }
 
 @utility font-semibold {
-  font-family: "CrimsonText_600SemiBold";
+  font-family: "IBMPlexSans_600SemiBold";
 }
 
 @utility font-bold {
-  font-family: "CrimsonText_700Bold";
+  font-family: "IBMPlexSans_600SemiBold";
 }
 
 @utility font-black {
-  font-family: "CrimsonText_700Bold";
+  font-family: "IBMPlexSans_600SemiBold";
 }
 
 /* ─── Heading font utilities (DM Serif Display) ────────────────────────────── */
 @utility font-heading {
-  font-family: "UnicaOne_400Regular";
+  font-family: "Sora_600SemiBold";
 }
 
 @utility font-heading-italic {
-  font-family: "UnicaOne_400Regular";
+  font-family: "Sora_600SemiBold";
 }
 
 /* ─── Tailwind theme bridge ────────────────────────────────────────────────── */
@@ -162,8 +162,8 @@
     --color-warning: #f5a623;
 
     /* ── Typography */
-    --font-family-heading: "UnicaOne_400Regular";
-    --font-family-body: "CrimsonText_400Regular";
+    --font-family-heading: "Sora_600SemiBold";
+    --font-family-body: "IBMPlexSans_400Regular";
 
     --text-xs: 12px;
     --text-sm: 14px;

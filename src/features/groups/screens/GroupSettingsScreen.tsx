@@ -54,7 +54,7 @@ function SectionLabel({ children, style }: { children: string; style?: any }): J
           fontSize: 12,
           letterSpacing: 2,
           color: TEXT_SECONDARY,
-          fontFamily: "CrimsonText_700Bold",
+          fontFamily: "IBMPlexSans_600SemiBold",
           textTransform: "uppercase",
           marginBottom: 24,
         },
@@ -313,7 +313,7 @@ export default function GroupSettingsScreen(): JSX.Element {
         >
           <Typography
             style={{
-              fontFamily: "UnicaOne_400Regular",
+              fontFamily: "Sora_600SemiBold",
               fontSize: 40,
               color: TEXT_PRIMARY,
               lineHeight: 48,
@@ -407,7 +407,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               style={{
                 fontSize: 32,
                 color: TEXT_PRIMARY,
-                fontFamily: "UnicaOne_400Regular",
+                fontFamily: "Sora_600SemiBold",
                 borderBottomWidth: 1,
                 borderBottomColor: SEPARATOR,
                 paddingBottom: 16,
@@ -424,7 +424,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               style={{
                 fontSize: 18,
                 color: TEXT_PRIMARY,
-                fontFamily: "CrimsonText_400Regular",
+                fontFamily: "IBMPlexSans_400Regular",
                 borderBottomWidth: 1,
                 borderBottomColor: SEPARATOR,
                 paddingBottom: 16,
@@ -469,7 +469,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                   style={{
                     fontSize: 18,
                     color: TEXT_PRIMARY,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     marginBottom: 8,
                   }}
                 >
@@ -479,7 +479,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                   style={{
                     fontSize: 14,
                     color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_400Regular",
+                    fontFamily: "IBMPlexSans_400Regular",
                     lineHeight: 22,
                   }}
                 >
@@ -516,7 +516,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                 style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
               >
                 <Typography
-                  style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                  style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   + Add Member
                 </Typography>
@@ -545,7 +545,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                           style={{
                             fontSize: 18,
                             color: TEXT_PRIMARY,
-                            fontFamily: "CrimsonText_700Bold",
+                            fontFamily: "IBMPlexSans_600SemiBold",
                             marginBottom: 4,
                           }}
                         >
@@ -555,7 +555,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                           style={{
                             fontSize: 14,
                             color: TEXT_SECONDARY,
-                            fontFamily: "CrimsonText_600SemiBold",
+                            fontFamily: "IBMPlexSans_500Medium",
                           }}
                         >
                           Balance: {getCurrencySymbol(currencyCode)}
@@ -597,7 +597,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               })}
             >
               <Typography
-                style={{ fontSize: 18, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                style={{ fontSize: 18, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 Delete Group
               </Typography>
@@ -634,7 +634,7 @@ export default function GroupSettingsScreen(): JSX.Element {
           >
             {loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
             <Typography
-              style={{ fontSize: 18, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}
+              style={{ fontSize: 18, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
             >
               Save Changes
             </Typography>
@@ -656,7 +656,7 @@ export default function GroupSettingsScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 22,
-                fontFamily: "CrimsonText_700Bold",
+                fontFamily: "IBMPlexSans_600SemiBold",
                 color: TEXT_PRIMARY,
                 marginBottom: 8,
               }}
@@ -666,7 +666,7 @@ export default function GroupSettingsScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 16,
-                fontFamily: "CrimsonText_600SemiBold",
+                fontFamily: "IBMPlexSans_500Medium",
                 color: TEXT_SECONDARY,
                 marginBottom: 24,
               }}
@@ -688,7 +688,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                 })}
               >
                 <Typography
-                  style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: TEXT_PRIMARY }}
+                  style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: TEXT_PRIMARY }}
                 >
                   Cancel
                 </Typography>
@@ -708,7 +708,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                 })}
               >
                 <Typography
-                  style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: "#FFFFFF" }}
+                  style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: "#FFFFFF" }}
                 >
                   Delete
                 </Typography>
@@ -732,7 +732,7 @@ export default function GroupSettingsScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 22,
-                fontFamily: "CrimsonText_700Bold",
+                fontFamily: "IBMPlexSans_600SemiBold",
                 color: TEXT_PRIMARY,
                 marginBottom: 8,
               }}
@@ -742,7 +742,7 @@ export default function GroupSettingsScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 16,
-                fontFamily: "CrimsonText_600SemiBold",
+                fontFamily: "IBMPlexSans_500Medium",
                 color: TEXT_SECONDARY,
                 marginBottom: 24,
               }}
@@ -764,7 +764,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                 })}
               >
                 <Typography
-                  style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: TEXT_PRIMARY }}
+                  style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: TEXT_PRIMARY }}
                 >
                   Cancel
                 </Typography>
@@ -781,7 +781,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                 })}
               >
                 <Typography
-                  style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: "#FFFFFF" }}
+                  style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: "#FFFFFF" }}
                 >
                   Remove
                 </Typography>

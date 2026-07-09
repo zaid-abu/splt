@@ -16,9 +16,6 @@ import Animated, {
   FadeInDown,
   FadeIn,
   FadeOut,
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
   LinearTransition,
 } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
@@ -46,6 +43,8 @@ const BORDER = "#E8E4DF";
 const TEXT_PRIMARY = "#1A1A1A";
 const TEXT_SECONDARY = "#8A8782";
 const KEYPAD_ACTIVE = "#EAE5E0";
+const CARD_RADIUS = 18;
+const PILL_RADIUS = 999;
 
 // --- Custom Keypad Component ---
 function KeypadButton({
@@ -76,7 +75,7 @@ function KeypadButton({
           style={{
             fontSize: isAction ? 24 : 28,
             color: TEXT_PRIMARY,
-            fontFamily: "CrimsonText_600SemiBold",
+            fontFamily: "IBMPlexSans_500Medium",
           }}
         >
           {val}
@@ -169,7 +168,6 @@ export default function SettleUpScreen(): JSX.Element {
   // Keep selectedFriendId synced if defaultFriendId changes (e.g. data loaded late)
   useEffect(() => {
     if (!selectedFriendId && defaultFriendId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedFriendId(defaultFriendId);
     }
   }, [defaultFriendId, selectedFriendId]);
@@ -216,7 +214,6 @@ export default function SettleUpScreen(): JSX.Element {
   // Sync direction when recipient changes
   useEffect(() => {
     if (!initialDirection) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDirection(netBalance < 0 ? "you" : "them");
     }
   }, [netBalance, initialDirection]);
@@ -234,11 +231,9 @@ export default function SettleUpScreen(): JSX.Element {
   useEffect(() => {
     if (!initialAmount && amountStr === "") {
       const amt = Math.abs(netBalance).toFixed(2);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (amt !== "0.00") setAmountStr(amt);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [netBalance]);
+  }, [netBalance, initialAmount, amountStr]);
 
   const sharedGroups = useMemo(() => {
     if (!friend) return [];
@@ -259,15 +254,15 @@ export default function SettleUpScreen(): JSX.Element {
         style={{ flex: 1, backgroundColor: BG, alignItems: "center", justifyContent: "center" }}
       >
         <Typography
-          style={{ fontSize: 18, color: TEXT_PRIMARY, fontFamily: "CrimsonText_600SemiBold" }}
+          style={{ fontSize: 18, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_500Medium" }}
         >
           {isGroupRoute ? "All settled up!" : "Friend not found"}
         </Typography>
         <Pressable
           onPress={() => router.back()}
-          style={{ marginTop: 16, padding: 12, backgroundColor: BRAND, borderRadius: 0 }}
+          style={{ marginTop: 16, padding: 14, paddingHorizontal: 24, backgroundColor: BRAND, borderRadius: PILL_RADIUS }}
         >
-          <Typography style={{ color: "#FFF" }}>Go Back</Typography>
+          <Typography style={{ color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold" }}>Go Back</Typography>
         </Pressable>
       </View>
     );
@@ -355,12 +350,26 @@ export default function SettleUpScreen(): JSX.Element {
         }}
       >
         <Typography
-          style={{ fontFamily: "UnicaOne_400Regular", fontSize: 28, color: TEXT_PRIMARY }}
+          style={{ fontFamily: "Sora_600SemiBold", fontSize: 28, color: TEXT_PRIMARY }}
         >
           Settle Up
         </Typography>
-        <Pressable onPress={() => router.back()} hitSlop={20}>
-          <icons.X size={24} color={TEXT_PRIMARY} />
+        <Pressable
+          onPress={() => router.back()}
+          hitSlop={20}
+          style={({ pressed }) => ({
+            width: 44,
+            height: 44,
+            borderRadius: PILL_RADIUS,
+            backgroundColor: SURFACE,
+            borderWidth: 1,
+            borderColor: BORDER,
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: pressed ? 0.6 : 1,
+          })}
+        >
+          <icons.X size={20} color={TEXT_PRIMARY} />
         </Pressable>
       </View>
 
@@ -381,7 +390,7 @@ export default function SettleUpScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 13,
-                  fontFamily: "CrimsonText_700Bold",
+                  fontFamily: "IBMPlexSans_600SemiBold",
                   marginTop: 8,
                   color: TEXT_PRIMARY,
                 }}
@@ -408,20 +417,23 @@ export default function SettleUpScreen(): JSX.Element {
                 }}
                 style={({ pressed }) => ({
                   backgroundColor: SURFACE,
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
-                  opacity: pressed ? 0.6 : 1,
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
+                  borderRadius: PILL_RADIUS,
+                  borderWidth: 1,
+                  borderColor: BORDER,
+                  opacity: pressed ? 0.7 : 1,
                   flexDirection: "row",
                   alignItems: "center",
                   gap: 6,
                 })}
               >
-                <icons.ArrowRightLeft size={16} color={TEXT_SECONDARY} strokeWidth={2.5} />
+                <icons.ArrowRightLeft size={16} color={TEXT_PRIMARY} strokeWidth={2.5} />
                 <Typography
                   style={{
-                    fontSize: 11,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontSize: 12,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     textTransform: "uppercase",
                     letterSpacing: 1,
                   }}
@@ -450,7 +462,7 @@ export default function SettleUpScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 13,
-                      fontFamily: "CrimsonText_700Bold",
+                      fontFamily: "IBMPlexSans_600SemiBold",
                       marginTop: 8,
                       color: TEXT_PRIMARY,
                     }}
@@ -464,7 +476,7 @@ export default function SettleUpScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 13,
-                      fontFamily: "CrimsonText_700Bold",
+                      fontFamily: "IBMPlexSans_600SemiBold",
                       marginTop: 8,
                       color: TEXT_PRIMARY,
                     }}
@@ -488,7 +500,7 @@ export default function SettleUpScreen(): JSX.Element {
               style={{
                 fontSize: 12,
                 color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_600SemiBold",
+                fontFamily: "IBMPlexSans_500Medium",
                 marginBottom: 8,
               }}
             >
@@ -518,6 +530,7 @@ export default function SettleUpScreen(): JSX.Element {
                       alignItems: "center",
                       padding: 12,
                       borderWidth: 1,
+                      borderRadius: CARD_RADIUS,
                       borderColor: isSelected ? BRAND : BORDER,
                       backgroundColor: isSelected ? BRAND : SURFACE,
                       opacity: isSelected ? 1 : 0.7,
@@ -528,7 +541,7 @@ export default function SettleUpScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 11,
-                        fontFamily: "CrimsonText_700Bold",
+                        fontFamily: "IBMPlexSans_600SemiBold",
                         marginTop: 8,
                         color: isSelected ? "#FFF" : TEXT_PRIMARY,
                       }}
@@ -552,7 +565,7 @@ export default function SettleUpScreen(): JSX.Element {
             style={{
               fontSize: 14,
               color: TEXT_SECONDARY,
-              fontFamily: "CrimsonText_600SemiBold",
+              fontFamily: "IBMPlexSans_500Medium",
               marginBottom: 8,
             }}
           >
@@ -561,7 +574,7 @@ export default function SettleUpScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 64,
-              fontFamily: "CrimsonText_700Bold",
+              fontFamily: "IBMPlexSans_600SemiBold",
               color: amountStr ? TEXT_PRIMARY : TEXT_SECONDARY,
               letterSpacing: -2,
               lineHeight: 72,
@@ -581,16 +594,17 @@ export default function SettleUpScreen(): JSX.Element {
                   setAmountStr(Math.abs(netBalance).toFixed(2));
                 }}
                 style={({ pressed }) => ({
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  backgroundColor: SURFACE,
                   borderWidth: 1,
                   borderColor: BORDER,
-                  borderRadius: 0,
+                  borderRadius: PILL_RADIUS,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <Typography
-                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   Full: {Math.abs(netBalance).toFixed(2)}
                 </Typography>
@@ -601,16 +615,17 @@ export default function SettleUpScreen(): JSX.Element {
                   setAmountStr((Math.abs(netBalance) / 2).toFixed(2));
                 }}
                 style={({ pressed }) => ({
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
+                  paddingHorizontal: 20,
+                  paddingVertical: 10,
+                  backgroundColor: SURFACE,
                   borderWidth: 1,
                   borderColor: BORDER,
-                  borderRadius: 0,
+                  borderRadius: PILL_RADIUS,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <Typography
-                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                  style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   Half: {(Math.abs(netBalance) / 2).toFixed(2)}
                 </Typography>
@@ -623,7 +638,7 @@ export default function SettleUpScreen(): JSX.Element {
         <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
           <Pressable onPress={() => setShowOptional(!showOptional)} style={{ padding: 8 }}>
             <Typography
-              style={{ fontSize: 13, color: BRAND, fontFamily: "CrimsonText_600SemiBold" }}
+              style={{ fontSize: 13, color: BRAND, fontFamily: "IBMPlexSans_500Medium" }}
             >
               {showOptional ? "Hide Options" : "+ Add Note or Group"}
             </Typography>
@@ -644,9 +659,9 @@ export default function SettleUpScreen(): JSX.Element {
                   borderWidth: 1,
                   borderColor: BORDER,
                   padding: 16,
-                  borderRadius: 0,
+                  borderRadius: CARD_RADIUS,
                   fontSize: 15,
-                  fontFamily: "CrimsonText_600SemiBold",
+                  fontFamily: "IBMPlexSans_500Medium",
                   backgroundColor: SURFACE,
                 }}
               />
@@ -657,7 +672,7 @@ export default function SettleUpScreen(): JSX.Element {
                     style={{
                       fontSize: 12,
                       color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_600SemiBold",
+                      fontFamily: "IBMPlexSans_500Medium",
                       marginBottom: 8,
                       marginLeft: 4,
                     }}
@@ -675,6 +690,7 @@ export default function SettleUpScreen(): JSX.Element {
                         paddingHorizontal: 16,
                         paddingVertical: 10,
                         borderWidth: 1,
+                        borderRadius: PILL_RADIUS,
                         borderColor: !selectedGroupId ? BRAND : BORDER,
                         backgroundColor: !selectedGroupId ? BRAND : SURFACE,
                       }}
@@ -683,7 +699,7 @@ export default function SettleUpScreen(): JSX.Element {
                         style={{
                           fontSize: 13,
                           color: !selectedGroupId ? "#FFF" : TEXT_PRIMARY,
-                          fontFamily: "CrimsonText_700Bold",
+                          fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
                         None
@@ -699,6 +715,7 @@ export default function SettleUpScreen(): JSX.Element {
                             paddingHorizontal: 16,
                             paddingVertical: 10,
                             borderWidth: 1,
+                            borderRadius: PILL_RADIUS,
                             borderColor: isSelected ? BRAND : BORDER,
                             backgroundColor: isSelected ? BRAND : SURFACE,
                           }}
@@ -707,7 +724,7 @@ export default function SettleUpScreen(): JSX.Element {
                             style={{
                               fontSize: 13,
                               color: isSelected ? "#FFF" : TEXT_PRIMARY,
-                              fontFamily: "CrimsonText_700Bold",
+                              fontFamily: "IBMPlexSans_600SemiBold",
                             }}
                           >
                             {g.name}
@@ -727,7 +744,7 @@ export default function SettleUpScreen(): JSX.Element {
         {/* ── Custom Keypad ── */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(200)}
-          style={{ backgroundColor: SURFACE, borderTopWidth: 1, borderTopColor: BORDER }}
+          style={{ backgroundColor: SURFACE, borderTopWidth: 1, borderTopColor: BORDER, borderTopLeftRadius: CARD_RADIUS, borderTopRightRadius: CARD_RADIUS, paddingTop: 8 }}
         >
           <View style={{ flexDirection: "row" }}>
             <KeypadButton val="1" onPress={() => handleKeypad("1")} />
@@ -752,38 +769,40 @@ export default function SettleUpScreen(): JSX.Element {
               onPress={() => handleKeypad("<")}
             />
           </View>
+
+          {/* ── Submit Button ── */}
+          <View style={{ padding: 24, paddingBottom: Math.max(insets.bottom, 24) }}>
+            <Pressable
+              onPress={handleSubmit}
+              disabled={isAddingSettlement}
+              style={({ pressed }) => ({
+                backgroundColor: BRAND,
+                height: 56,
+                borderRadius: PILL_RADIUS,
+                justifyContent: "center",
+                alignItems: "center",
+                opacity: pressed || isAddingSettlement ? 0.8 : 1,
+              })}
+            >
+              {isAddingSettlement ? (
+                <Spinner color="white" size="sm" />
+              ) : (
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: "#FFF",
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                    letterSpacing: 1,
+                  }}
+                >
+                  PAY {preferredCurrency.symbol}
+                  {parsedAmount.toFixed(2)}
+                </Typography>
+              )}
+            </Pressable>
+          </View>
         </Animated.View>
 
-        {/* ── Submit Button ── */}
-        <View style={{ backgroundColor: SURFACE, paddingBottom: insets.bottom }}>
-          <Pressable
-            onPress={handleSubmit}
-            disabled={isAddingSettlement}
-            style={({ pressed }) => ({
-              backgroundColor: BRAND,
-              height: 64,
-              justifyContent: "center",
-              alignItems: "center",
-              opacity: pressed || isAddingSettlement ? 0.8 : 1,
-            })}
-          >
-            {isAddingSettlement ? (
-              <Spinner color="white" size="sm" />
-            ) : (
-              <Typography
-                style={{
-                  fontSize: 18,
-                  color: "#FFF",
-                  fontFamily: "CrimsonText_700Bold",
-                  letterSpacing: 1,
-                }}
-              >
-                PAY {preferredCurrency.symbol}
-                {parsedAmount.toFixed(2)}
-              </Typography>
-            )}
-          </Pressable>
-        </View>
       </ScrollView>
     </View>
   );

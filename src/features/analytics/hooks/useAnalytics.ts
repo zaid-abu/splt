@@ -29,6 +29,7 @@ export function useAnalytics(
     if (!userId)
       return {
         totalSpent: 0,
+        expenseCount: 0,
         categoryData: [],
         trendData: [],
         topExpenses: [],
@@ -78,6 +79,7 @@ export function useAnalytics(
 
     // 2. Calculate Total
     const totalSpent = relevantExpenses.reduce((sum, e) => sum + e.myShareInPrefCurrency, 0);
+    const expenseCount = relevantExpenses.length;
 
     // 3. Category Breakdown
     const catMap = new Map<ExpenseCategory, number>();
@@ -129,6 +131,7 @@ export function useAnalytics(
 
     return {
       totalSpent,
+      expenseCount,
       categoryData,
       trendData: finalTrendData,
       topExpenses,

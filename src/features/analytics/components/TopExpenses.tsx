@@ -1,5 +1,5 @@
 import React from "react";
-import { View } from "react-native";
+import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { EXPENSE_CATEGORIES } from "@/types";
@@ -10,79 +10,138 @@ import dayjs from "dayjs";
 interface Props {
   expenses: AnalyticsExpense[];
   currencyCode: string;
+  onLogExpense: () => void;
 }
 
-export function TopExpenses({ expenses, currencyCode }: Props) {
-  if (expenses.length === 0) return null;
+const SURFACE = "#FFFCF8";
+const CONTROL_SURFACE = "#FFFFFF";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const SEPARATOR = "#E8E4DF";
 
+export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
   return (
-    <View style={{ backgroundColor: "transparent", paddingVertical: 16 }}>
+    <View
+      style={{
+        backgroundColor: SURFACE,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: SEPARATOR,
+        padding: 16,
+      }}
+    >
       <Typography
         style={{
-          fontSize: 18,
-          fontFamily: "CrimsonText_700Bold",
-          color: "#1A1817",
+          fontSize: 11,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          color: TEXT_PRIMARY,
+          letterSpacing: 1.1,
+          textTransform: "uppercase",
           marginBottom: 16,
         }}
       >
         Top Expenses
       </Typography>
 
-      <View style={{ gap: 16 }}>
-        {expenses.map((expense) => {
-          const catInfo = EXPENSE_CATEGORIES.find((c) => c.key === expense.category);
-          const Icon = catInfo ? (icons as any)[catInfo.icon] : icons.Package;
-
-          return (
-            <View
-              key={expense.id}
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
+      {expenses.length === 0 ? (
+        <View style={{ paddingVertical: 24, alignItems: "center", justifyContent: "center" }}>
+          <icons.ReceiptText size={38} color={TEXT_SECONDARY} strokeWidth={1.25} />
+          <Typography
+            style={{
+              marginTop: 12,
+              color: TEXT_SECONDARY,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginBottom: 16,
+            }}
+          >
+            No expenses in this period.
+          </Typography>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onLogExpense}
+            style={({ pressed }) => ({
+              paddingHorizontal: 18,
+              paddingVertical: 10,
+              borderRadius: 999,
+              backgroundColor: TEXT_PRIMARY,
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <Typography
+              style={{ fontSize: 14, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", flex: 1, gap: 12 }}>
-                <View
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 20,
-                    backgroundColor: "#F5F0EB",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Icon size={20} color="#8C7A6B" strokeWidth={1.5} />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Typography
-                    style={{ fontSize: 16, color: "#1A1817", fontFamily: "CrimsonText_700Bold" }}
-                    numberOfLines={1}
-                  >
-                    {expense.title}
-                  </Typography>
-                  <Typography
+              Log expense
+            </Typography>
+          </Pressable>
+        </View>
+      ) : (
+        <View>
+          {expenses.map((expense) => {
+            const catInfo = EXPENSE_CATEGORIES.find((c) => c.key === expense.category);
+            const Icon = catInfo ? (icons as any)[catInfo.icon] : icons.Package;
+            const isLast = expense.id === expenses[expenses.length - 1]?.id;
+
+            return (
+              <View
+                key={expense.id}
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingVertical: 16,
+                  borderBottomWidth: isLast ? 0 : 1,
+                  borderBottomColor: SEPARATOR,
+                }}
+              >
+                <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+                  <View
                     style={{
-                      fontSize: 13,
-                      color: "#A39B93",
-                      fontFamily: "CrimsonText_600SemiBold",
-                      marginTop: 2,
+                      width: 48,
+                      height: 48,
+                      borderRadius: 18,
+                      backgroundColor: CONTROL_SURFACE,
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginRight: 14,
                     }}
                   >
-                    {dayjs(expense.date).format("MMM D, YYYY")}
-                  </Typography>
+                    <Icon size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Typography
+                      style={{
+                        fontSize: 16,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                      numberOfLines={1}
+                    >
+                      {expense.title}
+                    </Typography>
+                    <Typography
+                      style={{
+                        fontSize: 13,
+                        color: TEXT_SECONDARY,
+                        fontFamily: "IBMPlexSans_500Medium",
+                        marginTop: 2,
+                      }}
+                    >
+                      {dayjs(expense.date).format("MMM D, YYYY")}
+                    </Typography>
+                  </View>
                 </View>
+                <Typography
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                >
+                  {formatAmount(expense.myShareInPrefCurrency, currencyCode)}
+                </Typography>
               </View>
-              <Typography
-                style={{ fontSize: 16, color: "#1A1817", fontFamily: "CrimsonText_700Bold" }}
-              >
-                {formatAmount(expense.myShareInPrefCurrency, currencyCode)}
-              </Typography>
-            </View>
-          );
-        })}
-      </View>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 }

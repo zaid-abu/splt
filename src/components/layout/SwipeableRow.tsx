@@ -153,7 +153,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
           <Typography
             style={{
               fontSize: 22,
-              fontFamily: "CrimsonText_700Bold",
+              fontFamily: "IBMPlexSans_600SemiBold",
               color: "#000000",
               marginBottom: 8,
             }}
@@ -163,7 +163,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
           <Typography
             style={{
               fontSize: 16,
-              fontFamily: "CrimsonText_600SemiBold",
+              fontFamily: "IBMPlexSans_500Medium",
               color: "#8A8782",
               marginBottom: 24,
             }}
@@ -185,7 +185,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               })}
             >
               <Typography
-                style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: "#000000" }}
+                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: "#000000" }}
               >
                 Cancel
               </Typography>
@@ -205,7 +205,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               })}
             >
               <Typography
-                style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: "#FFFFFF" }}
+                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: "#FFFFFF" }}
               >
                 Delete
               </Typography>

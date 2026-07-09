@@ -18,7 +18,7 @@ function SectionLabel({ children }: { children: string }) {
         fontSize: 11,
         letterSpacing: 1.4,
         color: TEXT_SECONDARY,
-        fontFamily: "CrimsonText_700Bold",
+        fontFamily: "IBMPlexSans_600SemiBold",
         textTransform: "uppercase",
         marginBottom: 16,
       }}
@@ -99,7 +99,7 @@ export function ExpenseFormSelectors({
                 <Typography
                   style={{
                     fontSize: 15,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
                   }}
                 >
@@ -149,7 +149,7 @@ export function ExpenseFormSelectors({
                 <Typography
                   style={{
                     fontSize: 15,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
                   }}
                 >
@@ -194,7 +194,7 @@ export function ExpenseFormSelectors({
                 <Typography
                   style={{
                     fontSize: 15,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     color: isSelected ? TEXT_PRIMARY : TEXT_SECONDARY,
                   }}
                 >

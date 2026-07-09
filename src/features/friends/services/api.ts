@@ -1,5 +1,5 @@
 import { supabase } from "@/services/supabase/client";
-import type { Friendship, User } from "@/types";
+import type { Friendship } from "@/types";
 import { mapUser } from "@/services/api/mappers";
 
 export const FriendsService = {
@@ -192,6 +192,12 @@ export const FriendsService = {
   },
 
   async rejectFriendship(friendshipId: string): Promise<void> {
+    const { error } = await (supabase as any).from("friendships").delete().eq("id", friendshipId);
+
+    if (error) throw error;
+  },
+
+  async removeFriendship(friendshipId: string): Promise<void> {
     const { error } = await (supabase as any).from("friendships").delete().eq("id", friendshipId);
 
     if (error) throw error;

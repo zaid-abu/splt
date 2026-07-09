@@ -55,7 +55,7 @@ export default function NotificationsScreen(): JSX.Element {
               <AppUserAvatar user={friendship.friendUser!} size="md" />
               <View style={{ flex: 1, marginLeft: 16 }}>
                 <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   {item.title}
                 </Typography>
@@ -63,7 +63,7 @@ export default function NotificationsScreen(): JSX.Element {
                   style={{
                     fontSize: 14,
                     color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
+                    fontFamily: "IBMPlexSans_500Medium",
                     marginTop: 4,
                   }}
                 >
@@ -88,7 +88,7 @@ export default function NotificationsScreen(): JSX.Element {
                   <ActivityIndicator color="#FFF" />
                 ) : (
                   <Typography
-                    style={{ color: "#FFF", fontSize: 14, fontFamily: "CrimsonText_700Bold" }}
+                    style={{ color: "#FFF", fontSize: 14, fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     Accept
                   </Typography>
@@ -113,7 +113,7 @@ export default function NotificationsScreen(): JSX.Element {
                   <ActivityIndicator color={TEXT_PRIMARY} />
                 ) : (
                   <Typography
-                    style={{ color: TEXT_PRIMARY, fontSize: 14, fontFamily: "CrimsonText_700Bold" }}
+                    style={{ color: TEXT_PRIMARY, fontSize: 14, fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     Reject
                   </Typography>
@@ -162,7 +162,7 @@ export default function NotificationsScreen(): JSX.Element {
           <icons.ArrowLeft size={20} color={TEXT_PRIMARY} />
         </Pressable>
         <Typography
-          style={{ fontSize: 24, fontFamily: "UnicaOne_400Regular", color: TEXT_PRIMARY }}
+          style={{ fontSize: 24, fontFamily: "Sora_600SemiBold", color: TEXT_PRIMARY }}
         >
           Notifications
         </Typography>
@@ -188,7 +188,7 @@ export default function NotificationsScreen(): JSX.Element {
                   style={{
                     fontSize: 18,
                     color: TEXT_PRIMARY,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     textAlign: "center",
                   }}
                 >
@@ -198,7 +198,7 @@ export default function NotificationsScreen(): JSX.Element {
                   style={{
                     fontSize: 14,
                     color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
+                    fontFamily: "IBMPlexSans_500Medium",
                     textAlign: "center",
                     marginTop: 8,
                   }}

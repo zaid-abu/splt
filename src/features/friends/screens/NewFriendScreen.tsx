@@ -122,7 +122,7 @@ export default function NewFriendScreen(): JSX.Element {
           <View style={{ flex: 1, marginRight: 12 }}>
             <Typography
               numberOfLines={1}
-              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
             >
               {item.name}
             </Typography>
@@ -131,7 +131,7 @@ export default function NewFriendScreen(): JSX.Element {
               style={{
                 fontSize: 14,
                 color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_600SemiBold",
+                fontFamily: "IBMPlexSans_500Medium",
                 marginTop: 4,
               }}
             >
@@ -160,13 +160,13 @@ export default function NewFriendScreen(): JSX.Element {
               <Spinner size="sm" color="white" />
             ) : isAdded ? (
               <Typography
-                style={{ fontSize: 14, color: "white", fontFamily: "CrimsonText_700Bold" }}
+                style={{ fontSize: 14, color: "white", fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 Added
               </Typography>
             ) : isRequested ? (
               <Typography
-                style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 Requested
               </Typography>
@@ -196,7 +196,7 @@ export default function NewFriendScreen(): JSX.Element {
       >
         <Typography
           style={{
-            fontFamily: "UnicaOne_400Regular",
+            fontFamily: "Sora_600SemiBold",
             fontSize: 28,
             color: TEXT_PRIMARY,
             lineHeight: 36,
@@ -254,7 +254,7 @@ export default function NewFriendScreen(): JSX.Element {
               style={{
                 flex: 1,
                 marginLeft: 12,
-                fontFamily: "CrimsonText_600SemiBold",
+                fontFamily: "IBMPlexSans_500Medium",
                 color: TEXT_PRIMARY,
                 fontSize: 16,
               }}
@@ -306,7 +306,7 @@ export default function NewFriendScreen(): JSX.Element {
                     style={{
                       fontSize: 16,
                       color: TEXT_PRIMARY,
-                      fontFamily: "CrimsonText_700Bold",
+                      fontFamily: "IBMPlexSans_600SemiBold",
                       textAlign: "center",
                       marginBottom: 8,
                     }}
@@ -317,7 +317,7 @@ export default function NewFriendScreen(): JSX.Element {
                     style={{
                       fontSize: 15,
                       color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_600SemiBold",
+                      fontFamily: "IBMPlexSans_500Medium",
                       textAlign: "center",
                     }}
                   >
@@ -329,7 +329,7 @@ export default function NewFriendScreen(): JSX.Element {
                   style={{
                     fontSize: 15,
                     color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
+                    fontFamily: "IBMPlexSans_500Medium",
                     textAlign: "center",
                   }}
                 >
@@ -356,7 +356,7 @@ export default function NewFriendScreen(): JSX.Element {
                     style={{
                       fontSize: 15,
                       color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_600SemiBold",
+                      fontFamily: "IBMPlexSans_500Medium",
                       textAlign: "center",
                     }}
                   >

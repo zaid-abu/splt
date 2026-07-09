@@ -27,7 +27,7 @@ export default function WelcomeScreen(): JSX.Element {
             style={{
               color: TEXT_PRIMARY,
               fontSize: 28,
-              fontFamily: "UnicaOne_400Regular",
+              fontFamily: "Sora_600SemiBold",
               letterSpacing: 2,
               textTransform: "uppercase",
               marginBottom: 64,
@@ -40,7 +40,7 @@ export default function WelcomeScreen(): JSX.Element {
         <Animated.View entering={FadeInDown.delay(300).duration(600)}>
           <Typography
             style={{
-              fontFamily: "UnicaOne_400Regular",
+              fontFamily: "Sora_600SemiBold",
               fontSize: 64,
               color: TEXT_PRIMARY,
               lineHeight: 72,
@@ -52,7 +52,7 @@ export default function WelcomeScreen(): JSX.Element {
           </Typography>
           <Typography
             style={{
-              fontFamily: "CrimsonText_400Regular",
+              fontFamily: "IBMPlexSans_400Regular",
               fontSize: 20,
               color: TEXT_SECONDARY,
               lineHeight: 28,
@@ -88,7 +88,7 @@ export default function WelcomeScreen(): JSX.Element {
             router.push("/(auth)/register");
           }}
         >
-          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
+          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
             Get Started
           </Typography>
         </PressableFeedback>
@@ -111,7 +111,7 @@ export default function WelcomeScreen(): JSX.Element {
           }}
         >
           <Typography
-            style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+            style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
           >
             Log in to existing account
           </Typography>

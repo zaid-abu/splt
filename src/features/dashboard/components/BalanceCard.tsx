@@ -1,5 +1,5 @@
 /**
- * BalanceCard — Premium Edge-to-Edge Design
+ * BalanceCard
  */
 import type { JSX } from "react";
 import { View, Pressable } from "react-native";
@@ -8,11 +8,14 @@ import * as icons from "lucide-react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 import type { User } from "@/types";
 
-const BG = "transparent";
-const TEXT_PRIMARY = "#000000";
-const TEXT_MUTED = "#8A8782";
-const SEPARATOR = "#E8E4DF";
-const AMOUNT_OWE = "#000000";
+const BG = "#FEFDFA";
+const PANEL_OWE = "#FFF7F5";
+const PANEL_OWED = "#F5FCF8";
+const TEXT_PRIMARY = "#1A1A1A";
+const TEXT_MUTED = "#6E6D68";
+const TEXT_SUBTLE = "#9B9A94";
+const SEPARATOR = "#E7E5DE";
+const AMOUNT_OWE = "#E85D5D";
 const AMOUNT_OWED = "#4CAF82";
 
 function SectionLabel({ children }: { children: string }): JSX.Element {
@@ -20,11 +23,11 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
     <Typography
       style={{
         fontSize: 10,
-        letterSpacing: 1.2,
+        letterSpacing: 0.8,
         color: TEXT_MUTED,
-        fontFamily: "CrimsonText_700Bold",
+        fontFamily: "IBMPlexSans_600SemiBold",
         textTransform: "uppercase",
-        marginBottom: 8,
+        marginBottom: 6,
       }}
     >
       {children}
@@ -37,11 +40,10 @@ interface HalfCardProps {
   amount: number;
   currencyCode: string;
   amountColor: string;
+  panelColor: string;
   users: User[];
   onPress: () => void;
   accessibilityLabel: string;
-  showSettleButton?: boolean;
-  onSettlePress?: () => void;
 }
 
 function HalfCard({
@@ -49,11 +51,10 @@ function HalfCard({
   amount,
   currencyCode,
   amountColor,
+  panelColor,
   users,
   onPress,
   accessibilityLabel,
-  showSettleButton,
-  onSettlePress,
 }: HalfCardProps): JSX.Element {
   const scale = useSharedValue(1);
 
@@ -65,6 +66,13 @@ function HalfCard({
   let valStr = a.toFixed(2);
   if (a >= 1_000_000) valStr = `${(a / 1_000_000).toFixed(1)}M`;
   else if (a >= 10_000) valStr = `${(a / 1_000).toFixed(1)}K`;
+
+  const leadUser = users[0];
+  const userHint = leadUser
+    ? users.length > 1
+      ? `${leadUser.name.split(" ")[0]} +${users.length - 1}`
+      : leadUser.name.split(" ")[0]
+    : "No balances";
 
   return (
     <Pressable
@@ -81,10 +89,12 @@ function HalfCard({
         style={[
           {
             flex: 1,
-            paddingVertical: 12,
+            paddingVertical: 14,
             paddingHorizontal: 12,
-            backgroundColor: "transparent",
-            borderRadius: 16,
+            backgroundColor: panelColor,
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: SEPARATOR,
           },
           animatedStyle,
         ]}
@@ -92,14 +102,14 @@ function HalfCard({
         <SectionLabel>{label}</SectionLabel>
 
         {/* Amount + Currency */}
-        <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 16 }}>
+        <View style={{ flexDirection: "row", alignItems: "baseline", marginBottom: 12 }}>
           <Typography
             style={{
-              fontSize: 32,
+              fontSize: 26,
               color: amountColor,
-              fontFamily: "CrimsonText_700Bold",
-              lineHeight: 40,
-              letterSpacing: -1,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              lineHeight: 31,
+              letterSpacing: -0.6,
             }}
             numberOfLines={1}
             adjustsFontSizeToFit
@@ -108,49 +118,38 @@ function HalfCard({
           </Typography>
           <Typography
             style={{
-              fontSize: 14,
-              color: TEXT_MUTED,
-              fontFamily: "CrimsonText_600SemiBold",
-              marginLeft: 4,
+              fontSize: 13,
+              color: TEXT_SUBTLE,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginLeft: 3,
             }}
           >
             {currencyCode}
           </Typography>
         </View>
 
-        {/* Action row */}
         <View
           style={{
             flexDirection: "row",
             alignItems: "center",
-            justifyContent: "flex-end",
+            justifyContent: "space-between",
             minHeight: 28,
           }}
         >
-          {showSettleButton && users.length > 0 && amount > 0 ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={(e) => {
-                e.stopPropagation();
-                onSettlePress?.();
-              }}
-              style={({ pressed }) => ({
-                backgroundColor: SEPARATOR,
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 0,
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <Typography
-                style={{ fontSize: 12, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-              >
-                Settle
-              </Typography>
-            </Pressable>
-          ) : (
-            <icons.ArrowUpRight size={18} color={amountColor} strokeWidth={2.5} />
-          )}
+          <Typography
+            numberOfLines={1}
+            style={{
+              flex: 1,
+              marginRight: 8,
+              fontSize: 12,
+              color: TEXT_MUTED,
+              fontFamily: "IBMPlexSans_500Medium",
+              lineHeight: 16,
+            }}
+          >
+            {userHint}
+          </Typography>
+          <icons.ArrowUpRight size={16} color={amountColor} strokeWidth={2.25} />
         </View>
       </Animated.View>
     </Pressable>
@@ -166,6 +165,7 @@ export interface BalanceCardProps {
   onOwePress: () => void;
   onOwedPress: () => void;
   onSettlePress?: () => void;
+  onViewBalancesPress?: () => void;
 }
 
 export function BalanceCard({
@@ -177,51 +177,89 @@ export function BalanceCard({
   onOwePress,
   onOwedPress,
   onSettlePress,
+  onViewBalancesPress,
 }: BalanceCardProps): JSX.Element {
   const isAllSettled = youOwe === 0 && owedToYou === 0;
   const netBalance = owedToYou - youOwe;
+  const netBalanceLabel =
+    netBalance > 0 ? "Net owed to you" : netBalance < 0 ? "Net you owe" : "Net balance";
+  const netBalanceColor = netBalance < 0 ? AMOUNT_OWE : netBalance > 0 ? AMOUNT_OWED : TEXT_MUTED;
+  const netBalanceAmount = Math.abs(netBalance).toFixed(2);
 
   if (isAllSettled) {
     return (
       <View
         style={{
-          backgroundColor: "transparent",
-          paddingVertical: 32,
-          paddingHorizontal: 16,
+          backgroundColor: BG,
+          paddingVertical: 28,
+          paddingHorizontal: 18,
           alignItems: "center",
           justifyContent: "center",
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: SEPARATOR,
         }}
       >
         <View
           style={{
             width: 64,
             height: 64,
-            borderRadius: 0,
+            borderRadius: 14,
             borderWidth: 1,
             borderColor: SEPARATOR,
-            backgroundColor: "transparent",
+            backgroundColor: PANEL_OWED,
             alignItems: "center",
             justifyContent: "center",
-            marginBottom: 16,
+            marginBottom: 14,
           }}
         >
           <icons.Check size={32} color={AMOUNT_OWED} strokeWidth={2.5} />
         </View>
         <Typography
           style={{
-            fontSize: 24,
+            fontSize: 22,
+            lineHeight: 28,
             color: TEXT_PRIMARY,
-            fontFamily: "CrimsonText_700Bold",
-            marginBottom: 8,
+            fontFamily: "IBMPlexSans_600SemiBold",
+            marginBottom: 6,
+            textAlign: "center",
           }}
         >
-          All settled up!
+          All settled up
         </Typography>
         <Typography
-          style={{ fontSize: 15, color: TEXT_MUTED, fontFamily: "CrimsonText_600SemiBold" }}
+          style={{
+            fontSize: 15,
+            lineHeight: 21,
+            color: TEXT_MUTED,
+            fontFamily: "IBMPlexSans_500Medium",
+            textAlign: "center",
+          }}
         >
           You don&apos;t owe anyone, and no one owes you.
         </Typography>
+        <Pressable
+          accessibilityRole="button"
+          onPress={onViewBalancesPress}
+          style={({ pressed }) => ({
+            marginTop: 16,
+            paddingHorizontal: 18,
+            minHeight: 44,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: SEPARATOR,
+            backgroundColor: "#FFFFFF",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: pressed ? 0.75 : 1,
+          })}
+        >
+          <Typography
+            style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+          >
+            View balances
+          </Typography>
+        </Pressable>
       </View>
     );
   }
@@ -230,40 +268,115 @@ export function BalanceCard({
     <View
       style={{
         backgroundColor: BG,
-        paddingVertical: 16,
-        flexDirection: "row",
-        alignItems: "stretch",
-        position: "relative",
+        padding: 14,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: SEPARATOR,
       }}
     >
-      <HalfCard
-        label="YOU OWE"
-        amount={youOwe}
-        currencyCode={currencyCode}
-        amountColor={AMOUNT_OWE}
-        users={oweUsers}
-        onPress={onOwePress}
-        accessibilityLabel={`You owe ${youOwe} ${currencyCode}`}
-        showSettleButton={true}
-        onSettlePress={onSettlePress}
-      />
-
-      {/* Divider */}
       <View
-        style={{ width: 1, backgroundColor: SEPARATOR, marginVertical: 12, marginHorizontal: 4 }}
-      />
+        style={{
+          flexDirection: "row",
+          alignItems: "baseline",
+          justifyContent: "space-between",
+          borderBottomWidth: 1,
+          borderBottomColor: SEPARATOR,
+          paddingBottom: 12,
+          marginBottom: 12,
+        }}
+      >
+        <Typography
+          style={{
+            fontSize: 11,
+            letterSpacing: 0.8,
+            color: TEXT_MUTED,
+            fontFamily: "IBMPlexSans_600SemiBold",
+            textTransform: "uppercase",
+          }}
+        >
+          {netBalanceLabel}
+        </Typography>
+        <Typography
+          style={{
+            fontSize: 18,
+            color: netBalanceColor,
+            fontFamily: "IBMPlexSans_600SemiBold",
+            lineHeight: 24,
+          }}
+        >
+          {netBalanceAmount} {currencyCode}
+        </Typography>
+      </View>
 
-      <HalfCard
-        label="YOU ARE OWED"
-        amount={owedToYou}
-        currencyCode={currencyCode}
-        amountColor={AMOUNT_OWED}
-        users={owedUsers}
-        onPress={onOwedPress}
-        accessibilityLabel={`You are owed ${owedToYou} ${currencyCode}`}
-      />
+      <View style={{ flexDirection: "row", alignItems: "stretch", gap: 10 }}>
+        <HalfCard
+          label="YOU OWE"
+          amount={youOwe}
+          currencyCode={currencyCode}
+          amountColor={AMOUNT_OWE}
+          panelColor={PANEL_OWE}
+          users={oweUsers}
+          onPress={onOwePress}
+          accessibilityLabel={`You owe ${youOwe} ${currencyCode}`}
+        />
 
-      {/* Net Balance Pill */}
+        <HalfCard
+          label="YOU ARE OWED"
+          amount={owedToYou}
+          currencyCode={currencyCode}
+          amountColor={AMOUNT_OWED}
+          panelColor={PANEL_OWED}
+          users={owedUsers}
+          onPress={onOwedPress}
+          accessibilityLabel={`You are owed ${owedToYou} ${currencyCode}`}
+        />
+      </View>
+
+      <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
+        {youOwe > 0 && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onSettlePress}
+            style={({ pressed }) => ({
+              flex: 1,
+              minHeight: 44,
+              borderRadius: 999,
+              backgroundColor: TEXT_PRIMARY,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <Typography
+              style={{ fontSize: 14, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+            >
+              Settle up
+            </Typography>
+          </Pressable>
+        )}
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={onViewBalancesPress}
+          style={({ pressed }) => ({
+            flex: 1,
+            minHeight: 44,
+            borderRadius: 999,
+            borderWidth: 1,
+            borderColor: SEPARATOR,
+            backgroundColor: "#FFFFFF",
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: pressed ? 0.75 : 1,
+          })}
+        >
+          <Typography
+            style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+          >
+            View balances
+          </Typography>
+        </Pressable>
+      </View>
     </View>
   );
 }

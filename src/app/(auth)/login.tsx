@@ -116,7 +116,7 @@ export default function LoginScreen(): JSX.Element {
             >
               <Typography
                 style={{
-                  fontFamily: "UnicaOne_400Regular",
+                  fontFamily: "Sora_600SemiBold",
                   fontSize: 56,
                   color: TEXT_PRIMARY,
                   lineHeight: 64,
@@ -128,7 +128,7 @@ export default function LoginScreen(): JSX.Element {
               </Typography>
               <Typography
                 style={{
-                  fontFamily: "CrimsonText_400Regular",
+                  fontFamily: "IBMPlexSans_400Regular",
                   fontSize: 20,
                   color: TEXT_SECONDARY,
                   lineHeight: 28,
@@ -172,7 +172,7 @@ export default function LoginScreen(): JSX.Element {
                       style={{
                         fontSize: 13,
                         color: TEXT_PRIMARY,
-                        fontFamily: "CrimsonText_700Bold",
+                        fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
                       Forgot Password?
@@ -228,7 +228,7 @@ export default function LoginScreen(): JSX.Element {
                 >
                   {isPending && <ActivityIndicator color="#FFFFFF" />}
                   <Typography
-                    style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}
+                    style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     {isPending ? "Signing in…" : "Sign In"}
                   </Typography>
@@ -245,7 +245,7 @@ export default function LoginScreen(): JSX.Element {
                   style={{
                     fontSize: 12,
                     color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     letterSpacing: 1.2,
                     textTransform: "uppercase",
                   }}
@@ -277,7 +277,7 @@ export default function LoginScreen(): JSX.Element {
                 >
                   <icons.Globe size={20} color={TEXT_PRIMARY} />
                   <Typography
-                    style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                    style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     Google
                   </Typography>
@@ -300,7 +300,7 @@ export default function LoginScreen(): JSX.Element {
                 >
                   <icons.Apple size={20} color={TEXT_PRIMARY} />
                   <Typography
-                    style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                    style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     Apple
                   </Typography>
@@ -324,7 +324,7 @@ export default function LoginScreen(): JSX.Element {
             }}
           >
             <Typography
-              style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
+              style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "IBMPlexSans_500Medium" }}
             >
               Don&apos;t have an account?
             </Typography>
@@ -337,7 +337,7 @@ export default function LoginScreen(): JSX.Element {
               hitSlop={8}
             >
               <Typography
-                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 Create one
               </Typography>

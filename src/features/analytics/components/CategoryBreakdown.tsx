@@ -14,16 +14,23 @@ interface Props {
 
 // Fixed earthy color palette for categories
 const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
-  food: "#1A1817", // Black/Dark Gray
-  transport: "#8C7A6B", // Primary Sepia
-  accommodation: "#6D5C50", // Darker Sepia
-  entertainment: "#A39B93", // Grayish Sepia
-  shopping: "#B8ACA1", // Light Sepia
-  utilities: "#D0C8C0", // Very Light Sepia
-  health: "#3A312B", // Very Dark Sepia
-  travel: "#4A423C", // Charcoal
-  other: "#E5DFD9", // Border color (Off-white)
+  food: "#D97706",
+  transport: "#2563EB",
+  accommodation: "#DB2777",
+  entertainment: "#7C3AED",
+  shopping: "#DC2626",
+  utilities: "#059669",
+  health: "#0891B2",
+  travel: "#4F46E5",
+  other: "#6B7280",
 };
+
+const SURFACE = "#FFFCF8";
+const CONTROL_SURFACE = "#FFFFFF";
+const BG = "#F5F0EB";
+const TEXT_PRIMARY = "#000000";
+const TEXT_SECONDARY = "#8A8782";
+const SEPARATOR = "#E8E4DF";
 
 export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<ExpenseCategory | null>(null);
@@ -32,15 +39,19 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
     return (
       <View
         style={{
-          paddingVertical: 24,
+          paddingVertical: 32,
+          paddingHorizontal: 16,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: "transparent",
+          backgroundColor: SURFACE,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: SEPARATOR,
         }}
       >
-        <icons.PieChart size={32} color="#A39B93" strokeWidth={1.5} />
+        <icons.PieChart size={38} color={TEXT_SECONDARY} strokeWidth={1.25} />
         <Typography
-          style={{ marginTop: 12, color: "#A39B93", fontFamily: "CrimsonText_600SemiBold" }}
+          style={{ marginTop: 12, color: TEXT_SECONDARY, fontFamily: "IBMPlexSans_500Medium" }}
         >
           No category data
         </Typography>
@@ -62,13 +73,23 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
   });
 
   return (
-    <View style={{ backgroundColor: "transparent", paddingVertical: 16 }}>
+    <View
+      style={{
+        backgroundColor: SURFACE,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: SEPARATOR,
+        padding: 16,
+      }}
+    >
       <Typography
         style={{
-          fontSize: 18,
-          fontFamily: "CrimsonText_700Bold",
-          color: "#1A1817",
-          marginBottom: 24,
+          fontSize: 11,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          color: TEXT_PRIMARY,
+          letterSpacing: 1.1,
+          textTransform: "uppercase",
+          marginBottom: 20,
         }}
       >
         Categories
@@ -80,7 +101,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
           donut
           innerRadius={75}
           radius={120}
-          innerCircleColor="#F5F0EB"
+          innerCircleColor={SURFACE}
           focusOnPress
           onPress={(item: any) => {
             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -102,8 +123,8 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
                 <Typography
                   style={{
                     fontSize: 10,
-                    color: "#A39B93",
-                    fontFamily: "CrimsonText_600SemiBold",
+                    color: TEXT_SECONDARY,
+                    fontFamily: "IBMPlexSans_500Medium",
                     textTransform: "uppercase",
                     letterSpacing: 0.5,
                     textAlign: "center",
@@ -117,8 +138,8 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
                 <Typography
                   style={{
                     fontSize: 18,
-                    color: "#1A1817",
-                    fontFamily: "CrimsonText_700Bold",
+                    color: TEXT_PRIMARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     marginTop: 2,
                     textAlign: "center",
                     width: 120,
@@ -134,11 +155,12 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
         />
       </View>
 
-      <View style={{ marginTop: 32, gap: 16 }}>
+      <View style={{ marginTop: 32, gap: 18 }}>
         {data.map((item) => {
           const catInfo = EXPENSE_CATEGORIES.find((c) => c.key === item.category);
           const Icon = catInfo ? (icons as any)[catInfo.icon] : icons.Package;
           const color = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.other;
+          const percent = totalSpent > 0 ? Math.round((item.amount / totalSpent) * 100) : 0;
 
           const isSelected = selectedCategory === item.category;
           const isFaded = selectedCategory !== null && !isSelected;
@@ -151,53 +173,86 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
                 setSelectedCategory((prev) => (prev === item.category ? null : item.category));
               }}
               style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
                 opacity: isFaded ? 0.4 : 1,
               }}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                <View style={{ width: 12, height: 12, borderRadius: 6, backgroundColor: color }} />
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
                 <View
                   style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 16,
-                    backgroundColor: `${color}15`,
+                    width: 48,
+                    height: 48,
+                    borderRadius: 18,
+                    backgroundColor: CONTROL_SURFACE,
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
                     alignItems: "center",
                     justifyContent: "center",
+                    marginRight: 14,
                   }}
                 >
                   <Icon size={16} color={color} strokeWidth={2} />
                 </View>
-                <View>
-                  <Typography
+
+                <View style={{ flex: 1, marginRight: 12 }}>
+                  <View
                     style={{
-                      fontSize: 15,
-                      color: "#1A1817",
-                      fontFamily: "CrimsonText_600SemiBold",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 8,
                     }}
                   >
-                    {catInfo?.label || "Other"}
-                  </Typography>
-                  <Typography
+                    <View>
+                      <Typography
+                        style={{
+                          fontSize: 15,
+                          color: TEXT_PRIMARY,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
+                        {catInfo?.label || "Other"}
+                      </Typography>
+                      <Typography
+                        style={{
+                          fontSize: 12,
+                          color: TEXT_SECONDARY,
+                          fontFamily: "IBMPlexSans_500Medium",
+                          marginTop: 2,
+                        }}
+                      >
+                        {percent}% of spending
+                      </Typography>
+                    </View>
+                    <Typography
+                      style={{
+                        fontSize: 15,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
+                      {formatAmount(item.amount, currencyCode)}
+                    </Typography>
+                  </View>
+
+                  <View
                     style={{
-                      fontSize: 12,
-                      color: "#A39B93",
-                      fontFamily: "CrimsonText_600SemiBold",
-                      marginTop: 2,
+                      height: 6,
+                      borderRadius: 999,
+                      backgroundColor: BG,
+                      overflow: "hidden",
                     }}
                   >
-                    {Math.round((item.amount / totalSpent) * 100)}%
-                  </Typography>
+                    <View
+                      style={{
+                        width: `${Math.min(100, percent)}%`,
+                        height: "100%",
+                        borderRadius: 999,
+                        backgroundColor: color,
+                      }}
+                    />
+                  </View>
                 </View>
               </View>
-              <Typography
-                style={{ fontSize: 15, color: "#1A1817", fontFamily: "CrimsonText_700Bold" }}
-              >
-                {formatAmount(item.amount, currencyCode)}
-              </Typography>
             </Pressable>
           );
         })}

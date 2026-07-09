@@ -15,6 +15,7 @@ import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses, useDeleteExpense } from "@/features/expenses/queries/useExpenses";
 
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { useAuth } from "@/context/AppContext";
@@ -25,18 +26,6 @@ const BG = "#F5F0EB";
 const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
 const SEPARATOR = "#E8E4DF";
-
-const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
-  food: { bg: "#FEF3C7", icon: "#F59E0B" },
-  transport: { bg: "#DBEAFE", icon: "#3B82F6" },
-  accommodation: { bg: "#FCE7F3", icon: "#EC4899" },
-  entertainment: { bg: "#EDE9FE", icon: "#8B5CF6" },
-  shopping: { bg: "#FEE2E2", icon: "#EF4444" },
-  utilities: { bg: "#D1FAE5", icon: "#10B981" },
-  health: { bg: "#CFFAFE", icon: "#06B6D4" },
-  travel: { bg: "#E0E7FF", icon: "#6366F1" },
-  other: { bg: "#F1F5F9", icon: "#64748B" },
-};
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
@@ -86,7 +75,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
             fontSize: 24,
             color: TEXT_PRIMARY,
             marginTop: 16,
-            fontFamily: "CrimsonText_700Bold",
+            fontFamily: "IBMPlexSans_600SemiBold",
           }}
         >
           Expense not found
@@ -97,7 +86,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
             color: TEXT_SECONDARY,
             textAlign: "center",
             marginTop: 8,
-            fontFamily: "CrimsonText_600SemiBold",
+            fontFamily: "IBMPlexSans_500Medium",
           }}
         >
           This expense may have been deleted or is unavailable.
@@ -114,7 +103,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
             opacity: pressed ? 0.8 : 1,
           })}
         >
-          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
+          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
             Go back
           </Typography>
         </Pressable>
@@ -138,9 +127,6 @@ export default function ExpenseDetailScreen(): JSX.Element {
     day: "numeric",
     year: "numeric",
   });
-
-  const CategoryIcon = (icons as any)[category?.icon ?? "Package"] || icons.Package;
-  const categoryColor = CATEGORY_COLORS[expense.category ?? "other"] || CATEGORY_COLORS.other;
 
   return (
     <View style={{ flex: 1, backgroundColor: BG }}>
@@ -245,7 +231,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 style={{
                   fontSize: 14,
                   color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_700Bold",
+                  fontFamily: "IBMPlexSans_600SemiBold",
                   textTransform: "uppercase",
                   letterSpacing: 2,
                   marginBottom: 8,
@@ -257,25 +243,14 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 style={{
                   fontSize: 32,
                   color: TEXT_PRIMARY,
-                  fontFamily: "UnicaOne_400Regular",
+                  fontFamily: "Sora_600SemiBold",
                   lineHeight: 40,
                 }}
               >
                 {expense.title}
               </Typography>
             </View>
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 0,
-                backgroundColor: categoryColor.bg,
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <CategoryIcon size={32} color={categoryColor.icon} strokeWidth={1.5} />
-            </View>
+            <CategoryIconBadge category={expense.category} size="lg" />
           </View>
 
           <View style={{ marginBottom: 32 }}>
@@ -284,7 +259,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 fontSize: 72,
                 lineHeight: 80,
                 color: TEXT_PRIMARY,
-                fontFamily: "CrimsonText_700Bold",
+                fontFamily: "IBMPlexSans_600SemiBold",
                 letterSpacing: -2,
               }}
             >
@@ -304,13 +279,13 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 style={{
                   fontSize: 16,
                   color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_600SemiBold",
+                  fontFamily: "IBMPlexSans_500Medium",
                 }}
               >
                 Date
               </Typography>
               <Typography
-                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 {dateStr}
               </Typography>
@@ -327,7 +302,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 style={{
                   fontSize: 16,
                   color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_600SemiBold",
+                  fontFamily: "IBMPlexSans_500Medium",
                 }}
               >
                 Paid by
@@ -335,7 +310,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <AppUserAvatar user={expense.paidByUser} size="sm" />
                 <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   {paidByMe ? "You" : expense.paidByUser.name}
                 </Typography>
@@ -354,13 +329,13 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   style={{
                     fontSize: 16,
                     color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
+                    fontFamily: "IBMPlexSans_500Medium",
                   }}
                 >
                   Group
                 </Typography>
                 <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   {group.name}
                 </Typography>
@@ -380,7 +355,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   style={{
                     fontSize: 14,
                     color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
+                    fontFamily: "IBMPlexSans_500Medium",
                     lineHeight: 22,
                   }}
                 >
@@ -408,7 +383,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               style={{
                 fontSize: 12,
                 color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_700Bold",
+                fontFamily: "IBMPlexSans_600SemiBold",
                 textTransform: "uppercase",
                 letterSpacing: 2,
               }}
@@ -426,7 +401,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               }}
             >
               <Typography
-                style={{ fontSize: 11, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+                style={{ fontSize: 11, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 {expense.splitMethod === "equal" ? "EQUAL" : "CUSTOM"}
               </Typography>
@@ -467,7 +442,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                         style={{
                           fontSize: 18,
                           color: TEXT_PRIMARY,
-                          fontFamily: "CrimsonText_700Bold",
+                          fontFamily: "IBMPlexSans_600SemiBold",
                           marginBottom: 2,
                         }}
                       >
@@ -477,7 +452,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                         style={{
                           fontSize: 14,
                           color: TEXT_SECONDARY,
-                          fontFamily: "CrimsonText_600SemiBold",
+                          fontFamily: "IBMPlexSans_500Medium",
                         }}
                       >
                         {isPaid ? (isPayer ? "Paid the bill" : "Settled") : "Owes"}
@@ -487,7 +462,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                       style={{
                         fontSize: 20,
                         color: TEXT_PRIMARY,
-                        fontFamily: "CrimsonText_700Bold",
+                        fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
                       {formatAmt(split.amount)}
@@ -518,7 +493,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   fontSize: 14,
                   color: "#FFFFFF",
                   opacity: 0.7,
-                  fontFamily: "CrimsonText_700Bold",
+                  fontFamily: "IBMPlexSans_600SemiBold",
                   textTransform: "uppercase",
                   letterSpacing: 1.4,
                   marginBottom: 8,
@@ -530,7 +505,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 style={{
                   fontSize: 32,
                   color: "#FFFFFF",
-                  fontFamily: "CrimsonText_700Bold",
+                  fontFamily: "IBMPlexSans_600SemiBold",
                   marginBottom: 8,
                 }}
               >
@@ -541,7 +516,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   fontSize: 14,
                   color: "#FFFFFF",
                   opacity: 0.9,
-                  fontFamily: "CrimsonText_600SemiBold",
+                  fontFamily: "IBMPlexSans_500Medium",
                   lineHeight: 20,
                 }}
               >
@@ -572,7 +547,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   })}
                 >
                   <Typography
-                    style={{ fontSize: 15, color: "#8C7A6B", fontFamily: "CrimsonText_700Bold" }}
+                    style={{ fontSize: 15, color: "#8C7A6B", fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     Settle Your Share
                   </Typography>
@@ -598,7 +573,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 22,
-              fontFamily: "CrimsonText_700Bold",
+              fontFamily: "IBMPlexSans_600SemiBold",
               color: TEXT_PRIMARY,
               marginBottom: 8,
             }}
@@ -608,7 +583,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 16,
-              fontFamily: "CrimsonText_600SemiBold",
+              fontFamily: "IBMPlexSans_500Medium",
               color: TEXT_SECONDARY,
               marginBottom: 24,
             }}
@@ -630,7 +605,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               })}
             >
               <Typography
-                style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: TEXT_PRIMARY }}
+                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: TEXT_PRIMARY }}
               >
                 Cancel
               </Typography>
@@ -653,7 +628,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               })}
             >
               <Typography
-                style={{ fontSize: 16, fontFamily: "CrimsonText_700Bold", color: "#FFFFFF" }}
+                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: "#FFFFFF" }}
               >
                 Delete
               </Typography>

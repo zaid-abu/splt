@@ -68,7 +68,7 @@ export function SettingsItem({
             style={{
               fontSize: 16,
               color: isDanger ? TEXT_DANGER : TEXT_PRIMARY,
-              fontFamily: "CrimsonText_700Bold",
+              fontFamily: "IBMPlexSans_600SemiBold",
               letterSpacing: -0.3,
             }}
           >
@@ -79,7 +79,7 @@ export function SettingsItem({
               style={{
                 fontSize: 13,
                 color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_600SemiBold",
+                fontFamily: "IBMPlexSans_500Medium",
                 marginTop: 2,
               }}
             >

@@ -1,150 +1,211 @@
 /**
- * AppUserAvatar — HeroUI Avatar compound component.
+ * AppUserAvatar
  *
- * Uses Avatar + Avatar.Fallback (initials-based).
- * Avatar.Image is optional — omitted when no photo URL.
- *
- * @see https://heroui.com/docs/native/components/avatar.mdx
+ * Warm, softly framed avatars that match the stacked-list UI language.
+ * Supports remote images with initials fallback and semantic balance tinting.
  */
 import type { AvatarSize } from "heroui-native";
 import type { JSX } from "react";
-import { View } from "react-native";
-import { Avatar, Typography, useThemeColor } from "heroui-native";
+import { Image, View } from "react-native";
+import { Typography } from "heroui-native";
 
 import type { User } from "@/types";
-import { getStringColor, hexToPastel } from "@/utils/theme";
+
+const SHELL = "#FFFFFF";
+const BORDER = "#E8E4DF";
+const TEXT_SECONDARY = "#8A8782";
+const STACK_BORDER = "#F5F0EB";
+
+type AvatarTone = {
+  fill: string;
+  text: string;
+};
+
+const AVATAR_PALETTE: AvatarTone[] = [
+  { fill: "#F5E7DD", text: "#9A5F3E" },
+  { fill: "#EFE4D6", text: "#8C6B43" },
+  { fill: "#E8EEE6", text: "#5F7A5D" },
+  { fill: "#E3ECEB", text: "#4B7772" },
+  { fill: "#E6E8F1", text: "#5C648F" },
+  { fill: "#EFE3E8", text: "#926177" },
+  { fill: "#ECE4DE", text: "#7F6552" },
+  { fill: "#E6EBE2", text: "#6A7A58" },
+];
+
+const SIZE_MAP = {
+  sm: { size: 32, radius: 12, font: 12, inset: 2 },
+  md: { size: 48, radius: 18, font: 16, inset: 2 },
+  lg: { size: 64, radius: 22, font: 22, inset: 3 },
+} as const;
+
+function getSize(size: AvatarSize | undefined) {
+  return SIZE_MAP[(size as keyof typeof SIZE_MAP) || "md"] || SIZE_MAP.md;
+}
+
+function getPaletteIndex(seed: string): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  return Math.abs(hash) % AVATAR_PALETTE.length;
+}
+
+function getTone(user: User, balance?: number): AvatarTone {
+  if (balance !== undefined) {
+    if (balance > 0) {
+      return {
+        fill: "#E5F3EA",
+        text: "#3F7F61",
+      };
+    }
+
+    if (balance < 0) {
+      return {
+        fill: "#F8E6E3",
+        text: "#B25B52",
+      };
+    }
+
+    return {
+      fill: "#F0ECE7",
+      text: TEXT_SECONDARY,
+    };
+  }
+
+  return AVATAR_PALETTE[getPaletteIndex(user.id)];
+}
+
+function AvatarFallback({
+  initials,
+  fontSize,
+  textColor,
+}: {
+  initials: string;
+  fontSize: number;
+  textColor: string;
+}): JSX.Element {
+  return (
+    <Typography
+      style={{
+        color: textColor,
+        fontFamily: "IBMPlexSans_600SemiBold",
+        fontSize,
+        letterSpacing: -0.3,
+      }}
+    >
+      {initials}
+    </Typography>
+  );
+}
+
+export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps): JSX.Element {
+  const dims = getSize(size);
+  const tone = getTone(user, balance);
+  const contentRadius = Math.max(dims.radius - dims.inset, 10);
+
+  return (
+    <View
+      style={{
+        width: dims.size,
+        height: dims.size,
+        borderRadius: dims.radius,
+        backgroundColor: SHELL,
+        borderWidth: 1,
+        borderColor: BORDER,
+        padding: dims.inset,
+        overflow: "hidden",
+      }}
+    >
+      <View
+        style={{
+          flex: 1,
+          borderRadius: contentRadius,
+          backgroundColor: tone.fill,
+          alignItems: "center",
+          justifyContent: "center",
+          overflow: "hidden",
+        }}
+      >
+        {user.avatar ? (
+          <Image
+            source={{ uri: user.avatar }}
+            resizeMode="cover"
+            style={{
+              width: "100%",
+              height: "100%",
+              borderRadius: contentRadius,
+            }}
+          />
+        ) : (
+          <AvatarFallback initials={user.initials} fontSize={dims.font} textColor={tone.text} />
+        )}
+      </View>
+    </View>
+  );
+}
 
 interface AppUserAvatarProps {
   user: User;
   size?: AvatarSize;
-  /** When provided, overrides color with balance-based semantic color */
   balance?: number;
 }
 
-export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps): JSX.Element {
-  const successColor = useThemeColor("success" as any) as unknown as string;
-  const dangerColor = useThemeColor("danger" as any) as unknown as string;
-  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
-  const secondaryColor = useThemeColor("secondary" as any) as unknown as string;
-
-  let bg, textColor;
-  if (balance !== undefined) {
-    if (balance > 0) {
-      bg = hexToPastel(successColor, 0.85);
-      textColor = successColor;
-    } else if (balance < 0) {
-      bg = hexToPastel(dangerColor, 0.85);
-      textColor = dangerColor;
-    } else {
-      bg = secondaryColor;
-      textColor = mutedForeground;
-    }
-  } else {
-    textColor = getStringColor(user.id);
-    bg = hexToPastel(textColor, 0.85);
-  }
-
-  const sizeMap = {
-    sm: { size: 32, font: 12 },
-    md: { size: 40, font: 16 },
-    lg: { size: 48, font: 18 },
-  };
-
-  const dims = sizeMap[size as keyof typeof sizeMap] || sizeMap.md;
-
-  return (
-    <Avatar
-      size={size}
-      style={{
-        backgroundColor: bg,
-        width: dims.size,
-        height: dims.size,
-        borderRadius: 0,
-        borderWidth: 1,
-        borderColor: "#E8E4DF",
-      }}
-    >
-      <Avatar.Fallback>
-        <Typography
-          style={{
-            color: textColor,
-            fontFamily: "CrimsonText_700Bold",
-            fontSize: dims.font,
-            letterSpacing: -0.5,
-          }}
-        >
-          {user.initials}
-        </Typography>
-      </Avatar.Fallback>
-    </Avatar>
-  );
-}
-
-/**
- * Overlapping avatar stack with +N overflow pill.
- * Each avatar offset by -10px to create stack effect.
- * Uses standard views to guarantee perfect circle rendering and borders.
- */
 export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number }): JSX.Element {
   const visible = users.slice(0, max);
   const overflow = users.length - max;
-  const secondaryColor = useThemeColor("secondary" as any) as unknown as string;
-  const mutedForeground = useThemeColor("muted-foreground" as any) as unknown as string;
+  const dims = getSize("sm");
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
-      {visible.map((user, idx) => {
-        const textColor = getStringColor(user.id);
-        const bg = hexToPastel(textColor, 0.85);
-
-        return (
-          <Avatar
-            key={user.id}
-            size="sm"
-            style={{
-              backgroundColor: bg,
-              marginLeft: idx === 0 ? 0 : -8,
-              zIndex: visible.length - idx,
-              borderWidth: 2,
-              borderColor: "white",
-              borderRadius: 0,
-              width: 32,
-              height: 32,
-            }}
-          >
-            <Avatar.Fallback>
-              <Typography
-                style={{ color: textColor, fontFamily: "CrimsonText_700Bold", fontSize: 12 }}
-              >
-                {user.initials}
-              </Typography>
-            </Avatar.Fallback>
-          </Avatar>
-        );
-      })}
-      {overflow > 0 && (
-        <Avatar
-          size="sm"
+      {visible.map((user, idx) => (
+        <View
+          key={user.id}
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 0,
-            backgroundColor: secondaryColor,
-            marginLeft: -8,
-            alignItems: "center",
-            justifyContent: "center",
+            marginLeft: idx === 0 ? 0 : -10,
+            zIndex: visible.length - idx,
+            borderRadius: dims.radius + 2,
             borderWidth: 2,
-            borderColor: "white",
+            borderColor: STACK_BORDER,
           }}
         >
-          <Avatar.Fallback>
+          <AppUserAvatar user={user} size="sm" />
+        </View>
+      ))}
+
+      {overflow > 0 && (
+        <View
+          style={{
+            width: dims.size,
+            height: dims.size,
+            marginLeft: -10,
+            borderRadius: dims.radius + 2,
+            borderWidth: 2,
+            borderColor: STACK_BORDER,
+            backgroundColor: SHELL,
+            padding: 2,
+          }}
+        >
+          <View
+            style={{
+              flex: 1,
+              borderRadius: dims.radius,
+              backgroundColor: "#F0ECE7",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             <Typography
-              style={{ color: mutedForeground, fontFamily: "CrimsonText_700Bold", fontSize: 11 }}
+              style={{
+                color: TEXT_SECONDARY,
+                fontFamily: "IBMPlexSans_600SemiBold",
+                fontSize: 11,
+              }}
             >
               +{overflow}
             </Typography>
-          </Avatar.Fallback>
-        </Avatar>
+          </View>
+        </View>
       )}
     </View>
   );

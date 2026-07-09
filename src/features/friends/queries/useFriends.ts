@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { FriendsService } from "../services/api";
 import { useGroups } from "@/features/groups/queries/useGroups";
-import type { User, Friendship } from "@/types";
+import type { User } from "@/types";
 import { useMemo } from "react";
 
 export const friendKeys = {
@@ -99,6 +99,19 @@ export function useRejectFriend() {
   return useMutation({
     mutationFn: ({ friendshipId }: { friendshipId: string }) =>
       FriendsService.rejectFriendship(friendshipId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: friendKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+    },
+  });
+}
+
+export function useRemoveFriend() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ friendshipId }: { friendshipId: string }) =>
+      FriendsService.removeFriendship(friendshipId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: friendKeys.all });
       queryClient.invalidateQueries({ queryKey: ["notifications"] });

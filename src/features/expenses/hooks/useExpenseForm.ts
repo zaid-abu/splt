@@ -17,6 +17,7 @@ interface UseExpenseFormProps {
   initialGroupId?: string;
   initialFriendId?: string;
   expenseId?: string;
+  expenseDetail?: Expense;
   preferredCurrency: Currency;
   setCurrency: (c: Currency) => void;
   addExpense: (data: any) => Promise<any>;
@@ -33,6 +34,7 @@ export function useExpenseForm({
   initialGroupId,
   initialFriendId,
   expenseId,
+  expenseDetail,
   preferredCurrency,
   setCurrency,
   addExpense,
@@ -42,17 +44,23 @@ export function useExpenseForm({
 }: UseExpenseFormProps) {
   const getExpense = (id: string) => expenses.find((e: any) => e.id === id);
   const getGroup = (id: string) => groups.find((g: any) => g.id === id);
+  const getExistingIncludedMap = (expense: Expense | undefined): Record<string, boolean> => {
+    if (!expense) return {};
+
+    return Object.fromEntries(expense.splits.map((split) => [split.userId, true]));
+  };
 
   const existingExpense = useMemo(
-    () => (expenseId ? getExpense(expenseId) : undefined),
-    [expenseId, getExpense]
+    () => expenseDetail || (expenseId ? getExpense(expenseId) : undefined),
+    [expenseId, getExpense, expenseDetail]
   );
 
   const initialGroup = existingExpense?.groupId || initialGroupId || "";
   const initialFriends = (() => {
     if (existingExpense && !existingExpense.groupId) {
-      const other = existingExpense.splits.find((s: any) => s.userId !== currentUser.id);
-      if (other) return [other.userId];
+      return existingExpense.splits
+        .map((s: any) => s.userId)
+        .filter((userId: string) => userId !== currentUser.id);
     }
     return initialFriendId ? [initialFriendId] : [];
   })();
@@ -82,9 +90,37 @@ export function useExpenseForm({
   }, [uniqueFriends, searchQuery]);
 
   const selectedGroup = selectedGroupId ? getGroup(selectedGroupId) : undefined;
+  const expenseSplitFriends = useMemo(() => {
+    if (!existingExpense || existingExpense.groupId) return [];
+
+    const splitUsers = existingExpense.splits
+      .map((split) => split.user)
+      .filter((user): user is User => !!user && user.id !== currentUser.id);
+
+    const seen = new Set<string>();
+    return splitUsers.filter((user) => {
+      if (seen.has(user.id)) return false;
+      seen.add(user.id);
+      return true;
+    });
+  }, [existingExpense, currentUser.id]);
+
   const selectedFriends = useMemo(() => {
-    return uniqueFriends.filter((f) => selectedFriendIds.includes(f.id));
-  }, [uniqueFriends, selectedFriendIds]);
+    const friendMap = new Map<string, User>();
+
+    uniqueFriends.forEach((friend) => {
+      friendMap.set(friend.id, friend);
+    });
+    expenseSplitFriends.forEach((friend) => {
+      if (!friendMap.has(friend.id)) {
+        friendMap.set(friend.id, friend);
+      }
+    });
+
+    return selectedFriendIds
+      .map((friendId) => friendMap.get(friendId))
+      .filter((friend): friend is User => !!friend);
+  }, [uniqueFriends, expenseSplitFriends, selectedFriendIds]);
 
   const participants = useMemo(() => {
     if (selectedGroup) {
@@ -101,10 +137,12 @@ export function useExpenseForm({
   useEffect(() => {
     if (selectedGroup) {
       setTimeout(() => setExpenseCurrency(selectedGroup.currency), 0);
+    } else if (existingExpense && !existingExpense.groupId) {
+      setTimeout(() => setExpenseCurrency(existingExpense.currency), 0);
     } else {
       setTimeout(() => setExpenseCurrency(preferredCurrency.code), 0);
     }
-  }, [selectedGroup, preferredCurrency.code]);
+  }, [selectedGroup, existingExpense, preferredCurrency.code]);
 
   const [title, setTitle] = useState(existingExpense?.title || "");
   const [amount, setAmount] = useState(existingExpense?.amount.toString() || "");
@@ -117,14 +155,9 @@ export function useExpenseForm({
   const [expenseDate, setExpenseDate] = useState<Date>(existingExpense?.date || new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const [included, setIncluded] = useState<Record<string, boolean>>(() => {
-    if (!existingExpense) return {};
-    const map: Record<string, boolean> = {};
-    existingExpense.splits.forEach((s: any) => {
-      map[s.userId] = true;
-    });
-    return map;
-  });
+  const [included, setIncluded] = useState<Record<string, boolean>>(() =>
+    getExistingIncludedMap(existingExpense)
+  );
 
   const [customAmounts, setCustomAmounts] = useState<Record<string, string>>(() => {
     if (existingExpense?.splitMethod !== "custom") return {};
@@ -145,8 +178,65 @@ export function useExpenseForm({
   });
 
   useEffect(() => {
-    setTimeout(() => setIncluded(Object.fromEntries(participants.map((u) => [u.id, true]))), 0);
-  }, [participants]);
+    if (!existingExpense) return;
+
+    const nextFriendIds = existingExpense.groupId
+      ? []
+      : existingExpense.splits
+          .map((s: any) => s.userId)
+          .filter((userId: string) => userId !== currentUser.id);
+
+    setSelectedGroupId(existingExpense.groupId || "");
+    setSelectedFriendIds(nextFriendIds);
+    setSelectionConfirmed(true);
+    setTitle(existingExpense.title || "");
+    setAmount(existingExpense.amount.toString() || "");
+    setCategory(existingExpense.category || "food");
+    setSplitMethod(existingExpense.splitMethod || "equal");
+    setPaidBy(existingExpense.paidBy || currentUser.id);
+    setExpenseDate(existingExpense.date || new Date());
+    setExpenseCurrency(existingExpense.currency || preferredCurrency.code);
+
+    setIncluded(getExistingIncludedMap(existingExpense));
+
+    if (existingExpense.splitMethod === "custom") {
+      const customMap: Record<string, string> = {};
+      existingExpense.splits.forEach((s: any) => {
+        customMap[s.userId] = s.amount.toString();
+      });
+      setCustomAmounts(customMap);
+      setCustomPercentages({});
+    } else if (existingExpense.splitMethod === "percentage") {
+      const percentageMap: Record<string, string> = {};
+      existingExpense.splits.forEach((s: any) => {
+        percentageMap[s.userId] = ((s.amount / existingExpense.amount) * 100).toString();
+      });
+      setCustomPercentages(percentageMap);
+      setCustomAmounts({});
+    } else {
+      setCustomAmounts({});
+      setCustomPercentages({});
+    }
+  }, [existingExpense, currentUser.id, preferredCurrency.code]);
+
+  useEffect(() => {
+    if (participants.length === 0) return;
+
+    setIncluded((prev) => {
+      const existingIncludedMap = getExistingIncludedMap(existingExpense);
+      const nextIncluded = Object.fromEntries(
+        participants.map((u) => [
+          u.id,
+          existingExpense ? !!existingIncludedMap[u.id] : prev[u.id] ?? true,
+        ])
+      );
+
+      const hasChanged = participants.some((u) => prev[u.id] !== nextIncluded[u.id]);
+      const sizeChanged = Object.keys(prev).length !== Object.keys(nextIncluded).length;
+
+      return hasChanged || sizeChanged ? nextIncluded : prev;
+    });
+  }, [participants, existingExpense]);
 
   const includedMembers = participants.filter((u) => included[u.id]);
   const parsedAmount = parseFloat(amount.replace(",", ".")) || 0;

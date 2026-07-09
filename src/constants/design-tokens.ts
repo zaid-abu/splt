@@ -5,8 +5,8 @@
 
 export const TYPOGRAPHY = {
   fontFamily: {
-    heading: "CrimsonText_700Bold",
-    body: "CrimsonText_400Regular",
+    heading: "Sora_600SemiBold",
+    body: "IBMPlexSans_400Regular",
   },
   fontSize: {
     xs: 12,

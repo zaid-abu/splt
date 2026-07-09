@@ -28,7 +28,7 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
           style={{
             fontSize: 24,
             color: "#000000",
-            fontFamily: "UnicaOne_400Regular",
+            fontFamily: "Sora_600SemiBold",
             marginBottom: 12,
           }}
         >
@@ -38,7 +38,7 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
           style={{
             fontSize: 16,
             color: "#8A8782",
-            fontFamily: "CrimsonText_600SemiBold",
+            fontFamily: "IBMPlexSans_500Medium",
             marginBottom: 24,
           }}
         >
@@ -53,7 +53,7 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
               backgroundColor: "#8C7A6B",
             }}
           >
-            <Text style={{ color: "#FFFFFF", fontSize: 16, fontFamily: "CrimsonText_700Bold" }}>
+            <Text style={{ color: "#FFFFFF", fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold" }}>
               Try Again
             </Text>
           </Pressable>

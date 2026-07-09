@@ -69,7 +69,7 @@ export default function NewGroupScreen(): JSX.Element {
   const [loading, setLoading] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
-  const snapPoints = useMemo(() => ["85%"], []);
+  const snapPoints = useMemo(() => ["90%"], []);
 
   const searchSheetRef = useRef<BottomSheetModal>(null);
 
@@ -195,7 +195,7 @@ export default function NewGroupScreen(): JSX.Element {
                 style={{
                   fontSize: 16,
                   color: TEXT_PRIMARY,
-                  fontFamily: "CrimsonText_700Bold",
+                  fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
                 Create new group
@@ -224,7 +224,7 @@ export default function NewGroupScreen(): JSX.Element {
                     color: TEXT_SECONDARY,
                     marginBottom: 8,
                     letterSpacing: 1.4,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     textTransform: "uppercase",
                   }}
                 >
@@ -254,7 +254,7 @@ export default function NewGroupScreen(): JSX.Element {
                       flex: 1,
                       fontSize: 20,
                       color: TEXT_PRIMARY,
-                      fontFamily: "CrimsonText_700Bold",
+                      fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                     placeholder="e.g. Day trip to Warsaw"
                     placeholderTextColor={TEXT_SECONDARY}
@@ -341,7 +341,7 @@ export default function NewGroupScreen(): JSX.Element {
                       fontSize: 11,
                       color: TEXT_SECONDARY,
                       letterSpacing: 1.4,
-                      fontFamily: "CrimsonText_700Bold",
+                      fontFamily: "IBMPlexSans_600SemiBold",
                       textTransform: "uppercase",
                     }}
                   >
@@ -356,7 +356,7 @@ export default function NewGroupScreen(): JSX.Element {
                       style={{
                         fontSize: 15,
                         color: TEXT_PRIMARY,
-                        fontFamily: "CrimsonText_700Bold",
+                        fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
                       + Add
@@ -391,7 +391,7 @@ export default function NewGroupScreen(): JSX.Element {
                     style={{
                       fontSize: 16,
                       color: TEXT_PRIMARY,
-                      fontFamily: "CrimsonText_700Bold",
+                      fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
                     You
@@ -420,7 +420,7 @@ export default function NewGroupScreen(): JSX.Element {
                         flex: 1,
                         fontSize: 16,
                         color: TEXT_PRIMARY,
-                        fontFamily: "CrimsonText_600SemiBold",
+                        fontFamily: "IBMPlexSans_500Medium",
                       }}
                     >
                       {user.name}
@@ -444,7 +444,7 @@ export default function NewGroupScreen(): JSX.Element {
                     color: TEXT_SECONDARY,
                     marginBottom: 16,
                     letterSpacing: 1.4,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     textTransform: "uppercase",
                   }}
                 >
@@ -488,7 +488,7 @@ export default function NewGroupScreen(): JSX.Element {
                   style={{
                     color: "#FFFFFF",
                     fontSize: 16,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
                   Create group
@@ -499,7 +499,7 @@ export default function NewGroupScreen(): JSX.Element {
                   fontSize: 13,
                   color: TEXT_SECONDARY,
                   textAlign: "center",
-                  fontFamily: "CrimsonText_600SemiBold",
+                  fontFamily: "IBMPlexSans_500Medium",
                 }}
               >
                 All participants will receive an invite

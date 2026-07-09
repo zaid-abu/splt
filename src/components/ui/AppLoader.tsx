@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   text: {
-    fontFamily: "UnicaOne_400Regular",
+    fontFamily: "Sora_600SemiBold",
     fontSize: 16,
     color: "#8C7A6B",
     letterSpacing: 4,

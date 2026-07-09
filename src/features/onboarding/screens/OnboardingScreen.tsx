@@ -88,7 +88,7 @@ export function OnboardingScreen() {
         </View>
         <PressableFeedback accessibilityRole="button" onPress={handleSkip} hitSlop={16}>
           <Typography
-            style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "CrimsonText_700Bold" }}
+            style={{ fontSize: 16, color: TEXT_SECONDARY, fontFamily: "IBMPlexSans_600SemiBold" }}
           >
             Skip
           </Typography>
@@ -147,7 +147,7 @@ export function OnboardingScreen() {
           }}
           onPress={handleNext}
         >
-          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}>
+          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
             {currentIndex === ONBOARDING_SLIDES.length - 1 ? "Get Started" : "Next"}
           </Typography>
         </PressableFeedback>

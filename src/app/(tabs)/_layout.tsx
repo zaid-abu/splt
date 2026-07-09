@@ -2,20 +2,18 @@
  * Tab Bar Layout — Phase 2 Redesign
  *
  * Reference spec:
- *  [🏠 Home] [📊 Stats] [⊕ Add] [👥 Friends] [👤 Profile]
- *                            •
+ *  [Dashboard] [Groups] [Friends] [Activity]
  *
  * - Solid white (#FFFFFF) background, no BlurView
  * - Thin stroke icons (1.5px), 22px, gray #8E8E93 when inactive
  * - Active: dark (#1A1A1A) icon + small filled dot below
  * - NO text labels
  * - NO floating pill — flush bottom bar with safe-area padding
- * - Center "Add" tab: PlusCircle outline icon (not elevated FAB)
  * - Subtle 1px top border: #E8E4DF
  */
-import { Tabs, useRouter, Redirect } from "expo-router";
+import { Tabs, Redirect } from "expo-router";
 import type { JSX } from "react";
-import { View, TouchableOpacity, Platform } from "react-native";
+import { View, Pressable, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -58,13 +56,18 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
   };
 
   return (
-    <TouchableOpacity
+    <Pressable
       accessibilityRole="tab"
       accessibilityLabel={label}
       accessibilityState={{ selected: isFocused }}
       onPress={handlePress}
-      activeOpacity={0.7}
-      style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 10 }}
+      style={({ pressed }) => ({
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        paddingVertical: 10,
+        opacity: pressed ? 0.72 : 1,
+      })}
     >
       <Animated.View style={iconAnimatedStyle}>
         <Icon
@@ -87,43 +90,13 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
           },
         ]}
       />
-    </TouchableOpacity>
-  );
-}
-
-// ─── AddTabItem ───────────────────────────────────────────────────────────────
-// Center "Add" is a PlusCircle outline — same weight as the other tabs.
-// It navigates directly to /expense/new rather than switching tab routes.
-function AddTabItem({ onPress }: { onPress: () => void }): JSX.Element {
-  const handlePress = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    onPress();
-  };
-
-  return (
-    <TouchableOpacity
-      accessibilityRole="button"
-      accessibilityLabel="Add expense"
-      onPress={handlePress}
-      activeOpacity={0.7}
-      style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingVertical: 10 }}
-    >
-      {/* A slightly larger PlusCircle to give it subtle visual emphasis */}
-      <icons.PlusCircle
-        size={ICON_SIZE + 2}
-        color={COLOR_INACTIVE}
-        strokeWidth={ICON_STROKE_INACTIVE}
-      />
-      {/* Invisible placeholder dot to keep layout aligned with other items */}
-      <View style={{ width: 4, height: 4, marginTop: 5, opacity: 0 }} />
-    </TouchableOpacity>
+    </Pressable>
   );
 }
 
 // ─── TabsLayout ───────────────────────────────────────────────────────────────
 export default function TabsLayout(): JSX.Element | null {
   const insets = useSafeAreaInsets();
-  const router = useRouter();
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) return <Redirect href="/(auth)/welcome" />;
@@ -140,7 +113,7 @@ export default function TabsLayout(): JSX.Element | null {
       }}
       tabBar={({ state, navigation }) => {
         // Map Expo Router tab indices to named routes
-        // Tab order: index(0) → stats(1) → add(skip) → friends(2) → profile(3)
+        // Tab order: index(0) → groups(1) → friends(2) → activity(3)
         const navigate = (routeName: string) => navigation.navigate(routeName);
 
         return (
@@ -167,48 +140,45 @@ export default function TabsLayout(): JSX.Element | null {
               shadowRadius: 8,
             }}
           >
-            {/* 1. Home */}
+            {/* 1. Dashboard */}
             <TabBarItem
               isFocused={state.index === 0}
-              icon={icons.Home}
-              label="Home"
+              icon={icons.LayoutDashboard}
+              label="Dashboard"
               onPress={() => navigate("index")}
             />
 
-            {/* 2. Stats */}
+            {/* 2. Groups */}
             <TabBarItem
               isFocused={state.index === 1}
-              icon={icons.BarChart2}
-              label="Stats"
-              onPress={() => navigate("stats")}
+              icon={icons.UsersRound}
+              label="Groups"
+              onPress={() => navigate("groups")}
             />
 
-            {/* 3. Add (navigates to expense creation — not a tab route) */}
-            <AddTabItem onPress={() => router.push("/expense/new")} />
-
-            {/* 4. Friends */}
+            {/* 3. Friends */}
             <TabBarItem
               isFocused={state.index === 2}
-              icon={icons.Users}
+              icon={icons.UserRoundCheck}
               label="Friends"
               onPress={() => navigate("friends")}
             />
 
-            {/* 5. Profile */}
+            {/* 4. Activity */}
             <TabBarItem
               isFocused={state.index === 3}
-              icon={icons.User}
-              label="Profile"
-              onPress={() => navigate("profile")}
+              icon={icons.ListChecks}
+              label="Activity"
+              onPress={() => navigate("activity")}
             />
           </View>
         );
       }}
     >
       <Tabs.Screen name="index" />
-      <Tabs.Screen name="stats" />
+      <Tabs.Screen name="groups" />
       <Tabs.Screen name="friends" />
-      <Tabs.Screen name="profile" />
+      <Tabs.Screen name="activity" />
     </Tabs>
   );
 }

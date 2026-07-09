@@ -1,9 +1,7 @@
 /**
- * Dashboard (Home) Screen — Edge-to-Edge Editorial
- *
- * PURE WHITE background, borderless layout, large typography, minimalist lines.
+ * Dashboard (Home) Screen
  */
-import type { JSX } from "react";
+import type { ComponentType, JSX } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { ScrollView, View, RefreshControl, Pressable } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -16,9 +14,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import Animated, { FadeInDown, LinearTransition, Easing } from "react-native-reanimated";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
-import { BalanceCard } from "@/features/dashboard/components/BalanceCard";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
+import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
+import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -36,14 +35,33 @@ function getGreeting() {
   return "Good evening";
 }
 
-// ─── Design tokens (Edge-to-Edge) ──
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782"; // Slightly warmer gray to match beige
-const TEXT_DANGER = "#000000"; // Elegant black instead of red
+function formatActivityDate(value: Date | string): string {
+  const date = new Date(value);
+  const now = new Date();
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const startOfDate = new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime();
+  const daysAgo = Math.round((startOfToday - startOfDate) / 86_400_000);
+
+  if (daysAgo === 0) return "Today";
+  if (daysAgo === 1) return "Yesterday";
+  if (daysAgo > 1 && daysAgo < 7) return `${daysAgo} days ago`;
+
+  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+}
+
+// ─── Design tokens ──
+const BG = "#F7F6F1";
+const SURFACE = "#FEFDFA";
+const SURFACE_SOFT = "#F4F3EE";
+const CONTROL_SURFACE = "#FFFFFF";
+const TEXT_PRIMARY = "#1A1A1A";
+const TEXT_SECONDARY = "#6E6D68";
+const TEXT_SUBTLE = "#9B9A94";
+const TEXT_DANGER = "#E85D5D";
 const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF"; // Slightly darker beige for subtle lines
-const SECTION_PAD = 24;
+const SEPARATOR = "#E7E5DE";
+const CARD_RADIUS = 16;
+const SECTION_PAD = 20;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function SectionLabel({
@@ -59,15 +77,16 @@ function SectionLabel({
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        marginBottom: 16,
+        marginBottom: 14,
       }}
     >
       <Typography
         style={{
-          fontSize: 20,
+          fontSize: 18,
+          lineHeight: 23,
           color: TEXT_PRIMARY,
-          fontFamily: "CrimsonText_700Bold",
-          letterSpacing: -0.5,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          letterSpacing: -0.2,
         }}
       >
         {children}
@@ -77,31 +96,168 @@ function SectionLabel({
   );
 }
 
-// Category icon mapping
-const CATEGORY_ICONS: Record<string, keyof typeof icons> = {
-  food: "Utensils",
-  transport: "Car",
-  accommodation: "Home",
-  entertainment: "Film",
-  shopping: "ShoppingBag",
-  utilities: "Zap",
-  health: "Pill",
-  travel: "Plane",
-  other: "Package",
-};
+function IconButton({
+  icon: Icon,
+  accessibilityLabel,
+  onPress,
+}: {
+  icon: ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+  accessibilityLabel: string;
+  onPress: () => void;
+}): JSX.Element {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibilityLabel}
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
+      style={({ pressed }) => ({
+        width: 44,
+        height: 44,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: CONTROL_SURFACE,
+        borderRadius: 999,
+        borderWidth: 1,
+        borderColor: SEPARATOR,
+        opacity: pressed ? 0.72 : 1,
+      })}
+    >
+      <Icon size={18} color={TEXT_PRIMARY} strokeWidth={1.75} />
+    </Pressable>
+  );
+}
 
-// Extremely subtle pastel colors to fit the stark white theme
-const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
-  food: { bg: "#FFFDF5", icon: "#000000" },
-  transport: { bg: "#F8FBFF", icon: "#000000" },
-  accommodation: { bg: "#FFF9FC", icon: "#000000" },
-  entertainment: { bg: "#FBFAFF", icon: "#000000" },
-  shopping: { bg: "#FFF9F9", icon: "#000000" },
-  utilities: { bg: "#F6FFFC", icon: "#000000" },
-  health: { bg: "#F5FEFF", icon: "#000000" },
-  travel: { bg: "#F9F9FF", icon: "#000000" },
-  other: { bg: "#F9F9F9", icon: "#000000" },
-};
+function QuickAction({
+  icon: Icon,
+  label,
+  detail,
+  onPress,
+  primary = false,
+}: {
+  icon: ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
+  label: string;
+  detail: string;
+  onPress: () => void;
+  primary?: boolean;
+}): JSX.Element {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        onPress();
+      }}
+      style={({ pressed }) => ({
+        flex: 1,
+        minHeight: 66,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: primary ? TEXT_PRIMARY : SEPARATOR,
+        backgroundColor: primary ? TEXT_PRIMARY : CONTROL_SURFACE,
+        opacity: pressed ? 0.78 : 1,
+        alignItems: "center",
+        justifyContent: "center",
+      })}
+    >
+      <View
+        style={{
+          width: 30,
+          height: 30,
+          borderRadius: 10,
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: primary ? "rgba(255,255,255,0.12)" : SURFACE_SOFT,
+          marginBottom: 7,
+        }}
+      >
+        <Icon size={17} color={primary ? "#FFFFFF" : TEXT_PRIMARY} strokeWidth={2} />
+      </View>
+      <Typography
+        numberOfLines={1}
+        style={{
+          fontSize: 13,
+          lineHeight: 17,
+          color: primary ? "#FFFFFF" : TEXT_PRIMARY,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          textAlign: "center",
+        }}
+      >
+        {label}
+      </Typography>
+      <Typography
+        numberOfLines={1}
+        style={{
+          marginTop: 1,
+          fontSize: 11,
+          lineHeight: 14,
+          color: primary ? "rgba(255,255,255,0.72)" : TEXT_SECONDARY,
+          fontFamily: "IBMPlexSans_500Medium",
+          textAlign: "center",
+        }}
+      >
+        {detail}
+      </Typography>
+    </Pressable>
+  );
+}
+
+function MoneySignal({
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: string;
+  tone: "danger" | "success" | "neutral";
+}): JSX.Element {
+  const toneColor =
+    tone === "danger" ? TEXT_DANGER : tone === "success" ? TEXT_SUCCESS : TEXT_SECONDARY;
+  return (
+    <View
+      style={{
+        flex: 1,
+        minWidth: 0,
+        padding: 12,
+        borderRadius: 12,
+        backgroundColor:
+          tone === "danger" ? "#FFF7F5" : tone === "success" ? "#F5FCF8" : CONTROL_SURFACE,
+        borderWidth: 1,
+        borderColor: SEPARATOR,
+      }}
+    >
+      <Typography
+        numberOfLines={1}
+        style={{
+          fontSize: 12,
+          lineHeight: 16,
+          color: TEXT_SECONDARY,
+          fontFamily: "IBMPlexSans_500Medium",
+        }}
+      >
+        {label}
+      </Typography>
+      <Typography
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        style={{
+          marginTop: 4,
+          fontSize: 18,
+          lineHeight: 23,
+          color: toneColor,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          letterSpacing: -0.2,
+        }}
+      >
+        {value}
+      </Typography>
+    </View>
+  );
+}
 
 // ─── TransactionRow ───────────────────────────────────────────────────────────
 interface TransactionRowProps {
@@ -121,15 +277,6 @@ function TransactionRow({
   isLast,
   onPress,
 }: TransactionRowProps): JSX.Element {
-  const cat = expense.category ?? "other";
-  const colors = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS.other;
-  const iconName = CATEGORY_ICONS[cat] ?? "Package";
-  const IconComp = (icons as any)[iconName] as React.ComponentType<{
-    size: number;
-    color: string;
-    strokeWidth: number;
-  }>;
-
   const iPaid = expense.paidBy === currentUserId;
   const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
 
@@ -154,59 +301,48 @@ function TransactionRow({
       style={({ pressed }) => ({
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 16,
-        borderBottomWidth: 1,
+        paddingVertical: 14,
+        minHeight: 64,
+        borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: SEPARATOR,
-        opacity: pressed ? 0.5 : 1,
+        opacity: pressed ? 0.62 : 1,
       })}
     >
-      <View
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 0,
-          backgroundColor: colors.bg,
-          borderWidth: 1,
-          borderColor: SEPARATOR,
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: 16,
-        }}
-      >
-        <IconComp size={20} color={colors.icon} strokeWidth={1.5} />
+      <View style={{ marginRight: 14 }}>
+        <CategoryIconBadge category={expense.category} size="md" />
       </View>
 
-      <View style={{ flex: 1, marginRight: 12 }}>
+      <View style={{ flex: 1, marginRight: 10 }}>
         <Typography
           numberOfLines={1}
           style={{
-            fontSize: 16,
+            fontSize: 15,
             color: TEXT_PRIMARY,
-            fontFamily: "CrimsonText_700Bold",
-            letterSpacing: -0.3,
+            fontFamily: "IBMPlexSans_600SemiBold",
+            letterSpacing: -0.2,
           }}
         >
           {expense.title}
         </Typography>
         <Typography
           style={{
-            fontSize: 13,
+            fontSize: 12,
             color: TEXT_SECONDARY,
-            fontFamily: "CrimsonText_600SemiBold",
-            marginTop: 2,
+            fontFamily: "IBMPlexSans_500Medium",
+            marginTop: 1,
           }}
         >
-          {paidByName} paid
+          {paidByName} paid - {formatActivityDate(expense.date ?? expense.createdAt)}
         </Typography>
       </View>
 
       <View style={{ alignItems: "flex-end" }}>
         <Typography
           style={{
-            fontSize: 16,
+            fontSize: 15,
             color: TEXT_PRIMARY,
-            fontFamily: "CrimsonText_700Bold",
-            letterSpacing: -0.3,
+            fontFamily: "IBMPlexSans_600SemiBold",
+            letterSpacing: -0.2,
           }}
         >
           {formatAmount(expense.amount, expense.currency)}
@@ -214,16 +350,23 @@ function TransactionRow({
         {!!subAmountText && (
           <Typography
             style={{
-              fontSize: 13,
+              fontSize: 12,
               color: subAmountColor,
-              fontFamily: "CrimsonText_600SemiBold",
-              marginTop: 2,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginTop: 1,
             }}
           >
             {subAmountText}
           </Typography>
         )}
       </View>
+
+      <icons.ChevronRight
+        size={14}
+        color={TEXT_SECONDARY}
+        strokeWidth={1.75}
+        style={{ marginLeft: 8 }}
+      />
     </Pressable>
   );
 }
@@ -237,25 +380,8 @@ interface GroupRowProps {
   onPress: () => void;
 }
 
-const GROUP_BG_PALETTE = [
-  "#FEF3C7", // Amber
-  "#DBEAFE", // Blue
-  "#FCE7F3", // Pink
-  "#EDE9FE", // Purple
-  "#D1FAE5", // Emerald
-  "#CFFAFE", // Cyan
-  "#FEE2E2", // Red
-  "#E0E7FF", // Indigo
-];
-
-function getGroupColor(id: string): string {
-  const idx = id.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % GROUP_BG_PALETTE.length;
-  return GROUP_BG_PALETTE[idx];
-}
-
 function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps): JSX.Element {
   const memberCount = group.members.length;
-  const iconBg = getGroupColor(group.id);
 
   let subAmountText = "";
   let subAmountColor = TEXT_SECONDARY;
@@ -277,56 +403,35 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
       style={({ pressed }) => ({
         flexDirection: "row",
         alignItems: "center",
-        paddingVertical: 16,
-        borderBottomWidth: 1,
+        paddingVertical: 14,
+        minHeight: 64,
+        borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: SEPARATOR,
-        opacity: pressed ? 0.5 : 1,
+        opacity: pressed ? 0.62 : 1,
       })}
     >
-      <View
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 0,
-          backgroundColor: iconBg,
-          borderWidth: 1,
-          borderColor: SEPARATOR,
-          alignItems: "center",
-          justifyContent: "center",
-          marginRight: 16,
-        }}
-      >
-        <Typography
-          style={{
-            fontSize: 20,
-            textAlign: "center",
-            color: TEXT_PRIMARY,
-          }}
-        >
-          {group.icon && group.icon.length <= 2
-            ? group.icon
-            : group.name.substring(0, 1).toUpperCase()}
-        </Typography>
+      <View style={{ marginRight: 14 }}>
+        <GroupIconBadge group={group} size="md" />
       </View>
 
-      <View style={{ flex: 1, marginRight: 12 }}>
+      <View style={{ flex: 1, marginRight: 10 }}>
         <Typography
           numberOfLines={1}
           style={{
-            fontSize: 16,
+            fontSize: 15,
             color: TEXT_PRIMARY,
-            fontFamily: "CrimsonText_700Bold",
-            letterSpacing: -0.3,
+            fontFamily: "IBMPlexSans_600SemiBold",
+            letterSpacing: -0.2,
           }}
         >
           {group.name}
         </Typography>
         <Typography
           style={{
-            fontSize: 14,
+            fontSize: 13,
             color: TEXT_SECONDARY,
-            fontFamily: "CrimsonText_600SemiBold",
-            marginTop: 4,
+            fontFamily: "IBMPlexSans_500Medium",
+            marginTop: 2,
           }}
         >
           {memberCount} participants
@@ -336,14 +441,21 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
       <View style={{ alignItems: "flex-end" }}>
         <Typography
           style={{
-            fontSize: 14,
+            fontSize: 13,
             color: subAmountColor,
-            fontFamily: "CrimsonText_700Bold",
+            fontFamily: "IBMPlexSans_600SemiBold",
           }}
         >
           {subAmountText}
         </Typography>
       </View>
+
+      <icons.ChevronRight
+        size={14}
+        color={TEXT_SECONDARY}
+        strokeWidth={1.75}
+        style={{ marginLeft: 8 }}
+      />
     </Pressable>
   );
 }
@@ -461,16 +573,53 @@ export default function DashboardScreen(): JSX.Element {
       for (const amount of balancesMap.values()) {
         netBalance += amount;
       }
-      return { group, netBalance };
+      const latestExpenseAt = expenses
+        .filter((expense) => expense.groupId === group.id)
+        .reduce((latest, expense) => {
+          const expenseTime = new Date(expense.createdAt).getTime();
+          return Math.max(latest, expenseTime);
+        }, new Date(group.createdAt).getTime());
+
+      return { group, netBalance, latestExpenseAt };
     });
 
-    // Sort by netBalance ascending (most owed first)
-    groupBalances.sort((a, b) => a.netBalance - b.netBalance);
+    groupBalances.sort((a, b) => {
+      const aHasBalance = Math.abs(a.netBalance) > 0.005;
+      const bHasBalance = Math.abs(b.netBalance) > 0.005;
+      if (aHasBalance !== bHasBalance) return aHasBalance ? -1 : 1;
+      if (a.latestExpenseAt !== b.latestExpenseAt) return b.latestExpenseAt - a.latestExpenseAt;
+      return Math.abs(b.netBalance) - Math.abs(a.netBalance);
+    });
 
     return groupBalances.slice(0, 4);
   }, [groups, currentUser.id, expenses, settlements, preferredCurrency, convertCurrency]);
 
   const firstName = useMemo(() => currentUser.name.split(" ")[0], [currentUser.name]);
+  const netBalance = owedToYou - youOwe;
+  const balanceTone = netBalance < 0 ? "danger" : netBalance > 0 ? "success" : "neutral";
+  const balanceTitle =
+    netBalance > 0
+      ? `${formatAmount(netBalance, preferredCurrency.code)} owed to you`
+      : netBalance < 0
+        ? `${formatAmount(netBalance, preferredCurrency.code)} left to settle`
+        : "You are settled up";
+  const owedBackLabel =
+    owedUsers.length > 1
+      ? `${owedUsers.length} people`
+      : owedUsers[0]?.name.split(" ")[0] || "Someone";
+  const waitingPersonLabel =
+    oweUsers.length > 1
+      ? `${oweUsers.length} people`
+      : oweUsers[0]?.name.split(" ")[0] || "Someone";
+  const balanceSubtitle =
+    netBalance > 0
+      ? `${owedBackLabel} can settle back when ready.`
+      : netBalance < 0
+        ? `${waitingPersonLabel} ${oweUsers.length > 1 ? "are" : "is"} waiting on you.`
+        : "Nothing urgent. Add expenses as they happen.";
+  const openGroupCount = activeGroups.filter(
+    ({ netBalance: amount }) => Math.abs(amount) > 0.005
+  ).length;
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -484,11 +633,10 @@ export default function DashboardScreen(): JSX.Element {
     <View style={{ flex: 1, backgroundColor: BG }}>
       <StatusBar style="dark" />
 
-      {/* ── A. Header ──────────────────────────────────────────────────────── */}
       <View
         style={{
           paddingTop: insets.top + 16,
-          paddingBottom: 8,
+          paddingBottom: 12,
           paddingHorizontal: SECTION_PAD,
           flexDirection: "row",
           alignItems: "center",
@@ -499,64 +647,59 @@ export default function DashboardScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 14,
+              lineHeight: 20,
               color: TEXT_SECONDARY,
-              fontFamily: "CrimsonText_600SemiBold",
-              marginBottom: 4,
+              fontFamily: "IBMPlexSans_500Medium",
+              includeFontPadding: false,
+              marginBottom: 6,
             }}
           >
             {getGreeting()},
           </Typography>
           <Typography
             style={{
-              fontFamily: "UnicaOne_400Regular",
-              fontSize: 36,
+              fontFamily: "Sora_600SemiBold",
+              fontSize: 30,
               color: TEXT_PRIMARY,
-              lineHeight: 44,
-              letterSpacing: -0.5,
+              lineHeight: 34,
+              letterSpacing: -0.3,
+              includeFontPadding: false,
             }}
             numberOfLines={1}
           >
-            {firstName}.
+            {firstName}
           </Typography>
         </View>
 
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.push("/notifications");
-          }}
-          style={({ pressed }) => ({
-            width: 44,
-            height: 44,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "transparent",
-            borderRadius: 0,
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            opacity: pressed ? 0.5 : 1,
-          })}
-        >
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginLeft: 12 }}>
           <View>
-            <icons.Bell size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+            <IconButton
+              icon={icons.Bell}
+              accessibilityLabel="View notifications"
+              onPress={() => router.push("/notifications")}
+            />
             {hasNotifications && (
               <View
                 style={{
                   position: "absolute",
-                  top: -2,
-                  right: -2,
+                  top: 8,
+                  right: 8,
                   backgroundColor: "#E85D5D",
                   width: 10,
                   height: 10,
                   borderRadius: 5,
                   borderWidth: 2,
-                  borderColor: BG,
+                  borderColor: CONTROL_SURFACE,
                 }}
               />
             )}
           </View>
-        </Pressable>
+          <IconButton
+            icon={icons.CircleUserRound}
+            accessibilityLabel="Open profile"
+            onPress={() => router.push("/profile")}
+          />
+        </View>
       </View>
 
       <ScrollView
@@ -567,46 +710,176 @@ export default function DashboardScreen(): JSX.Element {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={TEXT_PRIMARY} />
         }
       >
-        {/* ── B. Balance Overview ─────────────────────────────────────────── */}
-        <FocusAwareView
-          delay={0}
-          style={{
-            paddingHorizontal: SECTION_PAD,
-            marginBottom: 40,
-            borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
-            paddingBottom: 24,
-          }}
-        >
-          <BalanceCard
-            youOwe={youOwe}
-            owedToYou={owedToYou}
-            currencyCode={preferredCurrency.code}
-            oweUsers={oweUsers}
-            owedUsers={owedUsers}
-            onOwePress={() => router.push("/(tabs)/friends")}
-            onOwedPress={() => router.push("/(tabs)/friends")}
-            onSettlePress={() => oweUsers.length > 0 && router.push(`/settle/${oweUsers[0].id}`)}
-          />
+        <FocusAwareView delay={0} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 18 }}>
+          <View
+            style={{
+              backgroundColor: SURFACE,
+              borderRadius: CARD_RADIUS,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              padding: 16,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
+              <View
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 14,
+                  backgroundColor:
+                    balanceTone === "danger"
+                      ? "#FFF7F5"
+                      : balanceTone === "success"
+                        ? "#F5FCF8"
+                        : SURFACE_SOFT,
+                  borderWidth: 1,
+                  borderColor: SEPARATOR,
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                {balanceTone === "danger" ? (
+                  <icons.ArrowUpRight size={20} color={TEXT_DANGER} strokeWidth={2.25} />
+                ) : balanceTone === "success" ? (
+                  <icons.ArrowDownLeft size={20} color={TEXT_SUCCESS} strokeWidth={2.25} />
+                ) : (
+                  <icons.Check size={20} color={TEXT_SECONDARY} strokeWidth={2.25} />
+                )}
+              </View>
+              <View style={{ flex: 1 }}>
+                <Typography
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 16,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  Today&apos;s money state
+                </Typography>
+                <Typography
+                  style={{
+                    marginTop: 4,
+                    fontSize: 22,
+                    lineHeight: 28,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "Sora_600SemiBold",
+                    letterSpacing: -0.2,
+                  }}
+                >
+                  {balanceTitle}
+                </Typography>
+                <Typography
+                  style={{
+                    marginTop: 5,
+                    fontSize: 14,
+                    lineHeight: 20,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "IBMPlexSans_500Medium",
+                  }}
+                >
+                  {balanceSubtitle}
+                </Typography>
+              </View>
+            </View>
+
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
+              <MoneySignal
+                label="You owe"
+                value={formatAmount(youOwe, preferredCurrency.code)}
+                tone={youOwe > 0 ? "danger" : "neutral"}
+              />
+              <MoneySignal
+                label="Owed to you"
+                value={formatAmount(owedToYou, preferredCurrency.code)}
+                tone={owedToYou > 0 ? "success" : "neutral"}
+              />
+            </View>
+          </View>
         </FocusAwareView>
 
-        {/* ── C. Active Groups ────────────────────────────────────────────── */}
-        <FocusAwareView delay={50} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40 }}>
+        <FocusAwareView delay={35} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 24 }}>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <QuickAction
+              icon={icons.ReceiptText}
+              label="Expense"
+              detail="Add new"
+              onPress={() => router.push("/expense/new")}
+              primary
+            />
+            <QuickAction
+              icon={icons.HandCoins}
+              label="Settle"
+              detail={
+                youOwe > 0
+                  ? `${oweUsers.length || 1} balance${oweUsers.length === 1 ? "" : "s"}`
+                  : "Review balances"
+              }
+              onPress={() =>
+                oweUsers.length > 0
+                  ? router.push(`/settle/${oweUsers[0].id}`)
+                  : router.push("/(tabs)/friends")
+              }
+            />
+            <QuickAction
+              icon={icons.ListChecks}
+              label="Activity"
+              detail="Timeline"
+              onPress={() => router.push("/(tabs)/activity")}
+            />
+          </View>
+        </FocusAwareView>
+
+        <FocusAwareView delay={105} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 28 }}>
           <SectionLabel
             rightAction={
               <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-                <Pressable onPress={() => router.push("/(tabs)/groups")} hitSlop={8}>
+                <Typography
+                  style={{
+                    fontSize: 13,
+                    color: TEXT_SUBTLE,
+                    fontFamily: "IBMPlexSans_500Medium",
+                  }}
+                >
+                  {openGroupCount} open
+                </Typography>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.push("/(tabs)/groups")}
+                  hitSlop={8}
+                  style={({ pressed }) => ({
+                    minHeight: 44,
+                    justifyContent: "center",
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
                   <Typography
                     style={{
                       fontSize: 14,
-                      color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_700Bold",
+                      color: TEXT_PRIMARY,
+                      fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
                     View all
                   </Typography>
                 </Pressable>
-                <Pressable onPress={() => router.push("/group/new")} hitSlop={8}>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Create group"
+                  onPress={() => router.push("/group/new")}
+                  hitSlop={8}
+                  style={({ pressed }) => ({
+                    width: 44,
+                    height: 44,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    borderRadius: 999,
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
+                    backgroundColor: CONTROL_SURFACE,
+                    opacity: pressed ? 0.72 : 1,
+                  })}
+                >
                   <icons.Plus size={22} color={TEXT_PRIMARY} strokeWidth={2.5} />
                 </Pressable>
               </View>
@@ -615,9 +888,17 @@ export default function DashboardScreen(): JSX.Element {
             Groups
           </SectionLabel>
 
-          <View>
+          <View
+            style={{
+              backgroundColor: SURFACE,
+              borderRadius: CARD_RADIUS,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              paddingHorizontal: 14,
+            }}
+          >
             {isLoadingGroups ? (
-              <View style={{ paddingTop: 24 }}>
+              <View style={{ paddingTop: 20 }}>
                 <AppLoader />
               </View>
             ) : activeGroups.length > 0 ? (
@@ -641,62 +922,136 @@ export default function DashboardScreen(): JSX.Element {
                 ))}
               </>
             ) : (
-              <View style={{ paddingVertical: 24 }}>
+              <View style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}>
+                <icons.UsersRound
+                  size={38}
+                  color={TEXT_SECONDARY}
+                  strokeWidth={1.2}
+                  style={{ marginBottom: 12 }}
+                />
                 <Typography
-                  style={{ color: TEXT_SECONDARY, fontFamily: "CrimsonText_600SemiBold" }}
+                  style={{
+                    color: TEXT_PRIMARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontSize: 17,
+                    lineHeight: 22,
+                    marginBottom: 4,
+                  }}
                 >
-                  No groups yet. Tap + to create one.
+                  No groups yet
                 </Typography>
+                <Typography
+                  style={{
+                    color: TEXT_SECONDARY,
+                    fontFamily: "IBMPlexSans_500Medium",
+                    fontSize: 14,
+                    lineHeight: 20,
+                    marginBottom: 16,
+                    textAlign: "center",
+                  }}
+                >
+                  Start a shared space for expenses.
+                </Typography>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => router.push("/group/new")}
+                  style={({ pressed }) => ({
+                    paddingHorizontal: 16,
+                    minHeight: 44,
+                    backgroundColor: TEXT_PRIMARY,
+                    borderRadius: 999,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: pressed ? 0.8 : 1,
+                  })}
+                >
+                  <Typography
+                    style={{
+                      fontSize: 14,
+                      color: "#FFFFFF",
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
+                  >
+                    Create group
+                  </Typography>
+                </Pressable>
               </View>
             )}
           </View>
         </FocusAwareView>
 
-        <FocusAwareView delay={100} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 32 }}>
+        <FocusAwareView delay={100} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 24 }}>
           <SectionLabel
             rightAction={
-              <Pressable onPress={() => router.push("/(tabs)/activity")}>
-                <Typography
-                  style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "CrimsonText_700Bold" }}
-                >
-                  View all
-                </Typography>
-              </Pressable>
-            }
-          >
-            Activity
-          </SectionLabel>
-
-          <View style={{ flexDirection: "row", gap: 8, marginBottom: 20 }}>
-            {(["all", "paid", "owe"] as const).map((filter) => (
               <Pressable
-                key={filter}
-                onPress={() => setActivityFilter(filter)}
+                accessibilityRole="button"
+                onPress={() => router.push("/(tabs)/activity")}
+                hitSlop={8}
                 style={({ pressed }) => ({
-                  paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  borderRadius: 0,
-                  backgroundColor: activityFilter === filter ? "#8C7A6B" : "transparent",
-                  borderWidth: 1,
-                  borderColor: activityFilter === filter ? "#8C7A6B" : SEPARATOR,
+                  minHeight: 44,
+                  justifyContent: "center",
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <Typography
                   style={{
                     fontSize: 14,
-                    fontFamily: "CrimsonText_700Bold",
-                    color: activityFilter === filter ? "#FFFFFF" : TEXT_SECONDARY,
-                    textTransform: "capitalize",
+                    color: TEXT_PRIMARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
-                  {filter}
+                  View all
                 </Typography>
               </Pressable>
-            ))}
-          </View>
+            }
+          >
+            Recent activity
+          </SectionLabel>
 
-          <View style={{ backgroundColor: "transparent" }}>
+          <View
+            style={{
+              backgroundColor: SURFACE,
+              borderRadius: CARD_RADIUS,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              padding: 14,
+            }}
+          >
+            <View style={{ flexDirection: "row", gap: 8, marginBottom: 2 }}>
+              {(["all", "paid", "owe"] as const).map((filter) => {
+                const label = filter === "paid" ? "You paid" : filter === "owe" ? "You owe" : "All";
+                const isActive = activityFilter === filter;
+                return (
+                  <Pressable
+                    key={filter}
+                    onPress={() => setActivityFilter(filter)}
+                    style={({ pressed }) => ({
+                      paddingHorizontal: 14,
+                      minHeight: 36,
+                      borderRadius: 999,
+                      backgroundColor: isActive ? TEXT_PRIMARY : CONTROL_SURFACE,
+                      borderWidth: 1,
+                      borderColor: isActive ? TEXT_PRIMARY : SEPARATOR,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: 13,
+                        lineHeight: 16,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                        color: isActive ? "#FFFFFF" : TEXT_PRIMARY,
+                      }}
+                    >
+                      {label}
+                    </Typography>
+                  </Pressable>
+                );
+              })}
+            </View>
+
             {recentExpenses.length > 0 ? (
               recentExpenses.map((expense, idx) => {
                 const mySplit = expense.splits.find((s) => s.userId === currentUser.id);
@@ -724,36 +1079,45 @@ export default function DashboardScreen(): JSX.Element {
               <Animated.View
                 entering={FadeInDown.duration(400).easing(Easing.out(Easing.quad))}
                 layout={LinearTransition}
-                style={{ paddingVertical: 32, alignItems: "center", justifyContent: "center" }}
+                style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}
               >
                 <icons.PackageOpen
-                  size={48}
+                  size={42}
                   color={TEXT_SECONDARY}
                   strokeWidth={1}
-                  style={{ marginBottom: 16 }}
+                  style={{ marginBottom: 12 }}
                 />
                 <Typography
                   style={{
                     fontSize: 16,
                     color: TEXT_SECONDARY,
-                    fontFamily: "CrimsonText_600SemiBold",
+                    fontFamily: "IBMPlexSans_500Medium",
+                    lineHeight: 22,
+                    textAlign: "center",
                   }}
                 >
-                  No recent activity found.
+                  No activity yet.
                 </Typography>
                 <Pressable
+                  accessibilityRole="button"
                   onPress={() => router.push("/expense/new")}
                   style={({ pressed }) => ({
-                    marginTop: 16,
-                    paddingHorizontal: 24,
-                    paddingVertical: 12,
-                    backgroundColor: "#8C7A6B",
-                    borderRadius: 0,
+                    marginTop: 14,
+                    paddingHorizontal: 20,
+                    minHeight: 44,
+                    backgroundColor: TEXT_PRIMARY,
+                    borderRadius: 999,
+                    alignItems: "center",
+                    justifyContent: "center",
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
                   <Typography
-                    style={{ fontSize: 15, color: "#FFFFFF", fontFamily: "CrimsonText_700Bold" }}
+                    style={{
+                      fontSize: 15,
+                      color: "#FFFFFF",
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
                   >
                     Log your first expense
                   </Typography>

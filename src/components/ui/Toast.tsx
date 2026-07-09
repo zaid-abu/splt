@@ -55,7 +55,7 @@ export function CustomToast({ props, options }: { props: any; options: any }): J
         {!!options.label && (
           <Typography
             numberOfLines={1}
-            style={{ fontSize: 15, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+            style={{ fontSize: 15, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
           >
             {options.label}
           </Typography>
@@ -66,7 +66,7 @@ export function CustomToast({ props, options }: { props: any; options: any }): J
             style={{
               fontSize: 13,
               color: TEXT_SECONDARY,
-              fontFamily: "CrimsonText_600SemiBold",
+              fontFamily: "IBMPlexSans_500Medium",
               marginTop: 2,
             }}
           >

@@ -21,10 +21,14 @@ import type { Activity } from "@/types";
 
 // --- Design Tokens ---
 const BG = "#F5F0EB";
+const SURFACE = "#FFFCF8";
+const CONTROL = "#FFFFFF";
 const BRAND = "#8C7A6B";
 const BORDER = "#E8E4DF";
 const TEXT_PRIMARY = "#1A1A1A";
 const TEXT_SECONDARY = "#8A8782";
+const CARD_RADIUS = 18;
+const PILL_RADIUS = 999;
 
 type FilterType = "All" | "Expenses" | "Settlements" | "Groups" | "Friends";
 
@@ -164,22 +168,27 @@ export default function ActivityScreen(): JSX.Element {
             return (
               <Pressable
                 key={filter}
+                accessibilityRole="button"
                 onPress={() => {
                   Haptics.selectionAsync();
                   setActiveFilter(filter);
                 }}
-                style={{
+                style={({ pressed }) => ({
+                  height: 42,
                   paddingHorizontal: 16,
-                  paddingVertical: 8,
-                  backgroundColor: isActive ? "#8C7A6B" : "transparent",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: isActive ? TEXT_PRIMARY : CONTROL,
                   borderWidth: 1,
-                  borderColor: isActive ? "#8C7A6B" : BORDER,
-                }}
+                  borderColor: isActive ? TEXT_PRIMARY : BORDER,
+                  borderRadius: PILL_RADIUS,
+                  opacity: pressed ? 0.75 : 1,
+                })}
               >
                 <Typography
                   style={{
-                    fontSize: 13,
-                    fontFamily: "CrimsonText_700Bold",
+                    fontSize: 14,
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     color: isActive ? "#FFFFFF" : TEXT_PRIMARY,
                   }}
                 >
@@ -209,54 +218,58 @@ export default function ActivityScreen(): JSX.Element {
       >
         <Typography
           style={{
-            fontFamily: "CrimsonText_700Bold",
-            fontSize: 16,
-            color: TEXT_SECONDARY,
-            textTransform: "uppercase",
-            letterSpacing: 2,
+            fontFamily: "Sora_600SemiBold",
+            fontSize: 28,
+            color: TEXT_PRIMARY,
           }}
         >
           Timeline
         </Typography>
       </View>
 
-      <View
-        style={{
-          paddingHorizontal: 24,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: BORDER,
-        }}
-      >
-        <TextInput
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          placeholder="Search activity..."
-          placeholderTextColor={TEXT_SECONDARY}
-          autoCapitalize="none"
-          autoCorrect={false}
+      <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
+        <View
           style={{
-            fontSize: 32,
-            fontFamily: "UnicaOne_400Regular",
-            color: TEXT_PRIMARY,
-            padding: 0,
+            height: 52,
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 16,
+            borderRadius: PILL_RADIUS,
+            borderWidth: 1,
+            borderColor: BORDER,
+            backgroundColor: CONTROL,
+            gap: 12,
           }}
-        />
-        {searchQuery.length > 0 && (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => setSearchQuery("")}
-            hitSlop={8}
-            style={({ pressed }) => ({
-              position: "absolute",
-              right: 24,
-              top: 8,
-              opacity: pressed ? 0.5 : 1,
-            })}
-          >
-            <icons.X size={24} color={TEXT_PRIMARY} strokeWidth={1} />
-          </Pressable>
-        )}
+        >
+          <icons.Search size={20} color={TEXT_SECONDARY} strokeWidth={1.8} />
+          <TextInput
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            placeholder="Search activity..."
+            placeholderTextColor={TEXT_SECONDARY}
+            autoCapitalize="none"
+            autoCorrect={false}
+            style={{
+              flex: 1,
+              fontSize: 16,
+              fontFamily: "IBMPlexSans_500Medium",
+              color: TEXT_PRIMARY,
+              padding: 0,
+            }}
+          />
+          {searchQuery.length > 0 && (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => setSearchQuery("")}
+              hitSlop={8}
+              style={({ pressed }) => ({
+                opacity: pressed ? 0.5 : 1,
+              })}
+            >
+              <icons.XCircle size={18} color={TEXT_SECONDARY} strokeWidth={1.8} />
+            </Pressable>
+          )}
+        </View>
       </View>
 
       {renderFilterPills()}
@@ -271,7 +284,7 @@ export default function ActivityScreen(): JSX.Element {
       <View style={styles.emptyContainer}>
         <View style={styles.emptyBox}>
           <View style={styles.emptyIconBox}>
-            <icons.Activity size={32} color={TEXT_SECONDARY} />
+            <icons.Activity size={32} color={TEXT_SECONDARY} strokeWidth={1.5} />
           </View>
           <Typography style={styles.emptyTitle}>No activity found</Typography>
           <Typography style={styles.emptySubtitle}>
@@ -332,16 +345,14 @@ const styles = StyleSheet.create({
     backgroundColor: BG,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: BORDER,
     zIndex: 10,
   },
   headerText: {
-    fontSize: 13,
-    fontFamily: "CrimsonText_700Bold",
+    fontSize: 11,
+    fontFamily: "IBMPlexSans_600SemiBold",
     color: TEXT_SECONDARY,
     textTransform: "uppercase",
-    letterSpacing: 1.5,
+    letterSpacing: 1.4,
   },
   emptyContainer: {
     paddingHorizontal: 24,
@@ -349,7 +360,8 @@ const styles = StyleSheet.create({
   },
   emptyBox: {
     padding: 32,
-    backgroundColor: "transparent",
+    backgroundColor: SURFACE,
+    borderRadius: CARD_RADIUS,
     borderWidth: 1,
     borderColor: BORDER,
     alignItems: "center",
@@ -357,7 +369,8 @@ const styles = StyleSheet.create({
   emptyIconBox: {
     width: 64,
     height: 64,
-    backgroundColor: BG,
+    borderRadius: PILL_RADIUS,
+    backgroundColor: CONTROL,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
@@ -366,13 +379,13 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 18,
-    fontFamily: "CrimsonText_700Bold",
+    fontFamily: "IBMPlexSans_600SemiBold",
     color: TEXT_PRIMARY,
     marginBottom: 8,
   },
   emptySubtitle: {
     fontSize: 14,
-    fontFamily: "CrimsonText_600SemiBold",
+    fontFamily: "IBMPlexSans_500Medium",
     color: TEXT_SECONDARY,
     textAlign: "center",
     lineHeight: 20,

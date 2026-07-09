@@ -11,12 +11,12 @@ import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { SwipeableRow } from "@/components/layout/SwipeableRow";
 
-const BG = "#F5F0EB";
 const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
+const TEXT_DANGER = "#E85D5D";
 const TEXT_SUCCESS = "#4CAF82";
 const SEPARATOR = "#E8E4DF";
+const CARD_RADIUS = 18;
 
 interface ActivityItemProps {
   activity: Activity;
@@ -138,11 +138,10 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
             flexDirection: "row",
             alignItems: "center",
             paddingVertical: 16,
+            paddingHorizontal: 24,
             borderBottomWidth: isLast ? 0 : 1,
             borderBottomColor: SEPARATOR,
-            opacity: pressed ? 0.5 : 1,
-            backgroundColor: "transparent",
-            paddingHorizontal: 24, // Optional if global padding applies, but we usually pad inside
+            backgroundColor: pressed ? "#FBF7F2" : "transparent",
           })}
         >
           {/* Icon Box */}
@@ -150,7 +149,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
             style={{
               width: 48,
               height: 48,
-              borderRadius: 0,
+              borderRadius: CARD_RADIUS,
               backgroundColor: bgColors[involvement.type],
               alignItems: "center",
               justifyContent: "center",
@@ -165,7 +164,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
           <View style={{ flex: 1, marginRight: 12 }}>
             <Typography
               numberOfLines={1}
-              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
+              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
             >
               {activity.description}
             </Typography>
@@ -173,7 +172,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
               style={{
                 fontSize: 14,
                 color: TEXT_SECONDARY,
-                fontFamily: "CrimsonText_600SemiBold",
+                fontFamily: "IBMPlexSans_500Medium",
                 marginTop: 4,
               }}
             >
@@ -189,7 +188,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
                   style={{
                     fontSize: 16,
                     color: textColors[involvement.type],
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
                   {involvement.type === "positive" ? "+" : ""}
@@ -199,7 +198,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
                   style={{
                     fontSize: 14,
                     color: textColors[involvement.type],
-                    fontFamily: "CrimsonText_700Bold",
+                    fontFamily: "IBMPlexSans_600SemiBold",
                     marginTop: 4,
                   }}
                 >
@@ -211,7 +210,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
                 style={{
                   fontSize: 14,
                   color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_600SemiBold",
+                  fontFamily: "IBMPlexSans_500Medium",
                   marginTop: 4,
                 }}
               >

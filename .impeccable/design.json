@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-07-09T08:06:16Z",
+  "title": "Design System: Splt",
+  "extensions": {
+    "colorMeta": {
+      "ink": {
+        "role": "primary",
+        "displayName": "Charcoal Ink",
+        "canonical": "#1A1A1A",
+        "tonalRamp": ["#FFFFFF", "#F5F0EB", "#8A8782", "#3A3A3A", "#1A1A1A", "#000000"]
+      },
+      "canvas-warm": {
+        "role": "neutral",
+        "displayName": "Warm Canvas",
+        "canonical": "#F7F6F1",
+        "tonalRamp": ["#FFFCF8", "#FEFDFA", "#F7F6F1", "#F4F3EE", "#EDEBE4", "#E7E5DE"]
+      },
+      "debt-red": {
+        "role": "tertiary",
+        "displayName": "Debt Red",
+        "canonical": "#E85D5D",
+        "tonalRamp": ["#FFF7F5", "#FBE3E0", "#EFA9A1", "#E85D5D", "#C94A4A", "#8E3535"]
+      },
+      "credit-green": {
+        "role": "secondary",
+        "displayName": "Credit Green",
+        "canonical": "#4CAF82",
+        "tonalRamp": ["#F5FCF8", "#D9F1E5", "#98D0B1", "#4CAF82", "#348B62", "#246045"]
+      },
+      "group-lilac": {
+        "role": "accent",
+        "displayName": "Group Lilac",
+        "canonical": "#C4A8E0",
+        "tonalRamp": ["#F5F0FB", "#E8DCF5", "#D5C1EB", "#C4A8E0", "#A17BC6", "#795A98"]
+      },
+      "brand-taupe": {
+        "role": "accent",
+        "displayName": "Taupe Signal",
+        "canonical": "#8C7A6B",
+        "tonalRamp": ["#F2ECE6", "#DDCFC3", "#B7A493", "#8C7A6B", "#6B5B4E", "#473C34"]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Greetings, modal titles, and high-emphasis screen headings."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section-leading titles and empty-state headlines."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Buttons, row titles, and strong working UI labels."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Default readable UI text for forms, descriptions, and supporting copy."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Compact uppercase metadata and section tags."
+      }
+    },
+    "shadows": [
+      {
+        "name": "chrome-lift",
+        "value": "shadowColor: #000; shadowOffset: { width: 0, height: -1 }; shadowOpacity: 0.05; shadowRadius: 8; elevation: 8",
+        "purpose": "Bottom navigation chrome."
+      },
+      {
+        "name": "toast-lift",
+        "value": "shadowColor: #000; shadowOffset: { width: 0, height: 4 }; shadowOpacity: 0.1; shadowRadius: 8; elevation: 5",
+        "purpose": "Transient toast feedback."
+      }
+    ],
+    "motion": [
+      {
+        "name": "tab-spring",
+        "value": "withSpring(..., { damping: 16, stiffness: 140 })",
+        "purpose": "Focused tab icon and indicator response."
+      },
+      {
+        "name": "card-press-spring",
+        "value": "withSpring(0.97, { damping: 15, stiffness: 300 })",
+        "purpose": "Tactile press feedback on summary cards."
+      },
+      {
+        "name": "page-enter",
+        "value": "FadeInDown.duration(400).easing(Easing.out(Easing.quad))",
+        "purpose": "List and section entrances on content-heavy screens."
+      },
+      {
+        "name": "loader-spin",
+        "value": "withTiming(360, { duration: 2000, easing: Easing.bezier(0.4, 0, 0.2, 1) })",
+        "purpose": "Loading indicator rotation."
+      }
+    ],
+    "breakpoints": [],
+    "narrative": {
+      "northStar": "The Warm Ledger",
+      "overview": "Splt is a warm, calm, trustworthy expense-sharing product UI. It uses restrained color, strong readability, and familiar native mobile structure to make money coordination feel lighter and clearer.",
+      "elevationPhilosophy": "Flat by default, lifted only for chrome and overlay feedback.",
+      "componentPhilosophy": "Tactile, compact, and familiar rather than ornamental.",
+      "dos": [
+        "Keep semantic color tied to balances, status, and selection.",
+        "Use warm layered neutrals instead of cold white-gray app shells.",
+        "Favor native sheet, tab, list, and button patterns with light editorial polish."
+      ],
+      "donts": [
+        "Do not drift back into flashy fintech with aggressive growth-product cues.",
+        "Do not turn the product into a gamified social app competing for attention.",
+        "Do not make the interface feel like cold accounting software that is dense, corporate, or spreadsheet-led."
+      ]
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Primary action pill for settling, confirming, and advancing.",
+      "html": "<button class=\"ds-btn-primary\">Settle up</button>",
+      "css": ".ds-btn-primary { background: #1A1A1A; color: #FFFFFF; border: none; border-radius: 9999px; padding: 9px 18px; font: 600 16px 'IBM Plex Sans'; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Secondary pill action for alternate flows like viewing balances.",
+      "html": "<button class=\"ds-btn-secondary\">View balances</button>",
+      "css": ".ds-btn-secondary { background: #FFFFFF; color: #1A1A1A; border: 1px solid #E7E5DE; border-radius: 9999px; padding: 9px 18px; font: 600 16px 'IBM Plex Sans'; }"
+    },
+    {
+      "name": "Surface Card",
+      "kind": "card",
+      "refersTo": "card-surface",
+      "description": "Default summary surface used on dashboards, list modules, and grouped content.",
+      "html": "<div class=\"ds-card\">Summary content</div>",
+      "css": ".ds-card { background: #FEFDFA; color: #1A1A1A; border: 1px solid #E7E5DE; border-radius: 16px; padding: 14px 16px; }"
+    },
+    {
+      "name": "Pill Search Field",
+      "kind": "input",
+      "refersTo": "input-pill",
+      "description": "Search and selector input treatment inside sheets and pickers.",
+      "html": "<div class=\"ds-search\"><span>Search</span></div>",
+      "css": ".ds-search { background: #FFFFFF; color: #1A1A1A; border: 1px solid #E7E5DE; border-radius: 9999px; padding: 14px 16px; min-height: 52px; display: flex; align-items: center; }"
+    },
+    {
+      "name": "Custom Tab Bar",
+      "kind": "nav",
+      "description": "Safe-area-aware bottom tab bar with icon-only destinations and a minimal active dot.",
+      "html": "<nav class=\"ds-tabbar\"><span class=\"active\">Home</span><span>Stats</span><span>Add</span><span>Friends</span><span>Profile</span></nav>",
+      "css": ".ds-tabbar { background: #FFFFFF; border-top: 1px solid #E8E4DF; box-shadow: 0 -1px 8px rgba(0,0,0,0.05); color: #8E8E93; } .ds-tabbar .active { color: #1A1A1A; }"
+    }
+  ]
+}

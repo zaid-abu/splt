@@ -51,14 +51,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 56,
     color: TEXT_PRIMARY,
-    fontFamily: "UnicaOne_400Regular",
+    fontFamily: "Sora_600SemiBold",
     lineHeight: 64,
     marginBottom: 16,
   },
   description: {
     fontSize: 20,
     color: TEXT_SECONDARY,
-    fontFamily: "CrimsonText_400Regular",
+    fontFamily: "IBMPlexSans_400Regular",
     lineHeight: 28,
   },
 });

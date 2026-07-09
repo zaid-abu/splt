@@ -1,7 +1,3 @@
-/**
- * Profile Screen — Edge-to-Edge Editorial Design
- * PURE WHITE background, borderless layout, large typography, minimalist lines.
- */
 import { Switch, Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
@@ -26,11 +22,16 @@ import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { SettingsItem } from "@/features/profile/components/SettingsItem";
 
 const BG = "#F5F0EB";
+const SURFACE = "#FFFCF8";
+const CONTROL = "#FFFFFF";
 const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
 const TEXT_DANGER = "#000000";
 const TEXT_SUCCESS = "#4CAF82";
 const SEPARATOR = "#E8E4DF";
+const BRAND = "#8C7A6B";
+const CARD_RADIUS = 18;
+const PILL_RADIUS = 999;
 const SECTION_PAD = 24;
 
 function SectionLabel({ children }: { children: string }) {
@@ -39,10 +40,10 @@ function SectionLabel({ children }: { children: string }) {
       style={{
         fontSize: 11,
         color: TEXT_SECONDARY,
-        fontFamily: "CrimsonText_700Bold",
+        fontFamily: "IBMPlexSans_600SemiBold",
         letterSpacing: 1.4,
         textTransform: "uppercase",
-        marginBottom: 8,
+        marginBottom: 12,
       }}
     >
       {children}
@@ -104,14 +105,14 @@ export default function ProfileScreen(): JSX.Element {
       >
         <Typography
           style={{
-            fontFamily: "UnicaOne_400Regular",
+            fontFamily: "Sora_600SemiBold",
             fontSize: 36,
             color: TEXT_PRIMARY,
             lineHeight: 44,
             letterSpacing: -0.5,
           }}
         >
-          Profile.
+          Profile
         </Typography>
       </FocusAwareView>
 
@@ -120,119 +121,135 @@ export default function ProfileScreen(): JSX.Element {
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* User Stats Edge-to-Edge */}
+        {/* User Stats Card */}
         <FocusAwareView
           delay={100}
           style={{
             paddingHorizontal: SECTION_PAD,
             marginBottom: 40,
-            paddingBottom: 32,
-            borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
           }}
         >
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
-            <AppUserAvatar user={currentUser} size="lg" />
-            <View style={{ marginLeft: 16 }}>
-              <Typography
-                style={{
-                  fontSize: 24,
-                  color: TEXT_PRIMARY,
-                  fontFamily: "CrimsonText_700Bold",
-                  letterSpacing: -0.5,
-                }}
-              >
-                {currentUser.name}
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_600SemiBold",
-                }}
-              >
-                {currentUser.email}
-              </Typography>
+          <View
+            style={{
+              backgroundColor: SURFACE,
+              borderRadius: CARD_RADIUS,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              padding: 24,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
+              <AppUserAvatar user={currentUser} size="lg" />
+              <View style={{ marginLeft: 16, flex: 1 }}>
+                <Typography
+                  style={{
+                    fontSize: 24,
+                    color: TEXT_PRIMARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                    letterSpacing: -0.5,
+                  }}
+                  numberOfLines={1}
+                >
+                  {currentUser.name}
+                </Typography>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "IBMPlexSans_500Medium",
+                  }}
+                  numberOfLines={1}
+                >
+                  {currentUser.email}
+                </Typography>
+              </View>
             </View>
-          </View>
 
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <View style={{ flex: 1 }}>
-              <Typography
-                style={{
-                  fontSize: 12,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_700Bold",
-                  textTransform: "uppercase",
-                  letterSpacing: 1.2,
-                  marginBottom: 4,
-                }}
-              >
-                Groups
-              </Typography>
-              <Typography
-                style={{ fontSize: 24, color: TEXT_PRIMARY, fontFamily: "CrimsonText_700Bold" }}
-              >
-                {groups.length}
-              </Typography>
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <View style={{ flex: 1 }}>
+                <Typography
+                  style={{
+                    fontSize: 12,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                    textTransform: "uppercase",
+                    letterSpacing: 1.2,
+                    marginBottom: 4,
+                  }}
+                >
+                  Groups
+                </Typography>
+                <Typography
+                  style={{ fontSize: 24, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                >
+                  {groups.length}
+                </Typography>
+              </View>
+              <View
+                style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
+              />
+              <View style={{ flex: 1 }}>
+                <Typography
+                  style={{
+                    fontSize: 12,
+                    color: TEXT_SECONDARY,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                    textTransform: "uppercase",
+                    letterSpacing: 1.2,
+                    marginBottom: 4,
+                  }}
+                >
+                  Owed
+                </Typography>
+                <Typography
+                  style={{ fontSize: 24, color: TEXT_SUCCESS, fontFamily: "IBMPlexSans_600SemiBold" }}
+                >
+                  +{preferredCurrency.symbol}
+                  {owedToYou.toFixed(0)}
+                </Typography>
+              </View>
+              {youOwe > 0 && (
+                <>
+                  <View
+                    style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Typography
+                      style={{
+                        fontSize: 12,
+                        color: TEXT_SECONDARY,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                        textTransform: "uppercase",
+                        letterSpacing: 1.2,
+                        marginBottom: 4,
+                      }}
+                    >
+                      Owe
+                    </Typography>
+                    <Typography
+                      style={{ fontSize: 24, color: TEXT_DANGER, fontFamily: "IBMPlexSans_600SemiBold" }}
+                    >
+                      -{preferredCurrency.symbol}
+                      {youOwe.toFixed(0)}
+                    </Typography>
+                  </View>
+                </>
+              )}
             </View>
-            <View
-              style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
-            />
-            <View style={{ flex: 1 }}>
-              <Typography
-                style={{
-                  fontSize: 12,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "CrimsonText_700Bold",
-                  textTransform: "uppercase",
-                  letterSpacing: 1.2,
-                  marginBottom: 4,
-                }}
-              >
-                Owed
-              </Typography>
-              <Typography
-                style={{ fontSize: 24, color: TEXT_SUCCESS, fontFamily: "CrimsonText_700Bold" }}
-              >
-                +{preferredCurrency.symbol}
-                {owedToYou.toFixed(0)}
-              </Typography>
-            </View>
-            {youOwe > 0 && (
-              <>
-                <View
-                  style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
-                />
-                <View style={{ flex: 1 }}>
-                  <Typography
-                    style={{
-                      fontSize: 12,
-                      color: TEXT_SECONDARY,
-                      fontFamily: "CrimsonText_700Bold",
-                      textTransform: "uppercase",
-                      letterSpacing: 1.2,
-                      marginBottom: 4,
-                    }}
-                  >
-                    Owe
-                  </Typography>
-                  <Typography
-                    style={{ fontSize: 24, color: TEXT_DANGER, fontFamily: "CrimsonText_700Bold" }}
-                  >
-                    -{preferredCurrency.symbol}
-                    {youOwe.toFixed(0)}
-                  </Typography>
-                </View>
-              </>
-            )}
           </View>
         </FocusAwareView>
 
         {/* Preferences */}
         <FocusAwareView delay={200} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40 }}>
-          <SectionLabel>PREFERENCES</SectionLabel>
-          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
+          <SectionLabel>Preferences</SectionLabel>
+          <View
+            style={{
+              backgroundColor: SURFACE,
+              borderRadius: CARD_RADIUS,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+            }}
+          >
             <SettingsItem
               icon="Moon"
               title="Dark Mode"
@@ -245,30 +262,79 @@ export default function ProfileScreen(): JSX.Element {
               subtitle="Manage push notifications"
               rightElement={<Switch isSelected={notifs} onSelectedChange={setNotifs} />}
             />
-
-            {/* Custom Edge-to-Edge wrapper for Currency Selector to match the new look */}
-            <View
-              style={{ paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}
-            >
-              <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
+            <View style={{ paddingHorizontal: 16, paddingVertical: 8 }}>
+              <CurrencySelector
+                selectedCurrency={preferredCurrency}
+                onSelect={handleCurrencyChange}
+              />
             </View>
           </View>
         </FocusAwareView>
 
-        {/* Account */}
-        <FocusAwareView delay={300} style={{ paddingHorizontal: SECTION_PAD }}>
-          <SectionLabel>ACCOUNT</SectionLabel>
-          <View style={{ borderTopWidth: 1, borderTopColor: SEPARATOR }}>
-            <SettingsItem
-              icon="LogOut"
-              title="Sign Out"
-              subtitle="Log out of your account"
+        {/* Account Info */}
+        <FocusAwareView delay={300} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40 }}>
+          <SectionLabel>Account Info</SectionLabel>
+          <View
+            style={{
+              backgroundColor: SURFACE,
+              borderRadius: CARD_RADIUS,
+              borderWidth: 1,
+              borderColor: SEPARATOR,
+              padding: 24,
+            }}
+          >
+            <Typography
+              style={{
+                fontSize: 14,
+                color: TEXT_SECONDARY,
+                fontFamily: "IBMPlexSans_500Medium",
+                marginBottom: 24,
+                lineHeight: 20,
+              }}
+            >
+              Account created on {currentUser.createdAt.toLocaleDateString()}
+            </Typography>
+
+            <Pressable
+              accessibilityRole="button"
               onPress={() => signOut()}
-              isDanger
-              isLast
-            />
+              style={({ pressed }) => ({
+                height: 52,
+                borderRadius: PILL_RADIUS,
+                backgroundColor: CONTROL,
+                borderWidth: 1,
+                borderColor: SEPARATOR,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: TEXT_DANGER,
+                }}
+              >
+                Log Out
+              </Typography>
+            </Pressable>
           </View>
         </FocusAwareView>
+
+        <View style={{ alignItems: "center", marginBottom: 32 }}>
+          <Typography
+            style={{
+              fontSize: 13,
+              color: TEXT_SECONDARY,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              letterSpacing: 1,
+              opacity: 0.5,
+            }}
+          >
+            SPLT V1.0.0
+          </Typography>
+        </View>
       </ScrollView>
     </FocusAwareView>
   );
