@@ -12,6 +12,7 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
+import { UI, MetricCell } from "@/components/ui/native-ui";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -23,26 +24,13 @@ import { calculateTotalGroupExpenses } from "@/features/groups/utils/calculation
 import { BalanceCard } from "@/features/dashboard/components/BalanceCard";
 import type { Expense, User } from "@/types";
 
-// ─── Design Tokens ───
-const BG = "#F5F0EB";
-const SURFACE = "#FFFCF8";
-const CONTROL = "#FFFFFF";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#000000";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
-const BRAND = "#8C7A6B";
-const CARD_RADIUS = 18;
-const PILL_RADIUS = 999;
-
 function SectionLabel({ children }: { children: string }): JSX.Element {
   return (
     <Typography
       style={{
         fontSize: 11,
         letterSpacing: 1.4,
-        color: TEXT_SECONDARY,
+        color: UI.color.muted,
         fontFamily: "IBMPlexSans_600SemiBold",
         textTransform: "uppercase",
         marginBottom: 16,
@@ -53,16 +41,6 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
   );
 }
 
-// ─── TransactionRow ───
-interface TransactionRowProps {
-  expense: Expense;
-  currentUserId: string;
-  paidByUser?: User;
-  myShare: number;
-  isLast: boolean;
-  onPress: () => void;
-}
-
 function TransactionRow({
   expense,
   currentUserId,
@@ -70,22 +48,29 @@ function TransactionRow({
   myShare,
   isLast,
   onPress,
-}: TransactionRowProps): JSX.Element {
+}: {
+  expense: Expense;
+  currentUserId: string;
+  paidByUser?: User;
+  myShare: number;
+  isLast: boolean;
+  onPress: () => void;
+}): JSX.Element {
   const iPaid = expense.paidBy === currentUserId;
   const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
 
   let subAmountText = "";
-  let subAmountColor = TEXT_DANGER;
+  let subAmountColor: string = UI.color.text;
 
   if (iPaid) {
     const lentAmount = expense.amount - myShare;
     if (lentAmount > 0) {
       subAmountText = formatAmount(lentAmount, expense.currency);
-      subAmountColor = TEXT_SUCCESS;
+      subAmountColor = UI.color.success;
     }
   } else if (myShare > 0) {
     subAmountText = formatAmount(myShare, expense.currency);
-    subAmountColor = TEXT_DANGER;
+    subAmountColor = UI.color.danger;
   }
 
   const dateStr = expense.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -99,10 +84,10 @@ function TransactionRow({
         alignItems: "center",
         paddingVertical: 16,
         paddingHorizontal: 16,
-        borderRadius: CARD_RADIUS,
+        borderRadius: UI.radius.lg,
         backgroundColor: pressed ? "#FBF7F2" : "transparent",
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: SEPARATOR,
+        borderBottomColor: UI.color.border,
       })}
     >
       <View style={{ marginRight: 16, flexShrink: 0 }}>
@@ -115,16 +100,16 @@ function TransactionRow({
               right: -4,
               width: 20,
               height: 20,
-              borderRadius: PILL_RADIUS,
-              backgroundColor: BG,
+              borderRadius: UI.radius.pill,
+              backgroundColor: UI.color.bg,
               borderWidth: 2,
-              borderColor: BG,
+              borderColor: UI.color.bg,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
             <Typography
-              style={{ fontSize: 10, color: TEXT_PRIMARY, textAlign: "center", lineHeight: 14 }}
+              style={{ fontSize: 10, color: UI.color.text, textAlign: "center", lineHeight: 14 }}
             >
               {paidByUser.name.charAt(0).toUpperCase()}
             </Typography>
@@ -135,14 +120,14 @@ function TransactionRow({
       <View style={{ flex: 1, marginRight: 12 }}>
         <Typography
           numberOfLines={1}
-          style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+          style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
         >
           {expense.title}
         </Typography>
         <Typography
           style={{
             fontSize: 14,
-            color: TEXT_SECONDARY,
+            color: UI.color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginTop: 4,
           }}
@@ -153,7 +138,7 @@ function TransactionRow({
 
       <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
         <Typography
-          style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+          style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
         >
           {formatAmount(expense.amount, expense.currency)}
         </Typography>
@@ -172,7 +157,7 @@ function TransactionRow({
           <Typography
             style={{
               fontSize: 14,
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 4,
             }}
@@ -274,9 +259,9 @@ export default function GroupDetailScreen(): JSX.Element {
 
   if (!group) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: BG }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: UI.color.bg }}>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <Alert status="danger" style={{ borderRadius: CARD_RADIUS, marginBottom: 16 }}>
+          <Alert status="danger" style={{ borderRadius: UI.radius.lg, marginBottom: 16 }}>
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>Group not found</Alert.Title>
@@ -285,7 +270,7 @@ export default function GroupDetailScreen(): JSX.Element {
           </Alert>
           <Pressable
             onPress={() => router.back()}
-            style={{ padding: 14, paddingHorizontal: 24, backgroundColor: BRAND, borderRadius: PILL_RADIUS }}
+            style={{ padding: 14, paddingHorizontal: 24, backgroundColor: UI.color.brand, borderRadius: UI.radius.pill }}
           >
             <Typography style={{ color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold" }}>Go back</Typography>
           </Pressable>
@@ -295,15 +280,15 @@ export default function GroupDetailScreen(): JSX.Element {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
-      {/* ── Header ──────────────────────────────────────────────────────── */}
+      {/* Header with back + settings */}
       <View
         style={{
           paddingTop: insets.top + 16,
           paddingBottom: 24,
-          paddingHorizontal: 24,
+          paddingHorizontal: UI.space.page,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
@@ -321,16 +306,16 @@ export default function GroupDetailScreen(): JSX.Element {
           style={({ pressed }) => ({
             width: 44,
             height: 44,
-            borderRadius: PILL_RADIUS,
-            backgroundColor: CONTROL,
+            borderRadius: UI.radius.pill,
+            backgroundColor: UI.color.control,
             borderWidth: 1,
-            borderColor: SEPARATOR,
+            borderColor: UI.color.border,
             alignItems: "center",
             justifyContent: "center",
             opacity: pressed ? 0.65 : 1,
           })}
         >
-          <icons.ArrowLeft size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
+          <icons.ArrowLeft size={20} color={UI.color.text} strokeWidth={1.8} />
         </Pressable>
 
         <View
@@ -349,7 +334,7 @@ export default function GroupDetailScreen(): JSX.Element {
             style={{
               fontFamily: "Sora_600SemiBold",
               fontSize: 24,
-              color: TEXT_PRIMARY,
+              color: UI.color.text,
               flexShrink: 1,
               textAlign: "center",
             }}
@@ -364,16 +349,16 @@ export default function GroupDetailScreen(): JSX.Element {
           style={({ pressed }) => ({
             width: 44,
             height: 44,
-            borderRadius: PILL_RADIUS,
-            backgroundColor: CONTROL,
+            borderRadius: UI.radius.pill,
+            backgroundColor: UI.color.control,
             borderWidth: 1,
-            borderColor: SEPARATOR,
+            borderColor: UI.color.border,
             alignItems: "center",
             justifyContent: "center",
             opacity: pressed ? 0.65 : 1,
           })}
         >
-          <icons.Settings size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
+          <icons.Settings size={20} color={UI.color.text} strokeWidth={1.8} />
         </Pressable>
       </View>
 
@@ -382,10 +367,10 @@ export default function GroupDetailScreen(): JSX.Element {
         contentContainerStyle={{ paddingBottom: 140 }}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Balance Cards ─────────────────────────────────────────────── */}
+        {/* Balance Cards */}
         <Animated.View
           entering={FadeInDown.duration(400).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 32 }}
+          style={{ paddingHorizontal: UI.space.page, marginBottom: 32 }}
         >
           <BalanceCard
             youOwe={youOwe}
@@ -398,18 +383,18 @@ export default function GroupDetailScreen(): JSX.Element {
           />
         </Animated.View>
 
-        {/* ── Group Balances ────────────────────────────────────────────── */}
+        {/* Group Balances */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(50).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+          style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}
         >
           <SectionLabel>Group Balances</SectionLabel>
           <View
             style={{
-              borderRadius: CARD_RADIUS,
+              borderRadius: UI.radius.lg,
               borderWidth: 1,
-              borderColor: SEPARATOR,
-              backgroundColor: SURFACE,
+              borderColor: UI.color.border,
+              backgroundColor: UI.color.surface,
             }}
           >
             {groupDebts.length === 0 ? (
@@ -424,24 +409,24 @@ export default function GroupDetailScreen(): JSX.Element {
                   style={{
                     width: 52,
                     height: 52,
-                    borderRadius: PILL_RADIUS,
-                    backgroundColor: CONTROL,
+                    borderRadius: UI.radius.pill,
+                    backgroundColor: UI.color.control,
                     borderWidth: 1,
-                    borderColor: SEPARATOR,
+                    borderColor: UI.color.border,
                     alignItems: "center",
                     justifyContent: "center",
                     marginBottom: 16,
                   }}
                 >
-                  <icons.Check size={24} color={TEXT_SUCCESS} strokeWidth={1.8} />
+                  <icons.Check size={24} color={UI.color.success} strokeWidth={1.8} />
                 </View>
                 <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   All settled up!
                 </Typography>
                 <Typography
-                  style={{ fontSize: 14, color: TEXT_SECONDARY, fontFamily: "IBMPlexSans_500Medium", marginTop: 4 }}
+                  style={{ fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium", marginTop: 4 }}
                 >
                   No pending balances
                 </Typography>
@@ -454,7 +439,7 @@ export default function GroupDetailScreen(): JSX.Element {
 
                 const isMeOwe = fromUser.id === currentUser.id;
                 const isOweMe = toUser.id === currentUser.id;
-                const amountColor = isMeOwe ? TEXT_DANGER : isOweMe ? TEXT_SUCCESS : TEXT_PRIMARY;
+                const amountColor = isMeOwe ? UI.color.danger : isOweMe ? UI.color.success : UI.color.text;
 
                 return (
                   <Pressable
@@ -467,12 +452,12 @@ export default function GroupDetailScreen(): JSX.Element {
                       paddingVertical: 16,
                       paddingHorizontal: 16,
                       borderBottomWidth: idx < groupDebts.length - 1 ? 1 : 0,
-                      borderBottomColor: SEPARATOR,
+                      borderBottomColor: UI.color.border,
                       backgroundColor: pressed ? "#FBF7F2" : "transparent",
-                      borderTopLeftRadius: idx === 0 ? CARD_RADIUS : 0,
-                      borderTopRightRadius: idx === 0 ? CARD_RADIUS : 0,
-                      borderBottomLeftRadius: idx === groupDebts.length - 1 ? CARD_RADIUS : 0,
-                      borderBottomRightRadius: idx === groupDebts.length - 1 ? CARD_RADIUS : 0,
+                      borderTopLeftRadius: idx === 0 ? UI.radius.lg : 0,
+                      borderTopRightRadius: idx === 0 ? UI.radius.lg : 0,
+                      borderBottomLeftRadius: idx === groupDebts.length - 1 ? UI.radius.lg : 0,
+                      borderBottomRightRadius: idx === groupDebts.length - 1 ? UI.radius.lg : 0,
                     })}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
@@ -481,7 +466,7 @@ export default function GroupDetailScreen(): JSX.Element {
                         <Typography
                           style={{
                             fontSize: 16,
-                            color: TEXT_PRIMARY,
+                            color: UI.color.text,
                             fontFamily: "IBMPlexSans_600SemiBold",
                           }}
                         >
@@ -490,7 +475,7 @@ export default function GroupDetailScreen(): JSX.Element {
                         <Typography
                           style={{
                             fontSize: 14,
-                            color: TEXT_SECONDARY,
+                            color: UI.color.muted,
                             fontFamily: "IBMPlexSans_500Medium",
                             marginTop: 4,
                           }}
@@ -515,10 +500,10 @@ export default function GroupDetailScreen(): JSX.Element {
           </View>
         </Animated.View>
 
-        {/* ── Transactions ─────────────────────────────────────────────── */}
+        {/* Transactions */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(100).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 40 }}
+          style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}
         >
           <View
             style={{
@@ -532,7 +517,7 @@ export default function GroupDetailScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 13,
-                color: TEXT_PRIMARY,
+                color: UI.color.text,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 marginBottom: 16,
               }}
@@ -543,10 +528,10 @@ export default function GroupDetailScreen(): JSX.Element {
 
           <View
             style={{
-              borderRadius: CARD_RADIUS,
+              borderRadius: UI.radius.lg,
               borderWidth: expenses.length === 0 ? 1 : 0,
-              borderColor: SEPARATOR,
-              backgroundColor: expenses.length === 0 ? SURFACE : "transparent",
+              borderColor: UI.color.border,
+              backgroundColor: expenses.length === 0 ? UI.color.surface : "transparent",
             }}
           >
             {expenses.length === 0 ? (
@@ -560,21 +545,21 @@ export default function GroupDetailScreen(): JSX.Element {
                   style={{
                     width: 56,
                     height: 56,
-                    borderRadius: PILL_RADIUS,
-                    backgroundColor: CONTROL,
+                    borderRadius: UI.radius.pill,
+                    backgroundColor: UI.color.control,
                     alignItems: "center",
                     justifyContent: "center",
                     marginBottom: 16,
                     borderWidth: 1,
-                    borderColor: SEPARATOR,
+                    borderColor: UI.color.border,
                   }}
                 >
-                  <icons.Receipt size={24} color={TEXT_PRIMARY} strokeWidth={1.8} />
+                  <icons.Receipt size={24} color={UI.color.text} strokeWidth={1.8} />
                 </View>
                 <Typography
                   style={{
                     fontSize: 16,
-                    color: TEXT_PRIMARY,
+                    color: UI.color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                     marginBottom: 8,
                   }}
@@ -584,7 +569,7 @@ export default function GroupDetailScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                   }}
                 >
@@ -594,10 +579,10 @@ export default function GroupDetailScreen(): JSX.Element {
             ) : (
               <View
                 style={{
-                  borderRadius: CARD_RADIUS,
+                  borderRadius: UI.radius.lg,
                   borderWidth: 1,
-                  borderColor: SEPARATOR,
-                  backgroundColor: SURFACE,
+                  borderColor: UI.color.border,
+                  backgroundColor: UI.color.surface,
                 }}
               >
                 {expenses.map((expense, idx) => {
@@ -621,21 +606,21 @@ export default function GroupDetailScreen(): JSX.Element {
         </Animated.View>
       </ScrollView>
 
-      {/* ── Bottom Action Bar ──────────────────────────────────────────── */}
+      {/* Bottom Action Bar */}
       <View
         style={{
           position: "absolute",
           bottom: 0,
           left: 0,
           right: 0,
-          paddingHorizontal: 24,
+          paddingHorizontal: UI.space.page,
           paddingTop: 16,
           paddingBottom: Math.max(insets.bottom, 16),
           flexDirection: "row",
           gap: 12,
-          backgroundColor: BG,
+          backgroundColor: UI.color.bg,
           borderTopWidth: 1,
-          borderTopColor: SEPARATOR,
+          borderTopColor: UI.color.border,
         }}
       >
         <Pressable
@@ -644,10 +629,10 @@ export default function GroupDetailScreen(): JSX.Element {
           style={({ pressed }) => ({
             flex: 1,
             height: 56,
-            borderRadius: PILL_RADIUS,
-            backgroundColor: CONTROL,
+            borderRadius: UI.radius.pill,
+            backgroundColor: UI.color.control,
             borderWidth: 1,
-            borderColor: SEPARATOR,
+            borderColor: UI.color.border,
             alignItems: "center",
             justifyContent: "center",
             flexDirection: "row",
@@ -655,9 +640,9 @@ export default function GroupDetailScreen(): JSX.Element {
             opacity: pressed ? 0.65 : 1,
           })}
         >
-          <icons.Handshake size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
+          <icons.Handshake size={20} color={UI.color.text} strokeWidth={1.8} />
           <Typography
-            style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+            style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
           >
             Settle Up
           </Typography>
@@ -669,8 +654,8 @@ export default function GroupDetailScreen(): JSX.Element {
           style={({ pressed }) => ({
             flex: 1.5,
             height: 56,
-            borderRadius: PILL_RADIUS,
-            backgroundColor: BRAND,
+            borderRadius: UI.radius.pill,
+            backgroundColor: UI.color.brand,
             alignItems: "center",
             justifyContent: "center",
             flexDirection: "row",

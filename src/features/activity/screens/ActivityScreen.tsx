@@ -1,11 +1,10 @@
 import type { JSX } from "react";
 import { useState, useMemo, useCallback } from "react";
-import { View, TextInput, StyleSheet, Pressable, ScrollView } from "react-native";
+import { View, ScrollView } from "react-native";
 import { Typography } from "heroui-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import * as Haptics from "expo-haptics";
 
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
@@ -15,21 +14,12 @@ import { useUIStore } from "@/store/useUIStore";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { AppLoader } from "@/components/ui/AppLoader";
+import { UI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
 import type { Activity } from "@/types";
-
-// --- Design Tokens ---
-const BG = "#F5F0EB";
-const SURFACE = "#FFFCF8";
-const CONTROL = "#FFFFFF";
-const BORDER = "#E8E4DF";
-const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_SECONDARY = "#8A8782";
-const CARD_RADIUS = 18;
-const PILL_RADIUS = 999;
 
 type FilterType = "All" | "Expenses" | "Settlements" | "Groups" | "Friends";
 
-type ListItem = { type: "header"; title: string } | { type: "item"; activity: Activity };
+
 
 export default function ActivityScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
@@ -76,22 +66,18 @@ export default function ActivityScreen(): JSX.Element {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<FilterType>("All");
 
-  // Sort activities by date descending
   const sortedActivities = useMemo(() => {
     return [...activities].sort((a, b) => b.date.getTime() - a.date.getTime());
   }, [activities]);
 
-  // Apply Search & Pill Filters
   const filteredActivities = useMemo(() => {
     let result = sortedActivities;
 
-    // Filter by Search Query
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       result = result.filter((a) => a.description.toLowerCase().includes(q));
     }
 
-    // Filter by Pill Type
     if (activeFilter !== "All") {
       result = result.filter((a) => {
         switch (activeFilter) {
@@ -112,7 +98,6 @@ export default function ActivityScreen(): JSX.Element {
     return result;
   }, [sortedActivities, searchQuery, activeFilter]);
 
-  // Group activities by month-year
   const groupedActivities = useMemo(() => {
     const groups: Record<string, Activity[]> = {};
     filteredActivities.forEach((activity) => {
@@ -128,143 +113,36 @@ export default function ActivityScreen(): JSX.Element {
     return Object.entries(groups).map(([title, data]) => ({ title, data }));
   }, [filteredActivities]);
 
-  const listData = useMemo(() => {
-    const result: ListItem[] = [];
-    groupedActivities.forEach((group) => {
-      result.push({ type: "header", title: group.title });
-      group.data.forEach((item) => {
-        result.push({ type: "item", activity: item });
-      });
-    });
-    return result;
-  }, [groupedActivities]);
+  const FILTERS: FilterType[] = ["All", "Expenses", "Settlements", "Groups", "Friends"];
 
-  const stickyHeaderIndices = useMemo(() => {
-    const indices: number[] = [];
-    listData.forEach((item, index) => {
-      if (item.type === "header") indices.push(index);
-    });
-    return indices;
-  }, [listData]);
-
-  // --- Components ---
-
-  const renderFilterPills = () => {
-    const filters: FilterType[] = ["All", "Expenses", "Settlements", "Groups", "Friends"];
-    return (
-      <View style={styles.filtersContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filtersScroll}
-        >
-          {filters.map((filter) => {
-            const isActive = activeFilter === filter;
-            return (
-              <Pressable
-                key={filter}
-                accessibilityRole="button"
-                onPress={() => {
-                  Haptics.selectionAsync();
-                  setActiveFilter(filter);
-                }}
-                style={({ pressed }) => ({
-                  height: 42,
-                  paddingHorizontal: 16,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: isActive ? TEXT_PRIMARY : CONTROL,
-                  borderWidth: 1,
-                  borderColor: isActive ? TEXT_PRIMARY : BORDER,
-                  borderRadius: PILL_RADIUS,
-                  opacity: pressed ? 0.75 : 1,
-                })}
-              >
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isActive ? "#FFFFFF" : TEXT_PRIMARY,
-                  }}
-                >
-                  {filter}
-                </Typography>
-              </Pressable>
-            );
-          })}
-        </ScrollView>
-      </View>
-    );
-  };
-
-  const renderHeader = () => (
-    <Animated.View entering={FadeInDown.duration(400)} style={{ backgroundColor: BG }}>
-      {/* ── Header ── */}
-      <View
-        style={{
-          paddingTop: 16,
-          paddingHorizontal: 24,
-          paddingBottom: 24,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          backgroundColor: BG,
-        }}
+  const renderFilterPills = () => (
+    <View style={{ marginBottom: 24 }}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: UI.space.page, gap: 8 }}
       >
-        <Typography
-          style={{
-            fontFamily: "Sora_600SemiBold",
-            fontSize: 28,
-            color: TEXT_PRIMARY,
-          }}
-        >
-          Activity
-        </Typography>
-      </View>
-
-      <View style={{ paddingHorizontal: 24, paddingBottom: 24 }}>
-        <View
-          style={{
-            height: 52,
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 16,
-            borderRadius: PILL_RADIUS,
-            borderWidth: 1,
-            borderColor: BORDER,
-            backgroundColor: CONTROL,
-            gap: 12,
-          }}
-        >
-          <icons.Search size={20} color={TEXT_SECONDARY} strokeWidth={1.8} />
-          <TextInput
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-            placeholder="Search activity..."
-            placeholderTextColor={TEXT_SECONDARY}
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={{
-              flex: 1,
-              fontSize: 16,
-              fontFamily: "IBMPlexSans_500Medium",
-              color: TEXT_PRIMARY,
-              padding: 0,
-            }}
+        {FILTERS.map((filter) => (
+          <FilterPill
+            key={filter}
+            label={filter}
+            isActive={activeFilter === filter}
+            onPress={() => setActiveFilter(filter)}
           />
-          {searchQuery.length > 0 && (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setSearchQuery("")}
-              hitSlop={8}
-              style={({ pressed }) => ({
-                opacity: pressed ? 0.5 : 1,
-              })}
-            >
-              <icons.XCircle size={18} color={TEXT_SECONDARY} strokeWidth={1.8} />
-            </Pressable>
-          )}
-        </View>
+        ))}
+      </ScrollView>
+    </View>
+  );
+
+  const renderSearchAndFilters = () => (
+    <Animated.View entering={FadeInDown.duration(400)} style={{ backgroundColor: UI.color.bg }}>
+      <View style={{ paddingHorizontal: UI.space.page, paddingBottom: 24 }}>
+        <SearchField
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onClear={() => setSearchQuery("")}
+          placeholder="Search activity..."
+        />
       </View>
 
       {renderFilterPills()}
@@ -276,113 +154,72 @@ export default function ActivityScreen(): JSX.Element {
   const ListEmptyComponent = useCallback(() => {
     if (isAppLoading) return null;
     return (
-      <View style={styles.emptyContainer}>
-        <View style={styles.emptyBox}>
-          <View style={styles.emptyIconBox}>
-            <icons.Activity size={32} color={TEXT_SECONDARY} strokeWidth={1.5} />
-          </View>
-          <Typography style={styles.emptyTitle}>No activity found</Typography>
-          <Typography style={styles.emptySubtitle}>
-            {searchQuery || activeFilter !== "All"
+      <View style={{ paddingHorizontal: UI.space.page, marginTop: 24 }}>
+        <EmptyState
+          icon={icons.Activity}
+          title="No activity found"
+          subtitle={
+            searchQuery || activeFilter !== "All"
               ? "Try adjusting your filters or search term."
-              : "You have no recent activity."}
-          </Typography>
-        </View>
+              : "Expenses and settlements will appear here as you use Splt."
+          }
+        />
       </View>
     );
   }, [isAppLoading, searchQuery, activeFilter]);
 
   return (
-    <FocusAwareView style={[styles.container, { paddingTop: insets.top }]}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg, paddingTop: insets.top }}>
       <StatusBar style="dark" />
-      {renderHeader()}
+      <ScreenHeader title="Activity" />
+
       <Animated.FlatList
-        data={listData}
-        keyExtractor={(item, index) =>
-          item.type === "header" ? `header-${item.title}` : `item-${item.activity.id}`
-        }
+        data={groupedActivities}
+        keyExtractor={(item) => item.title}
         itemLayoutAnimation={LinearTransition}
-        renderItem={({ item, index }) => {
-          if (item.type === "header") {
-            return (
-              <View style={styles.headerContainer}>
-                <Typography style={styles.headerText}>{item.title}</Typography>
-              </View>
-            );
-          }
-          const isNextHeader =
-            index === listData.length - 1 || listData[index + 1].type === "header";
-          return <ActivityItem activity={item.activity} index={index} isLast={isNextHeader} />;
-        }}
+        renderItem={({ item: section }: { item: { title: string; data: Activity[] } }) => (
+          <View style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+            {/* Month header */}
+            <Typography
+              style={{
+                fontSize: 11,
+                fontFamily: "IBMPlexSans_600SemiBold",
+                color: UI.color.muted,
+                textTransform: "uppercase",
+                letterSpacing: 1.4,
+                marginBottom: 10,
+                paddingLeft: 2,
+              }}
+            >
+              {section.title}
+            </Typography>
+
+            {/* Card container */}
+            <View
+              style={{
+                backgroundColor: UI.color.surface,
+                borderRadius: UI.radius.lg,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+                overflow: "hidden",
+              }}
+            >
+              {section.data.map((activity, idx) => (
+                <ActivityItem
+                  key={activity.id}
+                  activity={activity}
+                  index={idx}
+                  isLast={idx === section.data.length - 1}
+                />
+              ))}
+            </View>
+          </View>
+        )}
+        ListHeaderComponent={renderSearchAndFilters}
         ListEmptyComponent={ListEmptyComponent}
-        stickyHeaderIndices={stickyHeaderIndices}
         contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
         showsVerticalScrollIndicator={false}
       />
     </FocusAwareView>
   );
 }
-
-// --- Styles ---
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: BG,
-  },
-  filtersContainer: {
-    marginBottom: 24,
-  },
-  filtersScroll: {
-    paddingHorizontal: 24,
-    gap: 8,
-  },
-  headerContainer: {
-    backgroundColor: BG,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    zIndex: 10,
-  },
-  headerText: {
-    fontSize: 11,
-    fontFamily: "IBMPlexSans_600SemiBold",
-    color: TEXT_SECONDARY,
-    textTransform: "uppercase",
-    letterSpacing: 1.4,
-  },
-  emptyContainer: {
-    paddingHorizontal: 24,
-    marginTop: 24,
-  },
-  emptyBox: {
-    padding: 32,
-    backgroundColor: SURFACE,
-    borderRadius: CARD_RADIUS,
-    borderWidth: 1,
-    borderColor: BORDER,
-    alignItems: "center",
-  },
-  emptyIconBox: {
-    width: 64,
-    height: 64,
-    borderRadius: PILL_RADIUS,
-    backgroundColor: CONTROL,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: BORDER,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontFamily: "IBMPlexSans_600SemiBold",
-    color: TEXT_PRIMARY,
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    fontFamily: "IBMPlexSans_500Medium",
-    color: TEXT_SECONDARY,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-});

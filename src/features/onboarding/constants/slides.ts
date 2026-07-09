@@ -5,26 +5,36 @@ export interface OnboardingSlideData {
   title: string;
   description: string;
   icon: keyof typeof icons;
+  tagline: string;
 }
 
 export const ONBOARDING_SLIDES: OnboardingSlideData[] = [
   {
-    id: "welcome",
-    title: "Welcome\nto Splt.",
-    description: "The most elegant way to track, share, and settle expenses with your friends.",
-    icon: "Sparkles",
+    id: "balances",
+    title: "Track\nBalances",
+    description: "See who owes what at a glance. No more awkward conversations about money.",
+    icon: "Wallet",
+    tagline: "Know where you stand",
   },
   {
-    id: "track",
-    title: "Track &\nSplit.",
-    description: "Add expenses on the go. We do the math so you don't have to.",
-    icon: "Receipt",
+    id: "groups",
+    title: "Shared\nGroups",
+    description: "Create groups for trips, roommates, or nights out. Every expense stays organized.",
+    icon: "UsersRound",
+    tagline: "Split with anyone",
   },
   {
-    id: "personalize",
-    title: "Your\nCurrency.",
-    description:
-      "Before we start, what currency do you use most often? You can always change this later.",
+    id: "settle",
+    title: "Settle\nUp Fast",
+    description: "Record payments in seconds. Everyone stays in the loop.",
+    icon: "HandCoins",
+    tagline: "Pay and be paid",
+  },
+  {
+    id: "currency",
+    title: "Your\nCurrency",
+    description: "Pick a default currency. We'll handle the conversions when you travel.",
     icon: "Globe",
+    tagline: "Multi-currency ready",
   },
 ];

@@ -17,17 +17,10 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
+import { UI, MetricCell } from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { EXPENSE_CATEGORIES } from "@/types";
-
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
-const BRAND = "#8C7A6B";
-const CARD_RADIUS = 16;
-const PILL_RADIUS = 999;
 
 export default function ExpenseDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<ExpenseRouteParams>();
@@ -63,17 +56,17 @@ export default function ExpenseDetailScreen(): JSX.Element {
       <View
         style={{
           flex: 1,
-          backgroundColor: BG,
+          backgroundColor: UI.color.bg,
           alignItems: "center",
           justifyContent: "center",
           padding: 24,
         }}
       >
-        <icons.AlertCircle size={48} color={TEXT_PRIMARY} />
+        <icons.AlertCircle size={48} color={UI.color.text} />
         <Typography
           style={{
             fontSize: 24,
-            color: TEXT_PRIMARY,
+            color: UI.color.text,
             marginTop: 16,
             fontFamily: "IBMPlexSans_600SemiBold",
           }}
@@ -83,7 +76,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
         <Typography
           style={{
             fontSize: 16,
-            color: TEXT_SECONDARY,
+            color: UI.color.muted,
             textAlign: "center",
             marginTop: 8,
             fontFamily: "IBMPlexSans_500Medium",
@@ -98,8 +91,8 @@ export default function ExpenseDetailScreen(): JSX.Element {
             marginTop: 24,
             paddingHorizontal: 24,
             paddingVertical: 12,
-            backgroundColor: BRAND,
-            borderRadius: PILL_RADIUS,
+            backgroundColor: UI.color.brand,
+            borderRadius: UI.radius.pill,
             opacity: pressed ? 0.8 : 1,
           })}
         >
@@ -129,14 +122,14 @@ export default function ExpenseDetailScreen(): JSX.Element {
   });
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
-      {/* ── Immersive Header ── */}
+      {/* Header */}
       <View
         style={{
           paddingTop: insets.top + 16,
-          paddingHorizontal: 24,
+          paddingHorizontal: UI.space.page,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
@@ -149,16 +142,16 @@ export default function ExpenseDetailScreen(): JSX.Element {
           style={({ pressed }) => ({
             width: 44,
             height: 44,
-            borderRadius: PILL_RADIUS,
+            borderRadius: UI.radius.pill,
             backgroundColor: "#FFFFFF",
             borderWidth: 1,
-            borderColor: SEPARATOR,
+            borderColor: UI.color.border,
             alignItems: "center",
             justifyContent: "center",
             opacity: pressed ? 0.5 : 1,
           })}
         >
-          <icons.ArrowLeft size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+          <icons.ArrowLeft size={20} color={UI.color.text} strokeWidth={1.5} />
         </Pressable>
 
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
@@ -170,16 +163,16 @@ export default function ExpenseDetailScreen(): JSX.Element {
             style={({ pressed }) => ({
               width: 44,
               height: 44,
-              borderRadius: PILL_RADIUS,
+              borderRadius: UI.radius.pill,
               backgroundColor: "#FFFFFF",
               borderWidth: 1,
-              borderColor: SEPARATOR,
+              borderColor: UI.color.border,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.5 : 1,
             })}
           >
-            <icons.Edit2 size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+            <icons.Edit2 size={20} color={UI.color.text} strokeWidth={1.5} />
           </Pressable>
 
           <Pressable
@@ -188,16 +181,16 @@ export default function ExpenseDetailScreen(): JSX.Element {
             style={({ pressed }) => ({
               width: 44,
               height: 44,
-              borderRadius: PILL_RADIUS,
+              borderRadius: UI.radius.pill,
               backgroundColor: "#FFFFFF",
               borderWidth: 1,
-              borderColor: SEPARATOR,
+              borderColor: UI.color.border,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.5 : 1,
             })}
           >
-            <icons.Trash2 size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+            <icons.Trash2 size={20} color={UI.color.text} strokeWidth={1.5} />
           </Pressable>
         </View>
       </View>
@@ -207,15 +200,15 @@ export default function ExpenseDetailScreen(): JSX.Element {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60 }}
       >
-        {/* ── Bill Section ── */}
+        {/* Bill Section */}
         <Animated.View
           entering={FadeInDown.duration(400)}
           style={{
-            paddingHorizontal: 24,
-            paddingTop: 40,
-            paddingBottom: 40,
+            paddingHorizontal: UI.space.page,
+            paddingTop: 32,
+            paddingBottom: 32,
             borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
+            borderBottomColor: UI.color.border,
           }}
         >
           <View
@@ -223,14 +216,14 @@ export default function ExpenseDetailScreen(): JSX.Element {
               flexDirection: "row",
               justifyContent: "space-between",
               alignItems: "flex-start",
-              marginBottom: 32,
+              marginBottom: 24,
             }}
           >
             <View style={{ flex: 1 }}>
               <Typography
                 style={{
-                  fontSize: 14,
-                  color: TEXT_SECONDARY,
+                  fontSize: 12,
+                  color: UI.color.muted,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   textTransform: "uppercase",
                   letterSpacing: 2,
@@ -241,10 +234,10 @@ export default function ExpenseDetailScreen(): JSX.Element {
               </Typography>
               <Typography
                 style={{
-                  fontSize: 32,
-                  color: TEXT_PRIMARY,
+                  fontSize: 28,
+                  color: UI.color.text,
                   fontFamily: "Sora_600SemiBold",
-                  lineHeight: 40,
+                  lineHeight: 34,
                 }}
               >
                 {expense.title}
@@ -253,14 +246,14 @@ export default function ExpenseDetailScreen(): JSX.Element {
             <CategoryIconBadge category={expense.category} size="lg" />
           </View>
 
-          <View style={{ marginBottom: 32 }}>
+          <View style={{ marginBottom: 24 }}>
             <Typography
               style={{
-                fontSize: 72,
-                lineHeight: 80,
-                color: TEXT_PRIMARY,
+                fontSize: 48,
+                lineHeight: 54,
+                color: UI.color.textStrong,
                 fontFamily: "IBMPlexSans_600SemiBold",
-                letterSpacing: -2,
+                letterSpacing: -1.5,
               }}
             >
               {formatAmt(expense.amount)}
@@ -278,14 +271,14 @@ export default function ExpenseDetailScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 16,
-                  color: TEXT_SECONDARY,
+                  color: UI.color.muted,
                   fontFamily: "IBMPlexSans_500Medium",
                 }}
               >
                 Date
               </Typography>
               <Typography
-                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 {dateStr}
               </Typography>
@@ -301,7 +294,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 16,
-                  color: TEXT_SECONDARY,
+                  color: UI.color.muted,
                   fontFamily: "IBMPlexSans_500Medium",
                 }}
               >
@@ -310,7 +303,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
                 <AppUserAvatar user={expense.paidByUser} size="sm" />
                 <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   {paidByMe ? "You" : expense.paidByUser.name}
                 </Typography>
@@ -328,14 +321,14 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 16,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                   }}
                 >
                   Group
                 </Typography>
                 <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   {group.name}
                 </Typography>
@@ -348,13 +341,13 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   marginTop: 8,
                   paddingTop: 16,
                   borderTopWidth: 1,
-                  borderTopColor: SEPARATOR,
+                  borderTopColor: UI.color.border,
                 }}
               >
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                     lineHeight: 22,
                   }}
@@ -366,10 +359,10 @@ export default function ExpenseDetailScreen(): JSX.Element {
           </View>
         </Animated.View>
 
-        {/* ── Split Breakdown ── */}
+        {/* Split Breakdown */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(100)}
-          style={{ paddingHorizontal: 24, paddingTop: 40 }}
+          style={{ paddingHorizontal: UI.space.page, paddingTop: 32 }}
         >
           <View
             style={{
@@ -382,7 +375,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 12,
-                color: TEXT_SECONDARY,
+                color: UI.color.muted,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 textTransform: "uppercase",
                 letterSpacing: 2,
@@ -396,12 +389,12 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 paddingVertical: 4,
                 backgroundColor: "transparent",
                 borderWidth: 1,
-                borderColor: SEPARATOR,
+                borderColor: UI.color.border,
                 borderRadius: 12,
               }}
             >
               <Typography
-                style={{ fontSize: 11, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                style={{ fontSize: 11, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
               >
                 {expense.splitMethod === "equal" ? "EQUAL" : "CUSTOM"}
               </Typography>
@@ -432,7 +425,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                       alignItems: "center",
                       paddingVertical: 16,
                       borderBottomWidth: idx < expense.splits.length - 1 ? 1 : 0,
-                      borderBottomColor: SEPARATOR,
+                      borderBottomColor: UI.color.border,
                       opacity: !isMe && pressed ? 0.5 : 1,
                     })}
                   >
@@ -441,7 +434,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                       <Typography
                         style={{
                           fontSize: 18,
-                          color: TEXT_PRIMARY,
+                          color: UI.color.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
                           marginBottom: 2,
                         }}
@@ -451,7 +444,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                       <Typography
                         style={{
                           fontSize: 14,
-                          color: TEXT_SECONDARY,
+                          color: UI.color.muted,
                           fontFamily: "IBMPlexSans_500Medium",
                         }}
                       >
@@ -461,7 +454,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 20,
-                        color: TEXT_PRIMARY,
+                        color: UI.color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -474,18 +467,18 @@ export default function ExpenseDetailScreen(): JSX.Element {
           </View>
         </Animated.View>
 
-        {/* ── My Share Summary ── */}
+        {/* My Share Summary */}
         {myShare && (
           <Animated.View
             entering={FadeInDown.duration(400).delay(200)}
-            style={{ paddingHorizontal: 24, paddingTop: 40 }}
+            style={{ paddingHorizontal: UI.space.page, paddingTop: 32 }}
           >
             <View
               style={{
                 paddingVertical: 24,
                 paddingHorizontal: 24,
-                backgroundColor: BRAND,
-                borderRadius: CARD_RADIUS,
+                backgroundColor: UI.color.brand,
+                borderRadius: UI.radius.lg,
               }}
             >
               <Typography
@@ -503,7 +496,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               </Typography>
               <Typography
                 style={{
-                  fontSize: 32,
+                  fontSize: 28,
                   color: "#FFFFFF",
                   fontFamily: "IBMPlexSans_600SemiBold",
                   marginBottom: 8,
@@ -541,14 +534,14 @@ export default function ExpenseDetailScreen(): JSX.Element {
                     marginTop: 24,
                     height: 48,
                     backgroundColor: "#FFFFFF",
-                    borderRadius: PILL_RADIUS,
+                    borderRadius: UI.radius.pill,
                     alignItems: "center",
                     justifyContent: "center",
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
                   <Typography
-                    style={{ fontSize: 15, color: "#8C7A6B", fontFamily: "IBMPlexSans_600SemiBold" }}
+                    style={{ fontSize: 15, color: UI.color.brand, fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     Settle Your Share
                   </Typography>
@@ -559,23 +552,23 @@ export default function ExpenseDetailScreen(): JSX.Element {
         )}
       </ScrollView>
 
-      {/* ── Delete Confirmation Bottom Sheet ── */}
+      {/* Delete Confirmation Bottom Sheet */}
       <BottomSheetModal
         ref={deleteSheetRef}
         index={0}
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
       >
         <BottomSheetView
-          style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
+          style={{ paddingHorizontal: UI.space.page, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
         >
           <Typography
             style={{
               fontSize: 22,
               fontFamily: "IBMPlexSans_600SemiBold",
-              color: TEXT_PRIMARY,
+              color: UI.color.text,
               marginBottom: 8,
             }}
           >
@@ -585,7 +578,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
             style={{
               fontSize: 16,
               fontFamily: "IBMPlexSans_500Medium",
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               marginBottom: 24,
             }}
           >
@@ -599,15 +592,15 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 flex: 1,
                 height: 48,
                 borderWidth: 1,
-                borderColor: SEPARATOR,
-                borderRadius: PILL_RADIUS,
+                borderColor: UI.color.border,
+                borderRadius: UI.radius.pill,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.5 : 1,
               })}
             >
               <Typography
-                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: TEXT_PRIMARY }}
+                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: UI.color.text }}
               >
                 Cancel
               </Typography>
@@ -624,7 +617,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 flex: 1,
                 height: 48,
                 backgroundColor: "#E02424",
-                borderRadius: PILL_RADIUS,
+                borderRadius: UI.radius.pill,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.8 : 1,

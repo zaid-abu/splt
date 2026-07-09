@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import type { TextInputProps, ViewStyle } from "react-native";
 import { Typography } from "heroui-native";
+import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 
 export const UI = {
@@ -194,6 +195,188 @@ export function SearchField({
   );
 }
 
+// ─── ScreenHeader ──────────────────────────────────────────────────────────
+interface ScreenHeaderProps {
+  title: string;
+  onBackPress?: () => void;
+  rightAction?: ReactNode;
+}
+
+export function ScreenHeader({ title, onBackPress, rightAction }: ScreenHeaderProps): React.JSX.Element {
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingHorizontal: UI.space.page,
+        paddingVertical: 16,
+      }}
+    >
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
+        {onBackPress && (
+          <IconButton
+            icon={icons.ArrowLeft}
+            onPress={onBackPress}
+            accessibilityLabel="Go back"
+          />
+        )}
+        <Typography
+          style={{
+            fontFamily: "Sora_600SemiBold",
+            fontSize: 28,
+            color: UI.color.textStrong,
+            letterSpacing: -0.3,
+          }}
+          numberOfLines={1}
+        >
+          {title}
+        </Typography>
+      </View>
+      {rightAction}
+    </View>
+  );
+}
+
+// ─── MetricCell ────────────────────────────────────────────────────────────
+interface MetricCellProps {
+  label: string;
+  value: string;
+  tone?: "neutral" | "success" | "danger" | "brand";
+}
+
+export function MetricCell({ label, value, tone = "neutral" }: MetricCellProps): React.JSX.Element {
+  const bgColors = {
+    neutral: UI.color.control,
+    success: "#F5FCF8",
+    danger: "#FFF7F5",
+    brand: UI.color.bg,
+  };
+  const valueColors = {
+    neutral: UI.color.text,
+    success: UI.color.success,
+    danger: UI.color.danger,
+    brand: UI.color.brand,
+  };
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        minWidth: 0,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+        borderRadius: UI.radius.md,
+        backgroundColor: bgColors[tone],
+        borderWidth: 1,
+        borderColor: UI.color.border,
+      }}
+    >
+      <Typography
+        numberOfLines={1}
+        style={{
+          fontSize: 11,
+          color: UI.color.muted,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          textTransform: "uppercase",
+          letterSpacing: 0.8,
+          marginBottom: 5,
+        }}
+      >
+        {label}
+      </Typography>
+      <Typography
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        style={{
+          fontSize: 16,
+          color: valueColors[tone],
+          fontFamily: "IBMPlexSans_600SemiBold",
+        }}
+      >
+        {value}
+      </Typography>
+    </View>
+  );
+}
+
+// ─── FilterPill ────────────────────────────────────────────────────────────
+interface FilterPillProps {
+  label: string;
+  isActive: boolean;
+  onPress: () => void;
+}
+
+export function FilterPill({ label, isActive, onPress }: FilterPillProps): React.JSX.Element {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => {
+        Haptics.selectionAsync();
+        onPress();
+      }}
+      style={({ pressed }) => ({
+        minHeight: 36,
+        paddingHorizontal: 14,
+        borderRadius: UI.radius.pill,
+        backgroundColor: isActive ? UI.color.text : UI.color.control,
+        borderWidth: 1,
+        borderColor: isActive ? UI.color.text : UI.color.border,
+        alignItems: "center",
+        justifyContent: "center",
+        opacity: pressed ? 0.72 : 1,
+      })}
+    >
+      <Typography
+        style={{
+          fontSize: 13,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          color: isActive ? "#FFFFFF" : UI.color.text,
+        }}
+      >
+        {label}
+      </Typography>
+    </Pressable>
+  );
+}
+
+// ─── ListSection ───────────────────────────────────────────────────────────
+interface ListSectionProps {
+  label: string;
+  rightAction?: ReactNode;
+  children: ReactNode;
+}
+
+export function ListSection({ label, rightAction, children }: ListSectionProps): React.JSX.Element {
+  return (
+    <View style={{ marginBottom: 28 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          paddingHorizontal: UI.space.page,
+          marginBottom: 14,
+        }}
+      >
+        <Typography
+          style={{
+            fontSize: 18,
+            color: UI.color.text,
+            fontFamily: "IBMPlexSans_600SemiBold",
+            letterSpacing: -0.2,
+          }}
+        >
+          {label}
+        </Typography>
+        {rightAction}
+      </View>
+      {children}
+    </View>
+  );
+}
+
+// ─── EmptyState ────────────────────────────────────────────────────────────
 export function EmptyState({
   icon: Icon,
   title,

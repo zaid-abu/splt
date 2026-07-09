@@ -16,37 +16,9 @@ import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
+import { UI, ScreenHeader, MetricCell } from "@/components/ui/native-ui";
 
 import { SettingsItem } from "@/features/profile/components/SettingsItem";
-
-const BG = "#F5F0EB";
-const SURFACE = "#FFFCF8";
-const CONTROL = "#FFFFFF";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#E85D5D";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
-const CARD_RADIUS = 18;
-const PILL_RADIUS = 999;
-const SECTION_PAD = 24;
-
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <Typography
-      style={{
-        fontSize: 11,
-        color: TEXT_SECONDARY,
-        fontFamily: "IBMPlexSans_600SemiBold",
-        letterSpacing: 1.4,
-        textTransform: "uppercase",
-        marginBottom: 12,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
 
 export default function ProfileScreen(): JSX.Element {
   const { currentUser } = useAuth();
@@ -92,26 +64,13 @@ export default function ProfileScreen(): JSX.Element {
   };
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
       {/* Header */}
-      <FocusAwareView
-        delay={0}
-        style={{ paddingTop: insets.top + 16, paddingBottom: 16, paddingHorizontal: SECTION_PAD }}
-      >
-        <Typography
-          style={{
-            fontFamily: "Sora_600SemiBold",
-            fontSize: 36,
-            color: TEXT_PRIMARY,
-            lineHeight: 44,
-            letterSpacing: -0.5,
-          }}
-        >
-          Profile
-        </Typography>
-      </FocusAwareView>
+      <View style={{ paddingTop: insets.top + 16 }}>
+        <ScreenHeader title="Profile" />
+      </View>
 
       <ScrollView
         style={{ flex: 1 }}
@@ -122,17 +81,17 @@ export default function ProfileScreen(): JSX.Element {
         <FocusAwareView
           delay={100}
           style={{
-            paddingHorizontal: SECTION_PAD,
+            paddingHorizontal: UI.space.page,
             marginBottom: 40,
           }}
         >
           <View
             style={{
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
+              backgroundColor: UI.color.surface,
+              borderRadius: UI.radius.lg,
               borderWidth: 1,
-              borderColor: SEPARATOR,
-              padding: 24,
+              borderColor: UI.color.border,
+              padding: UI.space.page,
             }}
           >
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
@@ -141,7 +100,7 @@ export default function ProfileScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 24,
-                    color: TEXT_PRIMARY,
+                    color: UI.color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                     letterSpacing: -0.5,
                   }}
@@ -152,7 +111,7 @@ export default function ProfileScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                   }}
                   numberOfLines={1}
@@ -162,89 +121,47 @@ export default function ProfileScreen(): JSX.Element {
               </View>
             </View>
 
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
-              <View style={{ flex: 1 }}>
-                <Typography
-                  style={{
-                    fontSize: 12,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    textTransform: "uppercase",
-                    letterSpacing: 1.2,
-                    marginBottom: 4,
-                  }}
-                >
-                  Groups
-                </Typography>
-                <Typography
-                  style={{ fontSize: 24, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
-                >
-                  {groups.length}
-                </Typography>
-              </View>
-              <View
-                style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <MetricCell
+                label="Groups"
+                value={String(groups.length)}
               />
-              <View style={{ flex: 1 }}>
-                <Typography
-                  style={{
-                    fontSize: 12,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    textTransform: "uppercase",
-                    letterSpacing: 1.2,
-                    marginBottom: 4,
-                  }}
-                >
-                  Owed
-                </Typography>
-                <Typography
-                  style={{ fontSize: 24, color: TEXT_SUCCESS, fontFamily: "IBMPlexSans_600SemiBold" }}
-                >
-                  +{preferredCurrency.symbol}
-                  {owedToYou.toFixed(0)}
-                </Typography>
-              </View>
+              <MetricCell
+                label="Owed"
+                value={`+${preferredCurrency.symbol}${owedToYou.toFixed(0)}`}
+                tone={owedToYou > 0 ? "success" : "neutral"}
+              />
               {youOwe > 0 && (
-                <>
-                  <View
-                    style={{ width: 1, height: 32, backgroundColor: SEPARATOR, marginHorizontal: 16 }}
-                  />
-                  <View style={{ flex: 1 }}>
-                    <Typography
-                      style={{
-                        fontSize: 12,
-                        color: TEXT_SECONDARY,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                        textTransform: "uppercase",
-                        letterSpacing: 1.2,
-                        marginBottom: 4,
-                      }}
-                    >
-                      Owe
-                    </Typography>
-                    <Typography
-                      style={{ fontSize: 24, color: TEXT_DANGER, fontFamily: "IBMPlexSans_600SemiBold" }}
-                    >
-                      -{preferredCurrency.symbol}
-                      {youOwe.toFixed(0)}
-                    </Typography>
-                  </View>
-                </>
+                <MetricCell
+                  label="Owe"
+                  value={`-${preferredCurrency.symbol}${youOwe.toFixed(0)}`}
+                  tone="danger"
+                />
               )}
             </View>
           </View>
         </FocusAwareView>
 
         {/* Preferences */}
-        <FocusAwareView delay={200} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40 }}>
-          <SectionLabel>Preferences</SectionLabel>
+        <FocusAwareView delay={200} style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}>
+          <Typography
+            style={{
+              fontSize: 11,
+              color: UI.color.muted,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              letterSpacing: 1.4,
+              textTransform: "uppercase",
+              marginBottom: 12,
+            }}
+          >
+            Preferences
+          </Typography>
           <View
             style={{
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
+              backgroundColor: UI.color.surface,
+              borderRadius: UI.radius.lg,
               borderWidth: 1,
-              borderColor: SEPARATOR,
+              borderColor: UI.color.border,
             }}
           >
             <SettingsItem
@@ -266,21 +183,32 @@ export default function ProfileScreen(): JSX.Element {
         </FocusAwareView>
 
         {/* Account Info */}
-        <FocusAwareView delay={300} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 40 }}>
-          <SectionLabel>Account Info</SectionLabel>
+        <FocusAwareView delay={300} style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}>
+          <Typography
+            style={{
+              fontSize: 11,
+              color: UI.color.muted,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              letterSpacing: 1.4,
+              textTransform: "uppercase",
+              marginBottom: 12,
+            }}
+          >
+            Account Info
+          </Typography>
           <View
             style={{
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
+              backgroundColor: UI.color.surface,
+              borderRadius: UI.radius.lg,
               borderWidth: 1,
-              borderColor: SEPARATOR,
-              padding: 24,
+              borderColor: UI.color.border,
+              padding: UI.space.page,
             }}
           >
             <Typography
               style={{
                 fontSize: 14,
-                color: TEXT_SECONDARY,
+                color: UI.color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 marginBottom: 24,
                 lineHeight: 20,
@@ -296,10 +224,10 @@ export default function ProfileScreen(): JSX.Element {
               onPress={() => signOut()}
               style={({ pressed }) => ({
                 height: 52,
-                borderRadius: PILL_RADIUS,
-                backgroundColor: CONTROL,
+                borderRadius: UI.radius.pill,
+                backgroundColor: UI.color.control,
                 borderWidth: 1,
-                borderColor: SEPARATOR,
+                borderColor: UI.color.border,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.65 : 1,
@@ -309,7 +237,7 @@ export default function ProfileScreen(): JSX.Element {
                 style={{
                   fontSize: 16,
                   fontFamily: "IBMPlexSans_600SemiBold",
-                  color: TEXT_DANGER,
+                  color: UI.color.danger,
                 }}
               >
                 Log Out
@@ -322,7 +250,7 @@ export default function ProfileScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 13,
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_600SemiBold",
               letterSpacing: 1,
               opacity: 0.5,

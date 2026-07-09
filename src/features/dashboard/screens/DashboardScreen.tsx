@@ -1,6 +1,3 @@
-/**
- * Dashboard (Home) Screen
- */
 import type { ComponentType, JSX } from "react";
 import { useCallback, useMemo, useState } from "react";
 import { ScrollView, View, RefreshControl, Pressable } from "react-native";
@@ -18,6 +15,7 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
+import { UI, MetricCell, FilterPill } from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -26,6 +24,7 @@ import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 import { useNotifications } from "@/features/notifications/queries/useNotifications";
+import { useAnalytics } from "@/features/analytics/hooks/useAnalytics";
 import type { Expense, Group, User } from "@/types";
 
 function getGreeting() {
@@ -49,21 +48,6 @@ function formatActivityDate(value: Date | string): string {
   return date.toLocaleDateString(undefined, { month: "short", day: "numeric" });
 }
 
-// ─── Design tokens ──
-const BG = "#F7F6F1";
-const SURFACE = "#FEFDFA";
-const SURFACE_SOFT = "#F4F3EE";
-const CONTROL_SURFACE = "#FFFFFF";
-const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_SECONDARY = "#6E6D68";
-const TEXT_SUBTLE = "#9B9A94";
-const TEXT_DANGER = "#E85D5D";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E7E5DE";
-const CARD_RADIUS = 16;
-const SECTION_PAD = 20;
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 function SectionLabel({
   children,
   rightAction,
@@ -83,8 +67,7 @@ function SectionLabel({
       <Typography
         style={{
           fontSize: 18,
-          lineHeight: 23,
-          color: TEXT_PRIMARY,
+          color: UI.color.text,
           fontFamily: "IBMPlexSans_600SemiBold",
           letterSpacing: -0.2,
         }}
@@ -118,14 +101,14 @@ function IconButton({
         height: 44,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: CONTROL_SURFACE,
-        borderRadius: 999,
+        backgroundColor: UI.color.control,
+        borderRadius: UI.radius.pill,
         borderWidth: 1,
-        borderColor: SEPARATOR,
+        borderColor: UI.color.border,
         opacity: pressed ? 0.72 : 1,
       })}
     >
-      <Icon size={18} color={TEXT_PRIMARY} strokeWidth={1.75} />
+      <Icon size={18} color={UI.color.text} strokeWidth={1.75} />
     </Pressable>
   );
 }
@@ -157,8 +140,8 @@ function QuickAction({
         paddingHorizontal: 10,
         borderRadius: 14,
         borderWidth: 1,
-        borderColor: primary ? TEXT_PRIMARY : SEPARATOR,
-        backgroundColor: primary ? TEXT_PRIMARY : CONTROL_SURFACE,
+        borderColor: primary ? UI.color.text : UI.color.border,
+        backgroundColor: primary ? UI.color.text : UI.color.control,
         opacity: pressed ? 0.78 : 1,
         alignItems: "center",
         justifyContent: "center",
@@ -171,18 +154,17 @@ function QuickAction({
           borderRadius: 10,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: primary ? "rgba(255,255,255,0.12)" : SURFACE_SOFT,
+          backgroundColor: primary ? "rgba(255,255,255,0.12)" : UI.color.subtle,
           marginBottom: 7,
         }}
       >
-        <Icon size={17} color={primary ? "#FFFFFF" : TEXT_PRIMARY} strokeWidth={2} />
+        <Icon size={17} color={primary ? "#FFFFFF" : UI.color.text} strokeWidth={2} />
       </View>
       <Typography
         numberOfLines={1}
         style={{
           fontSize: 13,
-          lineHeight: 17,
-          color: primary ? "#FFFFFF" : TEXT_PRIMARY,
+          color: primary ? "#FFFFFF" : UI.color.text,
           fontFamily: "IBMPlexSans_600SemiBold",
           textAlign: "center",
         }}
@@ -194,8 +176,7 @@ function QuickAction({
         style={{
           marginTop: 1,
           fontSize: 11,
-          lineHeight: 14,
-          color: primary ? "rgba(255,255,255,0.72)" : TEXT_SECONDARY,
+          color: primary ? "rgba(255,255,255,0.72)" : UI.color.muted,
           fontFamily: "IBMPlexSans_500Medium",
           textAlign: "center",
         }}
@@ -216,26 +197,25 @@ function MoneySignal({
   tone: "danger" | "success" | "neutral";
 }): JSX.Element {
   const toneColor =
-    tone === "danger" ? TEXT_DANGER : tone === "success" ? TEXT_SUCCESS : TEXT_SECONDARY;
+    tone === "danger" ? UI.color.danger : tone === "success" ? UI.color.success : UI.color.muted;
   return (
     <View
       style={{
         flex: 1,
         minWidth: 0,
         padding: 12,
-        borderRadius: 12,
+        borderRadius: UI.radius.md,
         backgroundColor:
-          tone === "danger" ? "#FFF7F5" : tone === "success" ? "#F5FCF8" : CONTROL_SURFACE,
+          tone === "danger" ? "#FFF7F5" : tone === "success" ? "#F5FCF8" : UI.color.control,
         borderWidth: 1,
-        borderColor: SEPARATOR,
+        borderColor: UI.color.border,
       }}
     >
       <Typography
         numberOfLines={1}
         style={{
           fontSize: 12,
-          lineHeight: 16,
-          color: TEXT_SECONDARY,
+          color: UI.color.muted,
           fontFamily: "IBMPlexSans_500Medium",
         }}
       >
@@ -247,7 +227,6 @@ function MoneySignal({
         style={{
           marginTop: 4,
           fontSize: 18,
-          lineHeight: 23,
           color: toneColor,
           fontFamily: "IBMPlexSans_600SemiBold",
           letterSpacing: -0.2,
@@ -259,16 +238,6 @@ function MoneySignal({
   );
 }
 
-// ─── TransactionRow ───────────────────────────────────────────────────────────
-interface TransactionRowProps {
-  expense: Expense;
-  currentUserId: string;
-  paidByUser?: User;
-  myShare: number;
-  isLast: boolean;
-  onPress: () => void;
-}
-
 function TransactionRow({
   expense,
   currentUserId,
@@ -276,22 +245,29 @@ function TransactionRow({
   myShare,
   isLast,
   onPress,
-}: TransactionRowProps): JSX.Element {
+}: {
+  expense: Expense;
+  currentUserId: string;
+  paidByUser?: User;
+  myShare: number;
+  isLast: boolean;
+  onPress: () => void;
+}): JSX.Element {
   const iPaid = expense.paidBy === currentUserId;
   const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
 
   let subAmountText = "";
-  let subAmountColor = TEXT_SECONDARY;
+  let subAmountColor: string = UI.color.muted;
 
   if (iPaid) {
     const lentAmount = expense.amount - myShare;
     if (lentAmount > 0) {
       subAmountText = `Lent ${formatAmount(lentAmount, expense.currency)}`;
-      subAmountColor = TEXT_SUCCESS;
+      subAmountColor = UI.color.success;
     }
   } else if (myShare > 0) {
     subAmountText = `Borrowed ${formatAmount(myShare, expense.currency)}`;
-    subAmountColor = TEXT_SECONDARY;
+    subAmountColor = UI.color.muted;
   }
 
   return (
@@ -304,7 +280,7 @@ function TransactionRow({
         paddingVertical: 14,
         minHeight: 64,
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: SEPARATOR,
+        borderBottomColor: UI.color.border,
         opacity: pressed ? 0.62 : 1,
       })}
     >
@@ -317,7 +293,7 @@ function TransactionRow({
           numberOfLines={1}
           style={{
             fontSize: 15,
-            color: TEXT_PRIMARY,
+            color: UI.color.text,
             fontFamily: "IBMPlexSans_600SemiBold",
             letterSpacing: -0.2,
           }}
@@ -327,7 +303,7 @@ function TransactionRow({
         <Typography
           style={{
             fontSize: 12,
-            color: TEXT_SECONDARY,
+            color: UI.color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginTop: 1,
           }}
@@ -340,7 +316,7 @@ function TransactionRow({
         <Typography
           style={{
             fontSize: 15,
-            color: TEXT_PRIMARY,
+            color: UI.color.text,
             fontFamily: "IBMPlexSans_600SemiBold",
             letterSpacing: -0.2,
           }}
@@ -363,7 +339,7 @@ function TransactionRow({
 
       <icons.ChevronRight
         size={14}
-        color={TEXT_SECONDARY}
+        color={UI.color.muted}
         strokeWidth={1.75}
         style={{ marginLeft: 8 }}
       />
@@ -371,27 +347,30 @@ function TransactionRow({
   );
 }
 
-// ─── GroupRow ─────────────────────────────────────────────────────────────────
-interface GroupRowProps {
+function GroupRow({
+  group,
+  balance,
+  currency,
+  isLast,
+  onPress,
+}: {
   group: Group;
   balance: number;
   currency: string;
   isLast: boolean;
   onPress: () => void;
-}
-
-function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps): JSX.Element {
+}): JSX.Element {
   const memberCount = group.members.length;
 
   let subAmountText = "";
-  let subAmountColor = TEXT_SECONDARY;
+  let subAmountColor: string = UI.color.muted;
 
   if (balance < 0) {
     subAmountText = `You owe ${formatAmount(Math.abs(balance), currency)}`;
-    subAmountColor = TEXT_DANGER;
+    subAmountColor = UI.color.danger;
   } else if (balance > 0) {
     subAmountText = `Owes you ${formatAmount(balance, currency)}`;
-    subAmountColor = TEXT_SUCCESS;
+    subAmountColor = UI.color.success;
   } else {
     subAmountText = "Settled up";
   }
@@ -406,7 +385,7 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
         paddingVertical: 14,
         minHeight: 64,
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: SEPARATOR,
+        borderBottomColor: UI.color.border,
         opacity: pressed ? 0.62 : 1,
       })}
     >
@@ -419,7 +398,7 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
           numberOfLines={1}
           style={{
             fontSize: 15,
-            color: TEXT_PRIMARY,
+            color: UI.color.text,
             fontFamily: "IBMPlexSans_600SemiBold",
             letterSpacing: -0.2,
           }}
@@ -429,7 +408,7 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
         <Typography
           style={{
             fontSize: 13,
-            color: TEXT_SECONDARY,
+            color: UI.color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginTop: 2,
           }}
@@ -452,7 +431,7 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
 
       <icons.ChevronRight
         size={14}
-        color={TEXT_SECONDARY}
+        color={UI.color.muted}
         strokeWidth={1.75}
         style={{ marginLeft: 8 }}
       />
@@ -460,7 +439,6 @@ function GroupRow({ group, balance, currency, isLast, onPress }: GroupRowProps):
   );
 }
 
-// ─── DashboardScreen ──────────────────────────────────────────────────────────
 export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -481,7 +459,6 @@ export default function DashboardScreen(): JSX.Element {
   const [activityFilter, setActivityFilter] = useState<"all" | "paid" | "owe">("all");
   const queryClient = useQueryClient();
 
-  // Balance computations
   const owedToYou = useMemo(
     () =>
       balancesUtil.getTotalOwedToMe(
@@ -601,7 +578,7 @@ export default function DashboardScreen(): JSX.Element {
     netBalance > 0
       ? `${formatAmount(netBalance, preferredCurrency.code)} owed to you`
       : netBalance < 0
-        ? `${formatAmount(netBalance, preferredCurrency.code)} left to settle`
+        ? `${formatAmount(Math.abs(netBalance), preferredCurrency.code)} left to settle`
         : "You are settled up";
   const owedBackLabel =
     owedUsers.length > 1
@@ -621,6 +598,13 @@ export default function DashboardScreen(): JSX.Element {
     ({ netBalance: amount }) => Math.abs(amount) > 0.005
   ).length;
 
+  const { totalSpent, expenseCount } = useAnalytics(
+    currentUser?.id,
+    "month",
+    preferredCurrency.code,
+    convertCurrency
+  );
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -630,14 +614,15 @@ export default function DashboardScreen(): JSX.Element {
   }, [queryClient]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
+      {/* Greeting + Actions */}
       <View
         style={{
           paddingTop: insets.top + 16,
           paddingBottom: 12,
-          paddingHorizontal: SECTION_PAD,
+          paddingHorizontal: UI.space.page,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
@@ -647,8 +632,7 @@ export default function DashboardScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 14,
-              lineHeight: 20,
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               includeFontPadding: false,
               marginBottom: 6,
@@ -660,7 +644,7 @@ export default function DashboardScreen(): JSX.Element {
             style={{
               fontFamily: "Sora_600SemiBold",
               fontSize: 30,
-              color: TEXT_PRIMARY,
+              color: UI.color.textStrong,
               lineHeight: 34,
               letterSpacing: -0.3,
               includeFontPadding: false,
@@ -684,12 +668,12 @@ export default function DashboardScreen(): JSX.Element {
                   position: "absolute",
                   top: 8,
                   right: 8,
-                  backgroundColor: "#E85D5D",
+                  backgroundColor: UI.color.danger,
                   width: 10,
                   height: 10,
                   borderRadius: 5,
                   borderWidth: 2,
-                  borderColor: CONTROL_SURFACE,
+                  borderColor: UI.color.control,
                 }}
               />
             )}
@@ -707,16 +691,17 @@ export default function DashboardScreen(): JSX.Element {
         contentContainerStyle={{ paddingBottom: 110 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={TEXT_PRIMARY} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.color.text} />
         }
       >
-        <FocusAwareView delay={0} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 18 }}>
+        {/* Net Balance Card */}
+        <FocusAwareView delay={0} style={{ paddingHorizontal: UI.space.page, marginBottom: 18 }}>
           <View
             style={{
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
+              backgroundColor: UI.color.surface,
+              borderRadius: UI.radius.lg,
               borderWidth: 1,
-              borderColor: SEPARATOR,
+              borderColor: UI.color.border,
               padding: 16,
             }}
           >
@@ -731,27 +716,26 @@ export default function DashboardScreen(): JSX.Element {
                       ? "#FFF7F5"
                       : balanceTone === "success"
                         ? "#F5FCF8"
-                        : SURFACE_SOFT,
+                        : UI.color.subtle,
                   borderWidth: 1,
-                  borderColor: SEPARATOR,
+                  borderColor: UI.color.border,
                   alignItems: "center",
                   justifyContent: "center",
                 }}
               >
                 {balanceTone === "danger" ? (
-                  <icons.ArrowUpRight size={20} color={TEXT_DANGER} strokeWidth={2.25} />
+                  <icons.ArrowUpRight size={20} color={UI.color.danger} strokeWidth={2.25} />
                 ) : balanceTone === "success" ? (
-                  <icons.ArrowDownLeft size={20} color={TEXT_SUCCESS} strokeWidth={2.25} />
+                  <icons.ArrowDownLeft size={20} color={UI.color.success} strokeWidth={2.25} />
                 ) : (
-                  <icons.Check size={20} color={TEXT_SECONDARY} strokeWidth={2.25} />
+                  <icons.Check size={20} color={UI.color.muted} strokeWidth={2.25} />
                 )}
               </View>
               <View style={{ flex: 1 }}>
                 <Typography
                   style={{
                     fontSize: 12,
-                    lineHeight: 16,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
@@ -761,8 +745,7 @@ export default function DashboardScreen(): JSX.Element {
                   style={{
                     marginTop: 4,
                     fontSize: 22,
-                    lineHeight: 28,
-                    color: TEXT_PRIMARY,
+                    color: UI.color.textStrong,
                     fontFamily: "Sora_600SemiBold",
                     letterSpacing: -0.2,
                   }}
@@ -773,8 +756,7 @@ export default function DashboardScreen(): JSX.Element {
                   style={{
                     marginTop: 5,
                     fontSize: 14,
-                    lineHeight: 20,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                   }}
                 >
@@ -798,7 +780,8 @@ export default function DashboardScreen(): JSX.Element {
           </View>
         </FocusAwareView>
 
-        <FocusAwareView delay={35} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 24 }}>
+        {/* Quick Actions */}
+        <FocusAwareView delay={35} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
           <View style={{ flexDirection: "row", gap: 10 }}>
             <QuickAction
               icon={icons.ReceiptText}
@@ -830,14 +813,79 @@ export default function DashboardScreen(): JSX.Element {
           </View>
         </FocusAwareView>
 
-        <FocusAwareView delay={105} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 28 }}>
+        {/* Stats/Analytics Preview Card */}
+        <FocusAwareView delay={70} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => router.push("/(tabs)/stats")}
+            style={({ pressed }) => ({
+              backgroundColor: UI.color.textStrong,
+              borderRadius: UI.radius.lg,
+              padding: 20,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              opacity: pressed ? 0.85 : 1,
+            })}
+          >
+            <View style={{ flex: 1 }}>
+              <Typography
+                style={{
+                  fontSize: 12,
+                  color: "rgba(255,255,255,0.6)",
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  textTransform: "uppercase",
+                  letterSpacing: 1.2,
+                  marginBottom: 6,
+                }}
+              >
+                This Month
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: 26,
+                  color: "#FFFFFF",
+                  fontFamily: "Sora_600SemiBold",
+                  letterSpacing: -0.3,
+                  marginBottom: 4,
+                }}
+              >
+                {formatAmount(totalSpent, preferredCurrency.code)}
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: "rgba(255,255,255,0.7)",
+                  fontFamily: "IBMPlexSans_500Medium",
+                }}
+              >
+                {expenseCount} expense{expenseCount !== 1 ? "s" : ""} this period
+              </Typography>
+            </View>
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: UI.radius.xl,
+                backgroundColor: "rgba(255,255,255,0.12)",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <icons.BarChart3 size={22} color="#FFFFFF" strokeWidth={1.75} />
+            </View>
+          </Pressable>
+        </FocusAwareView>
+
+        {/* Groups Section */}
+        <FocusAwareView delay={105} style={{ paddingHorizontal: UI.space.page, marginBottom: 28 }}>
           <SectionLabel
             rightAction={
               <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
                 <Typography
                   style={{
                     fontSize: 13,
-                    color: TEXT_SUBTLE,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                   }}
                 >
@@ -856,7 +904,7 @@ export default function DashboardScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 14,
-                      color: TEXT_PRIMARY,
+                      color: UI.color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -873,14 +921,14 @@ export default function DashboardScreen(): JSX.Element {
                     height: 44,
                     alignItems: "center",
                     justifyContent: "center",
-                    borderRadius: 999,
+                    borderRadius: UI.radius.pill,
                     borderWidth: 1,
-                    borderColor: SEPARATOR,
-                    backgroundColor: CONTROL_SURFACE,
+                    borderColor: UI.color.border,
+                    backgroundColor: UI.color.control,
                     opacity: pressed ? 0.72 : 1,
                   })}
                 >
-                  <icons.Plus size={22} color={TEXT_PRIMARY} strokeWidth={2.5} />
+                  <icons.Plus size={22} color={UI.color.text} strokeWidth={2.5} />
                 </Pressable>
               </View>
             }
@@ -890,10 +938,10 @@ export default function DashboardScreen(): JSX.Element {
 
           <View
             style={{
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
+              backgroundColor: UI.color.surface,
+              borderRadius: UI.radius.lg,
               borderWidth: 1,
-              borderColor: SEPARATOR,
+              borderColor: UI.color.border,
               paddingHorizontal: 14,
             }}
           >
@@ -925,16 +973,15 @@ export default function DashboardScreen(): JSX.Element {
               <View style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}>
                 <icons.UsersRound
                   size={38}
-                  color={TEXT_SECONDARY}
+                  color={UI.color.muted}
                   strokeWidth={1.2}
                   style={{ marginBottom: 12 }}
                 />
                 <Typography
                   style={{
-                    color: TEXT_PRIMARY,
+                    color: UI.color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                     fontSize: 17,
-                    lineHeight: 22,
                     marginBottom: 4,
                   }}
                 >
@@ -942,12 +989,11 @@ export default function DashboardScreen(): JSX.Element {
                 </Typography>
                 <Typography
                   style={{
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                     fontSize: 14,
-                    lineHeight: 20,
-                    marginBottom: 16,
                     textAlign: "center",
+                    marginBottom: 16,
                   }}
                 >
                   Start a shared space for expenses.
@@ -958,19 +1004,15 @@ export default function DashboardScreen(): JSX.Element {
                   style={({ pressed }) => ({
                     paddingHorizontal: 16,
                     minHeight: 44,
-                    backgroundColor: TEXT_PRIMARY,
-                    borderRadius: 999,
+                    backgroundColor: UI.color.text,
+                    borderRadius: UI.radius.pill,
                     alignItems: "center",
                     justifyContent: "center",
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
                   <Typography
-                    style={{
-                      fontSize: 14,
-                      color: "#FFFFFF",
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                    }}
+                    style={{ fontSize: 14, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     Create group
                   </Typography>
@@ -980,7 +1022,8 @@ export default function DashboardScreen(): JSX.Element {
           </View>
         </FocusAwareView>
 
-        <FocusAwareView delay={100} style={{ paddingHorizontal: SECTION_PAD, marginBottom: 24 }}>
+        {/* Recent Activity */}
+        <FocusAwareView delay={100} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
           <SectionLabel
             rightAction={
               <Pressable
@@ -996,7 +1039,7 @@ export default function DashboardScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: TEXT_PRIMARY,
+                    color: UI.color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
@@ -1010,44 +1053,23 @@ export default function DashboardScreen(): JSX.Element {
 
           <View
             style={{
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
+              backgroundColor: UI.color.surface,
+              borderRadius: UI.radius.lg,
               borderWidth: 1,
-              borderColor: SEPARATOR,
+              borderColor: UI.color.border,
               padding: 14,
             }}
           >
             <View style={{ flexDirection: "row", gap: 8, marginBottom: 2 }}>
               {(["all", "paid", "owe"] as const).map((filter) => {
                 const label = filter === "paid" ? "You paid" : filter === "owe" ? "You owe" : "All";
-                const isActive = activityFilter === filter;
                 return (
-                  <Pressable
+                  <FilterPill
                     key={filter}
+                    label={label}
+                    isActive={activityFilter === filter}
                     onPress={() => setActivityFilter(filter)}
-                    style={({ pressed }) => ({
-                      paddingHorizontal: 14,
-                      minHeight: 36,
-                      borderRadius: 999,
-                      backgroundColor: isActive ? TEXT_PRIMARY : CONTROL_SURFACE,
-                      borderWidth: 1,
-                      borderColor: isActive ? TEXT_PRIMARY : SEPARATOR,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: pressed ? 0.7 : 1,
-                    })}
-                  >
-                    <Typography
-                      style={{
-                        fontSize: 13,
-                        lineHeight: 16,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                        color: isActive ? "#FFFFFF" : TEXT_PRIMARY,
-                      }}
-                    >
-                      {label}
-                    </Typography>
-                  </Pressable>
+                  />
                 );
               })}
             </View>
@@ -1083,16 +1105,15 @@ export default function DashboardScreen(): JSX.Element {
               >
                 <icons.PackageOpen
                   size={42}
-                  color={TEXT_SECONDARY}
+                  color={UI.color.muted}
                   strokeWidth={1}
                   style={{ marginBottom: 12 }}
                 />
                 <Typography
                   style={{
                     fontSize: 16,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
-                    lineHeight: 22,
                     textAlign: "center",
                   }}
                 >
@@ -1105,19 +1126,15 @@ export default function DashboardScreen(): JSX.Element {
                     marginTop: 14,
                     paddingHorizontal: 20,
                     minHeight: 44,
-                    backgroundColor: TEXT_PRIMARY,
-                    borderRadius: 999,
+                    backgroundColor: UI.color.text,
+                    borderRadius: UI.radius.pill,
                     alignItems: "center",
                     justifyContent: "center",
                     opacity: pressed ? 0.8 : 1,
                   })}
                 >
                   <Typography
-                    style={{
-                      fontSize: 15,
-                      color: "#FFFFFF",
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                    }}
+                    style={{ fontSize: 15, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     Log your first expense
                   </Typography>

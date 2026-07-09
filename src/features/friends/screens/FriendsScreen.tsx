@@ -9,7 +9,6 @@ import {
   RefreshControl,
   ScrollView,
   Share,
-  TextInput,
   View,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -24,6 +23,7 @@ import { SwipeableRow } from "@/components/layout/SwipeableRow";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { UI, ScreenHeader, MetricCell, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import {
@@ -42,18 +42,14 @@ import { queryKeys } from "@/queries/keys";
 import { useUIStore } from "@/store/useUIStore";
 import type { Expense, Friendship, User } from "@/types";
 
-const BG = "#F7F6F1";
-const SURFACE = "#FEFDFA";
-const SURFACE_SOFT = "#F4F3EE";
-const CONTROL_SURFACE = "#FFFFFF";
-const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_SECONDARY = "#6E6D68";
-const TEXT_SUBTLE = "#9B9A94";
-const TEXT_DANGER = "#E85D5D";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E7E5DE";
-const SECTION_PAD = 20;
-const CARD_RADIUS = 16;
+const TEXT_PRIMARY = UI.color.text;
+const TEXT_SECONDARY = UI.color.muted;
+const TEXT_DANGER = UI.color.danger;
+const TEXT_SUCCESS = UI.color.success;
+const SEPARATOR = UI.color.border;
+const CONTROL_SURFACE = UI.color.control;
+const CARD_RADIUS = UI.radius.lg;
+const SECTION_PAD = UI.space.page;
 
 type FriendFilter = "all" | "owes_you" | "you_owe" | "settled";
 type FriendSectionKey = "owes_you" | "you_owe" | "settled";
@@ -155,112 +151,7 @@ function IconButton({
   );
 }
 
-function SummaryCell({
-  label,
-  value,
-  tone,
-}: {
-  label: string;
-  value: string;
-  tone: "credit" | "debt" | "neutral";
-}): JSX.Element {
-  const color = tone === "credit" ? TEXT_SUCCESS : tone === "debt" ? TEXT_DANGER : TEXT_PRIMARY;
 
-  return (
-    <View
-      style={{
-        flex: 1,
-        minWidth: 0,
-        paddingVertical: 12,
-        paddingHorizontal: 12,
-        borderRadius: 12,
-        backgroundColor: tone === "credit" ? "#F5FCF8" : tone === "debt" ? "#FFF7F5" : SURFACE_SOFT,
-        borderWidth: 1,
-        borderColor: SEPARATOR,
-      }}
-    >
-      <Typography
-        numberOfLines={1}
-        style={{
-          fontSize: 12,
-          lineHeight: 16,
-          color: TEXT_SECONDARY,
-          fontFamily: "IBMPlexSans_500Medium",
-        }}
-      >
-        {label}
-      </Typography>
-      <Typography
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        style={{
-          marginTop: 4,
-          fontSize: 18,
-          lineHeight: 23,
-          color,
-          fontFamily: "IBMPlexSans_600SemiBold",
-          letterSpacing: -0.2,
-        }}
-      >
-        {value}
-      </Typography>
-    </View>
-  );
-}
-
-function SearchField({
-  value,
-  onChangeText,
-  onClear,
-}: {
-  value: string;
-  onChangeText: (value: string) => void;
-  onClear: () => void;
-}): JSX.Element {
-  return (
-    <View
-      style={{
-        minHeight: 52,
-        borderRadius: 999,
-        borderWidth: 1,
-        borderColor: SEPARATOR,
-        backgroundColor: CONTROL_SURFACE,
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 16,
-      }}
-    >
-      <icons.Search size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
-      <TextInput
-        value={value}
-        onChangeText={onChangeText}
-        placeholder="Search friends or email"
-        placeholderTextColor={TEXT_SECONDARY}
-        returnKeyType="search"
-        style={{
-          flex: 1,
-          fontSize: 16,
-          lineHeight: 20,
-          fontFamily: "IBMPlexSans_500Medium",
-          color: TEXT_PRIMARY,
-          paddingVertical: 12,
-          paddingHorizontal: 10,
-        }}
-      />
-      {value.length > 0 && (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Clear search"
-          onPress={onClear}
-          hitSlop={8}
-          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
-        >
-          <icons.X size={18} color={TEXT_PRIMARY} strokeWidth={1.75} />
-        </Pressable>
-      )}
-    </View>
-  );
-}
 
 export default function FriendsScreen(): JSX.Element {
   const router = useRouter();
@@ -569,26 +460,26 @@ export default function FriendsScreen(): JSX.Element {
   const renderHeader = useCallback(
     () => (
       <View style={{ paddingBottom: 18 }}>
-        <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 16 }}>
+        <View style={{ paddingHorizontal: UI.space.page, marginBottom: 16 }}>
           <View
             style={{
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
+              backgroundColor: UI.color.surface,
+              borderRadius: UI.radius.lg,
               borderWidth: 1,
-              borderColor: SEPARATOR,
+              borderColor: UI.color.border,
               padding: 14,
             }}
           >
             <View style={{ flexDirection: "row", gap: 10 }}>
-              <SummaryCell
+              <MetricCell
                 label="Owed to you"
                 value={formatAmount(totalOwedToMe, preferredCurrency.code)}
-                tone={totalOwedToMe > 0 ? "credit" : "neutral"}
+                tone={totalOwedToMe > 0 ? "success" : "neutral"}
               />
-              <SummaryCell
+              <MetricCell
                 label="You owe"
                 value={formatAmount(totalIOwe, preferredCurrency.code)}
-                tone={totalIOwe > 0 ? "debt" : "neutral"}
+                tone={totalIOwe > 0 ? "danger" : "neutral"}
               />
             </View>
             <Typography
@@ -596,7 +487,7 @@ export default function FriendsScreen(): JSX.Element {
                 marginTop: 12,
                 fontSize: 13,
                 lineHeight: 18,
-                color: TEXT_SECONDARY,
+                color: UI.color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
               }}
             >
@@ -608,7 +499,7 @@ export default function FriendsScreen(): JSX.Element {
         </View>
 
         {(pendingRequests.length > 0 || topBalanceAction) && (
-          <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 18 }}>
+          <View style={{ paddingHorizontal: UI.space.page, marginBottom: 18 }}>
             <View
               style={{
                 flexDirection: "row",
@@ -620,8 +511,7 @@ export default function FriendsScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 18,
-                  lineHeight: 23,
-                  color: TEXT_PRIMARY,
+                  color: UI.color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   letterSpacing: -0.2,
                 }}
@@ -631,7 +521,7 @@ export default function FriendsScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 13,
-                  color: TEXT_SUBTLE,
+                  color: UI.color.muted,
                   fontFamily: "IBMPlexSans_500Medium",
                 }}
               >
@@ -642,10 +532,10 @@ export default function FriendsScreen(): JSX.Element {
 
             <View
               style={{
-                backgroundColor: SURFACE,
-                borderRadius: CARD_RADIUS,
+                backgroundColor: UI.color.surface,
+                borderRadius: UI.radius.lg,
                 borderWidth: 1,
-                borderColor: SEPARATOR,
+                borderColor: UI.color.border,
                 paddingHorizontal: 14,
               }}
             >
@@ -799,21 +689,20 @@ export default function FriendsScreen(): JSX.Element {
           </View>
         )}
 
-        <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 12 }}>
-          <SearchField value={search} onChangeText={setSearch} onClear={() => setSearch("")} />
+        <View style={{ paddingHorizontal: UI.space.page, marginBottom: 12 }}>
+          <SearchField value={search} onChangeText={setSearch} onClear={() => setSearch("")} placeholder="Search friends or email" />
         </View>
 
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={{
-            paddingHorizontal: SECTION_PAD,
+            paddingHorizontal: UI.space.page,
             paddingBottom: 4,
             gap: 8,
           }}
         >
           {(["all", "owes_you", "you_owe", "settled"] as const).map((value) => {
-            const isSelected = filter === value;
             const labels: Record<FriendFilter, string> = {
               all: "All",
               owes_you: "Owes you",
@@ -822,36 +711,15 @@ export default function FriendsScreen(): JSX.Element {
             };
 
             return (
-              <Pressable
+              <FilterPill
                 key={value}
-                accessibilityRole="button"
+                label={`${labels[value]} ${filterCounts[value]}`}
+                isActive={filter === value}
                 onPress={() => {
                   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                   setFilter(value);
                 }}
-                style={({ pressed }) => ({
-                  minHeight: 36,
-                  paddingHorizontal: 14,
-                  borderRadius: 999,
-                  backgroundColor: isSelected ? TEXT_PRIMARY : CONTROL_SURFACE,
-                  borderWidth: 1,
-                  borderColor: isSelected ? TEXT_PRIMARY : SEPARATOR,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: pressed ? 0.72 : 1,
-                })}
-              >
-                <Typography
-                  style={{
-                    fontSize: 13,
-                    lineHeight: 16,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
-                  }}
-                >
-                  {labels[value]} {filterCounts[value]}
-                </Typography>
-              </Pressable>
+              />
             );
           })}
         </ScrollView>
@@ -873,91 +741,48 @@ export default function FriendsScreen(): JSX.Element {
 
   const renderEmpty = useCallback(
     () => (
-      <View style={{ paddingHorizontal: SECTION_PAD }}>
+      <View style={{ paddingHorizontal: UI.space.page }}>
         {isLoading ? (
           <View style={{ paddingTop: 40 }}>
             <AppLoader />
           </View>
         ) : (
-          <View
-            style={{
-              marginTop: 20,
-              paddingVertical: 34,
-              paddingHorizontal: 24,
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
-              borderWidth: 1,
-              borderColor: SEPARATOR,
-              alignItems: "center",
-            }}
-          >
-            <View
-              style={{
-                width: 62,
-                height: 62,
-                borderRadius: 18,
-                borderWidth: 1,
-                borderColor: SEPARATOR,
-                backgroundColor: SURFACE_SOFT,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 14,
-              }}
-            >
-              <icons.Users size={30} color={TEXT_PRIMARY} strokeWidth={1.5} />
-            </View>
-            <Typography
-              style={{
-                fontSize: 19,
-                lineHeight: 24,
-                color: TEXT_PRIMARY,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                textAlign: "center",
-              }}
-            >
-              {hasActiveFilters ? "No friends match this view" : "Add the people you split with"}
-            </Typography>
-            <Typography
-              style={{
-                marginTop: 7,
-                fontSize: 14,
-                lineHeight: 20,
-                color: TEXT_SECONDARY,
-                fontFamily: "IBMPlexSans_500Medium",
-                textAlign: "center",
-              }}
-            >
-              {hasActiveFilters
+          <View style={{ marginTop: 20 }}>
+            <EmptyState
+              icon={icons.Users}
+              title={hasActiveFilters ? "No friends match this view" : "Add the people you split with"}
+              subtitle={hasActiveFilters
                 ? "Try a different name, email, or balance filter."
-                : "Friends and shared-group contacts will appear here with balances and recent activity."}
-            </Typography>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={hasActiveFilters ? clearSearchAndFilter : () => router.push("/friend/new")}
-              style={({ pressed }) => ({
-                marginTop: 22,
-                minHeight: 44,
-                paddingHorizontal: 18,
-                borderRadius: 999,
-                backgroundColor: hasActiveFilters ? CONTROL_SURFACE : TEXT_PRIMARY,
-                borderWidth: 1,
-                borderColor: hasActiveFilters ? SEPARATOR : TEXT_PRIMARY,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.75 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: hasActiveFilters ? TEXT_PRIMARY : "#FFFFFF",
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
+                : "Friends and shared-group contacts will appear here with balances and recent activity."
+              }
+            />
+            <View style={{ marginTop: 16, alignItems: "center" }}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={hasActiveFilters ? clearSearchAndFilter : () => router.push("/friend/new")}
+                style={({ pressed }) => ({
+                  minHeight: 44,
+                  paddingHorizontal: 18,
+                  borderRadius: UI.radius.pill,
+                  backgroundColor: hasActiveFilters ? UI.color.control : UI.color.text,
+                  borderWidth: 1,
+                  borderColor: hasActiveFilters ? UI.color.border : UI.color.text,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed ? 0.75 : 1,
+                })}
               >
-                {hasActiveFilters ? "Clear filters" : "Add friend"}
-              </Typography>
-            </Pressable>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: hasActiveFilters ? UI.color.text : "#FFFFFF",
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  {hasActiveFilters ? "Clear filters" : "Add friend"}
+                </Typography>
+              </Pressable>
+            </View>
           </View>
         )}
       </View>
@@ -975,7 +800,7 @@ export default function FriendsScreen(): JSX.Element {
       const ActionIcon = balance > 0 ? icons.Bell : balance < 0 ? icons.CheckCircle2 : icons.Plus;
 
       return (
-        <View style={{ paddingHorizontal: SECTION_PAD }}>
+        <View style={{ paddingHorizontal: UI.space.page }}>
           <SwipeableRow
             onDelete={() => handleRemoveFriend(row)}
             onSettle={
@@ -997,14 +822,14 @@ export default function FriendsScreen(): JSX.Element {
                 minHeight: 78,
                 paddingVertical: 12,
                 paddingHorizontal: 14,
-                backgroundColor: SURFACE,
+                backgroundColor: UI.color.surface,
                 borderWidth: 1,
-                borderColor: SEPARATOR,
+                borderColor: UI.color.border,
                 borderTopWidth: isFirst ? 1 : 0,
-                borderTopLeftRadius: isFirst ? CARD_RADIUS : 0,
-                borderTopRightRadius: isFirst ? CARD_RADIUS : 0,
-                borderBottomLeftRadius: isLast ? CARD_RADIUS : 0,
-                borderBottomRightRadius: isLast ? CARD_RADIUS : 0,
+                borderTopLeftRadius: isFirst ? UI.radius.lg : 0,
+                borderTopRightRadius: isFirst ? UI.radius.lg : 0,
+                borderBottomLeftRadius: isLast ? UI.radius.lg : 0,
+                borderBottomRightRadius: isLast ? UI.radius.lg : 0,
                 opacity: pressed ? 0.62 : 1,
               })}
             >
@@ -1117,7 +942,7 @@ export default function FriendsScreen(): JSX.Element {
         return (
           <View
             style={{
-              paddingHorizontal: SECTION_PAD,
+              paddingHorizontal: UI.space.page,
               paddingTop: 18,
               paddingBottom: 9,
               flexDirection: "row",
@@ -1128,8 +953,7 @@ export default function FriendsScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 18,
-                lineHeight: 23,
-                color: TEXT_PRIMARY,
+                color: UI.color.text,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 letterSpacing: -0.2,
               }}
@@ -1139,7 +963,7 @@ export default function FriendsScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 13,
-                color: TEXT_SUBTLE,
+                color: UI.color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
               }}
             >
@@ -1159,40 +983,19 @@ export default function FriendsScreen(): JSX.Element {
   );
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
-      <View
-        style={{
-          paddingTop: insets.top + 16,
-          paddingHorizontal: SECTION_PAD,
-          paddingBottom: 14,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          backgroundColor: BG,
-        }}
-      >
-        <View style={{ flex: 1, minWidth: 0, marginRight: 14 }}>
-          <Typography
-            numberOfLines={1}
-            style={{
-              fontFamily: "Sora_600SemiBold",
-              fontSize: 30,
-              lineHeight: 34,
-              color: TEXT_PRIMARY,
-              letterSpacing: -0.3,
-              includeFontPadding: false,
-            }}
-          >
-            Friends
-          </Typography>
-        </View>
-
-        <IconButton
-          icon={icons.Plus}
-          label="Add friend"
-          onPress={() => router.push("/friend/new")}
+      <View style={{ paddingTop: insets.top + 16, backgroundColor: UI.color.bg }}>
+        <ScreenHeader
+          title="Friends"
+          rightAction={
+            <IconButton
+              icon={icons.Plus}
+              label="Add friend"
+              onPress={() => router.push("/friend/new")}
+            />
+          }
         />
       </View>
 

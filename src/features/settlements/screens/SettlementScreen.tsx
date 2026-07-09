@@ -5,6 +5,8 @@ import {
   Pressable,
   ScrollView,
   TextInput,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { Typography, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
@@ -32,60 +34,18 @@ import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useAppToast } from "@/hooks/useAppToast";
+import { ScreenHeader } from "@/components/ui/native-ui";
+import { formatAmount } from "@/components/ui/AmountDisplay";
 
-// --- Design Tokens ---
 const BG = "#F5F0EB";
-const BRAND = "#8C7A6B";
 const SURFACE = "#FFFFFF";
 const BORDER = "#E8E4DF";
 const TEXT_PRIMARY = "#1A1A1A";
 const TEXT_SECONDARY = "#8A8782";
-const KEYPAD_ACTIVE = "#EAE5E0";
+const BRAND = "#8C7A6B";
 const CARD_RADIUS = 18;
 const PILL_RADIUS = 999;
 
-// --- Custom Keypad Component ---
-function KeypadButton({
-  val,
-  onPress,
-  isAction = false,
-}: {
-  val: string | JSX.Element;
-  onPress: () => void;
-  isAction?: boolean;
-}) {
-  return (
-    <Pressable
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        onPress();
-      }}
-      style={({ pressed }) => ({
-        flex: 1,
-        height: 64,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: pressed ? KEYPAD_ACTIVE : "transparent",
-      })}
-    >
-      {typeof val === "string" ? (
-        <Typography
-          style={{
-            fontSize: isAction ? 24 : 28,
-            color: TEXT_PRIMARY,
-            fontFamily: "IBMPlexSans_500Medium",
-          }}
-        >
-          {val}
-        </Typography>
-      ) : (
-        val
-      )}
-    </Pressable>
-  );
-}
-
-// --- Main Screen ---
 export default function SettleUpScreen(): JSX.Element {
   const {
     id,
@@ -113,7 +73,6 @@ export default function SettleUpScreen(): JSX.Element {
 
   const targetGroup = groups.find((g) => g.id === routeGroupId);
 
-  // Group-specific debt calculation
   const debtOptions = useMemo(() => {
     if (!isGroupRoute || !targetGroup) return [];
 
@@ -163,10 +122,8 @@ export default function SettleUpScreen(): JSX.Element {
   const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>(defaultFriendId);
   const [showRecipientSelector, setShowRecipientSelector] = useState(false);
 
-  // Keep selectedFriendId synced if defaultFriendId changes (e.g. data loaded late)
   useEffect(() => {
     if (!selectedFriendId && defaultFriendId) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSelectedFriendId(defaultFriendId);
     }
   }, [defaultFriendId, selectedFriendId]);
@@ -175,7 +132,6 @@ export default function SettleUpScreen(): JSX.Element {
     combinedFriends.find((f) => f.id === selectedFriendId) ||
     targetGroup?.members.find((m) => m.userId === selectedFriendId)?.user;
 
-  // Calculate overall net balance for non-group route
   const overallBalances = useMemo(() => {
     if (isGroupRoute) return new Map<string, number>();
     return balancesUtil.getUserBalances(
@@ -210,10 +166,8 @@ export default function SettleUpScreen(): JSX.Element {
     (initialDirection as "you" | "them") || (netBalance < 0 ? "you" : "them");
   const [direction, setDirection] = useState<"you" | "them">(defaultDirection);
 
-  // Sync direction when recipient changes
   useEffect(() => {
     if (!initialDirection) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDirection(netBalance < 0 ? "you" : "them");
     }
   }, [netBalance, initialDirection]);
@@ -227,11 +181,9 @@ export default function SettleUpScreen(): JSX.Element {
   const [note, setNote] = useState("");
   const [showOptional, setShowOptional] = useState(false);
 
-  // Keep amount synced if initial amount/balance changes and user hasn't typed
   useEffect(() => {
     if (!initialAmount && amountStr === "") {
       const amt = Math.abs(netBalance).toFixed(2);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (amt !== "0.00") setAmountStr(amt);
     }
   }, [netBalance, initialAmount, amountStr]);
@@ -269,32 +221,14 @@ export default function SettleUpScreen(): JSX.Element {
     );
   }
 
-  if (!friend) return <View />; // loading state
+  if (!friend) return <View />;
 
-  // Handle Keypad
-  const handleKeypad = (val: string) => {
-    if (val === "C") {
-      setAmountStr("");
-      return;
-    }
-    if (val === "<") {
-      setAmountStr((prev) => prev.slice(0, -1));
-      return;
-    }
-    if (val === ".") {
-      if (amountStr.includes(".")) return;
-      setAmountStr((prev) => (prev ? prev + "." : "0."));
-      return;
-    }
-    if (amountStr.includes(".")) {
-      const parts = amountStr.split(".");
-      if (parts[1] && parts[1].length >= 2) return;
-    }
-    if (amountStr === "0" && val !== ".") {
-      setAmountStr(val);
-      return;
-    }
-    setAmountStr((prev) => prev + val);
+  const handleAmountChange = (text: string) => {
+    const cleaned = text.replace(/[^0-9.]/g, "");
+    const parts = cleaned.split(".");
+    if (parts.length > 2) return;
+    if (parts[1] && parts[1].length > 2) return;
+    setAmountStr(cleaned);
   };
 
   const parsedAmount = parseFloat(amountStr) || 0;
@@ -338,44 +272,22 @@ export default function SettleUpScreen(): JSX.Element {
   const rightName = isYouDirection ? friend.name.split(" ")[0] : "You";
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: BG }}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+    >
       <StatusBar style="dark" />
-      <View
-        style={{
-          paddingTop: insets.top + 16,
-          paddingHorizontal: 24,
-          paddingBottom: 16,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Typography
-          style={{ fontFamily: "Sora_600SemiBold", fontSize: 28, color: TEXT_PRIMARY }}
-        >
-          Settle Up
-        </Typography>
-        <Pressable
-          onPress={() => router.back()}
-          hitSlop={20}
-          style={({ pressed }) => ({
-            width: 44,
-            height: 44,
-            borderRadius: PILL_RADIUS,
-            backgroundColor: SURFACE,
-            borderWidth: 1,
-            borderColor: BORDER,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed ? 0.6 : 1,
-          })}
-        >
-          <icons.X size={20} color={TEXT_PRIMARY} />
-        </Pressable>
-      </View>
+      <ScreenHeader
+        title="Settle Up"
+        onBackPress={() => router.back()}
+      />
 
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false}>
-        {/* ── Direction Flow Visual ── */}
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Direction Flow Visual */}
         <Animated.View
           entering={FadeInDown.duration(400)}
           style={{ paddingHorizontal: 24, paddingVertical: 24 }}
@@ -490,7 +402,7 @@ export default function SettleUpScreen(): JSX.Element {
           </View>
         </Animated.View>
 
-        {/* ── Recipient Selector (Groups Only) ── */}
+        {/* Recipient Selector */}
         {showRecipientSelector && debtOptions.length > 1 && (
           <Animated.View
             entering={FadeInDown.duration(300)}
@@ -557,10 +469,10 @@ export default function SettleUpScreen(): JSX.Element {
           </Animated.View>
         )}
 
-        {/* ── Large Amount Display ── */}
+        {/* Native Amount Input */}
         <Animated.View
           entering={FadeInDown.duration(400)}
-          style={{ alignItems: "center", marginVertical: 32 }}
+          style={{ alignItems: "center", marginVertical: 32, paddingHorizontal: 24 }}
         >
           <Typography
             style={{
@@ -572,19 +484,46 @@ export default function SettleUpScreen(): JSX.Element {
           >
             Amount ({preferredCurrency.code})
           </Typography>
-          <Typography
+
+          <View
             style={{
-              fontSize: 64,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              color: amountStr ? TEXT_PRIMARY : TEXT_SECONDARY,
-              letterSpacing: -2,
-              lineHeight: 72,
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              borderBottomWidth: 2,
+              borderBottomColor: BORDER,
+              paddingBottom: 8,
+              minWidth: 200,
             }}
-            numberOfLines={1}
-            adjustsFontSizeToFit
           >
-            {amountStr || "0"}
-          </Typography>
+            <Typography
+              style={{
+                fontSize: 32,
+                color: TEXT_PRIMARY,
+                fontFamily: "IBMPlexSans_500Medium",
+                marginRight: 8,
+              }}
+            >
+              {preferredCurrency.symbol}
+            </Typography>
+            <TextInput
+              value={amountStr}
+              onChangeText={handleAmountChange}
+              keyboardType="decimal-pad"
+              placeholder="0.00"
+              placeholderTextColor={TEXT_SECONDARY}
+              style={{
+                fontSize: 48,
+                fontFamily: "IBMPlexSans_600SemiBold",
+                color: amountStr ? TEXT_PRIMARY : TEXT_SECONDARY,
+                letterSpacing: -2,
+                textAlign: "center",
+                minWidth: 120,
+                padding: 0,
+              }}
+              autoFocus
+            />
+          </View>
 
           {/* Quick Amount Pills */}
           {Math.abs(netBalance) > 0 && (
@@ -607,7 +546,7 @@ export default function SettleUpScreen(): JSX.Element {
                 <Typography
                   style={{ fontSize: 13, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
-                  Full: {Math.abs(netBalance).toFixed(2)}
+                  Full: {formatAmount(Math.abs(netBalance), preferredCurrency.code)}
                 </Typography>
               </Pressable>
               <Pressable
@@ -635,7 +574,7 @@ export default function SettleUpScreen(): JSX.Element {
           )}
         </Animated.View>
 
-        {/* ── Optional Note/Group Toggle ── */}
+        {/* Optional Note/Group */}
         <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
           <Pressable onPress={() => setShowOptional(!showOptional)} style={{ padding: 8 }}>
             <Typography
@@ -741,101 +680,79 @@ export default function SettleUpScreen(): JSX.Element {
         </View>
 
         <View style={{ flex: 1 }} />
+      </ScrollView>
 
-        {/* ── Custom Keypad ── */}
-        <Animated.View
-          entering={FadeInDown.duration(400).delay(200)}
-          style={{ backgroundColor: SURFACE, borderTopWidth: 1, borderTopColor: BORDER, borderTopLeftRadius: CARD_RADIUS, borderTopRightRadius: CARD_RADIUS, paddingTop: 8 }}
+      {/* Sticky Submit Button */}
+      <View
+        style={{
+          paddingHorizontal: 24,
+          paddingBottom: Math.max(insets.bottom, 24),
+          paddingTop: 12,
+          backgroundColor: BG,
+          borderTopWidth: 1,
+          borderTopColor: BORDER,
+        }}
+      >
+        <View
+          style={{
+            backgroundColor: "#F5F0EB",
+            borderWidth: 1,
+            borderColor: BORDER,
+            borderRadius: CARD_RADIUS,
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+            marginBottom: 12,
+          }}
         >
-          <View style={{ flexDirection: "row" }}>
-            <KeypadButton val="1" onPress={() => handleKeypad("1")} />
-            <KeypadButton val="2" onPress={() => handleKeypad("2")} />
-            <KeypadButton val="3" onPress={() => handleKeypad("3")} />
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            <KeypadButton val="4" onPress={() => handleKeypad("4")} />
-            <KeypadButton val="5" onPress={() => handleKeypad("5")} />
-            <KeypadButton val="6" onPress={() => handleKeypad("6")} />
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            <KeypadButton val="7" onPress={() => handleKeypad("7")} />
-            <KeypadButton val="8" onPress={() => handleKeypad("8")} />
-            <KeypadButton val="9" onPress={() => handleKeypad("9")} />
-          </View>
-          <View style={{ flexDirection: "row" }}>
-            <KeypadButton val="." onPress={() => handleKeypad(".")} />
-            <KeypadButton val="0" onPress={() => handleKeypad("0")} />
-            <KeypadButton
-              val={<icons.Delete size={24} color={TEXT_PRIMARY} />}
-              onPress={() => handleKeypad("<")}
-            />
-          </View>
-
-          {/* ── Submit Button ── */}
-          <View style={{ padding: 24, paddingBottom: Math.max(insets.bottom, 24) }}>
-            <View
+          <Typography
+            style={{
+              fontSize: 13,
+              color: TEXT_SECONDARY,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginBottom: 4,
+            }}
+          >
+            Recording payment
+          </Typography>
+          <Typography
+            style={{
+              fontSize: 15,
+              color: TEXT_PRIMARY,
+              fontFamily: "IBMPlexSans_600SemiBold",
+            }}
+          >
+            {leftName} pays {rightName}
+          </Typography>
+        </View>
+        <Pressable
+          onPress={handleSubmit}
+          disabled={isAddingSettlement || !parsedAmount}
+          style={({ pressed }) => ({
+            backgroundColor: BRAND,
+            height: 56,
+            borderRadius: PILL_RADIUS,
+            justifyContent: "center",
+            alignItems: "center",
+            opacity: pressed || isAddingSettlement || !parsedAmount ? 0.8 : 1,
+          })}
+        >
+          {isAddingSettlement ? (
+            <Spinner color="white" size="sm" />
+          ) : (
+            <Typography
               style={{
-                backgroundColor: "#F5F0EB",
-                borderWidth: 1,
-                borderColor: BORDER,
-                borderRadius: CARD_RADIUS,
-                paddingHorizontal: 16,
-                paddingVertical: 12,
-                marginBottom: 12,
+                fontSize: 16,
+                color: "#FFF",
+                fontFamily: "IBMPlexSans_600SemiBold",
+                letterSpacing: 1,
               }}
             >
-              <Typography
-                style={{
-                  fontSize: 13,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "IBMPlexSans_500Medium",
-                  marginBottom: 4,
-                }}
-              >
-                Recording payment
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 15,
-                  color: TEXT_PRIMARY,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                {leftName} pays {rightName}
-              </Typography>
-            </View>
-            <Pressable
-              onPress={handleSubmit}
-              disabled={isAddingSettlement}
-              style={({ pressed }) => ({
-                backgroundColor: BRAND,
-                height: 56,
-                borderRadius: PILL_RADIUS,
-                justifyContent: "center",
-                alignItems: "center",
-                opacity: pressed || isAddingSettlement ? 0.8 : 1,
-              })}
-            >
-              {isAddingSettlement ? (
-                <Spinner color="white" size="sm" />
-              ) : (
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: "#FFF",
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    letterSpacing: 1,
-                  }}
-                >
-                  Record {preferredCurrency.symbol}
-                  {parsedAmount.toFixed(2)}
-                </Typography>
-              )}
-            </Pressable>
-          </View>
-        </Animated.View>
-
-      </ScrollView>
-    </View>
+              Record {preferredCurrency.symbol}
+              {parsedAmount.toFixed(2)}
+            </Typography>
+          )}
+        </Pressable>
+      </View>
+    </KeyboardAvoidingView>
   );
 }

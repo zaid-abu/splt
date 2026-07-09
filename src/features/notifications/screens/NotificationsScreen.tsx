@@ -1,6 +1,7 @@
 import { View, FlatList, Pressable, ActivityIndicator } from "react-native";
 import { Typography, Skeleton } from "heroui-native";
 import { StatusBar } from "expo-status-bar";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -14,15 +15,12 @@ import { useAuth } from "@/context/AppContext";
 import { useAcceptFriend, useRejectFriend } from "@/features/friends/queries/useFriends";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { UI, ScreenHeader, EmptyState } from "@/components/ui/native-ui";
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
-
-const BG = "#F5F0EB";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
 
 export default function NotificationsScreen(): JSX.Element {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
   const { data: notifications = [], isLoading } = useNotifications(currentUser?.id);
@@ -50,19 +48,19 @@ export default function NotificationsScreen(): JSX.Element {
           layout={LinearTransition}
           entering={FadeInDown.duration(400).delay(index * 50)}
         >
-          <View style={{ padding: 24, borderBottomWidth: 1, borderBottomColor: SEPARATOR }}>
+          <View style={{ padding: UI.space.page, borderBottomWidth: 1, borderBottomColor: UI.color.border }}>
             <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
               <AppUserAvatar user={friendship.friendUser!} size="md" />
               <View style={{ flex: 1, marginLeft: 16 }}>
                 <Typography
-                  style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
                 >
                   {item.title}
                 </Typography>
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                     marginTop: 4,
                   }}
@@ -78,7 +76,8 @@ export default function NotificationsScreen(): JSX.Element {
                 style={({ pressed }) => ({
                   flex: 1,
                   height: 48,
-                  backgroundColor: TEXT_PRIMARY,
+                  borderRadius: UI.radius.pill,
+                  backgroundColor: UI.color.text,
                   alignItems: "center",
                   justifyContent: "center",
                   opacity: pressed || isWorking ? 0.7 : 1,
@@ -101,19 +100,20 @@ export default function NotificationsScreen(): JSX.Element {
                 style={({ pressed }) => ({
                   flex: 1,
                   height: 48,
+                  borderRadius: UI.radius.pill,
                   backgroundColor: "transparent",
                   borderWidth: 1,
-                  borderColor: SEPARATOR,
+                  borderColor: UI.color.border,
                   alignItems: "center",
                   justifyContent: "center",
                   opacity: pressed || isWorking ? 0.5 : 1,
                 })}
               >
                 {isRejecting ? (
-                  <ActivityIndicator color={TEXT_PRIMARY} />
+                  <ActivityIndicator color={UI.color.text} />
                 ) : (
                   <Typography
-                    style={{ color: TEXT_PRIMARY, fontSize: 14, fontFamily: "IBMPlexSans_600SemiBold" }}
+                    style={{ color: UI.color.text, fontSize: 14, fontFamily: "IBMPlexSans_600SemiBold" }}
                   >
                     Reject
                   </Typography>
@@ -129,43 +129,15 @@ export default function NotificationsScreen(): JSX.Element {
   };
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
-      {/* Header */}
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 24,
-          paddingTop: 60,
-          paddingBottom: 16,
-          borderBottomWidth: 1,
-          borderBottomColor: SEPARATOR,
-        }}
-      >
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.back()}
-          style={({ pressed }) => ({
-            width: 44,
-            height: 44,
-            alignItems: "center",
-            justifyContent: "center",
-            backgroundColor: "transparent",
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            opacity: pressed ? 0.5 : 1,
-            marginRight: 16,
-          })}
-        >
-          <icons.ArrowLeft size={20} color={TEXT_PRIMARY} />
-        </Pressable>
-        <Typography
-          style={{ fontSize: 24, fontFamily: "Sora_600SemiBold", color: TEXT_PRIMARY }}
-        >
-          Notifications
-        </Typography>
+      {/* Safe-area-aware header */}
+      <View style={{ paddingTop: insets.top }}>
+        <ScreenHeader
+          title="Notifications"
+          onBackPress={() => router.back()}
+        />
       </View>
 
       <FlatList
@@ -176,36 +148,13 @@ export default function NotificationsScreen(): JSX.Element {
         ListEmptyComponent={
           <View style={{ padding: 40, alignItems: "center", justifyContent: "center" }}>
             {isLoading ? (
-              <ActivityIndicator size="large" color={TEXT_PRIMARY} />
+              <ActivityIndicator size="large" color={UI.color.text} />
             ) : (
-              <>
-                <icons.BellOff
-                  size={48}
-                  color={TEXT_SECONDARY}
-                  style={{ marginBottom: 16, opacity: 0.5 }}
-                />
-                <Typography
-                  style={{
-                    fontSize: 18,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    textAlign: "center",
-                  }}
-                >
-                  All caught up!
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_500Medium",
-                    textAlign: "center",
-                    marginTop: 8,
-                  }}
-                >
-                  You have no new notifications right now.
-                </Typography>
-              </>
+              <EmptyState
+                icon={icons.BellOff}
+                title="All caught up!"
+                subtitle="You have no new notifications right now."
+              />
             )}
           </View>
         }

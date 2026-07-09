@@ -1,22 +1,25 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useRef, useCallback } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 
 import { useDeleteActivity } from "@/features/activity/queries/useActivities";
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { SwipeableRow } from "@/components/layout/SwipeableRow";
+import { UI } from "@/components/ui/native-ui";
 
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#E85D5D";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
-const CARD_RADIUS = 18;
+const TEXT_PRIMARY = UI.color.text;
+const TEXT_SECONDARY = UI.color.muted;
+const TEXT_DANGER = UI.color.danger;
+const TEXT_SUCCESS = UI.color.success;
+const SEPARATOR = UI.color.border;
+const CARD_RADIUS = UI.radius.lg;
 
 interface ActivityItemProps {
   activity: Activity;
@@ -28,14 +31,15 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
   const { currentUser } = useAuth();
   const { mutateAsync: deleteActivity } = useDeleteActivity();
   const router = useRouter();
+  const sheetRef = useRef<BottomSheetModal>(null);
+  const insets = useSafeAreaInsets();
 
-  // Determine financial involvement
   const involvement = useMemo(() => {
     if (activity.type === "group_created") {
-      return { type: "neutral", text: "Group created", amount: 0, showAmount: false };
+      return { type: "neutral" as const, text: "Group created", amount: 0, showAmount: false };
     }
     if (activity.type === "member_joined") {
-      return { type: "neutral", text: "Joined group", amount: 0, showAmount: false };
+      return { type: "neutral" as const, text: "Joined group", amount: 0, showAmount: false };
     }
 
     if (activity.type === "expense" && activity.expense) {
@@ -43,35 +47,32 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
       const mySplit = exp.splits.find((s) => s.userId === currentUser.id);
 
       if (!mySplit) {
-        return { type: "neutral", text: "Not involved", amount: 0, showAmount: false };
+        return { type: "neutral" as const, text: "Not involved", amount: 0, showAmount: false };
       }
 
       if (exp.paidBy === currentUser.id) {
-        // You paid for it.
         const owedToYou = exp.amount - mySplit.amount;
         if (owedToYou > 0) {
-          return { type: "positive", text: "You lent", amount: owedToYou, showAmount: true };
-        } else {
-          return { type: "neutral", text: "You paid your share", amount: 0, showAmount: false };
+          return { type: "positive" as const, text: "You lent", amount: owedToYou, showAmount: true };
         }
+        return { type: "neutral" as const, text: "You paid your share", amount: 0, showAmount: false };
       } else {
-        // Someone else paid
-        return { type: "negative", text: "You owe", amount: mySplit.amount, showAmount: true };
+        return { type: "negative" as const, text: "You owe", amount: mySplit.amount, showAmount: true };
       }
     }
 
     if (activity.type === "settlement" && activity.settlement) {
       const set = activity.settlement;
       if (set.fromUserId === currentUser.id) {
-        return { type: "neutral", text: "You paid", amount: set.amount, showAmount: true };
+        return { type: "neutral" as const, text: "You paid", amount: set.amount, showAmount: true };
       }
       if (set.toUserId === currentUser.id) {
-        return { type: "positive", text: "You received", amount: set.amount, showAmount: true };
+        return { type: "positive" as const, text: "You received", amount: set.amount, showAmount: true };
       }
-      return { type: "neutral", text: "Not involved", amount: 0, showAmount: false };
+      return { type: "neutral" as const, text: "Not involved", amount: 0, showAmount: false };
     }
 
-    return { type: "neutral", text: "", amount: 0, showAmount: false };
+    return { type: "neutral" as const, text: "", amount: 0, showAmount: false };
   }, [activity, currentUser.id]);
 
   const subtitle = useMemo(() => {
@@ -81,7 +82,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
         activity.expense.paidBy === currentUser.id
           ? "You"
           : activity.expense.paidByUser?.name?.split(" ")[0] || "Someone";
-      return `${paidByName} paid • ${dateStr}`;
+      return `${paidByName} paid \u2022 ${dateStr}`;
     }
     if (activity.type === "settlement" && activity.settlement) {
       const fromName =
@@ -92,7 +93,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
         activity.settlement.toUserId === currentUser.id
           ? "you"
           : activity.settlement.toUser?.name?.split(" ")[0] || "someone";
-      return `${fromName} paid ${toName} • ${dateStr}`;
+      return `${fromName} paid ${toName} \u2022 ${dateStr}`;
     }
     return dateStr;
   }, [activity, currentUser.id]);
@@ -122,90 +123,183 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
     neutral: TEXT_PRIMARY,
   };
 
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        pressBehavior="close"
+        opacity={0.4}
+      />
+    ),
+    []
+  );
+
+  const handleTap = () => {
+    Haptics.selectionAsync();
+    sheetRef.current?.present();
+  };
+
+  const handleViewDetails = () => {
+    sheetRef.current?.dismiss();
+    if (activity.expense) {
+      router.push(`/expense/${activity.expense.id}`);
+    } else if (activity.groupId) {
+      router.push(`/group/${activity.groupId}`);
+    }
+  };
+
+  const handleDelete = async () => {
+    sheetRef.current?.dismiss();
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+    setTimeout(async () => {
+      try {
+        await deleteActivity(activity.id);
+      } catch {
+        // error handled by query client
+      }
+    }, 300);
+  };
+
   return (
-    <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
-      <SwipeableRow onDelete={() => deleteActivity(activity.id)}>
-        <Pressable
-          onPress={() => {
-            if (activity.expense) {
-              router.push(`/expense/${activity.expense.id}`);
-            } else if (activity.groupId) {
-              router.push(`/group/${activity.groupId}`);
-            }
-          }}
-          accessibilityRole="button"
-          style={({ pressed }) => ({
-            flexDirection: "row",
+    <Animated.View entering={FadeInDown.delay((index % 10) * 40).springify()}>
+      <Pressable
+        onPress={handleTap}
+        accessibilityRole="button"
+        accessibilityLabel={`${activity.description}. ${involvement.text} ${involvement.showAmount ? formatAmount(involvement.amount, activity.currency || "USD") : ""}`}
+        style={({ pressed }) => ({
+          flexDirection: "row",
+          alignItems: "center",
+          paddingVertical: 14,
+          paddingHorizontal: 16,
+          borderBottomWidth: isLast ? 0 : 1,
+          borderBottomColor: SEPARATOR,
+          backgroundColor: pressed ? "#FBF7F2" : "transparent",
+        })}
+      >
+        {/* Icon badge */}
+        <View
+          style={{
+            width: 44,
+            height: 44,
+            borderRadius: CARD_RADIUS,
+            backgroundColor: bgColors[involvement.type],
             alignItems: "center",
-            paddingVertical: 16,
-            paddingHorizontal: 24,
-            borderBottomWidth: isLast ? 0 : 1,
-            borderBottomColor: SEPARATOR,
-            backgroundColor: pressed ? "#FBF7F2" : "transparent",
-          })}
+            justifyContent: "center",
+            marginRight: 14,
+            flexShrink: 0,
+          }}
         >
-          {/* Icon Box */}
-          <View
+          <IconComponent size={22} color={iconColors[involvement.type]} strokeWidth={1.5} />
+        </View>
+
+        {/* Title + subtitle */}
+        <View style={{ flex: 1, marginRight: 10 }}>
+          <Typography
+            numberOfLines={1}
             style={{
-              width: 48,
-              height: 48,
-              borderRadius: CARD_RADIUS,
-              backgroundColor: bgColors[involvement.type],
-              alignItems: "center",
-              justifyContent: "center",
-              marginRight: 16,
-              flexShrink: 0,
+              fontSize: 15,
+              color: TEXT_PRIMARY,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              letterSpacing: -0.2,
             }}
           >
-            <IconComponent size={24} color={iconColors[involvement.type]} strokeWidth={1.5} />
-          </View>
+            {activity.description}
+          </Typography>
+          <Typography
+            numberOfLines={1}
+            style={{
+              fontSize: 13,
+              color: TEXT_SECONDARY,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginTop: 3,
+            }}
+          >
+            {subtitle}
+          </Typography>
+        </View>
 
-          {/* Title & Subtitle */}
-          <View style={{ flex: 1, marginRight: 12 }}>
+        {/* Amount */}
+        <View style={{ alignItems: "flex-end", maxWidth: 110 }}>
+          {involvement.showAmount ? (
             <Typography
               numberOfLines={1}
-              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
-            >
-              {activity.description}
-            </Typography>
-            <Typography
+              adjustsFontSizeToFit
               style={{
-                fontSize: 14,
-                color: TEXT_SECONDARY,
-                fontFamily: "IBMPlexSans_500Medium",
-                marginTop: 4,
+                fontSize: 15,
+                color: textColors[involvement.type],
+                fontFamily: "IBMPlexSans_600SemiBold",
+                letterSpacing: -0.2,
               }}
             >
-              {subtitle}
+              {involvement.type === "positive" ? "+" : ""}
+              {formatAmount(involvement.amount, activity.currency || "USD")}
             </Typography>
-          </View>
+          ) : null}
+          <Typography
+            numberOfLines={1}
+            style={{
+              fontSize: 12,
+              color: involvement.showAmount ? textColors[involvement.type] : TEXT_SECONDARY,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginTop: 2,
+            }}
+          >
+            {involvement.text}
+          </Typography>
+        </View>
 
-          {/* Amount / Involvement */}
-          <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
-            {involvement.showAmount ? (
-              <>
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: textColors[involvement.type],
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  {involvement.type === "positive" ? "+" : ""}
-                  {formatAmount(involvement.amount, activity.currency || "USD")}
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: textColors[involvement.type],
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    marginTop: 4,
-                  }}
-                >
-                  {involvement.text}
-                </Typography>
-              </>
-            ) : (
+        {/* Chevron */}
+        <icons.ChevronRight
+          size={14}
+          color={TEXT_SECONDARY}
+          strokeWidth={1.75}
+          style={{ marginLeft: 8 }}
+        />
+      </Pressable>
+
+      {/* Bottom Sheet — Activity Detail */}
+      <BottomSheetModal
+        ref={sheetRef}
+        index={0}
+        enableDynamicSizing
+        backdropComponent={renderBackdrop}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+      >
+        <BottomSheetView
+          style={{
+            paddingHorizontal: UI.space.page,
+            paddingTop: 24,
+            paddingBottom: insets.bottom + 24,
+            gap: 20,
+          }}
+        >
+          {/* Activity summary */}
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
+            <View
+              style={{
+                width: 52,
+                height: 52,
+                borderRadius: CARD_RADIUS,
+                backgroundColor: bgColors[involvement.type],
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <IconComponent size={26} color={iconColors[involvement.type]} strokeWidth={1.5} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Typography
+                style={{
+                  fontSize: 20,
+                  color: TEXT_PRIMARY,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                {activity.description}
+              </Typography>
               <Typography
                 style={{
                   fontSize: 14,
@@ -214,12 +308,89 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
                   marginTop: 4,
                 }}
               >
+                {subtitle}
+              </Typography>
+            </View>
+          </View>
+
+          {/* Amount highlight */}
+          {involvement.showAmount && (
+            <View style={{ alignItems: "center", paddingVertical: 8 }}>
+              <Typography
+                style={{
+                  fontSize: 36,
+                  color: textColors[involvement.type],
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  letterSpacing: -1,
+                }}
+              >
+                {involvement.type === "positive" ? "+" : ""}
+                {formatAmount(involvement.amount, activity.currency || "USD")}
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: textColors[involvement.type],
+                  fontFamily: "IBMPlexSans_500Medium",
+                  marginTop: 4,
+                }}
+              >
                 {involvement.text}
               </Typography>
+            </View>
+          )}
+
+          {/* Actions */}
+          <View style={{ gap: 12 }}>
+            {activity.type !== "group_created" && activity.type !== "member_joined" && (
+              <Pressable
+                onPress={handleViewDetails}
+                style={({ pressed }) => ({
+                  height: 52,
+                  borderRadius: UI.radius.pill,
+                  backgroundColor: UI.color.text,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed ? 0.75 : 1,
+                })}
+              >
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: "#FFFFFF",
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  View Details
+                </Typography>
+              </Pressable>
             )}
+            <Pressable
+              onPress={handleDelete}
+              style={({ pressed }) => ({
+                height: 52,
+                borderRadius: UI.radius.pill,
+                backgroundColor: UI.color.control,
+                borderWidth: 1,
+                borderColor: UI.color.danger,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: UI.color.danger,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                Delete
+              </Typography>
+            </Pressable>
           </View>
-        </Pressable>
-      </SwipeableRow>
+        </BottomSheetView>
+      </BottomSheetModal>
     </Animated.View>
   );
 }

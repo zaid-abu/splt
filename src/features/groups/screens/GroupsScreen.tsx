@@ -1,14 +1,9 @@
-/**
- * Groups Screen
- *
- * Flatter design (no shadows), smooth animations, strict reference alignment based on design.json
- */
 import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useCallback, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, TextInput, Pressable } from "react-native";
+import { View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import * as icons from "lucide-react-native";
@@ -19,6 +14,7 @@ import Animated, { LinearTransition } from "react-native-reanimated";
 import { GroupCard } from "@/features/groups/components/GroupCard";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { formatAmount } from "@/components/ui/AmountDisplay";
+import { UI, ScreenHeader, MetricCell, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -26,18 +22,6 @@ import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 import type { Group } from "@/types";
-
-// ─── Design Tokens ───
-const BG = "#F5F0EB";
-const SURFACE = "#FFFCF8";
-const CONTROL_SURFACE = "#FFFFFF";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#E85D5D";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
-const CARD_RADIUS = 16;
-const SECTION_PAD = 24;
 
 type GroupFilter = "all" | "owe" | "owed" | "settled";
 
@@ -124,163 +108,67 @@ export default function GroupsScreen(): JSX.Element {
 
   const ListHeaderComponent = useCallback(
     () => (
-      <View style={{ paddingHorizontal: SECTION_PAD, marginTop: insets.top + 16 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginBottom: 20,
-          }}
-        >
-          <Typography
-            style={{
-              fontFamily: "Sora_600SemiBold",
-              fontSize: 36,
-              color: TEXT_PRIMARY,
-              lineHeight: 44,
-              letterSpacing: -0.5,
-            }}
-          >
-            Groups
-          </Typography>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.push("/group/new")}
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: CONTROL_SURFACE,
-              borderRadius: 999,
-              borderWidth: 1,
-              borderColor: SEPARATOR,
-              opacity: pressed ? 0.5 : 1,
-            })}
-          >
-            <icons.Plus size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
-          </Pressable>
-        </View>
-
-        <View style={{ flexDirection: "row", gap: 10, marginBottom: 16 }}>
-          {[
-            { label: "Groups", value: String(activeGroups.length), color: TEXT_PRIMARY },
-            {
-              label: "You owe",
-              value: formatAmount(totals.youOwe, preferredCurrency.code),
-              color: TEXT_DANGER,
-            },
-            {
-              label: "Owed",
-              value: formatAmount(totals.owedToYou, preferredCurrency.code),
-              color: TEXT_SUCCESS,
-            },
-          ].map((item) => (
-            <View
-              key={item.label}
-              style={{
-                flex: 1,
-                backgroundColor: SURFACE,
-                borderRadius: CARD_RADIUS,
+      <View style={{ paddingTop: insets.top + 16 }}>
+        <ScreenHeader
+          title="Groups"
+          rightAction={
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push("/group/new")}
+              style={({ pressed }) => ({
+                width: 44,
+                height: 44,
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: UI.color.control,
+                borderRadius: UI.radius.pill,
                 borderWidth: 1,
-                borderColor: SEPARATOR,
-                paddingHorizontal: 12,
-                paddingVertical: 12,
-              }}
+                borderColor: UI.color.border,
+                opacity: pressed ? 0.5 : 1,
+              })}
             >
-              <Typography
-                numberOfLines={1}
-                style={{
-                  fontSize: 11,
-                  color: TEXT_SECONDARY,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  textTransform: "uppercase",
-                  letterSpacing: 0.8,
-                  marginBottom: 5,
-                }}
-              >
-                {item.label}
-              </Typography>
-              <Typography
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                style={{
-                  fontSize: 16,
-                  color: item.color,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                {item.value}
-              </Typography>
-            </View>
-          ))}
+              <icons.Plus size={20} color={UI.color.text} strokeWidth={1.5} />
+            </Pressable>
+          }
+        />
+
+        <View style={{ paddingHorizontal: UI.space.page, marginBottom: 16 }}>
+          <View style={{ flexDirection: "row", gap: 10 }}>
+            <MetricCell
+              label="Groups"
+              value={String(activeGroups.length)}
+            />
+            <MetricCell
+              label="You owe"
+              value={formatAmount(totals.youOwe, preferredCurrency.code)}
+              tone={totals.youOwe > 0 ? "danger" : "neutral"}
+            />
+            <MetricCell
+              label="Owed"
+              value={formatAmount(totals.owedToYou, preferredCurrency.code)}
+              tone={totals.owedToYou > 0 ? "success" : "neutral"}
+            />
+          </View>
         </View>
 
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            backgroundColor: SURFACE,
-            borderWidth: 1,
-            borderColor: SEPARATOR,
-            borderRadius: CARD_RADIUS,
-            height: 56,
-            paddingHorizontal: 16,
-            marginBottom: 14,
-          }}
-        >
-          <icons.Search size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
-          <TextInput
+        <View style={{ paddingHorizontal: UI.space.page, marginBottom: 14 }}>
+          <SearchField
             value={search}
             onChangeText={setSearch}
+            onClear={() => setSearch("")}
             placeholder="Search your groups..."
-            placeholderTextColor={TEXT_SECONDARY}
-            style={{
-              flex: 1,
-              marginLeft: 12,
-              fontFamily: "IBMPlexSans_500Medium",
-              color: TEXT_PRIMARY,
-              fontSize: 16,
-            }}
           />
-          {search.length > 0 && (
-            <Pressable accessibilityRole="button" onPress={() => setSearch("")} hitSlop={8}>
-              <icons.XCircle size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
-            </Pressable>
-          )}
         </View>
 
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, marginBottom: 20 }}>
-          {FILTERS.map((item) => {
-            const isActive = filter === item.key;
-            return (
-              <Pressable
-                key={item.key}
-                accessibilityRole="button"
-                onPress={() => setFilter(item.key)}
-                style={({ pressed }) => ({
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
-                  borderRadius: 999,
-                  backgroundColor: isActive ? TEXT_PRIMARY : CONTROL_SURFACE,
-                  borderWidth: 1,
-                  borderColor: isActive ? TEXT_PRIMARY : SEPARATOR,
-                  opacity: pressed ? 0.7 : 1,
-                })}
-              >
-                <Typography
-                  style={{
-                    fontSize: 13,
-                    color: isActive ? "#FFFFFF" : TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  {item.label}
-                </Typography>
-              </Pressable>
-            );
-          })}
+        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8, paddingHorizontal: UI.space.page, marginBottom: 20 }}>
+          {FILTERS.map((item) => (
+            <FilterPill
+              key={item.key}
+              label={item.label}
+              isActive={filter === item.key}
+              onPress={() => setFilter(item.key)}
+            />
+          ))}
         </View>
       </View>
     ),
@@ -289,117 +177,51 @@ export default function GroupsScreen(): JSX.Element {
 
   const ListEmptyComponent = useCallback(
     () => (
-      <View style={{ paddingHorizontal: SECTION_PAD }}>
+      <View style={{ paddingHorizontal: UI.space.page }}>
         {isLoading ? (
           <View style={{ paddingTop: 40 }}>
             <AppLoader />
           </View>
         ) : (
-          <View
-            style={{
-              marginTop: 32,
-              alignItems: "center",
-              justifyContent: "center",
-              padding: 32,
-              backgroundColor: SURFACE,
-              borderRadius: CARD_RADIUS,
-              borderWidth: 1,
-              borderColor: SEPARATOR,
-            }}
-          >
-            <View
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 22,
-                backgroundColor: CONTROL_SURFACE,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-                borderWidth: 1,
-                borderColor: SEPARATOR,
-              }}
-            >
-              <icons.Users size={32} color={TEXT_PRIMARY} strokeWidth={1.5} />
-            </View>
-            <Typography
-              style={{
-                fontSize: 20,
-                color: TEXT_PRIMARY,
-                marginBottom: 8,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                textAlign: "center",
-                letterSpacing: -0.5,
-              }}
-            >
-              No groups found
-            </Typography>
-            <Typography
-              style={{
-                fontSize: 15,
-                color: TEXT_SECONDARY,
-                textAlign: "center",
-                fontFamily: "IBMPlexSans_500Medium",
-              }}
-            >
-              {search
+          <EmptyState
+            icon={icons.Users}
+            title="No groups found"
+            subtitle={
+              search
                 ? "Try a different search term."
                 : filter !== "all"
                   ? "No groups match this filter."
-                  : "Create a group with friends to start splitting expenses easily."}
-            </Typography>
-            {!search && filter === "all" && (
-              <Pressable
-                onPress={() => router.push("/group/new")}
-                style={({ pressed }) => ({
-                  marginTop: 32,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: TEXT_PRIMARY,
-                  height: 56,
-                  borderRadius: 999,
-                  paddingHorizontal: 32,
-                  opacity: pressed ? 0.8 : 1,
-                })}
-              >
-                <icons.Plus size={20} color="#FFFFFF" strokeWidth={2} />
-                <Typography
-                  style={{
-                    color: "#FFFFFF",
-                    fontSize: 16,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    marginLeft: 8,
-                  }}
-                >
-                  Create Group
-                </Typography>
-              </Pressable>
-            )}
-            {(search || filter !== "all") && (
-              <Pressable
-                onPress={() => {
-                  setSearch("");
-                  setFilter("all");
+                  : "Create a group with friends to start splitting expenses easily."
+            }
+          />
+        )}
+        {!search && filter === "all" && !isLoading && (
+          <View style={{ marginTop: 16 }}>
+            <Pressable
+              onPress={() => router.push("/group/new")}
+              style={({ pressed }) => ({
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                backgroundColor: UI.color.text,
+                height: 56,
+                borderRadius: UI.radius.pill,
+                paddingHorizontal: 32,
+                opacity: pressed ? 0.7 : 1,
+              })}
+            >
+              <icons.Plus size={20} color="#FFFFFF" strokeWidth={2} />
+              <Typography
+                style={{
+                  color: "#FFFFFF",
+                  fontSize: 16,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  marginLeft: 8,
                 }}
-                style={({ pressed }) => ({
-                  marginTop: 20,
-                  paddingHorizontal: 18,
-                  paddingVertical: 10,
-                  borderRadius: 999,
-                  borderWidth: 1,
-                  borderColor: SEPARATOR,
-                  backgroundColor: CONTROL_SURFACE,
-                  opacity: pressed ? 0.7 : 1,
-                })}
               >
-                <Typography
-                  style={{ color: TEXT_PRIMARY, fontSize: 14, fontFamily: "IBMPlexSans_600SemiBold" }}
-                >
-                  Clear filters
-                </Typography>
-              </Pressable>
-            )}
+                Create Group
+              </Typography>
+            </Pressable>
           </View>
         )}
       </View>
@@ -420,7 +242,7 @@ export default function GroupsScreen(): JSX.Element {
 
       return (
         <Animated.View layout={LinearTransition.springify()}>
-          <View style={{ paddingHorizontal: SECTION_PAD }}>
+          <View style={{ paddingHorizontal: UI.space.page }}>
             <GroupCard
               group={item.group}
               balance={item.netBalance}
@@ -438,7 +260,7 @@ export default function GroupsScreen(): JSX.Element {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
       <FocusAwareView delay={0} style={{ flex: 1 }}>
