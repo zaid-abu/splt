@@ -33,6 +33,17 @@ export function useResetPassword() {
   });
 }
 
+export function useDeleteAccount() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: string) => AuthService.deleteAccount(userId),
+    onSuccess: () => {
+      queryClient.clear();
+    },
+  });
+}
+
 export function useSignOut() {
   const queryClient = useQueryClient();
 

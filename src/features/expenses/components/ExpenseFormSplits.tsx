@@ -4,6 +4,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { SectionLabel } from "@/components/ui/native-ui";
 import type { ExpenseCategory, SplitMethod, User } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/types";
 
@@ -11,22 +12,6 @@ const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
 const SEPARATOR = "#E8E4DF";
 
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <Typography
-      style={{
-        fontSize: 11,
-        letterSpacing: 1.4,
-        color: TEXT_SECONDARY,
-        fontFamily: "IBMPlexSans_600SemiBold",
-        textTransform: "uppercase",
-        marginBottom: 16,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
 
 const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
   { key: "equal", label: "Equal", desc: "Divide equally" },

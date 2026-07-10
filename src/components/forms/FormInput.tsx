@@ -21,7 +21,7 @@ export interface FormInputProps<T extends FieldValues> extends Omit<
   hideLabel?: boolean;
 }
 
-const TEXT_DANGER = "#E02424";
+const TEXT_DANGER = UI.color.danger;
 
 export function FormInput<T extends FieldValues>({
   control,

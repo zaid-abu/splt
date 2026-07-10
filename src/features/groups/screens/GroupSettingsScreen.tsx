@@ -38,26 +38,10 @@ import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { GROUP_ICONS } from "@/constants/icons";
-import { UI, IconButton } from "@/components/ui/native-ui";
+import { UI, IconButton, SectionLabel } from "@/components/ui/native-ui";
+import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
 
-const TEXT_DANGER = "#E02424";
-
-function SectionLabel({ children }: { children: string }): JSX.Element {
-  return (
-    <Typography
-      style={{
-        fontSize: 11,
-        letterSpacing: 1.4,
-        color: UI.color.muted,
-        fontFamily: "IBMPlexSans_600SemiBold",
-        textTransform: "uppercase",
-        marginBottom: 16,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
+const TEXT_DANGER = UI.color.danger;
 
 function IconShell({
   IconComponent,
@@ -121,7 +105,7 @@ function ConfirmationSheet({
       index={0}
       enableDynamicSizing
       backdropComponent={SHEET_BACKDROP}
-      backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+      backgroundComponent={BlurredSheetBackground}
       handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
     >
       <BottomSheetView style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 24 }}>
@@ -236,6 +220,7 @@ export default function GroupSettingsScreen(): JSX.Element {
 
   const [loading, setLoading] = useState(false);
   const deleteSheetRef = useRef<BottomSheetModal>(null);
+  const leaveSheetRef = useRef<BottomSheetModal>(null);
   const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null);
   const removeMemberSheetRef = useRef<BottomSheetModal>(null);
   const searchSheetRef = useRef<BottomSheetModal>(null);
@@ -441,6 +426,21 @@ export default function GroupSettingsScreen(): JSX.Element {
       });
     }
   }
+
+  const handleLeaveGroup = async () => {
+    try {
+      await removeGroupMember({ groupId: group!.id, userId: currentUser.id });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      router.replace("/(tabs)/groups");
+    } catch {
+      toast.show({
+        label: "Error",
+        description: "Failed to leave group.",
+        variant: "danger",
+        placement: "top",
+      });
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
@@ -761,6 +761,32 @@ export default function GroupSettingsScreen(): JSX.Element {
                 Delete Group
               </Typography>
             </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => leaveSheetRef.current?.present()}
+              style={({ pressed }) => ({
+                height: 56,
+                borderRadius: UI.radius.pill,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+                backgroundColor: UI.color.control,
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 12,
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                Leave Group
+              </Typography>
+            </Pressable>
           </View>
         </ScrollView>
 
@@ -819,6 +845,15 @@ export default function GroupSettingsScreen(): JSX.Element {
           confirmColor={TEXT_DANGER}
           sheetRef={removeMemberSheetRef}
           onConfirm={confirmRemoveMember}
+        />
+
+        <ConfirmationSheet
+          title="Leave Group?"
+          message={`Are you sure you want to leave "${group.name}"? Your expense history will be preserved.`}
+          confirmLabel="Leave"
+          confirmColor={UI.color.text}
+          sheetRef={leaveSheetRef}
+          onConfirm={handleLeaveGroup}
         />
 
         <UserSearchBottomSheet

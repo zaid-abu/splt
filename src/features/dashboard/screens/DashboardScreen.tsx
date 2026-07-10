@@ -1,5 +1,5 @@
 import type { ComponentType, JSX } from "react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState, useEffect } from "react";
 import { ScrollView, View, RefreshControl, Pressable } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,14 +8,14 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { Typography } from "heroui-native";
 import { useQueryClient } from "@tanstack/react-query";
-import Animated, { FadeInDown, LinearTransition, Easing } from "react-native-reanimated";
+import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupRow } from "@/features/groups/components/GroupRow";
-import { UI, FilterPill } from "@/components/ui/native-ui";
+import { UI, FilterPill, IconButton } from "@/components/ui/native-ui";
 import { MoneySignal } from "@/components/ui/MoneySignal";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -60,40 +60,6 @@ function SectionLabel({
   );
 }
 
-function IconButton({
-  icon: Icon,
-  accessibilityLabel,
-  onPress,
-}: {
-  icon: ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
-  accessibilityLabel: string;
-  onPress: () => void;
-}): JSX.Element {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        onPress();
-      }}
-      style={({ pressed }) => ({
-        width: 44,
-        height: 44,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: UI.color.control,
-        borderRadius: UI.radius.pill,
-        borderWidth: 1,
-        borderColor: UI.color.border,
-        opacity: pressed ? 0.72 : 1,
-      })}
-    >
-      <Icon size={18} color={UI.color.text} strokeWidth={1.75} />
-    </Pressable>
-  );
-}
-
 function QuickAction({
   icon: Icon,
   label,
@@ -116,10 +82,10 @@ function QuickAction({
       }}
       style={({ pressed }) => ({
         flex: 1,
-        minHeight: 66,
-        paddingVertical: 10,
+        minHeight: 68,
+        paddingVertical: 12,
         paddingHorizontal: 10,
-        borderRadius: 14,
+        borderRadius: UI.radius.lg,
         borderWidth: 1,
         borderColor: primary ? UI.color.text : UI.color.border,
         backgroundColor: primary ? UI.color.text : UI.color.control,
@@ -130,13 +96,13 @@ function QuickAction({
     >
       <View
         style={{
-          width: 30,
-          height: 30,
+          width: 32,
+          height: 32,
           borderRadius: 10,
           alignItems: "center",
           justifyContent: "center",
           backgroundColor: primary ? "rgba(255,255,255,0.12)" : UI.color.subtle,
-          marginBottom: 7,
+          marginBottom: 6,
         }}
       >
         <Icon size={17} color={primary ? "#FFFFFF" : UI.color.text} strokeWidth={2} />
@@ -168,6 +134,52 @@ function QuickAction({
   );
 }
 
+function IconShell({ icon: Icon, tone }: { icon: any; tone: string }): JSX.Element {
+  return (
+    <View
+      style={{
+        width: 44,
+        height: 44,
+        borderRadius: UI.radius.lg,
+        backgroundColor:
+          tone === "danger" ? "#FFF7F5" : tone === "success" ? "#F5FCF8" : UI.color.control,
+        borderWidth: 1,
+        borderColor: UI.color.border,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Icon
+        size={20}
+        color={
+          tone === "danger" ? UI.color.danger : tone === "success" ? UI.color.success : UI.color.muted
+        }
+        strokeWidth={2}
+      />
+    </View>
+  );
+}
+
+function EmptyIconShell({ icon: Icon }: { icon: any }): JSX.Element {
+  return (
+    <View
+      style={{
+        width: 56,
+        height: 56,
+        borderRadius: UI.radius.lg,
+        backgroundColor: UI.color.control,
+        borderWidth: 1,
+        borderColor: UI.color.border,
+        alignItems: "center",
+        justifyContent: "center",
+        marginBottom: 16,
+      }}
+    >
+      <Icon size={24} color={UI.color.muted} strokeWidth={1.5} />
+    </View>
+  );
+}
+
 export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -192,33 +204,22 @@ export default function DashboardScreen(): JSX.Element {
   const [activityFilter, setActivityFilter] = useState<"all" | "paid" | "owe">("all");
   const queryClient = useQueryClient();
 
-  const owedToYou = useMemo(
-    () =>
-      balancesUtil.getTotalOwedToMe(
-        currentUser.id,
-        groups,
-        expenses,
-        settlements,
-        preferredCurrency,
-        convertCurrency
-      ),
-    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
-  );
+  const balanceScale = useSharedValue(1);
+  const balanceAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: balanceScale.value }],
+  }));
 
-  const youOwe = useMemo(
-    () =>
-      Math.abs(
-        balancesUtil.getTotalIOwe(
-          currentUser.id,
-          groups,
-          expenses,
-          settlements,
-          preferredCurrency,
-          convertCurrency
-        )
-      ),
-    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
-  );
+  useEffect(() => {
+    if (!isFirstLoad) {
+      const timer = setTimeout(() => {
+        balanceScale.value = withSpring(1.02, { damping: 10, stiffness: 120 });
+        setTimeout(() => {
+          balanceScale.value = withSpring(1, { damping: 12, stiffness: 100 });
+        }, 200);
+      }, 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isFirstLoad]);
 
   const perUserBalances = useMemo(
     () =>
@@ -233,6 +234,22 @@ export default function DashboardScreen(): JSX.Element {
       ),
     [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
   );
+
+  const owedToYou = useMemo(() => {
+    let total = 0;
+    for (const balance of perUserBalances.values()) {
+      if (balance > 0) total += balance;
+    }
+    return total;
+  }, [perUserBalances]);
+
+  const youOwe = useMemo(() => {
+    let total = 0;
+    for (const balance of perUserBalances.values()) {
+      if (balance < 0) total += balance;
+    }
+    return Math.abs(total);
+  }, [perUserBalances]);
 
   const oweUsers = useMemo(() => {
     return friends
@@ -350,7 +367,6 @@ export default function DashboardScreen(): JSX.Element {
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
 
-      {/* Greeting + Actions */}
       <View
         style={{
           paddingTop: insets.top + 16,
@@ -367,7 +383,6 @@ export default function DashboardScreen(): JSX.Element {
               fontSize: 14,
               color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
-              includeFontPadding: false,
               marginBottom: 6,
             }}
           >
@@ -380,7 +395,6 @@ export default function DashboardScreen(): JSX.Element {
               color: UI.color.textStrong,
               lineHeight: 34,
               letterSpacing: -0.3,
-              includeFontPadding: false,
             }}
             numberOfLines={1}
           >
@@ -426,7 +440,7 @@ export default function DashboardScreen(): JSX.Element {
       ) : (
         <ScrollView
           style={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 110 }}
+          contentContainerStyle={{ paddingBottom: 140 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
@@ -436,43 +450,35 @@ export default function DashboardScreen(): JSX.Element {
             />
           }
         >
-          {/* Net Balance Card */}
           <FocusAwareView delay={0} style={{ paddingHorizontal: UI.space.page, marginBottom: 18 }}>
-            <View
-              style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                padding: 16,
-              }}
+            <Animated.View
+              style={[
+                {
+                  backgroundColor:
+                    balanceTone === "danger"
+                      ? "#FFF7F5"
+                      : balanceTone === "success"
+                        ? "#F5FCF8"
+                        : UI.color.surface,
+                  borderRadius: UI.radius.lg,
+                  borderWidth: 1,
+                  borderColor: UI.color.border,
+                  padding: 16,
+                },
+                balanceAnimatedStyle,
+              ]}
             >
               <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
-                <View
-                  style={{
-                    width: 42,
-                    height: 42,
-                    borderRadius: 14,
-                    backgroundColor:
-                      balanceTone === "danger"
-                        ? "#FFF7F5"
-                        : balanceTone === "success"
-                          ? "#F5FCF8"
-                          : UI.color.subtle,
-                    borderWidth: 1,
-                    borderColor: UI.color.border,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  {balanceTone === "danger" ? (
-                    <icons.ArrowUpRight size={20} color={UI.color.danger} strokeWidth={2.25} />
-                  ) : balanceTone === "success" ? (
-                    <icons.ArrowDownLeft size={20} color={UI.color.success} strokeWidth={2.25} />
-                  ) : (
-                    <icons.Check size={20} color={UI.color.muted} strokeWidth={2.25} />
-                  )}
-                </View>
+                <IconShell
+                  icon={
+                    balanceTone === "danger"
+                      ? icons.ArrowUpRight
+                      : balanceTone === "success"
+                        ? icons.ArrowDownLeft
+                        : icons.Check
+                  }
+                  tone={balanceTone}
+                />
                 <View style={{ flex: 1 }}>
                   <Typography
                     style={{
@@ -484,6 +490,8 @@ export default function DashboardScreen(): JSX.Element {
                     Today&apos;s money state
                   </Typography>
                   <Typography
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
                     style={{
                       marginTop: 4,
                       fontSize: 22,
@@ -519,10 +527,9 @@ export default function DashboardScreen(): JSX.Element {
                   tone={owedToYou > 0 ? "success" : "neutral"}
                 />
               </View>
-            </View>
+            </Animated.View>
           </FocusAwareView>
 
-          {/* Quick Actions */}
           <FocusAwareView delay={35} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
             <View style={{ flexDirection: "row", gap: 10 }}>
               <QuickAction
@@ -555,7 +562,6 @@ export default function DashboardScreen(): JSX.Element {
             </View>
           </FocusAwareView>
 
-          {/* Stats/Analytics Preview Card */}
           <FocusAwareView delay={70} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
             <Pressable
               accessibilityRole="button"
@@ -619,7 +625,6 @@ export default function DashboardScreen(): JSX.Element {
             </Pressable>
           </FocusAwareView>
 
-          {/* Groups Section */}
           <FocusAwareView
             delay={105}
             style={{ paddingHorizontal: UI.space.page, marginBottom: 28 }}
@@ -695,35 +700,21 @@ export default function DashboardScreen(): JSX.Element {
                   <AppLoader />
                 </View>
               ) : activeGroups.length > 0 ? (
-                <>
-                  {activeGroups.map(({ group, netBalance }, idx) => (
-                    <Animated.View
-                      key={group.id}
-                      entering={FadeInDown.duration(400)
-                        .delay(idx * 50)
-                        .easing(Easing.out(Easing.quad))}
-                      layout={LinearTransition}
-                    >
-                      <GroupRow
-                        group={group}
-                        balance={netBalance}
-                        currency={preferredCurrency.code}
-                        isLast={idx === activeGroups.length - 1}
-                        onPress={() => router.push(`/group/${group.id}`)}
-                      />
-                    </Animated.View>
-                  ))}
-                </>
+                activeGroups.map(({ group, netBalance }, idx) => (
+                  <GroupRow
+                    key={group.id}
+                    group={group}
+                    balance={netBalance}
+                    currency={preferredCurrency.code}
+                    isLast={idx === activeGroups.length - 1}
+                    onPress={() => router.push(`/group/${group.id}`)}
+                  />
+                ))
               ) : (
                 <View
                   style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}
                 >
-                  <icons.UsersRound
-                    size={38}
-                    color={UI.color.muted}
-                    strokeWidth={1.2}
-                    style={{ marginBottom: 12 }}
-                  />
+                  <EmptyIconShell icon={icons.UsersRound} />
                   <Typography
                     style={{
                       color: UI.color.text,
@@ -773,7 +764,6 @@ export default function DashboardScreen(): JSX.Element {
             </View>
           </FocusAwareView>
 
-          {/* Recent Activity */}
           <FocusAwareView
             delay={100}
             style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
@@ -834,51 +824,45 @@ export default function DashboardScreen(): JSX.Element {
                   const mySplit = expense.splits.find((s) => s.userId === currentUser.id);
                   const paidByUser = userById.get(expense.paidBy);
                   return (
-                    <Animated.View
+                    <TransactionRow
                       key={expense.id}
-                      entering={FadeInDown.duration(400)
-                        .delay(idx * 50)
-                        .easing(Easing.out(Easing.quad))}
-                      layout={LinearTransition}
-                    >
-                      <TransactionRow
-                        expense={expense}
-                        currentUserId={currentUser.id}
-                        paidByUser={paidByUser}
-                        myShare={mySplit?.amount ?? 0}
-                        isLast={idx === recentExpenses.length - 1}
-                        onPress={() => router.push(`/expense/${expense.id}`)}
-                      />
-                    </Animated.View>
+                      expense={expense}
+                      currentUserId={currentUser.id}
+                      paidByUser={paidByUser}
+                      myShare={mySplit?.amount ?? 0}
+                      isLast={idx === recentExpenses.length - 1}
+                      onPress={() => router.push(`/expense/${expense.id}`)}
+                    />
                   );
                 })
               ) : (
-                <Animated.View
-                  entering={FadeInDown.duration(400).easing(Easing.out(Easing.quad))}
-                  layout={LinearTransition}
-                  style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}
-                >
-                  <icons.PackageOpen
-                    size={42}
-                    color={UI.color.muted}
-                    strokeWidth={1}
-                    style={{ marginBottom: 12 }}
-                  />
+                <View style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}>
+                  <EmptyIconShell icon={icons.PackageOpen} />
                   <Typography
                     style={{
                       fontSize: 16,
+                      color: UI.color.text,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                      marginBottom: 4,
+                    }}
+                  >
+                    No activity yet
+                  </Typography>
+                  <Typography
+                    style={{
+                      fontSize: 14,
                       color: UI.color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                       textAlign: "center",
+                      marginBottom: 16,
                     }}
                   >
-                    No activity yet.
+                    Log your first expense to get started.
                   </Typography>
                   <Pressable
                     accessibilityRole="button"
                     onPress={() => router.push("/expense/new")}
                     style={({ pressed }) => ({
-                      marginTop: 14,
                       paddingHorizontal: 20,
                       minHeight: 44,
                       backgroundColor: UI.color.text,
@@ -898,7 +882,7 @@ export default function DashboardScreen(): JSX.Element {
                       Log your first expense
                     </Typography>
                   </Pressable>
-                </Animated.View>
+                </View>
               )}
             </View>
           </FocusAwareView>

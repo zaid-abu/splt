@@ -9,6 +9,7 @@ import {
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { PressableFeedback, Typography } from "heroui-native";
+import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
 
 import type { Currency } from "@/types";
 import { CURRENCIES } from "@/types";
@@ -266,7 +267,7 @@ export function CurrencySelector({
         enableDynamicSizing={false}
         onChange={handleSheetChanges}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
+        backgroundComponent={BlurredSheetBackground}
         handleIndicatorStyle={{ backgroundColor: BORDER, width: 40 }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"

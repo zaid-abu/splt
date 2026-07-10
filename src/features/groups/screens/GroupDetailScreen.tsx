@@ -11,28 +11,12 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { UI } from "@/components/ui/native-ui";
+import { UI, SectionLabel } from "@/components/ui/native-ui";
+import { FocusAwareView } from "@/components/animations/PageAnimator";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
 import { useGroupDetailData } from "@/features/groups/hooks/useGroupDetailData";
 import { BalanceCard } from "@/features/dashboard/components/BalanceCard";
-
-function SectionLabel({ children }: { children: string }): JSX.Element {
-  return (
-    <Typography
-      style={{
-        fontSize: 11,
-        letterSpacing: 1.4,
-        color: UI.color.muted,
-        fontFamily: "IBMPlexSans_600SemiBold",
-        textTransform: "uppercase",
-        marginBottom: 16,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
 
 function EmptyIconShell({ icon: Icon }: { icon: any }): JSX.Element {
   return (
@@ -215,12 +199,13 @@ export default function GroupDetailScreen(): JSX.Element {
         </Pressable>
       </View>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 140 }}
-        showsVerticalScrollIndicator={false}
-      >
-        <Animated.View
+      <FocusAwareView style={{ flex: 1 }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 140 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <Animated.View
           entering={FadeInDown.duration(400).springify()}
           style={{ paddingHorizontal: UI.space.page, marginBottom: 32 }}
         >
@@ -443,6 +428,7 @@ export default function GroupDetailScreen(): JSX.Element {
           )}
         </Animated.View>
       </ScrollView>
+      </FocusAwareView>
 
       <View
         style={{

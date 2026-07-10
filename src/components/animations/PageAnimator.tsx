@@ -1,5 +1,6 @@
 import type { JSX, PropsWithChildren } from "react";
 import { useCallback } from "react";
+import { View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -7,6 +8,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { useFocusEffect } from "expo-router";
+import { useReducedMotion } from "@/utils/useReducedMotion";
 
 interface FocusAwareViewProps extends PropsWithChildren {
   delay?: number;
@@ -20,12 +22,14 @@ export function FocusAwareView({
   className,
   style,
 }: FocusAwareViewProps): JSX.Element {
-  const opacity = useSharedValue(0);
-  const translateY = useSharedValue(20);
+  const reduced = useReducedMotion();
+  const opacity = useSharedValue(reduced ? 1 : 0);
+  const translateY = useSharedValue(reduced ? 0 : 20);
 
   useFocusEffect(
     useCallback(() => {
-      // Reset
+      if (reduced) return;
+
       opacity.value = 0;
       translateY.value = 20;
 
@@ -39,13 +43,17 @@ export function FocusAwareView({
         opacity.value = 0;
         translateY.value = 20;
       };
-    }, [delay])
+    }, [delay, reduced])
   );
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
     transform: [{ translateY: translateY.value }],
   }));
+
+  if (reduced) {
+    return <View style={style}>{children}</View>;
+  }
 
   return (
     <Animated.View style={[style, animatedStyle]} className={className}>

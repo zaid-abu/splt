@@ -14,7 +14,7 @@ import { useAcceptFriend, useRejectFriend } from "@/features/friends/queries/use
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { UI, ScreenHeader, EmptyState } from "@/components/ui/native-ui";
-import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
+
 
 export default function NotificationsScreen(): JSX.Element {
   const router = useRouter();
@@ -42,10 +42,6 @@ export default function NotificationsScreen(): JSX.Element {
       const isWorking = isAccepting || isRejecting;
 
       return (
-        <Animated.View
-          layout={LinearTransition}
-          entering={FadeInDown.duration(400).delay(index * 50)}
-        >
           <View
             style={{
               padding: UI.space.page,
@@ -133,7 +129,6 @@ export default function NotificationsScreen(): JSX.Element {
               </Pressable>
             </View>
           </View>
-        </Animated.View>
       );
     }
 

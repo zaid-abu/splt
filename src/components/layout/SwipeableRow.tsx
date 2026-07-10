@@ -6,6 +6,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
+import { UI } from "@/components/ui/native-ui";
+import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
 
 interface SwipeableRowProps {
   children: React.ReactNode;
@@ -144,7 +146,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
         index={0}
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: "#F5F0EB", borderRadius: 0 }}
+        backgroundComponent={BlurredSheetBackground}
         handleIndicatorStyle={{ backgroundColor: "#8A8782", width: 40 }}
       >
         <BottomSheetView
@@ -198,7 +200,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               style={({ pressed }) => ({
                 flex: 1,
                 height: 48,
-                backgroundColor: "#E02424",
+                backgroundColor: UI.color.danger,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.8 : 1,

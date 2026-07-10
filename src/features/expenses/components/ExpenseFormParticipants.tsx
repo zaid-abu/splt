@@ -7,6 +7,7 @@ import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
+import { SectionLabel } from "@/components/ui/native-ui";
 import type { User, Group, SplitMethod } from "@/types";
 
 const BG = "#F5F0EB";
@@ -21,22 +22,7 @@ const BRAND = "#8C7A6B";
 const CARD_RADIUS = 18;
 const PILL_RADIUS = 999;
 
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <Typography
-      style={{
-        fontSize: 11,
-        letterSpacing: 1.2,
-        color: TEXT_SECONDARY,
-        fontFamily: "IBMPlexSans_600SemiBold",
-        textTransform: "uppercase",
-        marginBottom: 16,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
+
 
 interface SelectionTabsProps {
   selectionTab: "friends" | "groups";

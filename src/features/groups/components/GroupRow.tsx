@@ -1,4 +1,4 @@
-import type { JSX } from "react";
+import React, { type JSX } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
@@ -15,7 +15,7 @@ interface GroupRowProps {
   onPress: () => void;
 }
 
-export function GroupRow({
+export const GroupRow = React.memo(function GroupRow({
   group,
   balance,
   currency,
@@ -99,4 +99,4 @@ export function GroupRow({
       />
     </Pressable>
   );
-}
+});

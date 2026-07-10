@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Pressable,
 } from "react-native";
+import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import { useForm, useWatch } from "react-hook-form";
@@ -24,7 +25,7 @@ import { registerSchema, type RegisterFormData } from "@/validation/schemas";
 import { FormInput } from "@/components/forms/FormInput";
 import { PasswordStrengthMeter } from "@/components/forms/PasswordStrengthMeter";
 import { useAppToast } from "@/hooks/useAppToast";
-import { UI } from "@/components/ui/native-ui";
+import { UI, PressableScale, IconButton } from "@/components/ui/native-ui";
 
 export default function RegisterScreen(): JSX.Element {
   const router = useRouter();
@@ -79,61 +80,45 @@ export default function RegisterScreen(): JSX.Element {
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        {/* Fixed header with back */}
         <View
           style={{
             paddingTop: insets.top + 16,
-            paddingHorizontal: 32,
+            paddingHorizontal: 24,
             paddingBottom: 16,
             backgroundColor: UI.color.bg,
             zIndex: 10,
           }}
         >
-          <Pressable
-            accessibilityRole="button"
+          <IconButton
+            icon={icons.ArrowLeft}
             accessibilityLabel="Go back"
             onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
-            hitSlop={8}
-            style={({ pressed }) => ({
-              width: 44,
-              height: 44,
-              borderRadius: UI.radius.pill,
-              borderWidth: 1,
-              borderColor: UI.color.border,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: UI.color.control,
-              opacity: pressed ? 0.6 : 1,
-            })}
-          >
-            <icons.ArrowLeft size={20} color={UI.color.text} />
-          </Pressable>
+          />
         </View>
 
         <ScrollView
           contentContainerStyle={{
             flexGrow: 1,
-            paddingHorizontal: 32,
-            paddingTop: 24,
+            paddingHorizontal: 24,
+            paddingTop: 8,
             paddingBottom: insets.bottom + 24,
           }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
           <View style={{ flex: 1 }}>
-            {/* Editorial header */}
             <Animated.View
-              entering={FadeInDown.delay(200).duration(600)}
-              style={{ marginBottom: 48 }}
+              entering={FadeInDown.delay(200).duration(600).springify()}
+              style={{ marginBottom: 40 }}
             >
               <Typography
                 style={{
                   fontFamily: "Sora_600SemiBold",
-                  fontSize: 44,
+                  fontSize: 40,
                   color: UI.color.textStrong,
-                  lineHeight: 50,
+                  lineHeight: 46,
                   letterSpacing: -0.02,
-                  marginBottom: 16,
+                  marginBottom: 12,
                 }}
               >
                 Create{"\n"}account.
@@ -141,19 +126,31 @@ export default function RegisterScreen(): JSX.Element {
               <Typography
                 style={{
                   fontFamily: "IBMPlexSans_400Regular",
-                  fontSize: 18,
+                  fontSize: 17,
                   color: UI.color.muted,
-                  lineHeight: 26,
-                  maxWidth: 280,
+                  lineHeight: 24,
                 }}
               >
                 Join SPLT and start splitting expenses with friends.
               </Typography>
             </Animated.View>
 
-            {/* Form */}
-            <View style={{ gap: 24 }}>
-              <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+            <Animated.View
+              entering={FadeInDown.delay(300).duration(600).springify()}
+              style={{
+                borderRadius: UI.radius.lg,
+                overflow: "hidden",
+              }}
+            >
+              <BlurView
+                intensity={Platform.OS === "ios" ? 80 : 90}
+                tint="light"
+                style={{
+                  padding: 20,
+                  gap: 20,
+                  backgroundColor: Platform.OS === "android" ? UI.color.control : "transparent",
+                }}
+              >
                 <FormInput
                   control={control}
                   name="name"
@@ -163,9 +160,7 @@ export default function RegisterScreen(): JSX.Element {
                   autoComplete="name"
                   leftElement={<icons.User size={18} color={UI.color.muted} />}
                 />
-              </Animated.View>
 
-              <Animated.View entering={FadeInDown.delay(400).duration(600)}>
                 <FormInput
                   control={control}
                   name="email"
@@ -176,41 +171,39 @@ export default function RegisterScreen(): JSX.Element {
                   autoComplete="email"
                   leftElement={<icons.Mail size={18} color={UI.color.muted} />}
                 />
-              </Animated.View>
 
-              <Animated.View entering={FadeInDown.delay(500).duration(600)}>
-                <FormInput
-                  control={control}
-                  name="password"
-                  label="Password"
-                  placeholder="••••••••"
-                  secureTextEntry={!showPassword}
-                  autoComplete="new-password"
-                  accessibilityHint="Create a strong password with at least 6 characters"
-                  leftElement={<icons.Lock size={18} color={UI.color.muted} />}
-                  rightElement={
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        setShowPassword(!showPassword);
-                      }}
-                      hitSlop={8}
-                      style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-                    >
-                      {showPassword ? (
-                        <icons.EyeOff size={18} color={UI.color.muted} />
-                      ) : (
-                        <icons.Eye size={18} color={UI.color.muted} />
-                      )}
-                    </Pressable>
-                  }
-                />
-                <PasswordStrengthMeter password={watchedPassword ?? ""} />
-              </Animated.View>
+                <View>
+                  <FormInput
+                    control={control}
+                    name="password"
+                    label="Password"
+                    placeholder="••••••••"
+                    secureTextEntry={!showPassword}
+                    autoComplete="new-password"
+                    accessibilityHint="Create a strong password with at least 6 characters"
+                    leftElement={<icons.Lock size={18} color={UI.color.muted} />}
+                    rightElement={
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityLabel={showPassword ? "Hide password" : "Show password"}
+                        onPress={() => {
+                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                          setShowPassword(!showPassword);
+                        }}
+                        hitSlop={8}
+                        style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+                      >
+                        {showPassword ? (
+                          <icons.EyeOff size={18} color={UI.color.muted} />
+                        ) : (
+                          <icons.Eye size={18} color={UI.color.muted} />
+                        )}
+                      </Pressable>
+                    }
+                  />
+                  <PasswordStrengthMeter password={watchedPassword ?? ""} />
+                </View>
 
-              <Animated.View entering={FadeInDown.delay(600).duration(600)}>
                 <FormInput
                   control={control}
                   name="confirmPassword"
@@ -238,64 +231,51 @@ export default function RegisterScreen(): JSX.Element {
                     </Pressable>
                   }
                 />
-              </Animated.View>
 
-              {/* Terms toggle */}
-              <Animated.View
-                entering={FadeInDown.delay(700).duration(600)}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 12,
-                  paddingVertical: 4,
-                }}
-              >
-                <Switch
-                  isSelected={termsAccepted}
-                  onSelectedChange={setTermsAccepted}
-                  accessibilityLabel="Accept terms of service"
-                />
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="View terms of service"
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    // TODO: Navigate to terms page
-                  }}
-                  hitSlop={8}
-                  style={{ flex: 1 }}
-                >
-                  <Typography
-                    style={{
-                      fontSize: 14,
-                      color: UI.color.muted,
-                      fontFamily: "IBMPlexSans_400Regular",
-                      lineHeight: 20,
-                    }}
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                  <Switch
+                    isSelected={termsAccepted}
+                    onSelectedChange={setTermsAccepted}
+                    accessibilityLabel="Accept terms of service"
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel="View terms of service"
+                    onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
+                    hitSlop={8}
+                    style={{ flex: 1 }}
                   >
-                    I agree to the{" "}
                     <Typography
                       style={{
                         fontSize: 14,
-                        color: UI.color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
+                        color: UI.color.muted,
+                        fontFamily: "IBMPlexSans_400Regular",
+                        lineHeight: 20,
                       }}
                     >
-                      Terms of Service
+                      I agree to the{" "}
+                      <Typography
+                        style={{
+                          fontSize: 14,
+                          color: UI.color.text,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
+                        Terms of Service
+                      </Typography>
                     </Typography>
-                  </Typography>
-                </Pressable>
-              </Animated.View>
+                  </Pressable>
+                </View>
+              </BlurView>
+            </Animated.View>
 
-              <Animated.View
-                entering={FadeInDown.delay(800).duration(600)}
-                style={{ marginTop: 24 }}
-              >
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel="Create account"
-                  disabled={submitDisabled}
-                  style={({ pressed }) => ({
+            <Animated.View
+              entering={FadeInDown.delay(700).duration(600).springify()}
+              style={{ marginTop: 24 }}
+            >
+              <PressableScale onPress={handleSubmit(onSubmit, onInvalid)}>
+                <View
+                  style={{
                     width: "100%",
                     height: 56,
                     borderRadius: UI.radius.pill,
@@ -304,9 +284,8 @@ export default function RegisterScreen(): JSX.Element {
                     justifyContent: "center",
                     flexDirection: "row",
                     gap: 8,
-                    opacity: submitDisabled ? 0.45 : pressed ? 0.7 : 1,
-                  })}
-                  onPress={handleSubmit(onSubmit, onInvalid)}
+                    opacity: submitDisabled ? 0.45 : 1,
+                  }}
                 >
                   {isPending && <ActivityIndicator color="#FFFFFF" />}
                   <Typography
@@ -318,22 +297,21 @@ export default function RegisterScreen(): JSX.Element {
                   >
                     {isPending ? "Creating account\u2026" : "Create Account"}
                   </Typography>
-                </Pressable>
-              </Animated.View>
-            </View>
+                </View>
+              </PressableScale>
+            </Animated.View>
           </View>
 
           <View style={{ flex: 1 }} />
 
-          {/* Footer */}
           <Animated.View
-            entering={FadeInDown.delay(900).duration(600)}
+            entering={FadeInDown.delay(800).duration(600)}
             style={{
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
               gap: 8,
-              paddingBottom: 8,
+              paddingVertical: 16,
               marginTop: 48,
             }}
           >

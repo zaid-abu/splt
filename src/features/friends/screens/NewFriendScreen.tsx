@@ -7,7 +7,6 @@ import { KeyboardAvoidingView, Platform, View, FlatList, Pressable } from "react
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { useAddFriend, useAllFriendships } from "@/features/friends/queries/useFriends";
 import { useAuth } from "@/context/AppContext";
@@ -93,9 +92,8 @@ export default function NewFriendScreen(): JSX.Element {
     const isAdded = status === "accepted";
     const isDisabled = !!addingUserId || isRequested || isAdded;
 
-    return (
-      <Animated.View entering={FadeInDown.delay(index * 50).springify()}>
-        <View
+      return (
+          <View
           style={{
             flexDirection: "row",
             alignItems: "center",
@@ -169,7 +167,6 @@ export default function NewFriendScreen(): JSX.Element {
             )}
           </Pressable>
         </View>
-      </Animated.View>
     );
   };
 

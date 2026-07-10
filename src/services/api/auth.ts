@@ -54,11 +54,27 @@ export const AuthService = {
     return data.session;
   },
 
+  async changePassword(newPassword: string): Promise<void> {
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  },
+
   async resetPassword(email: string): Promise<void> {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: "splt://auth/callback",
     });
     if (error) throw error;
+  },
+
+  async updateProfile(userId: string, data: { name?: string; email?: string }): Promise<void> {
+    const { error } = await supabase.from("users").update(data).eq("id", userId);
+    if (error) throw error;
+  },
+
+  async deleteAccount(userId: string): Promise<void> {
+    const { error } = await supabase.from("users").delete().eq("id", userId);
+    if (error) throw error;
+    await supabase.auth.signOut();
   },
 
   async getCurrentUser(): Promise<User | null> {

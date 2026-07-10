@@ -3,7 +3,6 @@ import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
-import Animated, { FadeInDown } from "react-native-reanimated";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -14,6 +13,7 @@ import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { UI } from "@/components/ui/native-ui";
+import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
 
 const TEXT_PRIMARY = UI.color.text;
 const TEXT_SECONDARY = UI.color.muted;
@@ -28,7 +28,7 @@ interface ActivityItemProps {
   isLast?: boolean;
 }
 
-export function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
+export const ActivityItem = React.memo(function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
   const { currentUser } = useAuth();
   const { mutateAsync: deleteExpense } = useDeleteExpense();
   const { mutateAsync: deleteSettlement } = useDeleteSettlement();
@@ -197,7 +197,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
   const canDelete = activity.type === "expense" || activity.type === "settlement";
 
   return (
-    <Animated.View entering={FadeInDown.delay((index % 10) * 40).springify()}>
+    <>
       <Pressable
         onPress={handleTap}
         accessibilityRole="button"
@@ -294,7 +294,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
         index={0}
         enableDynamicSizing
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+        backgroundComponent={BlurredSheetBackground}
         handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
       >
         <BottomSheetView
@@ -426,7 +426,7 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
         index={0}
         enableDynamicSizing
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+        backgroundComponent={BlurredSheetBackground}
         handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
       >
         <BottomSheetView
@@ -507,6 +507,6 @@ export function ActivityItem({ activity, index, isLast }: ActivityItemProps): Re
           </View>
         </BottomSheetView>
       </BottomSheetModal>
-    </Animated.View>
+    </>
   );
-}
+});

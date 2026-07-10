@@ -25,6 +25,9 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
+import { UI, SectionLabel } from "@/components/ui/native-ui";
+import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
@@ -32,40 +35,23 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { EXPENSE_CATEGORIES } from "@/types";
 
 // ─── Design Tokens ───
-const BG = "#F7F6F1";
-const SURFACE = "#FEFDFA";
-const SURFACE_SOFT = "#F4F3EE";
-const CONTROL = "#FFFFFF";
-const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_SECONDARY = "#6E6D68";
+const BG = UI.color.bg;
+const SURFACE = UI.color.surface;
+const SURFACE_SOFT = UI.color.subtle;
+const CONTROL = UI.color.control;
+const TEXT_PRIMARY = UI.color.text;
+const TEXT_SECONDARY = UI.color.muted;
 const TEXT_SUBTLE = "#9B9A94";
-const TEXT_DANGER = "#E85D5D";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E7E5DE";
-const BRAND = "#8C7A6B";
-const CARD_RADIUS = 16;
+const TEXT_DANGER = UI.color.danger;
+const TEXT_SUCCESS = UI.color.success;
+const SEPARATOR = UI.color.border;
+const BRAND = UI.color.brand;
+const CARD_RADIUS = UI.radius.lg;
 const PILL_RADIUS = 999;
 
 const CATEGORY_LABELS = Object.fromEntries(
   EXPENSE_CATEGORIES.map((category) => [category.key, category.label])
 );
-
-function SectionLabel({ children }: { children: string }): JSX.Element {
-  return (
-    <Typography
-      style={{
-        fontSize: 11,
-        letterSpacing: 1.4,
-        color: TEXT_SECONDARY,
-        fontFamily: "IBMPlexSans_600SemiBold",
-        textTransform: "uppercase",
-        marginBottom: 16,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
 
 function SkeletonBlock({
   width,
@@ -588,11 +574,12 @@ export default function FriendDetailScreen(): JSX.Element {
         </Pressable>
       </View>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 140 }}
-        showsVerticalScrollIndicator={false}
-      >
+      <FocusAwareView style={{ flex: 1 }}>
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 140 }}
+          showsVerticalScrollIndicator={false}
+        >
         {/* ── Balance Card ─────────────────────────────────────────────── */}
         <Animated.View
           entering={FadeInDown.duration(400).springify()}
@@ -909,6 +896,7 @@ export default function FriendDetailScreen(): JSX.Element {
           </View>
         </Animated.View>
       </ScrollView>
+      </FocusAwareView>
 
       {/* ── Bottom Action Bar ──────────────────────────────────────────── */}
       <View
@@ -991,7 +979,7 @@ export default function FriendDetailScreen(): JSX.Element {
         index={0}
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
+        backgroundComponent={BlurredSheetBackground}
         handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
       >
         <BottomSheetView

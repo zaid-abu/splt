@@ -1,5 +1,6 @@
 import type { ComponentType, ReactNode } from "react";
-import { Pressable, TextInput, View } from "react-native";
+import { useMemo } from "react";
+import { Pressable, TextInput, View, Animated } from "react-native";
 import type { TextInputProps, ViewStyle } from "react-native";
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
@@ -30,6 +31,56 @@ export const UI = {
     page: 24,
   },
 } as const;
+
+export function PressableScale({
+  children,
+  onPress,
+  disabled,
+  scaleTo = 0.97,
+  style,
+}: {
+  children: ReactNode;
+  onPress: () => void;
+  disabled?: boolean;
+  scaleTo?: number;
+  style?: ViewStyle;
+}): React.JSX.Element {
+  const scale = useMemo(() => new Animated.Value(1), []);
+
+  const pressIn = () => {
+    Animated.spring(scale, {
+      toValue: scaleTo,
+      useNativeDriver: true,
+      mass: 0.3,
+      stiffness: 200,
+      damping: 12,
+    }).start();
+  };
+
+  const pressOut = () => {
+    Animated.spring(scale, {
+      toValue: 1,
+      useNativeDriver: true,
+      mass: 0.3,
+      stiffness: 200,
+      damping: 12,
+    }).start();
+  };
+
+  return (
+    <Animated.View style={[{ transform: [{ scale }] }, style]}>
+      <Pressable
+        accessibilityRole="button"
+        onPressIn={pressIn}
+        onPressOut={pressOut}
+        onPress={onPress}
+        disabled={disabled}
+      >
+        {children}
+      </Pressable>
+    </Animated.View>
+  );
+}
 
 type IconType = ComponentType<{
   size?: number;

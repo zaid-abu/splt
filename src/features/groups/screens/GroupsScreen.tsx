@@ -281,7 +281,7 @@ export default function GroupsScreen(): JSX.Element {
           renderItem={renderItem}
           ListHeaderComponent={ListHeaderComponent}
           ListEmptyComponent={ListEmptyComponent}
-          contentContainerStyle={{ paddingBottom: 100 }}
+          contentContainerStyle={{ paddingBottom: 130 }}
           showsVerticalScrollIndicator={false}
           extraData={{ filteredLength: filtered.length }}
         />

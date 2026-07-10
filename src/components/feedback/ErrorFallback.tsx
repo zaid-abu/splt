@@ -2,6 +2,7 @@ import React from "react";
 import type { JSX } from "react";
 import { View, Text, Pressable } from "react-native";
 import type { ErrorBoundaryProps } from "expo-router";
+import { UI } from "@/components/ui/native-ui";
 
 export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element {
   return (
@@ -10,7 +11,7 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: "#F5F0EB",
+        backgroundColor: UI.color.bg,
         padding: 24,
       }}
     >
@@ -18,16 +19,17 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
         style={{
           width: "100%",
           maxWidth: 400,
-          backgroundColor: "#FFFFFF",
+          backgroundColor: UI.color.surface,
           padding: 24,
+          borderRadius: UI.radius.lg,
           borderWidth: 1,
-          borderColor: "#E8E4DF",
+          borderColor: UI.color.border,
         }}
       >
         <Text
           style={{
             fontSize: 24,
-            color: "#000000",
+            color: UI.color.text,
             fontFamily: "Sora_600SemiBold",
             marginBottom: 12,
           }}
@@ -37,7 +39,7 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
         <Text
           style={{
             fontSize: 16,
-            color: "#8A8782",
+            color: UI.color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginBottom: 24,
           }}
@@ -49,8 +51,9 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
             onPress={retry}
             style={{
               paddingHorizontal: 24,
-              paddingVertical: 12,
-              backgroundColor: "#8C7A6B",
+              paddingVertical: 14,
+              borderRadius: UI.radius.pill,
+              backgroundColor: UI.color.text,
             }}
           >
             <Text style={{ color: "#FFFFFF", fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold" }}>

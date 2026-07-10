@@ -15,7 +15,7 @@ import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
-import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
@@ -154,33 +154,21 @@ export default function FriendsScreen(): JSX.Element {
     [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
   );
 
-  const totalOwedToMe = useMemo(
-    () =>
-      balancesUtil.getTotalOwedToMe(
-        currentUser.id,
-        groups,
-        expenses,
-        settlements,
-        preferredCurrency,
-        convertCurrency
-      ),
-    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
-  );
+  const totalOwedToMe = useMemo(() => {
+    let total = 0;
+    for (const balance of balances.values()) {
+      if (balance > 0) total += balance;
+    }
+    return total;
+  }, [balances]);
 
-  const totalIOwe = useMemo(
-    () =>
-      Math.abs(
-        balancesUtil.getTotalIOwe(
-          currentUser.id,
-          groups,
-          expenses,
-          settlements,
-          preferredCurrency,
-          convertCurrency
-        )
-      ),
-    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
-  );
+  const totalIOwe = useMemo(() => {
+    let total = 0;
+    for (const balance of balances.values()) {
+      if (balance < 0) total += balance;
+    }
+    return Math.abs(total);
+  }, [balances]);
 
   const acceptedFriendshipsByUserId = useMemo(() => {
     const friendshipMap = new Map<string, Friendship>();
@@ -548,9 +536,10 @@ export default function FriendsScreen(): JSX.Element {
                       accessibilityRole="button"
                       accessibilityLabel={`Reject ${requester.name}'s request`}
                       onPress={() => handleRequestAction(request.id, "reject")}
+                      hitSlop={8}
                       style={({ pressed }) => ({
-                        width: 36,
-                        height: 36,
+                        width: 44,
+                        height: 44,
                         borderRadius: 999,
                         borderWidth: 1,
                         borderColor: SEPARATOR,
@@ -560,15 +549,15 @@ export default function FriendsScreen(): JSX.Element {
                         opacity: pressed ? 0.62 : 1,
                       })}
                     >
-                      <icons.X size={16} color={TEXT_SECONDARY} strokeWidth={2} />
+                      <icons.X size={18} color={TEXT_SECONDARY} strokeWidth={2} />
                     </Pressable>
                     <Pressable
                       accessibilityRole="button"
                       accessibilityLabel={`Accept ${requester.name}'s request`}
                       onPress={() => handleRequestAction(request.id, "accept")}
                       style={({ pressed }) => ({
-                        width: 36,
-                        height: 36,
+                        width: 44,
+                        height: 44,
                         borderRadius: 999,
                         backgroundColor: TEXT_PRIMARY,
                         alignItems: "center",
@@ -576,7 +565,7 @@ export default function FriendsScreen(): JSX.Element {
                         opacity: pressed ? 0.72 : 1,
                       })}
                     >
-                      <icons.Check size={16} color="#FFFFFF" strokeWidth={2} />
+                      <icons.Check size={18} color="#FFFFFF" strokeWidth={2} />
                     </Pressable>
                   </View>
                 );
@@ -868,7 +857,7 @@ export default function FriendsScreen(): JSX.Element {
                   }}
                   style={({ pressed }) => ({
                     marginTop: 7,
-                    minHeight: 28,
+                    minHeight: 36,
                     paddingHorizontal: 9,
                     borderRadius: 999,
                     backgroundColor: balance === 0 ? CONTROL_SURFACE : TEXT_PRIMARY,
@@ -970,14 +959,13 @@ export default function FriendsScreen(): JSX.Element {
       </View>
 
       <Animated.FlatList
-        entering={FadeInDown.duration(320)}
         data={displayRows}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={renderHeader}
         ListEmptyComponent={renderEmpty}
-        contentContainerStyle={{ paddingBottom: 120 }}
+        contentContainerStyle={{ paddingBottom: 140 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl

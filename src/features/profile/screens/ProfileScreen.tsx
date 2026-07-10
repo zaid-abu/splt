@@ -1,6 +1,9 @@
 import { Switch, Typography } from "heroui-native";
+import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import type { JSX } from "react";
+import { useCallback, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,16 +12,18 @@ import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 import { useAuth } from "@/context/AppContext";
-import { useSignOut } from "@/features/auth/hooks/useAuthMutations";
+import { useSignOut, useDeleteAccount } from "@/features/auth/hooks/useAuthMutations";
 import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { UI, ScreenHeader, MetricCell } from "@/components/ui/native-ui";
+import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
 
 import { SettingsItem } from "@/features/profile/components/SettingsItem";
 
 export default function ProfileScreen(): JSX.Element {
+  const router = useRouter();
   const { currentUser } = useAuth();
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
@@ -49,6 +54,22 @@ export default function ProfileScreen(): JSX.Element {
   );
 
   const { mutate: signOut } = useSignOut();
+  const { mutateAsync: deleteAccount } = useDeleteAccount();
+  const deleteSheetRef = useRef<BottomSheetModal>(null);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        pressBehavior="close"
+        opacity={0.4}
+      />
+    ),
+    []
+  );
+
   const handleCurrencyChange = (currency: Currency) => {
     setCurrency(currency);
   };
@@ -59,7 +80,31 @@ export default function ProfileScreen(): JSX.Element {
 
       {/* Header */}
       <View style={{ paddingTop: insets.top + 16 }}>
-        <ScreenHeader title="Profile" />
+        <ScreenHeader
+          title="Profile"
+          rightAction={
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push("/profile/edit")}
+              hitSlop={8}
+              style={({ pressed }) => ({
+                minHeight: 44,
+                justifyContent: "center",
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 15,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                Edit
+              </Typography>
+            </Pressable>
+          }
+        />
       </View>
 
       <ScrollView
@@ -221,6 +266,32 @@ export default function ProfileScreen(): JSX.Element {
 
             <Pressable
               accessibilityRole="button"
+              onPress={() => router.push("/profile/change-password")}
+              style={({ pressed }) => ({
+                height: 52,
+                borderRadius: UI.radius.pill,
+                backgroundColor: UI.color.control,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 12,
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 15,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: UI.color.text,
+                }}
+              >
+                Change Password
+              </Typography>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
               onPress={() => signOut()}
               style={({ pressed }) => ({
                 height: 52,
@@ -243,6 +314,32 @@ export default function ProfileScreen(): JSX.Element {
                 Log Out
               </Typography>
             </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => deleteSheetRef.current?.present()}
+              style={({ pressed }) => ({
+                marginTop: 12,
+                height: 52,
+                borderRadius: UI.radius.pill,
+                borderWidth: 1,
+                borderColor: UI.color.danger,
+                backgroundColor: UI.color.control,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 14,
+                  fontFamily: "IBMPlexSans_500Medium",
+                  color: UI.color.danger,
+                }}
+              >
+                Delete Account
+              </Typography>
+            </Pressable>
           </View>
         </FocusAwareView>
 
@@ -260,6 +357,100 @@ export default function ProfileScreen(): JSX.Element {
           </Typography>
         </View>
       </ScrollView>
+
+      <BottomSheetModal
+        ref={deleteSheetRef}
+        index={0}
+        enableDynamicSizing
+        backdropComponent={renderBackdrop}
+        backgroundComponent={BlurredSheetBackground}
+        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
+      >
+        <BottomSheetView
+          style={{
+            paddingHorizontal: UI.space.page,
+            paddingTop: 24,
+            paddingBottom: Math.max(insets.bottom, 24),
+          }}
+        >
+          <Typography
+            style={{
+              fontSize: 22,
+              color: UI.color.text,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              marginBottom: 8,
+            }}
+          >
+            Delete Account?
+          </Typography>
+          <Typography
+            style={{
+              fontSize: 16,
+              color: UI.color.muted,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginBottom: 24,
+              lineHeight: 22,
+            }}
+          >
+            This permanently deletes your account and all associated data. This cannot be undone.
+          </Typography>
+          <View style={{ flexDirection: "row", gap: 12 }}>
+            <Pressable
+              onPress={() => deleteSheetRef.current?.dismiss()}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 52,
+                borderRadius: UI.radius.pill,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+                backgroundColor: UI.color.control,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                Cancel
+              </Typography>
+            </Pressable>
+            <Pressable
+              onPress={async () => {
+                deleteSheetRef.current?.dismiss();
+                try {
+                  await deleteAccount(currentUser.id);
+                } catch {
+                  // handled by query client
+                }
+              }}
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 52,
+                borderRadius: UI.radius.pill,
+                backgroundColor: UI.color.danger,
+                alignItems: "center",
+                justifyContent: "center",
+                opacity: pressed ? 0.8 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: "#FFFFFF",
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                Delete
+              </Typography>
+            </Pressable>
+          </View>
+        </BottomSheetView>
+      </BottomSheetModal>
     </FocusAwareView>
   );
 }

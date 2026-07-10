@@ -3,8 +3,9 @@ import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
+import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View, Pressable } from "react-native";
+import { ScrollView, View, Pressable, TextInput } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRef, useCallback } from "react";
 import * as icons from "lucide-react-native";
@@ -12,15 +13,153 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses, useDeleteExpense } from "@/features/expenses/queries/useExpenses";
+import { useExpenseComments, useAddComment } from "@/features/expenses/queries/useComments";
 
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { UI, MetricCell } from "@/components/ui/native-ui";
+import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { EXPENSE_CATEGORIES } from "@/types";
+
+function CommentsSection({ expenseId, currentUserId }: { expenseId: string; currentUserId: string }): JSX.Element {
+  const { data: comments = [], isLoading } = useExpenseComments(expenseId);
+  const { mutateAsync: addComment, isPending } = useAddComment();
+  const [text, setText] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const handleSend = async () => {
+    if (!text.trim() || sending) return;
+    setSending(true);
+    try {
+      await addComment({ expenseId, userId: currentUserId, text: text.trim() });
+      setText("");
+    } catch { /* handled by query client */ }
+    setSending(false);
+  };
+
+  return (
+    <View
+      style={{
+        backgroundColor: UI.color.surface,
+        borderRadius: UI.radius.lg,
+        borderWidth: 1,
+        borderColor: UI.color.border,
+        overflow: "hidden",
+      }}
+    >
+      {comments.length === 0 && !isLoading ? (
+        <View style={{ paddingVertical: 24, alignItems: "center" }}>
+          <Typography
+            style={{
+              fontSize: 14,
+              color: UI.color.muted,
+              fontFamily: "IBMPlexSans_500Medium",
+            }}
+          >
+            No comments yet
+          </Typography>
+        </View>
+      ) : (
+        comments.map((comment) => (
+          <View
+            key={comment.id}
+            style={{
+              flexDirection: "row",
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderBottomWidth: 1,
+              borderBottomColor: UI.color.border,
+            }}
+          >
+            <AppUserAvatar user={comment.user as any ?? { id: comment.user_id, name: "?", initials: "?", email: "", defaultCurrency: "USD" }} size="sm" />
+            <View style={{ flex: 1, marginLeft: 12 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: UI.color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  {comment.user?.name ?? "Unknown"}
+                </Typography>
+                <Typography
+                  style={{
+                    fontSize: 11,
+                    color: UI.color.muted,
+                    fontFamily: "IBMPlexSans_500Medium",
+                  }}
+                >
+                  {new Date(comment.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </Typography>
+              </View>
+              <Typography
+                style={{
+                  marginTop: 2,
+                  fontSize: 14,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_400Regular",
+                  lineHeight: 20,
+                }}
+              >
+                {comment.text}
+              </Typography>
+            </View>
+          </View>
+        ))
+      )}
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 12,
+          paddingVertical: 10,
+          borderTopWidth: comments.length > 0 ? 1 : 0,
+          borderTopColor: UI.color.border,
+        }}
+      >
+        <TextInput
+          value={text}
+          onChangeText={setText}
+          placeholder="Add a comment..."
+          placeholderTextColor={UI.color.muted}
+          style={{
+            flex: 1,
+            fontSize: 14,
+            color: UI.color.text,
+            fontFamily: "IBMPlexSans_400Regular",
+            paddingVertical: 8,
+            paddingHorizontal: 8,
+          }}
+        />
+        <Pressable
+          accessibilityRole="button"
+          onPress={handleSend}
+          disabled={!text.trim() || sending}
+          hitSlop={8}
+          style={({ pressed }) => ({
+            width: 36,
+            height: 36,
+            borderRadius: UI.radius.pill,
+            backgroundColor: text.trim() ? UI.color.text : UI.color.control,
+            borderWidth: 1,
+            borderColor: UI.color.border,
+            alignItems: "center",
+            justifyContent: "center",
+            opacity: pressed ? 0.7 : 1,
+          })}
+        >
+          <icons.Send size={16} color={text.trim() ? "#FFFFFF" : UI.color.muted} strokeWidth={2} />
+        </Pressable>
+      </View>
+    </View>
+  );
+}
 
 export default function ExpenseDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<ExpenseRouteParams>();
@@ -145,7 +284,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
             width: 44,
             height: 44,
             borderRadius: UI.radius.pill,
-            backgroundColor: "#FFFFFF",
+            backgroundColor: UI.color.control,
             borderWidth: 1,
             borderColor: UI.color.border,
             alignItems: "center",
@@ -166,7 +305,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               width: 44,
               height: 44,
               borderRadius: UI.radius.pill,
-              backgroundColor: "#FFFFFF",
+              backgroundColor: UI.color.control,
               borderWidth: 1,
               borderColor: UI.color.border,
               alignItems: "center",
@@ -184,7 +323,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               width: 44,
               height: 44,
               borderRadius: UI.radius.pill,
-              backgroundColor: "#FFFFFF",
+              backgroundColor: UI.color.control,
               borderWidth: 1,
               borderColor: UI.color.border,
               alignItems: "center",
@@ -551,7 +690,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   style={({ pressed }) => ({
                     marginTop: 24,
                     height: 48,
-                    backgroundColor: "#FFFFFF",
+                    backgroundColor: UI.color.control,
                     borderRadius: UI.radius.pill,
                     alignItems: "center",
                     justifyContent: "center",
@@ -572,6 +711,26 @@ export default function ExpenseDetailScreen(): JSX.Element {
             </View>
           </Animated.View>
         )}
+
+        {/* Comments */}
+        <Animated.View
+          entering={FadeInDown.duration(400).delay(200).springify()}
+          style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}
+        >
+          <Typography
+            style={{
+              fontSize: 11,
+              letterSpacing: 1.4,
+              color: UI.color.muted,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              textTransform: "uppercase",
+              marginBottom: 16,
+            }}
+          >
+            Comments
+          </Typography>
+          <CommentsSection expenseId={expense.id} currentUserId={currentUser.id} />
+        </Animated.View>
       </ScrollView>
 
       {/* Delete Confirmation Bottom Sheet */}
@@ -580,7 +739,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
         index={0}
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+        backgroundComponent={BlurredSheetBackground}
         handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
       >
         <BottomSheetView
@@ -646,7 +805,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               style={({ pressed }) => ({
                 flex: 1,
                 height: 48,
-                backgroundColor: "#E02424",
+                backgroundColor: UI.color.danger,
                 borderRadius: UI.radius.pill,
                 alignItems: "center",
                 justifyContent: "center",

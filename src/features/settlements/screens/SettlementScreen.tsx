@@ -30,16 +30,16 @@ import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useAppToast } from "@/hooks/useAppToast";
-import { ScreenHeader } from "@/components/ui/native-ui";
+import { ScreenHeader, UI } from "@/components/ui/native-ui";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 
-const BG = "#F5F0EB";
-const SURFACE = "#FFFFFF";
-const BORDER = "#E8E4DF";
-const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_SECONDARY = "#8A8782";
-const BRAND = "#8C7A6B";
-const CARD_RADIUS = 18;
+const BG = UI.color.bg;
+const SURFACE = UI.color.control;
+const BORDER = UI.color.border;
+const TEXT_PRIMARY = UI.color.text;
+const TEXT_SECONDARY = UI.color.muted;
+const BRAND = UI.color.brand;
+const CARD_RADIUS = UI.radius.lg;
 const PILL_RADIUS = 999;
 
 export default function SettleUpScreen(): JSX.Element {
@@ -546,57 +546,56 @@ export default function SettleUpScreen(): JSX.Element {
 
           {/* Quick Amount Pills */}
           {Math.abs(netBalance) > 0 && (
-            <View style={{ flexDirection: "row", gap: 12, marginTop: 24 }}>
-              <Pressable
-                onPress={() => {
-                  Haptics.selectionAsync();
-                  setAmountStr(Math.abs(netBalance).toFixed(2));
-                }}
-                style={({ pressed }) => ({
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  backgroundColor: SURFACE,
-                  borderWidth: 1,
-                  borderColor: BORDER,
-                  borderRadius: PILL_RADIUS,
-                  opacity: pressed ? 0.7 : 1,
-                })}
+            <View style={{ gap: 12, marginTop: 24 }}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 10 }}
               >
+                {[0.25, 0.5, 0.75, 1].map((fraction) => (
+                  <Pressable
+                    key={fraction}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setAmountStr((Math.abs(netBalance) * fraction).toFixed(2));
+                    }}
+                    style={({ pressed }) => ({
+                      paddingHorizontal: 20,
+                      paddingVertical: 10,
+                      backgroundColor: SURFACE,
+                      borderWidth: 1,
+                      borderColor: fraction === 1 ? TEXT_PRIMARY : BORDER,
+                      borderRadius: PILL_RADIUS,
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: 13,
+                        color: fraction === 1 ? TEXT_PRIMARY : TEXT_PRIMARY,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
+                      {Math.round(fraction * 100)}%:{" "}
+                      {formatAmount(Math.abs(netBalance) * fraction, settlementCurrency)}
+                    </Typography>
+                  </Pressable>
+                ))}
+              </ScrollView>
+
+              {parsedAmount > 0 && parsedAmount < Math.abs(netBalance) && (
                 <Typography
                   style={{
                     fontSize: 13,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    color: TEXT_SECONDARY,
+                    fontFamily: "IBMPlexSans_500Medium",
+                    textAlign: "center",
                   }}
                 >
-                  Full: {formatAmount(Math.abs(netBalance), settlementCurrency)}
+                  Remaining:{" "}
+                  {formatAmount(Math.abs(netBalance) - parsedAmount, settlementCurrency)}
                 </Typography>
-              </Pressable>
-              <Pressable
-                onPress={() => {
-                  Haptics.selectionAsync();
-                  setAmountStr((Math.abs(netBalance) / 2).toFixed(2));
-                }}
-                style={({ pressed }) => ({
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  backgroundColor: SURFACE,
-                  borderWidth: 1,
-                  borderColor: BORDER,
-                  borderRadius: PILL_RADIUS,
-                  opacity: pressed ? 0.7 : 1,
-                })}
-              >
-                <Typography
-                  style={{
-                    fontSize: 13,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  Half: {formatAmount(Math.abs(netBalance) / 2, settlementCurrency)}
-                </Typography>
-              </Pressable>
+              )}
             </View>
           )}
         </Animated.View>

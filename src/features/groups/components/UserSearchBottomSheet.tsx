@@ -4,7 +4,6 @@ import { BottomSheetModal, BottomSheetBackdrop, BottomSheetTextInput } from "@go
 import { Typography, Spinner } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import Animated, { FadeInDown } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AppContext";
@@ -14,6 +13,7 @@ import type { User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { EmptyState, UI } from "@/components/ui/native-ui";
+import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
 
 interface UserSearchBottomSheetProps {
   onSelect: (user: User) => void;
@@ -131,7 +131,6 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
       const isProcessingThis = isProcessing === item.id;
 
       return (
-        <Animated.View entering={FadeInDown.delay(index * 20).springify()}>
           <View
             style={{
               flexDirection: "row",
@@ -197,7 +196,6 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               )}
             </Pressable>
           </View>
-        </Animated.View>
       );
     };
 
@@ -208,7 +206,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
         snapPoints={["90%"]}
         enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
+        backgroundComponent={BlurredSheetBackground}
         handleIndicatorStyle={{ backgroundColor: "#D6D2CD", width: 40 }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"

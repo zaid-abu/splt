@@ -1,7 +1,7 @@
 import { Typography } from "heroui-native";
-import type { JSX } from "react";
+import React, { type JSX } from "react";
 import { View, Pressable } from "react-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
+
 
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
@@ -27,7 +27,7 @@ interface GroupCardProps {
   onPress?: () => void;
 }
 
-export function GroupCard({
+export const GroupCard = React.memo(function GroupCard({
   group,
   balance = 0,
   currency = "USD",
@@ -52,7 +52,6 @@ export function GroupCard({
   }
 
   return (
-    <Animated.View entering={FadeInDown.delay(100 + index * 50).springify()}>
       <Pressable
         accessibilityRole="button"
         onPress={onPress}
@@ -126,6 +125,5 @@ export function GroupCard({
           style={{ marginLeft: 10 }}
         />
       </Pressable>
-    </Animated.View>
   );
-}
+});

@@ -1,8 +1,9 @@
 import { Stack, SplashScreen } from "expo-router";
 import type { JSX } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Text, TextInput } from "react-native";
 import { useFonts } from "expo-font";
+import { supabase } from "@/services/supabase/client";
 
 import { AppProvider } from "@/providers/AppProvider";
 import "../global.css";
@@ -38,13 +39,18 @@ export default function RootLayout(): JSX.Element | null {
     IBMPlexSans_600SemiBold: require("@/assets/fonts/IBMPlexSans-SemiBold.ttf"),
   });
 
+  const [authReady, setAuthReady] = useState(false);
+
   useEffect(() => {
-    if (loaded) {
+    if (!loaded) return;
+
+    supabase.auth.getSession().then(({ data }) => {
+      setAuthReady(true);
       SplashScreen.hideAsync();
-    }
+    });
   }, [loaded]);
 
-  if (!loaded) return null;
+  if (!loaded || !authReady) return null;
 
   return (
     <AppProvider>

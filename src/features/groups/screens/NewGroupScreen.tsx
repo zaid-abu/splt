@@ -24,13 +24,14 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { IconButton, PrimaryButton, SectionLabel, UI } from "@/components/ui/native-ui";
+import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
 import { GROUP_ICONS } from "@/constants/icons";
 
 const BG = UI.color.bg;
 const TEXT_PRIMARY = UI.color.textStrong;
 const TEXT_SECONDARY = UI.color.muted;
 const SEPARATOR = UI.color.border;
-const ERROR = "#E02424";
+const ERROR = UI.color.danger;
 
 export default function NewGroupScreen(): JSX.Element {
   const router = useRouter();
@@ -158,7 +159,7 @@ export default function NewGroupScreen(): JSX.Element {
         onClose={handleDismiss}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: "#D6D2CD", width: 40 }}
-        backgroundStyle={{ backgroundColor: BG, borderRadius: 0 }}
+        backgroundComponent={BlurredSheetBackground}
       >
         <View style={{ flex: 1 }}>
           {/* ── Top Bar ────────────────────────────────────────────── */}

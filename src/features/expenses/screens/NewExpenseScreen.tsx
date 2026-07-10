@@ -396,7 +396,7 @@ function ContextSummary({
   );
 }
 
-const ERROR = "#E02424";
+const ERROR = DANGER;
 
 function AmountCard({
   amount,

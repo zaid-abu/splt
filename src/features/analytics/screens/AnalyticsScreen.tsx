@@ -79,7 +79,8 @@ export default function AnalyticsScreen() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const { currentUser } = useAuth();
-  const { preferredCurrency, convertCurrency } = useUIStore();
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const convertCurrency = useUIStore((s) => s.convertCurrency);
 
   const [period, setPeriod] = useState<AnalyticsPeriod>("month");
 
