@@ -32,6 +32,9 @@ export interface UIState {
   preferredCurrency: Currency;
   setCurrency: (currency: Currency) => void;
 
+  isDarkMode: boolean;
+  setDarkMode: (dark: boolean) => void;
+
   exchangeRates: Record<string, number>;
   setExchangeRates: (rates: Record<string, number>) => void;
   fetchExchangeRates: () => Promise<void>;
@@ -44,6 +47,9 @@ export const useUIStore = create<UIState>()(
     (set, get) => ({
       isAppLoading: false,
       setIsAppLoading: (loading) => set({ isAppLoading: loading }),
+
+      isDarkMode: false,
+      setDarkMode: (dark) => set({ isDarkMode: dark }),
 
       preferredCurrency: CURRENCIES.find((c) => c.code === "USD") ?? CURRENCIES[0]!,
       setCurrency: (currency) => set({ preferredCurrency: currency }),
@@ -77,6 +83,7 @@ export const useUIStore = create<UIState>()(
       partialize: (state) => ({
         preferredCurrency: state.preferredCurrency,
         exchangeRates: state.exchangeRates,
+        isDarkMode: state.isDarkMode,
       }),
     }
   )

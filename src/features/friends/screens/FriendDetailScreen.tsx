@@ -26,8 +26,9 @@ import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { UI, SectionLabel } from "@/components/ui/native-ui";
+import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
-import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
+
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
@@ -899,22 +900,8 @@ export default function FriendDetailScreen(): JSX.Element {
       </FocusAwareView>
 
       {/* ── Bottom Action Bar ──────────────────────────────────────────── */}
-      <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingHorizontal: 24,
-          paddingTop: 16,
-          paddingBottom: Math.max(insets.bottom, 16),
-          flexDirection: "row",
-          gap: 12,
-          backgroundColor: BG,
-          borderTopWidth: 1,
-          borderTopColor: SEPARATOR,
-        }}
-      >
+      <View style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
+        <BottomActionBar>
         {!isSettled && (
           <Pressable
             accessibilityRole="button"
@@ -972,6 +959,7 @@ export default function FriendDetailScreen(): JSX.Element {
             Add Expense
           </Typography>
         </Pressable>
+      </BottomActionBar>
       </View>
 
       <BottomSheetModal
@@ -979,7 +967,7 @@ export default function FriendDetailScreen(): JSX.Element {
         index={0}
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
-        backgroundComponent={BlurredSheetBackground}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
       >
         <BottomSheetView

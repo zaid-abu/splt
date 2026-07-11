@@ -7,7 +7,7 @@ import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { UI } from "@/components/ui/native-ui";
-import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
+
 
 interface SwipeableRowProps {
   children: React.ReactNode;
@@ -146,7 +146,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
         index={0}
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
-        backgroundComponent={BlurredSheetBackground}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: "#8A8782", width: 40 }}
       >
         <BottomSheetView

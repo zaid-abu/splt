@@ -6,6 +6,8 @@ import { useFonts } from "expo-font";
 import { supabase } from "@/services/supabase/client";
 
 import { AppProvider } from "@/providers/AppProvider";
+import { useUIStore } from "@/store/useUIStore";
+import { applyTheme } from "@/components/ui/native-ui";
 import "../global.css";
 
 export { ErrorFallback as ErrorBoundary } from "@/components/feedback/ErrorFallback";
@@ -21,14 +23,12 @@ const TextInputComponent = TextInput as typeof TextInput & {
 
 TextComponent.defaultProps = {
   ...TextComponent.defaultProps,
-  allowFontScaling: false,
-  maxFontSizeMultiplier: 1,
+  maxFontSizeMultiplier: 1.3,
 };
 
 TextInputComponent.defaultProps = {
   ...TextInputComponent.defaultProps,
-  allowFontScaling: false,
-  maxFontSizeMultiplier: 1,
+  maxFontSizeMultiplier: 1.3,
 };
 
 export default function RootLayout(): JSX.Element | null {
@@ -40,11 +40,17 @@ export default function RootLayout(): JSX.Element | null {
   });
 
   const [authReady, setAuthReady] = useState(false);
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
+
+  useEffect(() => {
+    applyTheme(isDarkMode);
+  }, [isDarkMode]);
 
   useEffect(() => {
     if (!loaded) return;
 
     supabase.auth.getSession().then(({ data }) => {
+      applyTheme(isDarkMode);
       setAuthReady(true);
       SplashScreen.hideAsync();
     });
@@ -53,7 +59,7 @@ export default function RootLayout(): JSX.Element | null {
   if (!loaded || !authReady) return null;
 
   return (
-    <AppProvider>
+    <AppProvider key={isDarkMode ? "dark" : "light"}>
       <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="onboarding" />

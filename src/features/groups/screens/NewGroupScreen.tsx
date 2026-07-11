@@ -24,7 +24,7 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { IconButton, PrimaryButton, SectionLabel, UI } from "@/components/ui/native-ui";
-import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
+
 import { GROUP_ICONS } from "@/constants/icons";
 
 const BG = UI.color.bg;
@@ -159,7 +159,7 @@ export default function NewGroupScreen(): JSX.Element {
         onClose={handleDismiss}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={{ backgroundColor: "#D6D2CD", width: 40 }}
-        backgroundComponent={BlurredSheetBackground}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
       >
         <View style={{ flex: 1 }}>
           {/* ── Top Bar ────────────────────────────────────────────── */}

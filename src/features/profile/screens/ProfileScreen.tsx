@@ -3,9 +3,9 @@ import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import type { JSX } from "react";
-import { useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View, Pressable } from "react-native";
+import { ScrollView, View, Pressable, Share, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
@@ -17,8 +17,9 @@ import { useUIStore } from "@/store/useUIStore";
 import type { Currency } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
-import { UI, ScreenHeader, MetricCell } from "@/components/ui/native-ui";
-import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
+import { UI, ScreenHeader, MetricCell, applyTheme } from "@/components/ui/native-ui";
+import { Uniwind } from "uniwind";
+
 
 import { SettingsItem } from "@/features/profile/components/SettingsItem";
 
@@ -33,6 +34,8 @@ export default function ProfileScreen(): JSX.Element {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const setCurrency = useUIStore((s) => s.setCurrency);
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
+  const setDarkMode = useUIStore((s) => s.setDarkMode);
 
   const owedToYou = balancesUtil.getTotalOwedToMe(
     currentUser.id,
@@ -69,6 +72,25 @@ export default function ProfileScreen(): JSX.Element {
     ),
     []
   );
+
+  const handleThemeToggle = (value: boolean) => {
+    setDarkMode(value);
+    applyTheme(value);
+    Uniwind.setTheme(value ? "dark" : "light");
+  };
+
+  useEffect(() => {
+    applyTheme(isDarkMode);
+    Uniwind.setTheme(isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
+
+  const handleShareInvite = async () => {
+    try {
+      await Share.share({
+        message: "Join me on Splt — the simple way to split expenses with friends!",
+      });
+    } catch {}
+  };
 
   const handleCurrencyChange = (currency: Currency) => {
     setCurrency(currency);
@@ -200,9 +222,8 @@ export default function ProfileScreen(): JSX.Element {
             <SettingsItem
               icon="Moon"
               title="Dark Mode"
-              subtitle="Coming soon"
-              disabled
-              rightElement={<Switch isSelected={false} />}
+              subtitle="Switch between light and dark themes"
+              rightElement={<Switch isSelected={isDarkMode} onSelectedChange={handleThemeToggle} />}
             />
             <SettingsItem
               icon="Bell"
@@ -317,6 +338,32 @@ export default function ProfileScreen(): JSX.Element {
 
             <Pressable
               accessibilityRole="button"
+              onPress={handleShareInvite}
+              style={({ pressed }) => ({
+                height: 52,
+                borderRadius: UI.radius.pill,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+                backgroundColor: UI.color.control,
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 12,
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              <Typography
+                style={{
+                  fontSize: 15,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: UI.color.text,
+                }}
+              >
+                Tell a friend
+              </Typography>
+            </Pressable>
+
+            <Pressable
+              accessibilityRole="button"
               onPress={() => deleteSheetRef.current?.present()}
               style={({ pressed }) => ({
                 marginTop: 12,
@@ -363,7 +410,7 @@ export default function ProfileScreen(): JSX.Element {
         index={0}
         enableDynamicSizing
         backdropComponent={renderBackdrop}
-        backgroundComponent={BlurredSheetBackground}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
       >
         <BottomSheetView

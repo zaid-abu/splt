@@ -20,7 +20,7 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { SwipeableRow } from "@/components/layout/SwipeableRow";
-import { AppLoader } from "@/components/ui/AppLoader";
+import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatActivityDate } from "@/utils/date";
@@ -699,8 +699,8 @@ export default function FriendsScreen(): JSX.Element {
     () => (
       <View style={{ paddingHorizontal: UI.space.page }}>
         {isLoading ? (
-          <View style={{ paddingTop: 40 }}>
-            <AppLoader />
+          <View style={{ paddingTop: 20 }}>
+            {[1, 2, 3, 4].map((i) => <ListRowSkeleton key={i} />)}
           </View>
         ) : (
           <View style={{ marginTop: 20 }}>

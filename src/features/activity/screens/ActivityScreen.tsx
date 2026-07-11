@@ -1,10 +1,11 @@
 import type { JSX } from "react";
 import { useState, useMemo, useCallback } from "react";
-import { View, ScrollView } from "react-native";
+import { View, ScrollView, RefreshControl } from "react-native";
 import { Typography } from "heroui-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
+import { useQueryClient } from "@tanstack/react-query";
 
 import Animated from "react-native-reanimated";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
@@ -13,8 +14,8 @@ import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
-import { AppLoader } from "@/components/ui/AppLoader";
 import { UI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
+import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import type { Activity, ActivityFilterType } from "@/types";
 
 export default function ActivityScreen(): JSX.Element {
@@ -27,6 +28,14 @@ export default function ActivityScreen(): JSX.Element {
   );
   const isAppLoading =
     useUIStore((s) => s.isAppLoading) || isLoadingExpenses || isLoadingSettlements;
+
+  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries();
+    setRefreshing(false);
+  }, [queryClient]);
 
   const activities = useMemo(() => {
     const arr: Activity[] = [];
@@ -96,17 +105,37 @@ export default function ActivityScreen(): JSX.Element {
 
   const groupedActivities = useMemo(() => {
     const groups: Record<string, Activity[]> = {};
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+
+    const getSectionKey = (date: Date): string => {
+      const d = new Date(date);
+      if (d.toDateString() === today.toDateString()) return "Today";
+      if (d.toDateString() === yesterday.toDateString()) return "Yesterday";
+      if (d > weekAgo) return "This Week";
+      return date.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+    };
+
     filteredActivities.forEach((activity) => {
-      const monthYear = activity.date.toLocaleDateString("en-US", {
-        month: "long",
-        year: "numeric",
-      });
-      if (!groups[monthYear]) {
-        groups[monthYear] = [];
-      }
-      groups[monthYear].push(activity);
+      const key = getSectionKey(activity.date);
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(activity);
     });
-    return Object.entries(groups).map(([title, data]) => ({ title, data }));
+
+    const order = ["Today", "Yesterday", "This Week"];
+    return Object.entries(groups)
+      .sort(([a], [b]) => {
+        const ai = order.indexOf(a);
+        const bi = order.indexOf(b);
+        if (ai !== -1 && bi !== -1) return ai - bi;
+        if (ai !== -1) return -1;
+        if (bi !== -1) return 1;
+        return 0;
+      })
+      .map(([title, data]) => ({ title, data }));
   }, [filteredActivities]);
 
   const FILTERS: ActivityFilterType[] = ["All", "Expenses", "Settlements", "Groups", "Friends"];
@@ -157,13 +186,20 @@ export default function ActivityScreen(): JSX.Element {
             />
           ))}
         </ScrollView>
-        {isAppLoading && <AppLoader />}
       </View>
 
+      {isAppLoading && groupedActivities.length === 0 ? (
+        <View style={{ paddingHorizontal: UI.space.page, gap: 0 }}>
+          {[1, 2, 3].map((i) => <ListRowSkeleton key={i} />)}
+        </View>
+      ) : (
       <Animated.FlatList
         data={groupedActivities}
         keyExtractor={(item) => item.title}
         keyboardShouldPersistTaps="handled"
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.color.text} />
+        }
         renderItem={({ item: section }: { item: { title: string; data: Activity[] } }) => (
           <View style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
             {/* Month header */}
@@ -206,6 +242,7 @@ export default function ActivityScreen(): JSX.Element {
         contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
         showsVerticalScrollIndicator={false}
       />
+      )}
     </FocusAwareView>
   );
 }

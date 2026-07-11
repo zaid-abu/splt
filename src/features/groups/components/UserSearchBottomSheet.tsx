@@ -13,7 +13,7 @@ import type { User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { EmptyState, UI } from "@/components/ui/native-ui";
-import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
+
 
 interface UserSearchBottomSheetProps {
   onSelect: (user: User) => void;
@@ -206,7 +206,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
         snapPoints={["90%"]}
         enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
-        backgroundComponent={BlurredSheetBackground}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: "#D6D2CD", width: 40 }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"

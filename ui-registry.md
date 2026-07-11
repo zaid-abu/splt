@@ -257,3 +257,603 @@ Last updated: 2026-07-09
 
 **Pattern notes:**
 Primary bottom navigation should contain only core destinations: Dashboard, Groups, Friends, and Activity. Creation actions such as `Add Expense` belong in contextual dashboard controls, not as a center tab. Profile access should be launched from the dashboard header so account settings do not compete with task destinations in the tab bar.
+
+### PressableScale
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                                   |
+| ---------------- | ------------------------------------------------------------------------------- |
+| Background       | None (wraps children)                                                           |
+| Border           | None                                                                            |
+| Border radius    | None                                                                            |
+| Text - primary   | N/A                                                                             |
+| Text - secondary | N/A                                                                             |
+| Spacing          | N/A                                                                             |
+| Hover state      | Spring scale to `0.97` on pressIn, restores on pressOut (Animated.spring)       |
+| Shadow           | None                                                                            |
+| Accent usage     | N/A                                                                             |
+
+**Pattern notes:**
+Generic pressable wrapper that applies a subtle spring scale-down animation. Accepts `scaleTo` prop to customize intensity. Uses `Animated.spring` with mass 0.3, stiffness 200, damping 12. Suitable for any touchable content that needs a tactile feedback without haptics.
+
+### PrimaryButton
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                     |
+| ---------------- | ----------------------------------------------------------------- |
+| Background       | Charcoal `UI.color.text` by default; brand `UI.color.brand`; danger `UI.color.danger` |
+| Border           | None                                                              |
+| Border radius    | `999px` pill                                                      |
+| Text - primary   | `#FFFFFF`, `IBMPlexSans_600SemiBold`, `16px`                      |
+| Text - secondary | N/A                                                               |
+| Spacing          | `20px` horizontal padding; `52px` min height                      |
+| Hover state      | Disabled opacity `0.45`; pressed/loading opacity `0.78`           |
+| Shadow           | None                                                              |
+| Accent usage     | Tone prop controls fill color: `ink`, `brand`, or `danger`        |
+
+**Pattern notes:**
+Use as the primary CTA in forms, screens, and dialogs. Accepts `loading` (shows ActivityIndicator) and `disabled` states. Always full-width pill shape. For secondary or ghost actions, use a custom Pressable with outlined styling instead.
+
+### IconButton
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                       |
+| ---------------- | ------------------------------------------------------------------- |
+| Background       | Control white `UI.color.control`                                    |
+| Border           | `1px` `UI.color.border`                                             |
+| Border radius    | `999px` pill                                                        |
+| Text - primary   | N/A                                                                 |
+| Text - secondary | N/A                                                                 |
+| Spacing          | `44x44` touch target; icon `20px` size                              |
+| Hover state      | Pressed opacity `0.6`                                               |
+| Shadow           | None                                                                |
+| Accent usage     | `tone="danger"` colors icon `UI.color.danger`; default icons `UI.color.text` |
+
+**Pattern notes:**
+Compact circular icon button for header actions, back navigation, and inline controls. Always use with an `accessibilityLabel` for screen readers. Lucide icon is passed as a component prop. Supports `tone` for semantic coloring.
+
+### SectionLabel
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                            |
+| ---------------- | -------------------------------------------------------- |
+| Background       | None                                                     |
+| Border           | None                                                     |
+| Border radius    | None                                                     |
+| Text - primary   | `IBMPlexSans_600SemiBold`, `11px`, `UI.color.muted`, uppercase, `1.2px` letter-spacing |
+| Text - secondary | N/A                                                      |
+| Spacing          | None                                                     |
+| Hover state      | None                                                     |
+| Shadow           | None                                                     |
+| Accent usage     | N/A                                                      |
+
+**Pattern notes:**
+Uppercase section label for grouping form fields, list sections, or filter areas. Wraps text in HeroUI `Typography` with consistent label styling. Do not use for body copy or headlines; reserved for structural metadata only.
+
+### SearchField
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                               |
+| ---------------- | --------------------------------------------------------------------------- |
+| Background       | Control white `UI.color.control`                                            |
+| Border           | `1px` `UI.color.border`                                                     |
+| Border radius    | `UI.radius.lg` (`16px`)                                                      |
+| Text - primary   | `IBMPlexSans_500Medium`, `16px`, `UI.color.text`                            |
+| Text - secondary | Placeholder `UI.color.muted`                                                |
+| Spacing          | `16px` horizontal padding; `52px` min height; `12px` left icon gap          |
+| Hover state      | None                                                                        |
+| Shadow           | None                                                                        |
+| Accent usage     | Search icon `UI.color.muted`; clear button `XCircle` icon on non-empty value |
+
+**Pattern notes:**
+Consistent search field used across groups, friends, and selection screens. Includes a Lucide Search icon on the left and optional clear button on the right. Supports `onClear` and `rightElement` props for custom action buttons (e.g., add friend). Matches the card radius system.
+
+### ScreenHeader
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                      |
+| ---------------- | ------------------------------------------------------------------ |
+| Background       | None (transparent, app background shows through)                   |
+| Border           | None                                                               |
+| Border radius    | None                                                               |
+| Text - primary   | `Sora_600SemiBold`, `28px`, `UI.color.textStrong`, `-0.3px` spacing |
+| Text - secondary | N/A                                                                |
+| Spacing          | `UI.space.page` horizontal padding; `16px` vertical padding        |
+| Hover state      | None                                                               |
+| Shadow           | None                                                               |
+| Accent usage     | Back button is an `IconButton` with `ArrowLeft`                    |
+
+**Pattern notes:**
+Native-style screen header with title and optional back button + right action. Used for feature screens that need a clear hierarchy without a full navigation bar. The back button appears as a pill icon button when `onBackPress` is provided.
+
+### MetricCell
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                               |
+| ---------------- | --------------------------------------------------------------------------- |
+| Background       | Neutral: `UI.color.control`; success: `#F5FCF8`; danger: `#FFF7F5`; brand: `UI.color.bg` |
+| Border           | `1px` `UI.color.border`                                                     |
+| Border radius    | `UI.radius.md` (`12px`)                                                      |
+| Text - primary   | Value uses `IBMPlexSans_600SemiBold`, `16px`, tone-colored                  |
+| Text - secondary | Label uses `IBMPlexSans_600SemiBold`, `11px`, `UI.color.muted`, uppercase, `0.8px` tracking |
+| Spacing          | `12px` vertical/horizontal padding; `5px` gap between label and value       |
+| Hover state      | None                                                                         |
+| Shadow           | None                                                                         |
+| Accent usage     | Tone `success`/`danger`/`brand` changes value color and background tint      |
+
+**Pattern notes:**
+Compact metric display cell for dashboard summaries, balance breakdowns, and stat grids. Use `tone` to signal meaning: green for positive balances, red for debts, brand for special emphasis, neutral for general counts. The label is always uppercase/tracked metadata.
+
+### FilterPill
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                              |
+| ---------------- | -------------------------------------------------------------------------- |
+| Background       | Active: `UI.color.text`; inactive: `UI.color.control`                      |
+| Border           | Active: `1px` `UI.color.text`; inactive: `1px` `UI.color.border`           |
+| Border radius    | `999px` pill                                                               |
+| Text - primary   | `IBMPlexSans_600SemiBold`, `13px`; active: `#FFFFFF`, inactive: `UI.color.text` |
+| Text - secondary | N/A                                                                        |
+| Spacing          | `14px` horizontal padding; `44px` min height                               |
+| Hover state      | Pressed opacity `0.72`; triggers `Haptics.selectionAsync()` on press       |
+| Shadow           | None                                                                       |
+| Accent usage     | Active state uses charcoal fill with white text                             |
+
+**Pattern notes:**
+Toggle pill for filter rows, category selectors, and stateful controls. Use `isActive` to toggle visual state. Always includes haptic feedback on press. Active pills invert to dark fill with light text for clear distinction.
+
+### ListSection
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                       |
+| ---------------- | ------------------------------------------------------------------- |
+| Background       | None                                                                |
+| Border           | None                                                                |
+| Border radius    | None                                                                |
+| Text - primary   | `IBMPlexSans_600SemiBold`, `18px`, `UI.color.text`, `-0.2px` spacing |
+| Text - secondary | N/A                                                                 |
+| Spacing          | `UI.space.page` horizontal padding for header; `14px` bottom margin on header; `28px` bottom margin on section |
+| Hover state      | None                                                                |
+| Shadow           | None                                                                |
+| Accent usage     | Optional `rightAction` for header-level controls                    |
+
+**Pattern notes:**
+Standard list section wrapper with a bold section header and optional right-aligned action (e.g., "See All" link). Children render below the header. Section headers use body-semibold styling rather than uppercase labels for better readability in list contexts.
+
+### EmptyState
+
+File: src/components/ui/native-ui.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                    |
+| ---------------- | ---------------------------------------------------------------- |
+| Background       | Surface ivory `UI.color.surface`                                 |
+| Border           | `1px` `UI.color.border`                                          |
+| Border radius    | `UI.radius.lg` (`16px`)                                          |
+| Text - primary   | `IBMPlexSans_600SemiBold`, `18px`, `UI.color.text`, centered     |
+| Text - secondary | `IBMPlexSans_500Medium`, `15px`, `UI.color.muted`, centered, `21px` lineHeight |
+| Spacing          | `32px` padding all sides; `16px` gap between icon and title; `8px` gap between title and subtitle |
+| Hover state      | None                                                             |
+| Shadow           | None                                                             |
+| Accent usage     | Icon shell `64x64` rounded `UI.radius.xl` with border            |
+
+**Pattern notes:**
+Generic empty state card for lists, search results, and data-free screens. Accepts a Lucide icon component, title, and subtitle. The icon is rendered inside a framed `64x64` shell matching the card framing system. Use clear, actionable copy that guides users to the next step.
+
+### Card
+
+File: src/components/ui/Card.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                              |
+| ---------------- | ------------------------------------------ |
+| Background       | `UI.color.surface`                         |
+| Border           | `1px` `UI.color.border`                    |
+| Border radius    | `UI.radius.lg` (`16px`)                    |
+| Text - primary   | N/A (inherits from children)               |
+| Text - secondary | N/A                                        |
+| Spacing          | Default `16px` padding; configurable       |
+| Hover state      | None                                       |
+| Shadow           | None                                       |
+| Accent usage     | N/A                                        |
+
+**Pattern notes:**
+Minimal card wrapper consistent with the design system. No shadow by default. Accepts `padding` prop (default `16px`). Used as the base container for dashboard cards, form sections, list summaries, and any grouped content surface.
+
+### ListRow
+
+File: src/components/ui/ListRow.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                          |
+| ---------------- | ---------------------------------------------------------------------- |
+| Background       | None (transparent, parent surface shows through)                       |
+| Border           | Bottom border `1px` `UI.color.border`; suppressed when `isLast`        |
+| Border radius    | None                                                                   |
+| Text - primary   | Title: `IBMPlexSans_600SemiBold`, `16px`, `UI.color.text`              |
+| Text - secondary | Subtitle: `IBMPlexSans_500Medium`, `13px`, `UI.color.muted`            |
+| Spacing          | `14px` vertical padding; `16px` horizontal padding; `14px` leading gap; `12px` trailing gap |
+| Hover state      | Pressed opacity `0.62` when interactive                                |
+| Shadow           | None                                                                   |
+| Accent usage     | Leading element (icon/avatar) and trailing element (balance pill/chevron) |
+
+**Pattern notes:**
+Configurable list row with leading visual, title, optional subtitle, and trailing element. Supports `onPress` for navigation/action. The last row in a list suppresses its bottom border to avoid double-borders with the parent card. For grouping with card radius, wrap rows in a Card component and use `isLast` on the final row.
+
+### BottomActionBar
+
+File: src/components/ui/BottomActionBar.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                |
+| ---------------- | -------------------------------------------- |
+| Background       | App background `UI.color.bg`                 |
+| Border           | Top border `1px` `UI.color.border`           |
+| Border radius    | None                                         |
+| Text - primary   | N/A (from children)                          |
+| Text - secondary | N/A                                          |
+| Spacing          | `UI.space.page` horizontal padding; `16px` top padding; safe-area bottom padding; `12px` gap between children |
+| Hover state      | None                                         |
+| Shadow           | None                                         |
+| Accent usage     | N/A                                          |
+
+**Pattern notes:**
+Fixed bottom action bar attached to the bottom of scrollable screens. Uses safe-area insets for proper bottom padding. Designed to hold one or two action buttons (e.g., Continue, Cancel). Renders children in a row with gap.
+
+### AmountDisplay
+
+File: src/components/ui/AmountDisplay.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                       |
+| ---------------- | ------------------------------------------------------------------- |
+| Background       | None                                                                |
+| Border           | None                                                                |
+| Border radius    | None                                                                |
+| Text - primary   | Amount: sized by prop (`sm`/`md`/`lg`/`xl`), tone-colored if `colored` |
+| Text - secondary | Currency code: `body-xs`, `text-muted`                              |
+| Spacing          | `2px` gap between amount and currency label                         |
+| Hover state      | None                                                                |
+| Shadow           | None                                                                |
+| Accent usage     | Positive amounts: `text-success`; negative: `text-danger`           |
+
+**Pattern notes:**
+Standardized currency amount display with formatting (millions compact, locale-aware decimals, zero-decimal currencies). Supports `colored` (semantic green/red for positive/negative) and `showSign` (+/- prefix) props. Currency code shown as muted subtitle. Zero amounts render in neutral text color.
+
+### Skeleton
+
+File: src/components/ui/Skeleton.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                   |
+| ---------------- | --------------------------------------------------------------- |
+| Background       | Subtle `UI.color.subtle`                                        |
+| Border           | None                                                            |
+| Border radius    | Configurable, default `UI.radius.md` (`12px`)                   |
+| Text - primary   | N/A                                                             |
+| Text - secondary | N/A                                                             |
+| Spacing          | Configurable width and height                                   |
+| Hover state      | None (pulsing animation)                                        |
+| Shadow           | None                                                            |
+| Accent usage     | N/A                                                             |
+
+**Pattern notes:**
+Loading placeholder with pulse animation (opacity oscillates between 0.3-0.6 with 800ms duration). Includes pre-built `CardSkeleton` and `ListRowSkeleton` variants for common loading patterns. Width defaults to 100% if not specified. Use inside loading states while data is being fetched.
+
+### HapticButton
+
+File: src/components/ui/HapticButton.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                              |
+| ---------------- | -------------------------------------------------------------------------- |
+| Background       | Ink: `UI.color.text`; brand: `UI.color.brand`; danger: `UI.color.danger`; outlined: `UI.color.control` |
+| Border           | Outlined: `1px` `UI.color.border`; others: none                            |
+| Border radius    | `999px` pill                                                                |
+| Text - primary   | `IBMPlexSans_600SemiBold`, `16px`; filled: `#FFFFFF`, outlined: `UI.color.text` |
+| Text - secondary | N/A                                                                         |
+| Spacing          | `20px` horizontal padding; configurable height (default `56px`); `8px` gap  |
+| Hover state      | Disabled opacity `0.45`; pressed/loading opacity `0.78`; haptic on press    |
+| Shadow           | None                                                                        |
+| Accent usage     | `tone` controls fill color, border, and text color                          |
+
+**Pattern notes:**
+Full-featured action button with haptic feedback (`ImpactFeedbackStyle.Medium`). Supports filled (`ink`, `brand`, `danger`) and outlined tones. Accepts `loading` state with ActivityIndicator. Use for primary form actions, destructive confirmations, and key CTAs where tactile feedback enhances UX.
+
+### ErrorState
+
+File: src/components/ui/ErrorState.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                         |
+| ---------------- | --------------------------------------------------------------------- |
+| Background       | Surface ivory `UI.color.surface`                                      |
+| Border           | `1px` `UI.color.border`                                               |
+| Border radius    | `UI.radius.lg` (`16px`)                                               |
+| Text - primary   | `IBMPlexSans_600SemiBold`, `17px`, `UI.color.text`, centered          |
+| Text - secondary | `IBMPlexSans_500Medium`, `14px`, `UI.color.muted`, centered           |
+| Spacing          | `32px` padding; `16px` bottom margin on icon; `8px` bottom margin on title; `UI.space.page` horizontal margin |
+| Hover state      | "Try Again" button pressed opacity `0.75`                             |
+| Shadow           | None                                                                  |
+| Accent usage     | AlertCircle icon in `UI.color.danger` in `#FFF7F5` tinted shell       |
+
+**Pattern notes:**
+Card error state with icon, title, message, and optional retry button. Use inside screens and modals when data fetching fails. The retry button is a compact charcoal pill labeled "Try Again". Accepts custom `title` and `message` props for context-specific messaging.
+
+### Toast
+
+File: src/components/ui/Toast.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                                 |
+| ---------------- | ----------------------------------------------------------------------------- |
+| Background       | Surface ivory `UI.color.surface`                                              |
+| Border           | `1px` `UI.color.border`                                                       |
+| Border radius    | `UI.radius.lg` (`16px`)                                                       |
+| Text - primary   | Label: `IBMPlexSans_600SemiBold`, `15px`, `UI.color.text`                     |
+| Text - secondary | Description: `IBMPlexSans_500Medium`, `13px`, `UI.color.muted`                 |
+| Spacing          | `16px` horizontal padding; `14px` vertical padding; `14px` icon-container gap; `12px` dismiss button margin |
+| Hover state      | Dismiss button pressed opacity `0.6`                                          |
+| Shadow           | Toast lift: `0 4px 8px rgba(0,0,0,0.1)`, elevation 5                          |
+| Accent usage     | Variant icon: danger `UI.color.danger`, success `UI.color.success`, default `UI.color.text` |
+
+**Pattern notes:**
+Animated toast notification with entering/exiting transitions (FadeInDown/FadeOutUp via reanimated). Variants: `danger`, `success`, or default. Includes framed icon shell, label, description, and dismiss button. Designed for use with a toast manager; the `props` and `options` shape is compatible with common RN toast libraries.
+
+### MoneySignal
+
+File: src/components/ui/MoneySignal.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                        |
+| ---------------- | -------------------------------------------------------------------- |
+| Background       | Danger: `#FFF7F5`; success: `#F5FCF8`; neutral: `UI.color.control`  |
+| Border           | `1px` `UI.color.border`                                              |
+| Border radius    | `UI.radius.md` (`12px`)                                              |
+| Text - primary   | Value: `IBMPlexSans_600SemiBold`, `18px`, tone-colored, `-0.2px` spacing |
+| Text - secondary | Label: `IBMPlexSans_500Medium`, `12px`, `UI.color.muted`             |
+| Spacing          | `12px` padding; `4px` gap between label and value                    |
+| Hover state      | None                                                                 |
+| Shadow           | None                                                                 |
+| Accent usage     | Danger tone: debt red; success: credit green; neutral: muted          |
+
+**Pattern notes:**
+Semantic money signal cell for displaying financial amounts with context. The `tone` prop controls background tint, text color, and label. Use for balance summary breakdowns (owes you / you owe / settled). Matches the `MetricCell` pattern but specialized for money semantics.
+
+### SheetContainer
+
+File: src/components/ui/SheetContainer.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                            |
+| ---------------- | -------------------------------------------------------- |
+| Background       | App background `UI.color.bg` with `borderRadius: 0`      |
+| Border           | None                                                     |
+| Border radius    | `0` (square top edge)                                    |
+| Text - primary   | N/A (from children)                                      |
+| Text - secondary | N/A                                                      |
+| Spacing          | `UI.space.page` horizontal padding; `24px` top padding; safe-area bottom padding; `20px` gap |
+| Hover state      | None                                                     |
+| Shadow           | None                                                     |
+| Accent usage     | Handle indicator: `UI.color.muted`, `40px` width         |
+
+**Pattern notes:**
+Gorhom bottom sheet wrapper with standard backdrop, square top edges, and safe area insets. Exposes `present()` and `dismiss()` via ref (`SheetContainerHandle`). Default snap to first index with dynamic sizing enabled. Backdrop appears on index 0, press-to-close. Use for selectors, filters, and confirmation content.
+
+### SheetBackground
+
+File: src/components/ui/SheetBackground.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                               |
+| ---------------- | ----------------------------------------------------------- |
+| Background       | iOS: transparent BlurView; Android: `UI.color.surface`      |
+| Border           | None                                                        |
+| Border radius    | None (`borderTopLeftRadius: 0`, `borderTopRightRadius: 0`)  |
+| Text - primary   | N/A                                                         |
+| Text - secondary | N/A                                                         |
+| Spacing          | N/A                                                         |
+| Hover state      | None                                                        |
+| Shadow           | None                                                        |
+| Accent usage     | N/A                                                         |
+
+**Pattern notes:**
+Platform-aware sheet background component. Uses `expo-blur` with `BlurView` on iOS (intensity 90, light tint) and a solid `UI.color.surface` on Android. Pass as `backgroundComponent` prop to Gorhom `BottomSheetModal` for frosted-glass sheet appearance on iOS.
+
+### AppLoader
+
+File: src/components/ui/AppLoader.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                              |
+| ---------------- | ---------------------------------------------------------- |
+| Background       | `#F5F0EB` when fullScreen; none otherwise                  |
+| Border           | None                                                       |
+| Border radius    | None                                                       |
+| Text - primary   | `Sora_600SemiBold`, `16px`, `#8C7A6B`, `4px` letter-spacing, uppercase |
+| Text - secondary | N/A                                                        |
+| Spacing          | `24px` padding; `16px` gap between spinner and text        |
+| Hover state      | None                                                       |
+| Shadow           | None                                                       |
+| Accent usage     | Rotating square border (`#8C7A6B`) + brand-toned text     |
+
+**Pattern notes:**
+Animated app-level loading screen with a rotating square (2000ms full rotation) and pulsing scale effect. Full-screen mode sets flex: 1 with warm background. Text reads "LOADING" in tracked uppercase with brand taupe color. Use during initial app load, splash transitions, or blocking operations.
+
+### FormInput
+
+File: src/components/forms/FormInput.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                          |
+| ---------------- | ---------------------------------------------------------------------- |
+| Background       | Control white `UI.color.control`                                       |
+| Border           | Default: `1px` `UI.color.border`; focus: `UI.color.text`; error: `UI.color.danger` |
+| Border radius    | `UI.radius.md` (`12px`)                                                |
+| Text - primary   | Input: `IBMPlexSans_500Medium`, `16px`, `UI.color.text`                |
+| Text - secondary | Label: uppercase `11px` tracked; error: `13px` danger; description: `13px` muted |
+| Spacing          | `52px` height; `16px` horizontal padding (with left/right element spacing `48px`); `16px` bottom margin |
+| Hover state      | Focus border highlight on `isFocused`                                  |
+| Shadow           | None                                                                   |
+| Accent usage     | Error border and message use `UI.color.danger`                         |
+
+**Pattern notes:**
+React Hook Form-controlled input field. Integrates with `Controller` from react-hook-form for validation. Supports label, description, leftElement (icon), and rightElement (action). Error state displays danger-colored border and message. Label is uppercase/tracked metadata. Uses HeroUI `TextField` + `Input` components internally.
+
+### PasswordStrengthMeter
+
+File: src/components/forms/PasswordStrengthMeter.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                             |
+| ---------------- | ------------------------------------------------------------------------- |
+| Background       | Three `4px` segment bars; filled: strength color, unfilled: `UI.color.border` |
+| Border           | None                                                                      |
+| Border radius    | `2px` per segment                                                         |
+| Text - primary   | Label: `IBMPlexSans_500Medium`, `12px`; color scales from muted to text   |
+| Text - secondary | N/A                                                                       |
+| Spacing          | `6px` gap between segments; `6px` gap between bars and label; `-16px` top margin |
+| Hover state      | None (LayoutAnimation on password change)                                 |
+| Shadow           | None                                                                      |
+| Accent usage     | 4 strength levels: too short/weak (border), fair (muted), good (#6E6D68), strong (text) |
+
+**Pattern notes:**
+Animated password strength indicator with 3 segments and a text label. Uses `evaluatePasswordStrength` from utils. Only visible when password is non-empty. Segments fill progressively based on score (0-3). Android LayoutAnimation enabled for smooth transitions. Place below password input in register/change-password forms.
+
+### ConfirmationSheet
+
+File: src/components/dialogs/ConfirmationSheet.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                      |
+| ---------------- | ------------------------------------------------------------------ |
+| Background       | App background `UI.color.bg` with `borderRadius: 0`                |
+| Border           | None                                                               |
+| Border radius    | `0` (square top edge)                                              |
+| Text - primary   | Title: `IBMPlexSans_600SemiBold`, `22px`, `UI.color.text`          |
+| Text - secondary | Description: `IBMPlexSans_500Medium`, `16px`, `UI.color.muted`     |
+| Spacing          | `UI.space.page` horizontal; `24px` top; safe-area bottom; `20px` gap between content and buttons; `12px` button gap |
+| Hover state      | Cancel pressed opacity `0.5`; confirm pressed opacity `0.8`        |
+| Shadow           | None                                                               |
+| Accent usage     | Confirm button: danger `UI.color.danger` or brand `UI.color.brand` |
+
+**Pattern notes:**
+Destructive confirmation bottom sheet with title, description, and two-action button row. Uses `useConfirmationSheet` hook for ref management. `confirmTone` controls whether the confirm button is danger (red) or brand (taupe). Accepts optional `children` to replace default content. Trigger confirm action with 300ms delay after sheet dismiss.
+
+### Backdrop
+
+File: src/components/bottom-sheet/Backdrop.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                           |
+| ---------------- | ------------------------------------------------------- |
+| Background       | Black overlay at `0.4` opacity                          |
+| Border           | None                                                    |
+| Border radius    | None                                                    |
+| Text - primary   | N/A                                                     |
+| Text - secondary | N/A                                                     |
+| Spacing          | N/A                                                     |
+| Hover state      | None                                                    |
+| Shadow           | None                                                    |
+| Accent usage     | N/A                                                     |
+
+**Pattern notes:**
+Reusable Gorhom bottom sheet backdrop factory via `useSheetBackdrop()` hook. Returns a `renderBackdrop` callback for the `backdropComponent` prop. Disappears on index -1, appears on index 0. Press-to-close behavior. Overlay at 0.4 opacity for consistent dimming across sheets.
+
+### PageAnimator (FocusAwareView)
+
+File: src/components/animations/PageAnimator.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                |
+| ---------------- | ------------------------------------------------------------ |
+| Background       | None (transparent wrapper)                                   |
+| Border           | None                                                         |
+| Border radius    | None                                                         |
+| Text - primary   | N/A                                                          |
+| Text - secondary | N/A                                                          |
+| Spacing          | N/A                                                          |
+| Hover state      | None                                                         |
+| Shadow           | None                                                         |
+| Accent usage     | N/A                                                          |
+
+**Pattern notes:**
+Page-level entrance animation wrapper using `useFocusEffect` from expo-router. Fades in and translates up (opacity 0->1, translateY 20->0) over 300-350ms when the screen gains focus. Supports configurable `delay` for staggered animations. Respects reduced motion preferences via `useReducedMotion` — skips animation entirely when reduced motion is enabled. Reset animation on blur/blur-unmount.
+
+### SwipeableRow
+
+File: src/components/layout/SwipeableRow.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                          |
+| ---------------- | ---------------------------------------------------------------------- |
+| Background       | N/A (wraps children)                                                   |
+| Border           | None                                                                   |
+| Border radius    | Action buttons: `0`                                                    |
+| Text - primary   | Action labels: `body-xs`, `font-bold`, white                           |
+| Text - secondary | N/A                                                                    |
+| Spacing          | Action button width: `72px`; `8px` gap between actions                 |
+| Hover state      | Haptic on action press; actions scale with drag distance               |
+| Shadow           | None                                                                   |
+| Accent usage     | Remind: primary/black; Settle: success green; Delete: danger red       |
+
+**Pattern notes:**
+Swipeable list row with configurable right actions (Remind, Settle, Delete). Uses `react-native-gesture-handler/Swipeable`. Actions animate in with scale and opacity based on drag progress. Delete action opens a confirmation bottom sheet before executing. Action icons are Lucide (Bell, CheckCircle, Trash2). Friction 2, right threshold 40px.
+
+### GlobalQueryToast
+
+File: src/components/feedback/GlobalQueryToast.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                               |
+| ---------------- | ------------------------------------------- |
+| Background       | N/A (renders null, triggers toast side-effect) |
+| Border           | N/A                                         |
+| Border radius    | N/A                                         |
+| Text - primary   | N/A                                         |
+| Text - secondary | N/A                                         |
+| Spacing          | N/A                                         |
+| Hover state      | N/A                                         |
+| Shadow           | N/A                                         |
+| Accent usage     | N/A                                         |
+
+**Pattern notes:**
+Global error listener for React Query mutations and queries. Subscribes to the query client cache and mutation cache, displaying a danger toast on any error. Deduplicates errors within a 3-second window using a Set. Renders null (no visual output) — acts as a side-effect component. Mounted once in `AppProvider`.
+
+### ErrorFallback
+
+File: src/components/feedback/ErrorFallback.tsx
+Last updated: 2026-07-11
+
+| Property         | Class / Value                                                |
+| ---------------- | ------------------------------------------------------------ |
+| Background       | App background `UI.color.bg`                                 |
+| Border           | Inner card: `1px` `UI.color.border`                          |
+| Border radius    | Inner card: `UI.radius.lg` (`16px`)                          |
+| Text - primary   | Title: `Sora_600SemiBold`, `24px`, `UI.color.text`           |
+| Text - secondary | Message: `IBMPlexSans_500Medium`, `16px`, `UI.color.muted`   |
+| Spacing          | `24px` outer padding; inner card `24px` padding; `12px` bottom margin on title; `24px` bottom margin on message |
+| Hover state      | "Try Again" button pressed: none (static)                    |
+| Shadow           | None                                                         |
+| Accent usage     | Retry button: charcoal pill with white text                  |
+
+**Pattern notes:**
+Expo Router error boundary fallback component. Matches the `ErrorBoundaryProps` type expected by Expo Router's `ErrorBoundary`. Renders centered on a full-screen warm background with a card containing title, error message, and retry button. Exported as `ErrorFallback` and used as the root layout error boundary in `_layout.tsx`.

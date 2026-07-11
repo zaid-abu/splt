@@ -39,7 +39,7 @@ import { CURRENCIES } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { GROUP_ICONS } from "@/constants/icons";
 import { UI, IconButton, SectionLabel } from "@/components/ui/native-ui";
-import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
+
 
 const TEXT_DANGER = UI.color.danger;
 
@@ -105,7 +105,7 @@ function ConfirmationSheet({
       index={0}
       enableDynamicSizing
       backdropComponent={SHEET_BACKDROP}
-      backgroundComponent={BlurredSheetBackground}
+      backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
       handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
     >
       <BottomSheetView style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 24 }}>

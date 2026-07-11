@@ -9,20 +9,13 @@ import {
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { PressableFeedback, Typography } from "heroui-native";
-import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
+import { UI } from "@/components/ui/native-ui";
+
 
 import type { Currency } from "@/types";
 import { CURRENCIES } from "@/types";
 
-const BG = "#F5F0EB";
-const SURFACE = "#FFFCF8";
-const CONTROL_SURFACE = "#FFFFFF";
-const BORDER = "#E8E4DF";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const BRAND = "#8C7A6B";
-const CARD_RADIUS = 16;
-const PILL_RADIUS = 999;
+
 const POPULAR_CODES = ["USD", "EUR", "GBP", "INR", "JPY"];
 
 interface CurrencySelectorProps {
@@ -100,7 +93,7 @@ const CurrencyListItem = memo(
               <icons.Check size={14} color="#FFFFFF" strokeWidth={2.4} />
             </View>
           ) : (
-            <icons.ChevronRight size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
+            <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.75} />
           )}
         </View>
       </PressableFeedback>
@@ -255,7 +248,7 @@ export function CurrencySelector({
 
           <View style={styles.triggerAdornment}>
             <Typography style={styles.triggerChangeText}>Change</Typography>
-            <icons.ChevronDown size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
+            <icons.ChevronDown size={18} color={UI.color.muted} strokeWidth={1.75} />
           </View>
         </View>
       </PressableFeedback>
@@ -267,8 +260,8 @@ export function CurrencySelector({
         enableDynamicSizing={false}
         onChange={handleSheetChanges}
         backdropComponent={renderBackdrop}
-        backgroundComponent={BlurredSheetBackground}
-        handleIndicatorStyle={{ backgroundColor: BORDER, width: 40 }}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: UI.color.border, width: 40 }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
@@ -282,12 +275,12 @@ export function CurrencySelector({
           </View>
 
           <View style={styles.searchCard}>
-            <icons.Search size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
+            <icons.Search size={18} color={UI.color.muted} strokeWidth={1.75} />
             <BottomSheetTextInput
               value={search}
               onChangeText={setSearch}
               placeholder="Search by code, name, or symbol"
-              placeholderTextColor={TEXT_SECONDARY}
+              placeholderTextColor={UI.color.muted}
               autoCapitalize="none"
               autoCorrect={false}
               autoFocus
@@ -299,7 +292,7 @@ export function CurrencySelector({
                 hitSlop={8}
                 onPress={() => setSearch("")}
               >
-                <icons.XCircle size={18} color={TEXT_SECONDARY} strokeWidth={1.75} />
+                <icons.XCircle size={18} color={UI.color.muted} strokeWidth={1.75} />
               </PressableFeedback>
             ) : null}
           </View>
@@ -334,7 +327,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     fontSize: 11,
     letterSpacing: 1.2,
-    color: TEXT_SECONDARY,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_600SemiBold",
     textTransform: "uppercase",
   },
@@ -342,10 +335,10 @@ const styles = StyleSheet.create({
     minHeight: 72,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderRadius: CARD_RADIUS,
+    borderRadius: UI.radius.lg,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: SURFACE,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.surface,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -361,15 +354,15 @@ const styles = StyleSheet.create({
     width: 52,
     height: 48,
     borderRadius: 18,
-    backgroundColor: CONTROL_SURFACE,
+    backgroundColor: UI.color.control,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: UI.color.border,
     alignItems: "center",
     justifyContent: "center",
   },
   triggerSymbolText: {
     fontSize: 16,
-    color: TEXT_PRIMARY,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   triggerTextWrap: {
@@ -378,12 +371,12 @@ const styles = StyleSheet.create({
   },
   triggerCodeText: {
     fontSize: 16,
-    color: TEXT_PRIMARY,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   triggerNameText: {
     fontSize: 14,
-    color: TEXT_SECONDARY,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   triggerAdornment: {
@@ -393,7 +386,7 @@ const styles = StyleSheet.create({
   },
   triggerChangeText: {
     fontSize: 13,
-    color: BRAND,
+    color: UI.color.brand,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   modalContent: {
@@ -406,24 +399,24 @@ const styles = StyleSheet.create({
   },
   modalTitle: {
     fontSize: 24,
-    color: TEXT_PRIMARY,
+    color: UI.color.text,
     fontFamily: "Sora_600SemiBold",
   },
   modalSubtitle: {
     marginTop: 8,
     fontSize: 14,
     lineHeight: 20,
-    color: TEXT_SECONDARY,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   searchCard: {
     height: 52,
     marginBottom: 18,
     paddingHorizontal: 16,
-    borderRadius: PILL_RADIUS,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL_SURFACE,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
@@ -432,7 +425,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 0,
     fontSize: 16,
-    color: TEXT_PRIMARY,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_500Medium",
   },
   listContent: {
@@ -443,7 +436,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 11,
     letterSpacing: 1.2,
-    color: TEXT_SECONDARY,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_600SemiBold",
     textTransform: "uppercase",
   },
@@ -452,10 +445,10 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     paddingHorizontal: 16,
     paddingVertical: 14,
-    borderRadius: CARD_RADIUS,
+    borderRadius: UI.radius.lg,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: SURFACE,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.surface,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -465,7 +458,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#F7F1EA",
   },
   itemSelected: {
-    borderColor: TEXT_PRIMARY,
+    borderColor: UI.color.text,
     backgroundColor: "#F0ECE7",
   },
   itemLeft: {
@@ -478,9 +471,9 @@ const styles = StyleSheet.create({
     width: 52,
     height: 48,
     borderRadius: 18,
-    backgroundColor: CONTROL_SURFACE,
+    backgroundColor: UI.color.control,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: UI.color.border,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -488,12 +481,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#F4E8DC",
   },
   symbolShellSelected: {
-    backgroundColor: TEXT_PRIMARY,
-    borderColor: TEXT_PRIMARY,
+    backgroundColor: UI.color.text,
+    borderColor: UI.color.text,
   },
   symbolText: {
     fontSize: 16,
-    color: TEXT_PRIMARY,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   symbolTextSelected: {
@@ -511,26 +504,26 @@ const styles = StyleSheet.create({
   },
   codeText: {
     fontSize: 16,
-    color: TEXT_PRIMARY,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   nameText: {
     marginTop: 3,
     fontSize: 14,
-    color: TEXT_SECONDARY,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   metaPill: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: PILL_RADIUS,
-    backgroundColor: CONTROL_SURFACE,
+    borderRadius: UI.radius.pill,
+    backgroundColor: UI.color.control,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: UI.color.border,
   },
   metaPillText: {
     fontSize: 11,
-    color: TEXT_SECONDARY,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_600SemiBold",
     textTransform: "uppercase",
     letterSpacing: 1,
@@ -539,7 +532,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: TEXT_PRIMARY,
+    backgroundColor: UI.color.text,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -547,21 +540,21 @@ const styles = StyleSheet.create({
     marginTop: 8,
     paddingHorizontal: 20,
     paddingVertical: 24,
-    borderRadius: CARD_RADIUS,
+    borderRadius: UI.radius.lg,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: SURFACE,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.surface,
     alignItems: "center",
   },
   emptyTitle: {
     fontSize: 16,
-    color: TEXT_PRIMARY,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   emptyText: {
     marginTop: 6,
     fontSize: 14,
-    color: TEXT_SECONDARY,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
     textAlign: "center",
   },

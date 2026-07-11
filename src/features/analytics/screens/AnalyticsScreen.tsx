@@ -24,6 +24,8 @@ import type { AnalyticsPeriod } from "@/types";
 import { CategoryBreakdown } from "../components/CategoryBreakdown";
 import { TopExpenses } from "../components/TopExpenses";
 
+import { UI } from "@/components/ui/native-ui";
+
 const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "week", label: "Week" },
   { key: "month", label: "Month" },
@@ -32,21 +34,12 @@ const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "all", label: "All Time" },
 ];
 
-const BG = "#F5F0EB";
-const SURFACE = "#FFFCF8";
-const CONTROL_SURFACE = "#FFFFFF";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
-const CARD_RADIUS = 16;
-const SECTION_PAD = 24;
-
 function SectionLabel({ children }: { children: string }) {
   return (
     <Typography
       style={{
         fontSize: 11,
-        color: TEXT_PRIMARY,
+        color: UI.color.text,
         fontFamily: "IBMPlexSans_600SemiBold",
         letterSpacing: 1.1,
         textTransform: "uppercase",
@@ -62,10 +55,10 @@ function AnalyticsCard({ children }: { children: React.ReactNode }) {
   return (
     <View
       style={{
-        backgroundColor: SURFACE,
-        borderRadius: CARD_RADIUS,
+        backgroundColor: UI.color.surface,
+        borderRadius: UI.radius.lg,
         borderWidth: 1,
-        borderColor: SEPARATOR,
+        borderColor: UI.color.border,
         padding: 16,
       }}
     >
@@ -116,20 +109,20 @@ export default function AnalyticsScreen() {
   }, [trendData]);
 
   const trendMax = trendData.reduce((max, point) => Math.max(max, point.value), 0);
-  const chartWidth = Math.max(220, width - SECTION_PAD * 2 - 56);
+  const chartWidth = Math.max(220, width - UI.space.page * 2 - 56);
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: BG }}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <StatusBar style="dark" />
       <View
         style={{
           paddingTop: insets.top + 18,
-          backgroundColor: BG,
+          backgroundColor: UI.color.bg,
           zIndex: 10,
         }}
       >
-        <View style={{ paddingHorizontal: SECTION_PAD, marginBottom: 18 }}>
-          <Typography style={{ fontSize: 32, fontFamily: "Sora_600SemiBold", color: TEXT_PRIMARY }}>
+        <View style={{ paddingHorizontal: UI.space.page, marginBottom: 18 }}>
+          <Typography style={{ fontSize: 32, fontFamily: "Sora_600SemiBold", color: UI.color.text }}>
             Analytics
           </Typography>
         </View>
@@ -138,7 +131,7 @@ export default function AnalyticsScreen() {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: SECTION_PAD, gap: 8, paddingBottom: 18 }}
+          contentContainerStyle={{ paddingHorizontal: UI.space.page, gap: 8, paddingBottom: 18 }}
         >
           {PERIODS.map((p) => {
             const isSelected = period === p.key;
@@ -152,9 +145,9 @@ export default function AnalyticsScreen() {
                 style={{
                   paddingHorizontal: 14,
                   paddingVertical: 8,
-                  backgroundColor: isSelected ? TEXT_PRIMARY : CONTROL_SURFACE,
+                  backgroundColor: isSelected ? UI.color.text : UI.color.control,
                   borderWidth: 1,
-                  borderColor: isSelected ? TEXT_PRIMARY : SEPARATOR,
+                  borderColor: isSelected ? UI.color.text : UI.color.border,
                   borderRadius: 999,
                 }}
               >
@@ -162,7 +155,7 @@ export default function AnalyticsScreen() {
                   style={{
                     fontSize: 13,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? "#FFFFFF" : TEXT_SECONDARY,
+                    color: isSelected ? "#FFFFFF" : UI.color.muted,
                   }}
                 >
                   {p.label}
@@ -180,23 +173,23 @@ export default function AnalyticsScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={TEXT_PRIMARY}
+            tintColor={UI.color.text}
             progressViewOffset={10}
           />
         }
       >
         {isLoading ? (
           <View style={{ padding: 40, alignItems: "center" }}>
-            <ActivityIndicator size="large" color={TEXT_PRIMARY} />
+            <ActivityIndicator size="large" color={UI.color.text} />
           </View>
         ) : (
-          <View style={{ paddingHorizontal: SECTION_PAD, gap: 24 }}>
+          <View style={{ paddingHorizontal: UI.space.page, gap: 24 }}>
             <AnalyticsCard>
               <SectionLabel>Spending summary</SectionLabel>
               <Typography
                 style={{
                   fontSize: 38,
-                  color: TEXT_PRIMARY,
+                  color: UI.color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   lineHeight: 46,
                   marginBottom: 16,
@@ -215,10 +208,10 @@ export default function AnalyticsScreen() {
                     key={item.label}
                     style={{
                       flex: 1,
-                      backgroundColor: CONTROL_SURFACE,
+                      backgroundColor: UI.color.control,
                       borderRadius: 14,
                       borderWidth: 1,
-                      borderColor: SEPARATOR,
+                      borderColor: UI.color.border,
                       paddingHorizontal: 12,
                       paddingVertical: 12,
                     }}
@@ -227,7 +220,7 @@ export default function AnalyticsScreen() {
                       numberOfLines={1}
                       style={{
                         fontSize: 11,
-                        color: TEXT_SECONDARY,
+                        color: UI.color.muted,
                         fontFamily: "IBMPlexSans_600SemiBold",
                         textTransform: "uppercase",
                         letterSpacing: 0.8,
@@ -241,7 +234,7 @@ export default function AnalyticsScreen() {
                       adjustsFontSizeToFit
                       style={{
                         fontSize: 16,
-                        color: TEXT_PRIMARY,
+                        color: UI.color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -264,7 +257,7 @@ export default function AnalyticsScreen() {
                     height={170}
                     width={chartWidth}
                     spacing={Math.max(34, chartWidth / Math.max(4, trendChartData.length - 1))}
-                    color={TEXT_PRIMARY}
+                    color={UI.color.text}
                     thickness={2}
                     startFillColor="#000000"
                     endFillColor="#000000"
@@ -274,13 +267,13 @@ export default function AnalyticsScreen() {
                     hideYAxisText
                     yAxisThickness={0}
                     xAxisThickness={1}
-                    xAxisColor={SEPARATOR}
-                    rulesColor={SEPARATOR}
+                    xAxisColor={UI.color.border}
+                    rulesColor={UI.color.border}
                     rulesThickness={1}
                     noOfSections={3}
                     maxValue={trendMax * 1.2}
                     xAxisLabelTextStyle={{
-                      color: TEXT_SECONDARY,
+                      color: UI.color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                       fontSize: 10,
                     }}
@@ -288,11 +281,11 @@ export default function AnalyticsScreen() {
                 </View>
               ) : (
                 <View style={{ paddingVertical: 28, alignItems: "center" }}>
-                  <icons.LineChart size={38} color={TEXT_SECONDARY} strokeWidth={1.25} />
+                  <icons.LineChart size={38} color={UI.color.muted} strokeWidth={1.25} />
                   <Typography
                     style={{
                       marginTop: 12,
-                      color: TEXT_SECONDARY,
+                      color: UI.color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                     }}
                   >

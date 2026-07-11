@@ -2,11 +2,11 @@ import type { JSX } from "react";
 import { View } from "react-native";
 import * as icons from "lucide-react-native";
 
+import { UI } from "@/components/ui/native-ui";
 import { EXPENSE_CATEGORIES } from "@/types";
 import type { ExpenseCategory } from "@/types";
 
-const SHELL = "#FFFFFF";
-const BORDER = "#E8E4DF";
+
 
 type CategoryTone = {
   fill: string;
@@ -61,9 +61,9 @@ export function CategoryIconBadge({
         width: dims.size,
         height: dims.size,
         borderRadius: dims.radius,
-        backgroundColor: SHELL,
+        backgroundColor: UI.color.control,
         borderWidth: 1,
-        borderColor: BORDER,
+        borderColor: UI.color.border,
         padding: dims.inset,
       }}
     >

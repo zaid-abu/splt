@@ -12,14 +12,17 @@ import { useUIStore } from "@/store/useUIStore";
 import { queryClient } from "@/lib/queryClient";
 import { GlobalQueryToast } from "@/components/feedback/GlobalQueryToast";
 
-Appearance.setColorScheme("light");
-
 interface AppProviderProps {
   children: ReactNode;
 }
 
 export function AppProvider({ children }: AppProviderProps): JSX.Element {
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
   const fetchExchangeRates = useUIStore((s) => s.fetchExchangeRates);
+
+  useEffect(() => {
+    Appearance.setColorScheme(isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
 
   useEffect(() => {
     fetchExchangeRates();

@@ -6,31 +6,62 @@ import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 
+export const LIGHT_COLORS = {
+  bg: "#F5F0EB",
+  surface: "#FFFCF8",
+  control: "#FFFFFF",
+  text: "#1A1A1A",
+  textStrong: "#000000",
+  muted: "#8A8782",
+  border: "#E8E4DF",
+  brand: "#8C7A6B",
+  danger: "#E85D5D",
+  success: "#4CAF82",
+  subtle: "#F4F0EA",
+  dangerTint: "#FFF7F5",
+  successTint: "#F5FCF8",
+};
+
+export const DARK_COLORS = {
+  bg: "#1C1B18",
+  surface: "#262521",
+  control: "#32312E",
+  text: "#E8E4DF",
+  textStrong: "#F5F0EB",
+  muted: "#9B9A94",
+  border: "#3A3935",
+  brand: "#A89A8E",
+  danger: "#E85D5D",
+  success: "#4CAF82",
+  subtle: "#2A2925",
+  dangerTint: "#251616",
+  successTint: "#16251E",
+};
+
 export const UI = {
-  color: {
-    bg: "#F5F0EB",
-    surface: "#FFFCF8",
-    control: "#FFFFFF",
-    text: "#1A1A1A",
-    textStrong: "#000000",
-    muted: "#8A8782",
-    border: "#E8E4DF",
-    brand: "#8C7A6B",
-    danger: "#E85D5D",
-    success: "#4CAF82",
-    subtle: "#F4F0EA",
+  color: { ...LIGHT_COLORS },
+  radius: { sm: 8, md: 12, lg: 16, xl: 20, pill: 999 },
+  space: { page: 24 },
+  shadow: {
+    sm: { shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2 },
+    md: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 4 },
+    lg: { shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 8 },
   },
-  radius: {
-    sm: 8,
-    md: 12,
-    lg: 16,
-    xl: 20,
-    pill: 999,
-  },
-  space: {
-    page: 24,
-  },
-} as const;
+};
+
+export function applyTheme(isDark: boolean): void {
+  const src = isDark ? DARK_COLORS : LIGHT_COLORS;
+  Object.assign(UI.color, src);
+}
+
+export const TYPO = {
+  hero: (size = 32) => ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.02 }) as const,
+  title: (size = 24) => ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.01 }) as const,
+  body: (size = 17) => ({ fontFamily: "IBMPlexSans_400Regular", fontSize: size }) as const,
+  medium: (size = 16) => ({ fontFamily: "IBMPlexSans_500Medium", fontSize: size }) as const,
+  semi: (size = 16) => ({ fontFamily: "IBMPlexSans_600SemiBold", fontSize: size }) as const,
+  label: () => ({ fontFamily: "IBMPlexSans_600SemiBold", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase" }) as const,
+};
 
 export function PressableScale({
   children,
@@ -299,8 +330,8 @@ interface MetricCellProps {
 export function MetricCell({ label, value, tone = "neutral" }: MetricCellProps): React.JSX.Element {
   const bgColors = {
     neutral: UI.color.control,
-    success: "#F5FCF8",
-    danger: "#FFF7F5",
+    success: UI.color.successTint,
+    danger: UI.color.dangerTint,
     brand: UI.color.bg,
   };
   const valueColors = {
@@ -367,7 +398,7 @@ export function FilterPill({ label, isActive, onPress }: FilterPillProps): React
         onPress();
       }}
       style={({ pressed }) => ({
-        minHeight: 36,
+        minHeight: 44,
         paddingHorizontal: 14,
         borderRadius: UI.radius.pill,
         backgroundColor: isActive ? UI.color.text : UI.color.control,

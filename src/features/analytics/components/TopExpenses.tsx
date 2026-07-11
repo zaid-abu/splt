@@ -6,6 +6,7 @@ import { EXPENSE_CATEGORIES } from "@/types";
 import * as icons from "lucide-react-native";
 import type { AnalyticsExpense } from "../hooks/useAnalytics";
 import dayjs from "dayjs";
+import { UI } from "@/components/ui/native-ui";
 
 interface Props {
   expenses: AnalyticsExpense[];
@@ -13,20 +14,14 @@ interface Props {
   onLogExpense: () => void;
 }
 
-const SURFACE = "#FFFCF8";
-const CONTROL_SURFACE = "#FFFFFF";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
-
 export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
   return (
     <View
       style={{
-        backgroundColor: SURFACE,
+        backgroundColor: UI.color.surface,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: SEPARATOR,
+        borderColor: UI.color.border,
         padding: 16,
       }}
     >
@@ -34,7 +29,7 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
         style={{
           fontSize: 11,
           fontFamily: "IBMPlexSans_600SemiBold",
-          color: TEXT_PRIMARY,
+          color: UI.color.text,
           letterSpacing: 1.1,
           textTransform: "uppercase",
           marginBottom: 16,
@@ -45,11 +40,11 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
 
       {expenses.length === 0 ? (
         <View style={{ paddingVertical: 24, alignItems: "center", justifyContent: "center" }}>
-          <icons.ReceiptText size={38} color={TEXT_SECONDARY} strokeWidth={1.25} />
+          <icons.ReceiptText size={38} color={UI.color.muted} strokeWidth={1.25} />
           <Typography
             style={{
               marginTop: 12,
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginBottom: 16,
             }}
@@ -63,7 +58,7 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
               paddingHorizontal: 18,
               paddingVertical: 10,
               borderRadius: 999,
-              backgroundColor: TEXT_PRIMARY,
+              backgroundColor: UI.color.text,
               opacity: pressed ? 0.8 : 1,
             })}
           >
@@ -90,7 +85,7 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
                   justifyContent: "space-between",
                   paddingVertical: 16,
                   borderBottomWidth: isLast ? 0 : 1,
-                  borderBottomColor: SEPARATOR,
+                  borderBottomColor: UI.color.border,
                 }}
               >
                 <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
@@ -99,21 +94,21 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
                       width: 48,
                       height: 48,
                       borderRadius: 18,
-                      backgroundColor: CONTROL_SURFACE,
+                      backgroundColor: UI.color.control,
                       borderWidth: 1,
-                      borderColor: SEPARATOR,
+                      borderColor: UI.color.border,
                       alignItems: "center",
                       justifyContent: "center",
                       marginRight: 14,
                     }}
                   >
-                    <Icon size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                    <Icon size={20} color={UI.color.text} strokeWidth={1.5} />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Typography
                       style={{
                         fontSize: 16,
-                        color: TEXT_PRIMARY,
+                        color: UI.color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                       numberOfLines={1}
@@ -123,7 +118,7 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
                     <Typography
                       style={{
                         fontSize: 13,
-                        color: TEXT_SECONDARY,
+                        color: UI.color.muted,
                         fontFamily: "IBMPlexSans_500Medium",
                         marginTop: 2,
                       }}
@@ -135,7 +130,7 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
                 <Typography
                   style={{
                     fontSize: 16,
-                    color: TEXT_PRIMARY,
+                    color: UI.color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >

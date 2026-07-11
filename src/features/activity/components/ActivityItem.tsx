@@ -13,7 +13,7 @@ import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { UI } from "@/components/ui/native-ui";
-import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
+
 
 const TEXT_PRIMARY = UI.color.text;
 const TEXT_SECONDARY = UI.color.muted;
@@ -294,7 +294,7 @@ export const ActivityItem = React.memo(function ActivityItem({ activity, index, 
         index={0}
         enableDynamicSizing
         backdropComponent={renderBackdrop}
-        backgroundComponent={BlurredSheetBackground}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
       >
         <BottomSheetView
@@ -426,7 +426,7 @@ export const ActivityItem = React.memo(function ActivityItem({ activity, index, 
         index={0}
         enableDynamicSizing
         backdropComponent={renderBackdrop}
-        backgroundComponent={BlurredSheetBackground}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
         handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
       >
         <BottomSheetView

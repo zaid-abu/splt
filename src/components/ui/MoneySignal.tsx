@@ -20,7 +20,7 @@ export function MoneySignal({ label, value, tone }: MoneySignalProps): JSX.Eleme
         padding: 12,
         borderRadius: UI.radius.md,
         backgroundColor:
-          tone === "danger" ? "#FFF7F5" : tone === "success" ? "#F5FCF8" : UI.color.control,
+          tone === "danger" ? UI.color.dangerTint : tone === "success" ? UI.color.successTint : UI.color.control,
         borderWidth: 1,
         borderColor: UI.color.border,
       }}

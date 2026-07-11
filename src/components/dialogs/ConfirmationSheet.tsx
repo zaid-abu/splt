@@ -5,7 +5,7 @@ import { Typography } from "heroui-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UI } from "@/components/ui/native-ui";
-import { BlurredSheetBackground } from "@/components/ui/SheetBackground";
+
 
 export function useConfirmationSheet() {
   const sheetRef = useRef<BottomSheetModal>(null);
@@ -63,7 +63,7 @@ export function ConfirmationSheet({
       index={0}
       enableDynamicSizing
       backdropComponent={renderBackdrop}
-      backgroundComponent={BlurredSheetBackground}
+      backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
       handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
     >
       <BottomSheetView

@@ -6,17 +6,8 @@ import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import { UI } from "@/components/ui/native-ui";
 import type { User } from "@/types";
-
-const BG = "#FEFDFA";
-const PANEL_OWE = "#FFF7F5";
-const PANEL_OWED = "#F5FCF8";
-const TEXT_PRIMARY = "#1A1A1A";
-const TEXT_MUTED = "#6E6D68";
-const TEXT_SUBTLE = "#9B9A94";
-const SEPARATOR = "#E7E5DE";
-const AMOUNT_OWE = "#E85D5D";
-const AMOUNT_OWED = "#4CAF82";
 
 function SectionLabel({ children }: { children: string }): JSX.Element {
   return (
@@ -24,7 +15,7 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
       style={{
         fontSize: 10,
         letterSpacing: 0.8,
-        color: TEXT_MUTED,
+        color: UI.color.muted,
         fontFamily: "IBMPlexSans_600SemiBold",
         textTransform: "uppercase",
         marginBottom: 6,
@@ -94,7 +85,7 @@ function HalfCard({
             backgroundColor: panelColor,
             borderRadius: 12,
             borderWidth: 1,
-            borderColor: SEPARATOR,
+            borderColor: UI.color.border,
           },
           animatedStyle,
         ]}
@@ -119,7 +110,7 @@ function HalfCard({
           <Typography
             style={{
               fontSize: 13,
-              color: TEXT_SUBTLE,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginLeft: 3,
             }}
@@ -142,7 +133,7 @@ function HalfCard({
               flex: 1,
               marginRight: 8,
               fontSize: 12,
-              color: TEXT_MUTED,
+        color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               lineHeight: 16,
             }}
@@ -183,21 +174,21 @@ export function BalanceCard({
   const netBalance = owedToYou - youOwe;
   const netBalanceLabel =
     netBalance > 0 ? "Net owed to you" : netBalance < 0 ? "Net you owe" : "Net balance";
-  const netBalanceColor = netBalance < 0 ? AMOUNT_OWE : netBalance > 0 ? AMOUNT_OWED : TEXT_MUTED;
+  const netBalanceColor = netBalance < 0 ? UI.color.danger : netBalance > 0 ? UI.color.success : UI.color.muted;
   const netBalanceAmount = Math.abs(netBalance).toFixed(2);
 
   if (isAllSettled) {
     return (
       <View
         style={{
-          backgroundColor: BG,
+          backgroundColor: UI.color.surface,
           paddingVertical: 28,
           paddingHorizontal: 18,
           alignItems: "center",
           justifyContent: "center",
           borderRadius: 16,
           borderWidth: 1,
-          borderColor: SEPARATOR,
+          borderColor: UI.color.border,
         }}
       >
         <View
@@ -206,20 +197,20 @@ export function BalanceCard({
             height: 64,
             borderRadius: 14,
             borderWidth: 1,
-            borderColor: SEPARATOR,
-            backgroundColor: PANEL_OWED,
+            borderColor: UI.color.border,
+            backgroundColor: UI.color.successTint,
             alignItems: "center",
             justifyContent: "center",
             marginBottom: 14,
           }}
         >
-          <icons.Check size={32} color={AMOUNT_OWED} strokeWidth={2.5} />
+          <icons.Check size={32} color={UI.color.success} strokeWidth={2.5} />
         </View>
         <Typography
           style={{
             fontSize: 22,
             lineHeight: 28,
-            color: TEXT_PRIMARY,
+            color: UI.color.text,
             fontFamily: "IBMPlexSans_600SemiBold",
             marginBottom: 6,
             textAlign: "center",
@@ -231,7 +222,7 @@ export function BalanceCard({
           style={{
             fontSize: 15,
             lineHeight: 21,
-            color: TEXT_MUTED,
+            color: UI.color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             textAlign: "center",
           }}
@@ -248,15 +239,15 @@ export function BalanceCard({
               minHeight: 44,
               borderRadius: 999,
               borderWidth: 1,
-              borderColor: SEPARATOR,
-              backgroundColor: "#FFFFFF",
+              borderColor: UI.color.border,
+              backgroundColor: UI.color.control,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.75 : 1,
             })}
           >
             <Typography
-              style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{ fontSize: 14, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
             >
               View balances
             </Typography>
@@ -269,11 +260,11 @@ export function BalanceCard({
   return (
     <View
       style={{
-        backgroundColor: BG,
+        backgroundColor: UI.color.surface,
         padding: 14,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: SEPARATOR,
+        borderColor: UI.color.border,
       }}
     >
       <View
@@ -282,7 +273,7 @@ export function BalanceCard({
           alignItems: "baseline",
           justifyContent: "space-between",
           borderBottomWidth: 1,
-          borderBottomColor: SEPARATOR,
+          borderBottomColor: UI.color.border,
           paddingBottom: 12,
           marginBottom: 12,
         }}
@@ -291,7 +282,7 @@ export function BalanceCard({
           style={{
             fontSize: 11,
             letterSpacing: 0.8,
-            color: TEXT_MUTED,
+            color: UI.color.muted,
             fontFamily: "IBMPlexSans_600SemiBold",
             textTransform: "uppercase",
           }}
@@ -315,8 +306,8 @@ export function BalanceCard({
           label="YOU OWE"
           amount={youOwe}
           currencyCode={currencyCode}
-          amountColor={AMOUNT_OWE}
-          panelColor={PANEL_OWE}
+          amountColor={UI.color.danger}
+          panelColor={UI.color.dangerTint}
           users={oweUsers}
           onPress={onOwePress}
           accessibilityLabel={`You owe ${youOwe} ${currencyCode}`}
@@ -326,8 +317,8 @@ export function BalanceCard({
           label="YOU ARE OWED"
           amount={owedToYou}
           currencyCode={currencyCode}
-          amountColor={AMOUNT_OWED}
-          panelColor={PANEL_OWED}
+          amountColor={UI.color.success}
+          panelColor={UI.color.successTint}
           users={owedUsers}
           onPress={onOwedPress}
           accessibilityLabel={`You are owed ${owedToYou} ${currencyCode}`}
@@ -343,7 +334,7 @@ export function BalanceCard({
               flex: 1,
               minHeight: 44,
               borderRadius: 999,
-              backgroundColor: TEXT_PRIMARY,
+              backgroundColor: UI.color.text,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.8 : 1,
@@ -366,15 +357,15 @@ export function BalanceCard({
               minHeight: 44,
               borderRadius: 999,
               borderWidth: 1,
-              borderColor: SEPARATOR,
-              backgroundColor: "#FFFFFF",
+              borderColor: UI.color.border,
+              backgroundColor: UI.color.control,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.75 : 1,
             })}
           >
             <Typography
-              style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{ fontSize: 14, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
             >
               View balances
             </Typography>

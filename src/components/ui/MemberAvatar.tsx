@@ -9,12 +9,8 @@ import type { JSX } from "react";
 import { Image, View } from "react-native";
 import { Typography } from "heroui-native";
 
+import { UI } from "@/components/ui/native-ui";
 import type { User } from "@/types";
-
-const SHELL = "#FFFFFF";
-const BORDER = "#E8E4DF";
-const TEXT_SECONDARY = "#8A8782";
-const STACK_BORDER = "#F5F0EB";
 
 type AvatarTone = {
   fill: string;
@@ -69,7 +65,7 @@ function getTone(user: User, balance?: number): AvatarTone {
 
     return {
       fill: "#F0ECE7",
-      text: TEXT_SECONDARY,
+      text: UI.color.muted,
     };
   }
 
@@ -110,9 +106,9 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
         width: dims.size,
         height: dims.size,
         borderRadius: dims.radius,
-        backgroundColor: SHELL,
+        backgroundColor: UI.color.control,
         borderWidth: 1,
-        borderColor: BORDER,
+        borderColor: UI.color.border,
         padding: dims.inset,
         overflow: "hidden",
       }}
@@ -166,7 +162,7 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
             zIndex: visible.length - idx,
             borderRadius: dims.radius + 2,
             borderWidth: 2,
-            borderColor: STACK_BORDER,
+            borderColor: UI.color.bg,
           }}
         >
           <AppUserAvatar user={user} size="sm" />
@@ -181,8 +177,8 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
             marginLeft: -10,
             borderRadius: dims.radius + 2,
             borderWidth: 2,
-            borderColor: STACK_BORDER,
-            backgroundColor: SHELL,
+            borderColor: UI.color.bg,
+            backgroundColor: UI.color.control,
             padding: 2,
           }}
         >
@@ -197,7 +193,7 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
           >
             <Typography
               style={{
-                color: TEXT_SECONDARY,
+                color: UI.color.muted,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 fontSize: 11,
               }}

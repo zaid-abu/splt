@@ -24,6 +24,7 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { AppUserAvatar, AvatarStack } from "@/components/ui/MemberAvatar";
+import { UI } from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useExpenseForm } from "@/features/expenses/hooks/useExpenseForm";
 import {
@@ -40,22 +41,7 @@ import { CURRENCIES, EXPENSE_CATEGORIES } from "@/types";
 import type { Currency, ExpenseCategory, Group, SplitMethod, User } from "@/types";
 import type { ExpenseNewRouteParams } from "@/types/navigation";
 
-const BG = "#F7F6F1";
-const SURFACE = "#FEFDFA";
-const CONTROL = "#FFFFFF";
-const TEXT = "#1A1A1A";
-const MUTED = "#6E6D68";
-const BORDER = "#E7E5DE";
-const BORDER_SOFT = "#EDEBE4";
-const PRESSED = "#FBF7F2";
-const BRAND = "#8C7A6B";
-const SUCCESS = "#4CAF82";
-const DANGER = "#E85D5D";
-const WARNING_BG = "#FFF7F5";
-const SUCCESS_BG = "#F5FCF8";
-const CARD_RADIUS = 16;
-const INNER_RADIUS = 12;
-const PILL = 999;
+
 
 const SPLIT_METHODS: {
   key: SplitMethod;
@@ -89,7 +75,7 @@ function HeaderButton({
       onPress={onPress}
       style={({ pressed }) => [styles.headerButton, pressed && styles.pressed]}
     >
-      <Icon size={19} color={TEXT} strokeWidth={1.85} />
+      <Icon size={19} color={UI.color.text} strokeWidth={1.85} />
     </Pressable>
   );
 }
@@ -127,12 +113,12 @@ function SearchField({
 }): JSX.Element {
   return (
     <View style={styles.searchField}>
-      <icons.Search size={18} color={MUTED} strokeWidth={1.8} />
+      <icons.Search size={18} color={UI.color.muted} strokeWidth={1.8} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder="Search friends or groups"
-        placeholderTextColor={MUTED}
+        placeholderTextColor={UI.color.muted}
         returnKeyType="search"
         style={styles.searchInput}
       />
@@ -143,7 +129,7 @@ function SearchField({
           hitSlop={8}
           onPress={() => onChangeText("")}
         >
-          <icons.XCircle size={18} color={MUTED} strokeWidth={1.8} />
+          <icons.XCircle size={18} color={UI.color.muted} strokeWidth={1.8} />
         </Pressable>
       ) : null}
     </View>
@@ -216,7 +202,7 @@ function ContextPicker({
     <View style={styles.contextBlock}>
       <SurfaceCard style={styles.contextIntro}>
         <View style={styles.contextIntroIcon}>
-          <icons.ReceiptText size={22} color={TEXT} strokeWidth={1.8} />
+          <icons.ReceiptText size={22} color={UI.color.text} strokeWidth={1.8} />
         </View>
         <View style={{ flex: 1 }}>
           <Typography style={styles.contextIntroTitle}>Who is this expense with?</Typography>
@@ -247,7 +233,7 @@ function ContextPicker({
               >
                 <AppUserAvatar user={friend} size="sm" />
                 <Typography style={styles.selectedChipText}>{friend.name.split(" ")[0]}</Typography>
-                <icons.X size={15} color={MUTED} strokeWidth={1.9} />
+                <icons.X size={15} color={UI.color.muted} strokeWidth={1.9} />
               </Pressable>
             ))}
           </View>
@@ -370,7 +356,7 @@ function ContextSummary({
         )}
         <View style={styles.summaryText}>
           <View style={styles.contextTypeRow}>
-            <Icon size={14} color={MUTED} strokeWidth={1.8} />
+            <Icon size={14} color={UI.color.muted} strokeWidth={1.8} />
             <Typography style={styles.contextTypeText}>
               {selectedGroup ? "Group expense" : "Friend expense"}
             </Typography>
@@ -396,7 +382,7 @@ function ContextSummary({
   );
 }
 
-const ERROR = DANGER;
+const ERROR = UI.color.danger;
 
 function AmountCard({
   amount,
@@ -433,7 +419,7 @@ function AmountCard({
           value={amount}
           onChangeText={onAmountChange}
           placeholder="0.00"
-          placeholderTextColor={MUTED}
+          placeholderTextColor={UI.color.muted}
           keyboardType="decimal-pad"
           returnKeyType="done"
           style={[styles.amountInput, amountError ? { borderColor: ERROR } : undefined]}
@@ -456,7 +442,7 @@ function AmountCard({
         value={title}
         onChangeText={onTitleChange}
         placeholder="What was it for?"
-        placeholderTextColor={MUTED}
+        placeholderTextColor={UI.color.muted}
         autoCapitalize="sentences"
         returnKeyType="done"
         style={[styles.titleInput, titleError ? { borderColor: ERROR } : undefined]}
@@ -514,7 +500,7 @@ function PreviewCard({
         <View
           style={[styles.statusPill, balanced ? styles.statusPillSuccess : styles.statusPillDanger]}
         >
-          <Typography style={[styles.statusPillText, { color: balanced ? SUCCESS : DANGER }]}>
+          <Typography style={[styles.statusPillText, { color: balanced ? UI.color.success : UI.color.danger }]}>
             {status}
           </Typography>
         </View>
@@ -626,7 +612,7 @@ function DateInlinePicker({
         style={({ pressed }) => [styles.detailRow, pressed && styles.rowPressed]}
       >
         <View style={styles.detailIcon}>
-          <icons.Calendar size={18} color={TEXT} strokeWidth={1.8} />
+          <icons.Calendar size={18} color={UI.color.text} strokeWidth={1.8} />
         </View>
         <View style={{ flex: 1 }}>
           <Typography style={styles.detailTitle}>{dayjs(value).format("MMMM D, YYYY")}</Typography>
@@ -634,7 +620,7 @@ function DateInlinePicker({
         </View>
         <icons.ChevronDown
           size={18}
-          color={MUTED}
+          color={UI.color.muted}
           strokeWidth={1.8}
           style={{ transform: [{ rotate: visible ? "180deg" : "0deg" }] }}
         />
@@ -649,13 +635,13 @@ function DateInlinePicker({
               if (params.date) onChange(dayjs(params.date).toDate());
             }}
             styles={{
-              selected: { backgroundColor: TEXT, borderRadius: 999 },
-              today: { backgroundColor: BORDER_SOFT, borderRadius: 999 },
-              day_label: { color: TEXT, fontSize: 15 },
+              selected: { backgroundColor: UI.color.text, borderRadius: 999 },
+              today: { backgroundColor: UI.color.border, borderRadius: 999 },
+              day_label: { color: UI.color.text, fontSize: 15 },
               header: { paddingBottom: 12 },
-              month_selector_label: { color: TEXT, fontSize: 16 },
-              year_selector_label: { color: TEXT, fontSize: 16 },
-              weekday_label: { color: MUTED },
+              month_selector_label: { color: UI.color.text, fontSize: 16 },
+              year_selector_label: { color: UI.color.text, fontSize: 16 },
+              weekday_label: { color: UI.color.muted },
             }}
           />
         </View>
@@ -781,7 +767,7 @@ function SplitMethodSelector({
             ]}
           >
             <View style={[styles.methodIcon, active && styles.methodIconActive]}>
-              <Icon size={17} color={active ? "#FFFFFF" : TEXT} strokeWidth={1.8} />
+              <Icon size={17} color={active ? "#FFFFFF" : UI.color.text} strokeWidth={1.8} />
             </View>
             <Typography style={styles.methodTitle}>{method.label}</Typography>
             <Typography style={styles.methodMeta}>{method.helper}</Typography>
@@ -849,7 +835,7 @@ function ParticipantsEditor({
             ]}
           >
             <Typography
-              style={[styles.remainingText, { color: remainingBalanced ? SUCCESS : DANGER }]}
+              style={[styles.remainingText, { color: remainingBalanced ? UI.color.success : UI.color.danger }]}
             >
               {remainingText}
             </Typography>
@@ -910,7 +896,7 @@ function ParticipantsEditor({
                       setCustomAmounts((prev) => ({ ...prev, [participant.id]: value }))
                     }
                     placeholder="0.00"
-                    placeholderTextColor={MUTED}
+                    placeholderTextColor={UI.color.muted}
                     keyboardType="decimal-pad"
                     style={styles.shareInput}
                   />
@@ -925,7 +911,7 @@ function ParticipantsEditor({
                       setCustomPercentages((prev) => ({ ...prev, [participant.id]: value }))
                     }
                     placeholder="0"
-                    placeholderTextColor={MUTED}
+                    placeholderTextColor={UI.color.muted}
                     keyboardType="decimal-pad"
                     style={styles.percentInput}
                   />
@@ -1016,7 +1002,7 @@ export default function NewExpenseScreen(): JSX.Element {
     return (
       <View style={styles.loadingScreen}>
         <StatusBar style="dark" />
-        <ActivityIndicator color={TEXT} />
+        <ActivityIndicator color={UI.color.text} />
       </View>
     );
   }
@@ -1227,7 +1213,7 @@ export default function NewExpenseScreen(): JSX.Element {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: BG,
+    backgroundColor: UI.color.bg,
   },
   keyboardView: {
     flex: 1,
@@ -1236,7 +1222,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: BG,
+    backgroundColor: UI.color.bg,
   },
   header: {
     flexDirection: "row",
@@ -1244,16 +1230,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: BORDER,
-    backgroundColor: BG,
+    borderBottomColor: UI.color.border,
+    backgroundColor: UI.color.bg,
   },
   headerButton: {
     width: 44,
     height: 44,
-    borderRadius: PILL,
-    backgroundColor: CONTROL,
+    borderRadius: UI.radius.pill,
+    backgroundColor: UI.color.control,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: UI.color.border,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -1270,13 +1256,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.1,
     textTransform: "uppercase",
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   headerTitle: {
     marginTop: 2,
     fontSize: 18,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "Sora_600SemiBold",
   },
   content: {
@@ -1296,29 +1282,29 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     alignItems: "center",
     justifyContent: "center",
   },
   contextIntroTitle: {
     fontSize: 20,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "Sora_600SemiBold",
   },
   contextIntroText: {
     marginTop: 4,
     fontSize: 14,
     lineHeight: 20,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   searchField: {
     minHeight: 52,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
@@ -1327,7 +1313,7 @@ const styles = StyleSheet.create({
   searchInput: {
     flex: 1,
     padding: 0,
-    color: TEXT,
+    color: UI.color.text,
     fontSize: 16,
     fontFamily: "IBMPlexSans_500Medium",
   },
@@ -1335,24 +1321,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 4,
     padding: 4,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
   },
   segment: {
     flex: 1,
     minHeight: 42,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     alignItems: "center",
     justifyContent: "center",
   },
   segmentActive: {
-    backgroundColor: TEXT,
+    backgroundColor: UI.color.text,
   },
   segmentText: {
     fontSize: 14,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   segmentTextActive: {
@@ -1367,25 +1353,25 @@ const styles = StyleSheet.create({
     minHeight: 42,
     paddingLeft: 5,
     paddingRight: 12,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
   selectedChipText: {
-    color: TEXT,
+    color: UI.color.text,
     fontSize: 14,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   listCard: {
     overflow: "hidden",
-    borderRadius: CARD_RADIUS,
+    borderRadius: UI.radius.lg,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: SURFACE,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.surface,
   },
   contextRow: {
     minHeight: 76,
@@ -1396,10 +1382,10 @@ const styles = StyleSheet.create({
   },
   rowDivider: {
     borderBottomWidth: 1,
-    borderBottomColor: BORDER_SOFT,
+    borderBottomColor: UI.color.border,
   },
   rowPressed: {
-    backgroundColor: PRESSED,
+    backgroundColor: UI.color.subtle,
   },
   rowText: {
     flex: 1,
@@ -1407,28 +1393,28 @@ const styles = StyleSheet.create({
   },
   rowTitle: {
     fontSize: 15,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   rowMeta: {
     marginTop: 2,
     fontSize: 13,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   selectionMark: {
     width: 24,
     height: 24,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     alignItems: "center",
     justifyContent: "center",
   },
   selectionMarkActive: {
-    borderColor: BRAND,
-    backgroundColor: BRAND,
+    borderColor: UI.color.brand,
+    backgroundColor: UI.color.brand,
   },
   emptyList: {
     padding: 24,
@@ -1436,23 +1422,23 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   emptyText: {
     marginTop: 4,
     fontSize: 14,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   formStack: {
     gap: 20,
   },
   surfaceCard: {
-    backgroundColor: SURFACE,
+    backgroundColor: UI.color.surface,
     borderWidth: 1,
-    borderColor: BORDER,
-    borderRadius: CARD_RADIUS,
+    borderColor: UI.color.border,
+    borderRadius: UI.radius.lg,
     padding: 16,
   },
   summaryRow: {
@@ -1473,35 +1459,35 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   contextTypeText: {
-    color: MUTED,
+    color: UI.color.muted,
     fontSize: 12,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   summaryTitle: {
     marginTop: 3,
     fontSize: 18,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   summaryMeta: {
     marginTop: 2,
     fontSize: 13,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   changeButton: {
     minHeight: 38,
     paddingHorizontal: 14,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     alignItems: "center",
     justifyContent: "center",
   },
   changeButtonText: {
     fontSize: 13,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   amountCard: {
@@ -1516,13 +1502,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.1,
     textTransform: "uppercase",
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   amountHint: {
     marginTop: 2,
     fontSize: 13,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   amountInputRow: {
@@ -1535,14 +1521,14 @@ const styles = StyleSheet.create({
   currencyCode: {
     paddingBottom: 12,
     fontSize: 20,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   amountInput: {
     minWidth: 140,
     maxWidth: 230,
     padding: 0,
-    color: TEXT,
+    color: UI.color.text,
     fontSize: 54,
     lineHeight: 62,
     textAlign: "center",
@@ -1552,11 +1538,11 @@ const styles = StyleSheet.create({
     minHeight: 52,
     marginTop: 12,
     paddingHorizontal: 16,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
-    color: TEXT,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
+    color: UI.color.text,
     fontSize: 16,
     textAlign: "center",
     fontFamily: "IBMPlexSans_600SemiBold",
@@ -1571,29 +1557,29 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.1,
     textTransform: "uppercase",
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   previewAmount: {
     marginTop: 4,
     fontSize: 22,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "Sora_600SemiBold",
   },
   statusPill: {
     minHeight: 32,
     paddingHorizontal: 12,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: UI.color.border,
     alignItems: "center",
     justifyContent: "center",
   },
   statusPillSuccess: {
-    backgroundColor: SUCCESS_BG,
+    backgroundColor: UI.color.successTint,
   },
   statusPillDanger: {
-    backgroundColor: WARNING_BG,
+    backgroundColor: UI.color.dangerTint,
   },
   statusPillText: {
     fontSize: 12,
@@ -1608,21 +1594,21 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 70,
     padding: 12,
-    borderRadius: INNER_RADIUS,
+    borderRadius: UI.radius.md,
     borderWidth: 1,
-    borderColor: BORDER_SOFT,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     justifyContent: "center",
   },
   previewCellLabel: {
     fontSize: 12,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   previewCellValue: {
     marginTop: 4,
     fontSize: 16,
-    color: TEXT,
+    color: UI.color.text,
     textTransform: "capitalize",
     fontFamily: "IBMPlexSans_600SemiBold",
   },
@@ -1639,7 +1625,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.1,
     textTransform: "uppercase",
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   detailCard: {
@@ -1660,25 +1646,25 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     alignItems: "center",
     justifyContent: "center",
   },
   currencySymbolText: {
     fontSize: 17,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   currencyName: {
     fontSize: 16,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   currencyMeta: {
     marginTop: 2,
     fontSize: 13,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   currencyChipRow: {
@@ -1689,20 +1675,20 @@ const styles = StyleSheet.create({
   currencyChip: {
     minHeight: 36,
     paddingHorizontal: 13,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     alignItems: "center",
     justifyContent: "center",
   },
   currencyChipActive: {
-    backgroundColor: TEXT,
-    borderColor: TEXT,
+    backgroundColor: UI.color.text,
+    borderColor: UI.color.text,
   },
   currencyChipText: {
     fontSize: 13,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   currencyChipTextActive: {
@@ -1710,10 +1696,10 @@ const styles = StyleSheet.create({
   },
   detailDivider: {
     height: 1,
-    backgroundColor: BORDER_SOFT,
+    backgroundColor: UI.color.border,
   },
   dateBlock: {
-    backgroundColor: SURFACE,
+    backgroundColor: UI.color.surface,
   },
   detailRow: {
     minHeight: 72,
@@ -1727,28 +1713,28 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
   },
   detailTitle: {
     fontSize: 15,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   detailMeta: {
     marginTop: 2,
     fontSize: 13,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   datePicker: {
     padding: 10,
     borderTopWidth: 1,
-    borderTopColor: BORDER_SOFT,
-    backgroundColor: SURFACE,
+    borderTopColor: UI.color.border,
+    backgroundColor: UI.color.surface,
   },
   categoryRow: {
     flexDirection: "row",
@@ -1759,25 +1745,25 @@ const styles = StyleSheet.create({
     minHeight: 48,
     paddingLeft: 6,
     paddingRight: 14,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
   categoryChipActive: {
-    borderColor: TEXT,
+    borderColor: UI.color.text,
     backgroundColor: "#F4F3EE",
   },
   categoryChipText: {
     fontSize: 14,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   categoryChipTextActive: {
-    color: TEXT,
+    color: UI.color.text,
   },
   paidByRow: {
     flexDirection: "row",
@@ -1788,21 +1774,21 @@ const styles = StyleSheet.create({
     minHeight: 46,
     paddingLeft: 5,
     paddingRight: 14,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
   },
   paidByChipActive: {
-    borderColor: TEXT,
-    backgroundColor: TEXT,
+    borderColor: UI.color.text,
+    backgroundColor: UI.color.text,
   },
   paidByText: {
     fontSize: 14,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   paidByTextActive: {
@@ -1816,13 +1802,13 @@ const styles = StyleSheet.create({
     flex: 1,
     minHeight: 98,
     padding: 12,
-    borderRadius: CARD_RADIUS,
+    borderRadius: UI.radius.lg,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: SURFACE,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.surface,
   },
   methodCardActive: {
-    borderColor: TEXT,
+    borderColor: UI.color.text,
     backgroundColor: "#F4F3EE",
   },
   methodIcon: {
@@ -1830,33 +1816,33 @@ const styles = StyleSheet.create({
     height: 32,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     alignItems: "center",
     justifyContent: "center",
   },
   methodIconActive: {
-    borderColor: TEXT,
-    backgroundColor: TEXT,
+    borderColor: UI.color.text,
+    backgroundColor: UI.color.text,
   },
   methodTitle: {
     marginTop: 9,
     fontSize: 14,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   methodMeta: {
     marginTop: 2,
     fontSize: 12,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_500Medium",
   },
   remainingPill: {
     minHeight: 28,
     paddingHorizontal: 10,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
+    borderColor: UI.color.border,
     justifyContent: "center",
   },
   remainingText: {
@@ -1878,15 +1864,15 @@ const styles = StyleSheet.create({
     height: 28,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     alignItems: "center",
     justifyContent: "center",
     marginRight: 12,
   },
   checkboxActive: {
-    borderColor: TEXT,
-    backgroundColor: TEXT,
+    borderColor: UI.color.text,
+    backgroundColor: UI.color.text,
   },
   participantText: {
     flex: 1,
@@ -1895,16 +1881,16 @@ const styles = StyleSheet.create({
   sharePill: {
     minHeight: 34,
     paddingHorizontal: 10,
-    borderRadius: PILL,
+    borderRadius: UI.radius.pill,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
     alignItems: "center",
     justifyContent: "center",
   },
   shareText: {
     fontSize: 13,
-    color: TEXT,
+    color: UI.color.text,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   shareInputWrap: {
@@ -1912,11 +1898,11 @@ const styles = StyleSheet.create({
   },
   shareInput: {
     height: 42,
-    borderRadius: INNER_RADIUS,
+    borderRadius: UI.radius.md,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
-    color: TEXT,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
+    color: UI.color.text,
     fontSize: 15,
     textAlign: "right",
     paddingHorizontal: 12,
@@ -1931,11 +1917,11 @@ const styles = StyleSheet.create({
   percentInput: {
     flex: 1,
     height: 42,
-    borderRadius: INNER_RADIUS,
+    borderRadius: UI.radius.md,
     borderWidth: 1,
-    borderColor: BORDER,
-    backgroundColor: CONTROL,
-    color: TEXT,
+    borderColor: UI.color.border,
+    backgroundColor: UI.color.control,
+    color: UI.color.text,
     fontSize: 15,
     textAlign: "right",
     paddingHorizontal: 12,
@@ -1943,7 +1929,7 @@ const styles = StyleSheet.create({
   },
   percentSymbol: {
     fontSize: 14,
-    color: MUTED,
+    color: UI.color.muted,
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   actionBar: {
@@ -1954,19 +1940,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: BORDER,
-    backgroundColor: BG,
+    borderTopColor: UI.color.border,
+    backgroundColor: UI.color.bg,
   },
   primaryButton: {
     minHeight: 56,
-    borderRadius: PILL,
-    backgroundColor: BRAND,
+    borderRadius: UI.radius.pill,
+    backgroundColor: UI.color.brand,
     alignItems: "center",
     justifyContent: "center",
     flexDirection: "row",
   },
   primaryButtonDisabled: {
-    backgroundColor: BORDER,
+    backgroundColor: UI.color.border,
   },
   primaryButtonPressed: {
     opacity: 0.82,
@@ -1977,7 +1963,7 @@ const styles = StyleSheet.create({
     fontFamily: "IBMPlexSans_600SemiBold",
   },
   primaryButtonTextDisabled: {
-    color: MUTED,
+    color: UI.color.muted,
   },
   pressed: {
     opacity: 0.72,

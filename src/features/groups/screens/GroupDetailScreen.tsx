@@ -11,8 +11,9 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { UI, SectionLabel } from "@/components/ui/native-ui";
+import { UI, SectionLabel, TYPO } from "@/components/ui/native-ui";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
 import { useGroupDetailData } from "@/features/groups/hooks/useGroupDetailData";
@@ -340,6 +341,85 @@ export default function GroupDetailScreen(): JSX.Element {
           </View>
         </Animated.View>
 
+        {group.members.length < 3 && (
+          <Animated.View
+            entering={FadeInDown.duration(400).delay(75).springify()}
+            style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}
+          >
+            <SectionLabel>Invite Members</SectionLabel>
+            <View
+              style={{
+                borderRadius: UI.radius.lg,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+                backgroundColor: UI.color.surface,
+                padding: 24,
+                alignItems: "center",
+              }}
+            >
+              <View
+                style={{
+                  width: 56,
+                  height: 56,
+                  borderRadius: UI.radius.lg,
+                  backgroundColor: UI.color.control,
+                  borderWidth: 1,
+                  borderColor: UI.color.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
+                }}
+              >
+                <icons.UserPlus size={24} color={UI.color.text} strokeWidth={1.5} />
+              </View>
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  marginBottom: 4,
+                }}
+              >
+                Share this group
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: UI.color.muted,
+                  fontFamily: "IBMPlexSans_500Medium",
+                  textAlign: "center",
+                  marginBottom: 16,
+                }}
+              >
+                Invite friends to join &quot;{group.name}&quot; and split expenses together.
+              </Typography>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push(`/group/${group.id}/settings`)}
+                style={({ pressed }) => ({
+                  paddingHorizontal: 20,
+                  minHeight: 44,
+                  backgroundColor: UI.color.text,
+                  borderRadius: UI.radius.pill,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: "#FFFFFF",
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  Add Members
+                </Typography>
+              </Pressable>
+            </View>
+          </Animated.View>
+        )}
+
         <Animated.View
           entering={FadeInDown.duration(400).delay(100).springify()}
           style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}
@@ -430,22 +510,8 @@ export default function GroupDetailScreen(): JSX.Element {
       </ScrollView>
       </FocusAwareView>
 
-      <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingHorizontal: UI.space.page,
-          paddingTop: 16,
-          paddingBottom: Math.max(insets.bottom, 16),
-          flexDirection: "row",
-          gap: 12,
-          backgroundColor: UI.color.bg,
-          borderTopWidth: 1,
-          borderTopColor: UI.color.border,
-        }}
-      >
+      <View style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
+        <BottomActionBar>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Settle up"
@@ -465,9 +531,7 @@ export default function GroupDetailScreen(): JSX.Element {
           })}
         >
           <icons.Handshake size={20} color={UI.color.text} strokeWidth={1.8} />
-          <Typography
-            style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
-          >
+          <Typography style={TYPO.semi(16)}>
             Settle Up
           </Typography>
         </Pressable>
@@ -489,12 +553,11 @@ export default function GroupDetailScreen(): JSX.Element {
           })}
         >
           <icons.Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
-          <Typography
-            style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
-          >
+          <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
             Add Expense
           </Typography>
         </Pressable>
+      </BottomActionBar>
       </View>
     </View>
   );

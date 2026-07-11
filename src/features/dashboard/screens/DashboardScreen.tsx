@@ -12,10 +12,13 @@ import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withSpring } fr
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { AppLoader } from "@/components/ui/AppLoader";
 import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupRow } from "@/features/groups/components/GroupRow";
-import { UI, FilterPill, IconButton } from "@/components/ui/native-ui";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { UI, TYPO, FilterPill, IconButton } from "@/components/ui/native-ui";
+import { HapticButton } from "@/components/ui/HapticButton";
+import { Card } from "@/components/ui/Card";
+import { Skeleton, ListRowSkeleton } from "@/components/ui/Skeleton";
 import { MoneySignal } from "@/components/ui/MoneySignal";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -142,7 +145,7 @@ function IconShell({ icon: Icon, tone }: { icon: any; tone: string }): JSX.Eleme
         height: 44,
         borderRadius: UI.radius.lg,
         backgroundColor:
-          tone === "danger" ? "#FFF7F5" : tone === "success" ? "#F5FCF8" : UI.color.control,
+          tone === "danger" ? UI.color.dangerTint : tone === "success" ? UI.color.successTint : UI.color.control,
         borderWidth: 1,
         borderColor: UI.color.border,
         alignItems: "center",
@@ -434,8 +437,52 @@ export default function DashboardScreen(): JSX.Element {
       </View>
 
       {isFirstLoad ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <AppLoader />
+        <View style={{ flex: 1, paddingTop: 40, paddingHorizontal: UI.space.page }}>
+          <FocusAwareView delay={0} style={{ marginBottom: 18 }}>
+            <Skeleton height={170} radius={UI.radius.lg} />
+          </FocusAwareView>
+          <FocusAwareView delay={35} style={{ marginBottom: 24 }}>
+            <View style={{ flexDirection: "row", gap: 10 }}>
+              <View style={{ flex: 1 }}>
+                <Skeleton height={56} radius={999} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Skeleton height={56} radius={999} />
+              </View>
+            </View>
+          </FocusAwareView>
+          <FocusAwareView delay={90} style={{ marginBottom: 28 }}>
+            <View style={{ marginBottom: 14 }}>
+              <Skeleton height={18} width={120} radius={6} />
+            </View>
+            <View
+              style={{
+                backgroundColor: UI.color.surface,
+                borderRadius: UI.radius.lg,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+              }}
+            >
+              <ListRowSkeleton />
+              <ListRowSkeleton />
+            </View>
+          </FocusAwareView>
+          <FocusAwareView delay={100}>
+            <View style={{ marginBottom: 14 }}>
+              <Skeleton height={18} width={100} radius={6} />
+            </View>
+            <View
+              style={{
+                backgroundColor: UI.color.surface,
+                borderRadius: UI.radius.lg,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+              }}
+            >
+              <ListRowSkeleton />
+              <ListRowSkeleton />
+            </View>
+          </FocusAwareView>
         </View>
       ) : (
         <ScrollView
@@ -456,9 +503,9 @@ export default function DashboardScreen(): JSX.Element {
                 {
                   backgroundColor:
                     balanceTone === "danger"
-                      ? "#FFF7F5"
+                      ? UI.color.dangerTint
                       : balanceTone === "success"
-                        ? "#F5FCF8"
+                        ? UI.color.successTint
                         : UI.color.surface,
                   borderRadius: UI.radius.lg,
                   borderWidth: 1,
@@ -494,7 +541,7 @@ export default function DashboardScreen(): JSX.Element {
                     adjustsFontSizeToFit
                     style={{
                       marginTop: 4,
-                      fontSize: 22,
+                      fontSize: 24,
                       color: UI.color.textStrong,
                       fontFamily: "Sora_600SemiBold",
                       letterSpacing: -0.2,
@@ -527,103 +574,218 @@ export default function DashboardScreen(): JSX.Element {
                   tone={owedToYou > 0 ? "success" : "neutral"}
                 />
               </View>
+
+              {totalSpent > 0 && (
+                <>
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: UI.color.border,
+                      marginTop: 14,
+                      marginBottom: 12,
+                    }}
+                  />
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => router.push("/(tabs)/stats")}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+                      <View
+                        style={{
+                          width: 36,
+                          height: 36,
+                          borderRadius: 10,
+                          backgroundColor: UI.color.control,
+                          borderWidth: 1,
+                          borderColor: UI.color.border,
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <icons.BarChart3 size={16} color={UI.color.muted} strokeWidth={1.75} />
+                      </View>
+                      <View>
+                        <Typography
+                          style={{
+                            fontSize: 13,
+                            color: UI.color.muted,
+                            fontFamily: "IBMPlexSans_500Medium",
+                          }}
+                        >
+                          This month
+                        </Typography>
+                        <Typography
+                          style={{
+                            fontSize: 16,
+                            color: UI.color.text,
+                            fontFamily: "IBMPlexSans_600SemiBold",
+                          }}
+                        >
+                          {formatAmount(totalSpent, preferredCurrency.code)}
+                        </Typography>
+                      </View>
+                    </View>
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+                      <Typography
+                        style={{
+                          fontSize: 13,
+                          color: UI.color.muted,
+                          fontFamily: "IBMPlexSans_500Medium",
+                        }}
+                      >
+                        {expenseCount} expense{expenseCount !== 1 ? "s" : ""}
+                      </Typography>
+                      <icons.ChevronRight size={16} color={UI.color.muted} strokeWidth={1.75} />
+                    </View>
+                  </Pressable>
+                </>
+              )}
             </Animated.View>
           </FocusAwareView>
 
           <FocusAwareView delay={35} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
             <View style={{ flexDirection: "row", gap: 10 }}>
-              <QuickAction
-                icon={icons.ReceiptText}
-                label="Expense"
-                detail="Add new"
-                onPress={() => router.push("/expense/new")}
-                primary
-              />
-              <QuickAction
-                icon={icons.HandCoins}
-                label="Settle"
-                detail={
-                  youOwe > 0
-                    ? `${oweUsers.length || 1} balance${oweUsers.length === 1 ? "" : "s"}`
-                    : "Review balances"
-                }
-                onPress={() =>
-                  oweUsers.length > 0
-                    ? router.push(`/settle/${oweUsers[0].id}`)
-                    : router.push("/(tabs)/friends")
-                }
-              />
-              <QuickAction
-                icon={icons.ListChecks}
-                label="Activity"
-                detail="Timeline"
-                onPress={() => router.push("/(tabs)/activity")}
-              />
+              <View style={{ flex: 1 }}>
+                <HapticButton tone="ink" onPress={() => router.push("/expense/new")}>
+                  + Add Expense
+                </HapticButton>
+              </View>
+              <View style={{ flex: 1 }}>
+                <HapticButton tone="outlined" onPress={() =>
+                  owedToYou > 0
+                    ? router.push(`/settle/${owedUsers[0].id}`)
+                    : youOwe > 0
+                      ? router.push(`/settle/${oweUsers[0].id}`)
+                      : router.push("/(tabs)/friends")
+                }>
+                  Settle up
+                </HapticButton>
+              </View>
             </View>
           </FocusAwareView>
 
-          <FocusAwareView delay={70} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push("/(tabs)/stats")}
-              style={({ pressed }) => ({
-                backgroundColor: UI.color.textStrong,
-                borderRadius: UI.radius.lg,
-                padding: 20,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                opacity: pressed ? 0.85 : 1,
-              })}
-            >
-              <View style={{ flex: 1 }}>
+          {friends.length <= 1 && (
+            <FocusAwareView delay={75} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+              <View
+                style={{
+                  backgroundColor: UI.color.surface,
+                  borderRadius: UI.radius.lg,
+                  borderWidth: 1,
+                  borderColor: UI.color.border,
+                  padding: 20,
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: UI.radius.lg,
+                    backgroundColor: UI.color.control,
+                    borderWidth: 1,
+                    borderColor: UI.color.border,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginBottom: 12,
+                  }}
+                >
+                  <icons.UserPlus size={22} color={UI.color.muted} strokeWidth={1.5} />
+                </View>
                 <Typography
                   style={{
-                    fontSize: 12,
-                    color: "rgba(255,255,255,0.6)",
+                    fontSize: 17,
+                    color: UI.color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    textTransform: "uppercase",
-                    letterSpacing: 1.2,
-                    marginBottom: 6,
-                  }}
-                >
-                  This Month
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 26,
-                    color: "#FFFFFF",
-                    fontFamily: "Sora_600SemiBold",
-                    letterSpacing: -0.3,
                     marginBottom: 4,
+                    textAlign: "center",
                   }}
                 >
-                  {formatAmount(totalSpent, preferredCurrency.code)}
+                  {friends.length === 0 ? "Find your people" : "Expand your circle"}
                 </Typography>
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: "rgba(255,255,255,0.7)",
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
+                    textAlign: "center",
+                    marginBottom: 14,
+                    lineHeight: 20,
                   }}
                 >
-                  {expenseCount} expense{expenseCount !== 1 ? "s" : ""} this period
+                  {friends.length === 0
+                    ? "Add friends to start splitting expenses together."
+                    : "You have a few friends. Add more to split group expenses."}
                 </Typography>
+                <HapticButton tone="outlined" height={44} onPress={() => router.push("/friend/new")}>
+                  {friends.length === 0 ? "Add friend" : "Find friends"}
+                </HapticButton>
               </View>
-              <View
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: UI.radius.xl,
-                  backgroundColor: "rgba(255,255,255,0.12)",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <icons.BarChart3 size={22} color="#FFFFFF" strokeWidth={1.75} />
+            </FocusAwareView>
+          )}
+
+          {(owedUsers.length > 0 || oweUsers.length > 0) && (
+            <FocusAwareView delay={90} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+              <View style={{ marginBottom: 14 }}>
+                <Typography style={TYPO.semi(18)}>Need attention</Typography>
               </View>
-            </Pressable>
-          </FocusAwareView>
+              <Card padding={0}>
+                {owedUsers.slice(0, 3).map((user) => (
+                  <View
+                    key={user.id}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
+                      borderBottomWidth: 1,
+                      borderBottomColor: UI.color.border,
+                    }}
+                  >
+                    <AppUserAvatar user={user} size="sm" />
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <Typography style={TYPO.semi(15)}>{user.name}</Typography>
+                      <Typography style={[TYPO.medium(13), { color: UI.color.success, marginTop: 1 }]}>
+                        Owes you {formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), preferredCurrency.code)}
+                      </Typography>
+                    </View>
+                    <HapticButton tone="outlined" height={36} onPress={() => router.push(`/settle/${user.id}`)}>
+                      Remind
+                    </HapticButton>
+                  </View>
+                ))}
+                {oweUsers.slice(0, 3).map((user) => (
+                  <View
+                    key={user.id}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
+                      borderBottomWidth: 1,
+                      borderBottomColor: UI.color.border,
+                    }}
+                  >
+                    <AppUserAvatar user={user} size="sm" />
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <Typography style={TYPO.semi(15)}>{user.name}</Typography>
+                      <Typography style={[TYPO.medium(13), { color: UI.color.danger, marginTop: 1 }]}>
+                        You owe {formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), preferredCurrency.code)}
+                      </Typography>
+                    </View>
+                    <HapticButton tone="ink" height={36} onPress={() => router.push(`/settle/${user.id}`)}>
+                      Settle
+                    </HapticButton>
+                  </View>
+                ))}
+              </Card>
+            </FocusAwareView>
+          )}
 
           <FocusAwareView
             delay={105}
@@ -696,8 +858,9 @@ export default function DashboardScreen(): JSX.Element {
               }}
             >
               {isLoadingGroups ? (
-                <View style={{ paddingTop: 20 }}>
-                  <AppLoader />
+                <View>
+                  <ListRowSkeleton />
+                  <ListRowSkeleton />
                 </View>
               ) : activeGroups.length > 0 ? (
                 activeGroups.map(({ group, netBalance }, idx) => (

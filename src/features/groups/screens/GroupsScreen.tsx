@@ -3,16 +3,17 @@ import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useCallback, useMemo } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, Pressable } from "react-native";
+import { View, Pressable, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import * as icons from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import Animated, { LinearTransition } from "react-native-reanimated";
+import { useQueryClient } from "@tanstack/react-query";
 
 import { GroupCard } from "@/features/groups/components/GroupCard";
-import { AppLoader } from "@/components/ui/AppLoader";
+import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import {
   UI,
@@ -51,6 +52,8 @@ export default function GroupsScreen(): JSX.Element {
 
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<GroupFilter>("all");
+  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
 
   const activeGroups = useMemo(() => {
     const groupRows = groups.map((group) => {
@@ -166,8 +169,8 @@ export default function GroupsScreen(): JSX.Element {
     () => (
       <View style={{ paddingHorizontal: UI.space.page }}>
         {isLoading ? (
-          <View style={{ paddingTop: 40 }}>
-            <AppLoader />
+          <View style={{ paddingTop: 20 }}>
+            {[1, 2, 3].map((i) => <ListRowSkeleton key={i} />)}
           </View>
         ) : (
           <EmptyState
@@ -215,6 +218,12 @@ export default function GroupsScreen(): JSX.Element {
     ),
     [filter, isLoading, search, router]
   );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries();
+    setRefreshing(false);
+  }, [queryClient]);
 
   const renderItem = useCallback(
     ({
@@ -284,6 +293,9 @@ export default function GroupsScreen(): JSX.Element {
           contentContainerStyle={{ paddingBottom: 130 }}
           showsVerticalScrollIndicator={false}
           extraData={{ filteredLength: filtered.length }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.color.text} />
+          }
         />
       </FocusAwareView>
     </View>
