@@ -8,8 +8,7 @@ import * as icons from "lucide-react-native";
 import { useQueryClient } from "@tanstack/react-query";
 
 import Animated from "react-native-reanimated";
-import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
-import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
+import { useUserActivities } from "@/features/activity/queries/useActivities";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
@@ -22,51 +21,17 @@ export default function ActivityScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
-  const { data: expenses = [], isLoading: isLoadingExpenses } = useUserExpenses(currentUser?.id);
-  const { data: settlements = [], isLoading: isLoadingSettlements } = useUserSettlements(
-    currentUser?.id
-  );
+  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(currentUser?.id);
   const isAppLoading =
-    useUIStore((s) => s.isAppLoading) || isLoadingExpenses || isLoadingSettlements;
+    useUIStore((s) => s.isAppLoading) || isLoadingActivities;
 
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries();
+    await queryClient.invalidateQueries({ queryKey: ["activities"] });
     setRefreshing(false);
   }, [queryClient]);
-
-  const activities = useMemo(() => {
-    const arr: Activity[] = [];
-    expenses.forEach((e) => {
-      arr.push({
-        id: `exp-${e.id}`,
-        type: "expense",
-        expense: e,
-        groupId: e.groupId,
-        userId: e.paidBy,
-        user: currentUser!,
-        description: e.title,
-        currency: e.currency,
-        date: e.date,
-      });
-    });
-    settlements.forEach((s) => {
-      arr.push({
-        id: `set-${s.id}`,
-        type: "settlement",
-        settlement: s,
-        groupId: s.groupId,
-        userId: s.fromUserId,
-        user: currentUser!,
-        description: "Settled up",
-        currency: s.currency,
-        date: s.date,
-      });
-    });
-    return arr;
-  }, [currentUser, expenses, settlements]);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeFilter, setActiveFilter] = useState<ActivityFilterType>("All");

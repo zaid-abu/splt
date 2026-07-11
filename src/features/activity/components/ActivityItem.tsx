@@ -455,7 +455,7 @@ export const ActivityItem = React.memo(function ActivityItem({ activity, index, 
               lineHeight: 22,
             }}
           >
-            Are you sure you want to delete "{activity.description}"? This cannot be undone.
+            Are you sure you want to delete &ldquo;{activity.description}&rdquo;? This cannot be undone.
           </Typography>
           <View style={{ flexDirection: "row", gap: 12 }}>
             <Pressable

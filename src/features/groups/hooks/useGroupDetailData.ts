@@ -8,9 +8,9 @@ import { useUIStore } from "@/store/useUIStore";
 import type { User } from "@/types";
 
 export function useGroupDetailData(groupId: string, currentUserId: string | undefined) {
-  const { data: groups = [] } = useGroups(currentUserId);
-  const { data: allExpenses = [] } = useUserExpenses(currentUserId);
-  const { data: settlements = [] } = useUserSettlements(currentUserId);
+  const { data: groups = [], isLoading: isGroupsLoading } = useGroups(currentUserId);
+  const { data: allExpenses = [], isLoading: isExpensesLoading } = useUserExpenses(currentUserId);
+  const { data: settlements = [], isLoading: isSettlementsLoading } = useUserSettlements(currentUserId);
 
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
@@ -89,6 +89,8 @@ export function useGroupDetailData(groupId: string, currentUserId: string | unde
     return map;
   }, [group]);
 
+  const isLoading = isGroupsLoading || isExpensesLoading || isSettlementsLoading;
+
   return {
     group,
     expenses,
@@ -99,5 +101,6 @@ export function useGroupDetailData(groupId: string, currentUserId: string | unde
     youOwe,
     owedToYou,
     userById,
+    isLoading,
   };
 }

@@ -33,6 +33,7 @@
 
 @utility font-heading-italic {
   font-family: "Sora_600SemiBold";
+  font-style: italic;
 }
 
 /* ─── Tailwind theme bridge ────────────────────────────────────────────────── */

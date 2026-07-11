@@ -1,6 +1,6 @@
 import type { ComponentType, JSX } from "react";
 import { useCallback, useMemo, useState, useEffect } from "react";
-import { ScrollView, View, RefreshControl, Pressable } from "react-native";
+import { ScrollView, View, RefreshControl, Pressable, StyleSheet } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
@@ -8,7 +8,7 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { Typography } from "heroui-native";
 import { useQueryClient } from "@tanstack/react-query";
-import Animated, { FadeInDown, useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -63,81 +63,9 @@ function SectionLabel({
   );
 }
 
-function QuickAction({
-  icon: Icon,
-  label,
-  detail,
-  onPress,
-  primary = false,
-}: {
-  icon: ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
-  label: string;
-  detail: string;
-  onPress: () => void;
-  primary?: boolean;
-}): JSX.Element {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-        onPress();
-      }}
-      style={({ pressed }) => ({
-        flex: 1,
-        minHeight: 68,
-        paddingVertical: 12,
-        paddingHorizontal: 10,
-        borderRadius: UI.radius.lg,
-        borderWidth: 1,
-        borderColor: primary ? UI.color.text : UI.color.border,
-        backgroundColor: primary ? UI.color.text : UI.color.control,
-        opacity: pressed ? 0.78 : 1,
-        alignItems: "center",
-        justifyContent: "center",
-      })}
-    >
-      <View
-        style={{
-          width: 32,
-          height: 32,
-          borderRadius: 10,
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: primary ? "rgba(255,255,255,0.12)" : UI.color.subtle,
-          marginBottom: 6,
-        }}
-      >
-        <Icon size={17} color={primary ? "#FFFFFF" : UI.color.text} strokeWidth={2} />
-      </View>
-      <Typography
-        numberOfLines={1}
-        style={{
-          fontSize: 13,
-          color: primary ? "#FFFFFF" : UI.color.text,
-          fontFamily: "IBMPlexSans_600SemiBold",
-          textAlign: "center",
-        }}
-      >
-        {label}
-      </Typography>
-      <Typography
-        numberOfLines={1}
-        style={{
-          marginTop: 1,
-          fontSize: 11,
-          color: primary ? "rgba(255,255,255,0.72)" : UI.color.muted,
-          fontFamily: "IBMPlexSans_500Medium",
-          textAlign: "center",
-        }}
-      >
-        {detail}
-      </Typography>
-    </Pressable>
-  );
-}
+type LucideIcon = ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 
-function IconShell({ icon: Icon, tone }: { icon: any; tone: string }): JSX.Element {
+function IconShell({ icon: Icon, tone }: { icon: LucideIcon; tone: string }): JSX.Element {
   return (
     <View
       style={{
@@ -163,7 +91,7 @@ function IconShell({ icon: Icon, tone }: { icon: any; tone: string }): JSX.Eleme
   );
 }
 
-function EmptyIconShell({ icon: Icon }: { icon: any }): JSX.Element {
+function EmptyIconShell({ icon: Icon }: { icon: LucideIcon }): JSX.Element {
   return (
     <View
       style={{
@@ -203,6 +131,24 @@ export default function DashboardScreen(): JSX.Element {
   const { data: notifications = [] } = useNotifications(currentUser?.id);
   const hasNotifications = notifications.length > 0;
 
+  const styles = useMemo(() => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: UI.color.bg },
+  row: { flexDirection: "row", alignItems: "center" },
+  rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  surfaceCard: { backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg },
+  cardPadded: { backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg, padding: 14 },
+  textTitle: { fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+  textSubtitle: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" },
+  textSemi: { fontFamily: "IBMPlexSans_600SemiBold", color: UI.color.text },
+  textMedium: { fontFamily: "IBMPlexSans_500Medium", color: UI.color.muted },
+  sectionPad: { paddingHorizontal: UI.space.page },
+  iconShell: { width: 44, height: 44, borderRadius: UI.radius.lg, backgroundColor: UI.color.control, borderWidth: 1, borderColor: UI.color.border, alignItems: "center", justifyContent: "center" },
+  emptyIconShell: { width: 56, height: 56, borderRadius: UI.radius.lg, backgroundColor: UI.color.control, borderWidth: 1, borderColor: UI.color.border, alignItems: "center", justifyContent: "center", marginBottom: 16 },
+  pillButton: { minHeight: 44, paddingHorizontal: 14, borderRadius: UI.radius.pill, alignItems: "center", justifyContent: "center" },
+  iconButton: { width: 44, height: 44, borderRadius: UI.radius.pill, backgroundColor: UI.color.control, borderWidth: 1, borderColor: UI.color.border, alignItems: "center", justifyContent: "center" },
+  pressed: { opacity: 0.7 },
+}), []);
+
   const [refreshing, setRefreshing] = useState(false);
   const [activityFilter, setActivityFilter] = useState<"all" | "paid" | "owe">("all");
   const queryClient = useQueryClient();
@@ -222,6 +168,7 @@ export default function DashboardScreen(): JSX.Element {
       }, 400);
       return () => clearTimeout(timer);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFirstLoad]);
 
   const perUserBalances = useMemo(
@@ -361,13 +308,13 @@ export default function DashboardScreen(): JSX.Element {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await queryClient.invalidateQueries();
+    await queryClient.invalidateQueries({ queryKey: ["groups", "expenses", "settlements", "friends", "notifications", "activities"] });
     setRefreshing(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [queryClient]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <View style={styles.screen}>
       <StatusBar style="dark" />
 
       <View

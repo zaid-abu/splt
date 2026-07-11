@@ -8,6 +8,7 @@ import {
   generateSplits,
 } from "@/features/expenses/utils/splits";
 import { formatAmount } from "@/components/ui/AmountDisplay";
+import { uploadReceipt } from "@/services/storage";
 
 interface UseExpenseFormProps {
   currentUser: User;
@@ -179,6 +180,13 @@ export function useExpenseForm({
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (selectedGroup?.defaultSplitMethod && !existingExpense) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setSplitMethod(selectedGroup.defaultSplitMethod);
+    }
+  }, [selectedGroup?.defaultSplitMethod, existingExpense]);
+
   const [included, setIncluded] = useState<Record<string, boolean>>(() =>
     getExistingIncludedMap(existingExpense)
   );
@@ -200,6 +208,8 @@ export function useExpenseForm({
     });
     return map;
   });
+
+  const [receiptUrl, setReceiptUrl] = useState(existingExpense?.receiptUrl ?? "");
 
   useEffect(() => {
     if (!existingExpense) return;
@@ -276,7 +286,7 @@ export function useExpenseForm({
   const currentPercentSum = calculatePercentSum(includedMembers, customPercentages);
   const remainingPercent = Math.max(0, 100 - currentPercentSum);
 
-  async function handleSubmit(): Promise<void> {
+  async function handleSubmit(receiptUri?: string): Promise<void> {
     const newErrors: Record<string, string> = {};
 
     if (!selectedGroup && selectedFriends.length === 0) {
@@ -323,10 +333,11 @@ export function useExpenseForm({
             splits: splits.map((s) => ({ ...s, paid: s.userId === paidBy })),
             splitMethod,
             date: expenseDate,
+            receiptUrl: receiptUrl || undefined,
           },
         });
       } else {
-        await addExpense({
+        const newExpense = await addExpense({
           groupId: selectedGroup?.id,
           title: title.trim(),
           amount: parsedAmount,
@@ -336,7 +347,16 @@ export function useExpenseForm({
           splits: splits.map((s) => ({ ...s, paid: s.userId === paidBy })),
           splitMethod,
           date: expenseDate,
+          receiptUrl: receiptUrl || undefined,
         });
+        if (receiptUri && newExpense?.id) {
+          try {
+            const url = await uploadReceipt(newExpense.id, receiptUri);
+            await updateExpense({ id: newExpense.id, updates: { receiptUrl: url } });
+          } catch {
+            // Non-critical: receipt upload failed, expense still created
+          }
+        }
       }
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       if (router.canGoBack()) {
@@ -389,6 +409,7 @@ export function useExpenseForm({
       currentPercentSum,
       remainingPercent,
       errors,
+      receiptUrl,
     },
     actions: {
       setSelectedGroupId,
@@ -408,6 +429,7 @@ export function useExpenseForm({
       setIncluded,
       setCustomAmounts,
       setCustomPercentages,
+      setReceiptUrl,
       handleSubmit,
       setCurrency,
       setErrors,

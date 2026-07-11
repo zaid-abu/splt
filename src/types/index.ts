@@ -92,6 +92,7 @@ export interface Group {
   createdBy: string;
   totalExpenses: number;
   simplifyDebts?: boolean;
+  defaultSplitMethod?: SplitMethod;
 }
 
 export interface ExpenseSplit {
@@ -115,6 +116,7 @@ export interface Expense {
   splitMethod: SplitMethod;
   date: Date;
   notes?: string;
+  receiptUrl?: string;
   createdAt: Date;
 }
 

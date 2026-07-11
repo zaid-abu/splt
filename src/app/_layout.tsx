@@ -42,15 +42,13 @@ export default function RootLayout(): JSX.Element | null {
   const [authReady, setAuthReady] = useState(false);
   const isDarkMode = useUIStore((s) => s.isDarkMode);
 
-  useEffect(() => {
-    applyTheme(isDarkMode);
-  }, [isDarkMode]);
+  // Apply theme on every render so UI.color is updated before children render
+  applyTheme(isDarkMode);
 
   useEffect(() => {
     if (!loaded) return;
 
-    supabase.auth.getSession().then(({ data }) => {
-      applyTheme(isDarkMode);
+    supabase.auth.getSession().then(() => {
       setAuthReady(true);
       SplashScreen.hideAsync();
     });
@@ -59,8 +57,8 @@ export default function RootLayout(): JSX.Element | null {
   if (!loaded || !authReady) return null;
 
   return (
-    <AppProvider key={isDarkMode ? "dark" : "light"}>
-      <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
+    <AppProvider>
+      <Stack key={isDarkMode ? "dark" : "light"} screenOptions={{ headerShown: false, animation: "slide_from_right" }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />

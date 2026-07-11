@@ -1,5 +1,5 @@
 import { View, FlatList, Pressable, ActivityIndicator } from "react-native";
-import { Typography, Skeleton } from "heroui-native";
+import { Typography } from "heroui-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";

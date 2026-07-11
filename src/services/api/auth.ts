@@ -1,6 +1,47 @@
 import { supabase } from "@/services/supabase/client";
 import type { User } from "@/types";
 import { mapUser } from "./mappers";
+import { makeRedirectUri } from "expo-auth-session";
+import * as WebBrowser from "expo-web-browser";
+import * as QueryParams from "expo-auth-session/build/QueryParams";
+
+WebBrowser.maybeCompleteAuthSession();
+
+const getRedirectUri = () =>
+  makeRedirectUri({ scheme: "splt", path: "auth/callback" });
+
+async function signInWithOAuthProvider(provider: "google" | "apple") {
+  const redirectTo = getRedirectUri();
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider,
+    options: {
+      redirectTo,
+      skipBrowserRedirect: true,
+    },
+  });
+
+  if (error) throw error;
+  if (!data?.url) throw new Error("No OAuth URL returned");
+
+  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+
+  if (result.type !== "success") {
+    throw new Error("OAuth sign-in was cancelled or failed");
+  }
+
+  const { params } = QueryParams.getQueryParams(result.url);
+  if (!params?.refresh_token) {
+    throw new Error("No refresh token in OAuth callback");
+  }
+
+  const { error: sessionError } = await supabase.auth.setSession({
+    refresh_token: params.refresh_token,
+    access_token: params.access_token ?? "",
+  });
+
+  if (sessionError) throw sessionError;
+}
 
 export interface SignUpData {
   email: string;
@@ -90,5 +131,13 @@ export const AuthService = {
 
     if (userError || !userData) return null;
     return mapUser(userData);
+  },
+
+  async signInWithGoogle(): Promise<void> {
+    return signInWithOAuthProvider("google");
+  },
+
+  async signInWithApple(): Promise<void> {
+    return signInWithOAuthProvider("apple");
   },
 };

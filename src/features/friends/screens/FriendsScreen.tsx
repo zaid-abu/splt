@@ -56,8 +56,7 @@ const TEXT_DANGER = UI.color.danger;
 const TEXT_SUCCESS = UI.color.success;
 const SEPARATOR = UI.color.border;
 const CONTROL_SURFACE = UI.color.control;
-const CARD_RADIUS = UI.radius.lg;
-const SECTION_PAD = UI.space.page;
+
 
 type FriendListItem = {
   friend: User;

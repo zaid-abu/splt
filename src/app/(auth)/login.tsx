@@ -19,7 +19,7 @@ import * as icons from "lucide-react-native";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import { useSignIn } from "@/features/auth/hooks/useAuthMutations";
+import { useSignIn, useSignInWithGoogle } from "@/features/auth/hooks/useAuthMutations";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginSchema, type LoginFormData } from "@/validation/schemas";
 import { FormInput } from "@/components/forms/FormInput";
@@ -31,6 +31,7 @@ export default function LoginScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { toast } = useAppToast();
   const { mutateAsync: signIn, isPending } = useSignIn();
+  const { mutateAsync: signInWithGoogle, isPending: isGoogleLoading } = useSignInWithGoogle();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -247,6 +248,37 @@ export default function LoginScreen(): JSX.Element {
                 </View>
               </PressableScale>
             </Animated.View>
+
+            <Animated.View entering={FadeInDown.delay(500).duration(600)} style={{ paddingTop: 12 }}>
+              <PressableScale onPress={async () => { try { await signInWithGoogle(); } catch {} }}>
+                <View
+                  style={{
+                    width: "100%",
+                    height: 48,
+                    borderRadius: UI.radius.pill,
+                    borderWidth: 1,
+                    borderColor: UI.color.border,
+                    backgroundColor: UI.color.control,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: "row",
+                    gap: 10,
+                  }}
+                >
+                  {isGoogleLoading ? (
+                    <ActivityIndicator color={UI.color.text} />
+                  ) : (
+                    <>
+                      <Typography style={{ fontSize: 14, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>G</Typography>
+                      <Typography style={{ fontSize: 15, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                        Continue with Google
+                      </Typography>
+                    </>
+                  )}
+                </View>
+              </PressableScale>
+            </Animated.View>
+
           </View>
 
           <View style={{ flex: 1 }} />

@@ -74,6 +74,7 @@ export function mapGroup(row: GroupRow): Group {
     createdBy: row.created_by,
     totalExpenses: Number(row.total_expenses),
     simplifyDebts: row.simplify_debts,
+    defaultSplitMethod: (row as any).default_split_method ?? undefined,
   };
 }
 
@@ -101,6 +102,7 @@ export function mapExpense(row: ExpenseRow): Expense {
     splitMethod: row.split_method,
     date: new Date(row.date),
     notes: row.notes ?? undefined,
+    receiptUrl: (row as any).receipt_url ?? undefined,
     createdAt: new Date(row.created_at),
   };
 }
@@ -148,6 +150,7 @@ export function toGroupInsert(group: Partial<Group>): Inserts<"groups"> {
     created_by: group.createdBy,
     total_expenses: group.totalExpenses,
     simplify_debts: group.simplifyDebts,
+    default_split_method: group.defaultSplitMethod,
   }) as Inserts<"groups">;
 }
 
@@ -159,6 +162,7 @@ export function toGroupUpdate(group: Partial<Group>): Updates<"groups"> {
     currency: group.currency,
     total_expenses: group.totalExpenses,
     simplify_debts: group.simplifyDebts,
+    default_split_method: "defaultSplitMethod" in group ? group.defaultSplitMethod : undefined,
   });
 }
 
@@ -174,6 +178,7 @@ export function toExpenseInsert(expense: Partial<Expense>): Inserts<"expenses"> 
     split_method: expense.splitMethod,
     date: expense.date?.toISOString(),
     notes: expense.notes ?? null,
+    receipt_url: expense.receiptUrl ?? null,
     created_at: expense.createdAt?.toISOString(),
   }) as Inserts<"expenses">;
 }
@@ -189,6 +194,7 @@ export function toExpenseUpdate(expense: Partial<Expense>): Updates<"expenses"> 
     split_method: expense.splitMethod,
     date: expense.date?.toISOString(),
     notes: "notes" in expense ? (expense.notes ?? null) : undefined,
+    receipt_url: "receiptUrl" in expense ? (expense.receiptUrl ?? null) : undefined,
   });
 }
 

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { View, FlatList, Dimensions, Platform, Pressable } from "react-native";
+import { View, FlatList, Dimensions, Pressable } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Typography } from "heroui-native";

@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import {
   View,
   Pressable,
@@ -7,6 +7,7 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
 } from "react-native";
 import { Typography, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
@@ -63,6 +64,44 @@ export default function SettleUpScreen(): JSX.Element {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const { mutateAsync: addSettlement, isPending: isAddingSettlement } = useAddSettlement();
 
+  const styles = useMemo(() => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: UI.color.bg },
+  row: { flexDirection: "row", alignItems: "center" },
+  center: { alignItems: "center", justifyContent: "center" },
+  pillButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: UI.radius.pill, backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border },
+  pillButtonText: { fontSize: 13, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+  surfaceCard: { backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg, padding: 16 },
+  submitButton: { backgroundColor: UI.color.brand, height: 56, borderRadius: UI.radius.pill, justifyContent: "center", alignItems: "center" },
+  submitButtonText: { fontSize: 16, color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold", letterSpacing: 1 },
+  brandPill: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: UI.radius.pill, borderWidth: 1 },
+  brandPillSelected: { backgroundColor: UI.color.brand, borderColor: UI.color.brand },
+  brandPillDeselected: { backgroundColor: UI.color.surface, borderColor: UI.color.border },
+  brandPillText: { fontFamily: "IBMPlexSans_600SemiBold", fontSize: 13 },
+  brandPillTextSelected: { color: "#FFF" },
+  brandPillTextDeselected: { color: UI.color.text },
+  avatarShell: { alignItems: "center" },
+  avatarLabel: { fontSize: 13, fontFamily: "IBMPlexSans_600SemiBold", marginTop: 8, color: UI.color.text },
+  swapButton: { backgroundColor: UI.color.surface, paddingHorizontal: 16, paddingVertical: 10, borderRadius: UI.radius.pill, borderWidth: 1, borderColor: UI.color.border, flexDirection: "row", alignItems: "center", gap: 6 },
+  swapText: { fontSize: 12, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold", textTransform: "uppercase", letterSpacing: 1 },
+  amountContainer: { alignItems: "center", marginVertical: 32, paddingHorizontal: 24 },
+  amountLabel: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium", marginBottom: 8 },
+  amountRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", borderBottomWidth: 2, borderBottomColor: UI.color.border, paddingBottom: 8, minWidth: 200 },
+  amountSymbol: { fontSize: 32, color: UI.color.text, fontFamily: "IBMPlexSans_500Medium", marginRight: 8 },
+  amountInput: { fontSize: 48, fontFamily: "IBMPlexSans_600SemiBold", color: UI.color.text, letterSpacing: -2, textAlign: "center", minWidth: 120, padding: 0 },
+  quickAmountRow: { flexDirection: "row", gap: 12, marginTop: 24 },
+  directionFlow: { paddingHorizontal: 24, paddingVertical: 24 },
+  directionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  flowLine: { height: 1, backgroundColor: UI.color.border, width: "100%", position: "absolute", top: "50%", zIndex: -1 },
+  recipientSelector: { paddingHorizontal: 24, paddingBottom: 16 },
+  recipientLabel: { fontSize: 12, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium", marginBottom: 8 },
+  recipientCard: { alignItems: "center", padding: 12, borderWidth: 1, borderRadius: UI.radius.lg, width: 80 },
+  noteInput: { borderWidth: 1, borderColor: UI.color.border, padding: 16, borderRadius: UI.radius.lg, fontSize: 15, fontFamily: "IBMPlexSans_500Medium", backgroundColor: UI.color.surface },
+  summaryBox: { backgroundColor: UI.color.subtle, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 12 },
+  summaryLabel: { fontSize: 13, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium", marginBottom: 4 },
+  summaryText: { fontSize: 15, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+  stickySubmit: { paddingHorizontal: 24, paddingBottom: 24, paddingTop: 12, backgroundColor: UI.color.bg, borderTopWidth: 1, borderTopColor: UI.color.border },
+}), []);
+
   const targetGroup = groups.find((g) => g.id === routeGroupId);
 
   const debtOptions = useMemo(() => {
@@ -111,18 +150,14 @@ export default function SettleUpScreen(): JSX.Element {
       : undefined
     : id;
 
-  const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>(defaultFriendId);
+  const [selectedFriendId, setSelectedFriendId] = useState<string | undefined>(undefined);
   const [showRecipientSelector, setShowRecipientSelector] = useState(false);
 
-  useEffect(() => {
-    if (!selectedFriendId && defaultFriendId) {
-      setSelectedFriendId(defaultFriendId);
-    }
-  }, [defaultFriendId, selectedFriendId]);
+  const effectiveFriendId = selectedFriendId ?? defaultFriendId;
 
   const friend =
-    combinedFriends.find((f) => f.id === selectedFriendId) ||
-    targetGroup?.members.find((m) => m.userId === selectedFriendId)?.user;
+    combinedFriends.find((f) => f.id === effectiveFriendId) ||
+    targetGroup?.members.find((m) => m.userId === effectiveFriendId)?.user;
 
   const overallBalances = useMemo(() => {
     if (isGroupRoute) return new Map<string, number>();
@@ -145,24 +180,18 @@ export default function SettleUpScreen(): JSX.Element {
     convertCurrency,
   ]);
 
-  const activeDebtOption = debtOptions.find((d) => d.friendId === selectedFriendId);
+  const activeDebtOption = debtOptions.find((d) => d.friendId === effectiveFriendId);
   const netBalance = isGroupRoute
     ? activeDebtOption
       ? activeDebtOption.direction === "you"
         ? -activeDebtOption.amount
         : activeDebtOption.amount
       : 0
-    : overallBalances.get(selectedFriendId ?? "") || 0;
+    : overallBalances.get(effectiveFriendId ?? "") || 0;
 
-  const defaultDirection =
-    (initialDirection as "you" | "them") || (netBalance < 0 ? "you" : "them");
-  const [direction, setDirection] = useState<"you" | "them">(defaultDirection);
-
-  useEffect(() => {
-    if (!initialDirection) {
-      setDirection(netBalance < 0 ? "you" : "them");
-    }
-  }, [netBalance, initialDirection]);
+  const [direction, setDirection] = useState<"you" | "them">(
+    (initialDirection as "you" | "them") || (netBalance < 0 ? "you" : "them")
+  );
 
   const initialAmtStr = initialAmount
     ? initialAmount
@@ -172,13 +201,6 @@ export default function SettleUpScreen(): JSX.Element {
   const [amountStr, setAmountStr] = useState(initialAmtStr === "0.00" ? "" : initialAmtStr);
   const [note, setNote] = useState("");
   const [showOptional, setShowOptional] = useState(false);
-
-  useEffect(() => {
-    if (!initialAmount && amountStr === "") {
-      const amt = Math.abs(netBalance).toFixed(2);
-      if (amt !== "0.00") setAmountStr(amt);
-    }
-  }, [netBalance, initialAmount, amountStr]);
 
   const sharedGroups = useMemo(() => {
     if (!friend) return [];
@@ -246,7 +268,13 @@ export default function SettleUpScreen(): JSX.Element {
         note: note.trim(),
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
+      toast.show({
+        label: "Settlement Recorded",
+        description: `${settlementCurrencyObj.symbol}${parsedAmount.toFixed(2)} ${direction === "you" ? "paid to" : "received from"} ${friend!.name.split(" ")[0]}`,
+        variant: "success",
+        placement: "top",
+      });
+      setTimeout(() => router.back(), 600);
     } catch (e: any) {
       toast.show({
         label: "Error",
@@ -270,7 +298,7 @@ export default function SettleUpScreen(): JSX.Element {
 
   return (
     <KeyboardAvoidingView
-      style={{ flex: 1, backgroundColor: UI.color.bg }}
+      style={styles.screen}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
       <StatusBar style="dark" />
@@ -682,27 +710,8 @@ export default function SettleUpScreen(): JSX.Element {
       </ScrollView>
 
       {/* Sticky Submit Button */}
-      <View
-        style={{
-          paddingHorizontal: 24,
-          paddingBottom: Math.max(insets.bottom, 24),
-          paddingTop: 12,
-          backgroundColor: UI.color.bg,
-          borderTopWidth: 1,
-          borderTopColor: UI.color.border,
-        }}
-      >
-        <View
-          style={{
-            backgroundColor: "#F5F0EB",
-            borderWidth: 1,
-            borderColor: UI.color.border,
-            borderRadius: UI.radius.lg,
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            marginBottom: 12,
-          }}
-        >
+        <View style={[styles.stickySubmit, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+        <View style={styles.summaryBox}>
           <Typography
             style={{
               fontSize: 13,

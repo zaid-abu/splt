@@ -3,9 +3,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { FriendRouteParams } from "@/types/navigation";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import type { ComponentType, JSX } from "react";
-import { useMemo, useRef, useCallback } from "react";
+import { useMemo, useRef, useCallback, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, ScrollView, Pressable, Alert as RNAlert, Share } from "react-native";
+import { View, ScrollView, Pressable, Alert as RNAlert, Share, RefreshControl, StyleSheet } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
@@ -33,6 +33,7 @@ import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useAppToast } from "@/hooks/useAppToast";
+import { useQueryClient } from "@tanstack/react-query";
 import { EXPENSE_CATEGORIES } from "@/types";
 
 // ─── Design Tokens ───
@@ -232,6 +233,20 @@ export default function FriendDetailScreen(): JSX.Element {
   const { data: allFriendships = [] } = useAllFriendships(currentUser?.id);
   const { mutateAsync: removeFriend } = useRemoveFriend();
 
+  const styles = useMemo(() => StyleSheet.create({
+  screen: { flex: 1, backgroundColor: UI.color.bg },
+  row: { flexDirection: "row", alignItems: "center" },
+  card: { backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg, overflow: "hidden" },
+  textTitle: { fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+  textSubtitle: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" },
+  textLabel: { fontSize: 12, color: UI.color.muted, fontFamily: "IBMPlexSans_600SemiBold", textTransform: "uppercase", letterSpacing: 1 },
+  pillButton: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: UI.radius.pill, borderWidth: 1 },
+  pillButtonActive: { backgroundColor: UI.color.text, borderColor: UI.color.text },
+  pillButtonInactive: { backgroundColor: UI.color.control, borderColor: UI.color.border },
+  sectionPad: { paddingHorizontal: 24 },
+  bottomAction: { flex: 1, height: 56, borderRadius: UI.radius.pill, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
+}), []);
+
   const balances = balancesUtil.getUserBalances(
     currentUser.id,
     undefined,
@@ -249,6 +264,14 @@ export default function FriendDetailScreen(): JSX.Element {
     isLoadingExpenses ||
     isLoadingSettlements ||
     isLoadingFriends;
+
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ["expenses", "settlements", "friends", "groups"] });
+    setRefreshing(false);
+  }, [queryClient]);
 
   const directFriendship = useMemo(
     () =>
@@ -481,7 +504,7 @@ export default function FriendDetailScreen(): JSX.Element {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
+    <View style={styles.screen}>
       <StatusBar style="dark" />
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
@@ -580,6 +603,9 @@ export default function FriendDetailScreen(): JSX.Element {
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 140 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.color.text} />
+          }
         >
         {/* ── Balance Card ─────────────────────────────────────────────── */}
         <Animated.View
@@ -1052,3 +1078,5 @@ export default function FriendDetailScreen(): JSX.Element {
     </View>
   );
 }
+
+

@@ -54,3 +54,15 @@ export function useSignOut() {
     },
   });
 }
+
+export function useSignInWithGoogle() {
+  return useMutation({
+    mutationFn: () => AuthService.signInWithGoogle(),
+  });
+}
+
+export function useSignInWithApple() {
+  return useMutation({
+    mutationFn: () => AuthService.signInWithApple(),
+  });
+}

@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/queries/keys";
 import { expensesApi } from "@/features/expenses/services/api";
+import { activitiesApi } from "@/features/activity/services/api";
 import type { Expense } from "@/types";
 
 export function useGroupExpenses(groupId: string | undefined) {
@@ -37,6 +38,17 @@ export function useAddExpense() {
         queryClient.invalidateQueries({ queryKey: queryKeys.groupExpenses(newExpense.groupId) });
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
+      activitiesApi.logActivity({
+        type: "expense",
+        expense: { id: newExpense.id } as Expense,
+        groupId: newExpense.groupId,
+        userId: newExpense.paidBy,
+        user: newExpense.paidByUser,
+        description: newExpense.title,
+        amount: newExpense.amount,
+        currency: newExpense.currency,
+        date: newExpense.date,
+      });
     },
   });
 }

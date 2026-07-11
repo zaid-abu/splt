@@ -2,18 +2,21 @@ import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, Platform } from "react-native";
+import { View, Platform, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { UI, PressableScale } from "@/components/ui/native-ui";
+import { useSignInWithGoogle, useSignInWithApple } from "@/features/auth/hooks/useAuthMutations";
 
 const FEATURES = ["Record expenses in seconds", "See balances at a glance", "Settle up with ease"];
 
 export default function WelcomeScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { mutateAsync: signInWithGoogle, isPending: isGoogleLoading } = useSignInWithGoogle();
+  const { mutateAsync: signInWithApple, isPending: isAppleLoading } = useSignInWithApple();
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
@@ -113,6 +116,68 @@ export default function WelcomeScreen(): JSX.Element {
                 </Typography>
               </View>
             </PressableScale>
+
+            <PressableScale onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); try { await signInWithGoogle(); } catch {} }}>
+              <View
+                style={{
+                  width: "100%",
+                  height: 56,
+                  borderRadius: UI.radius.pill,
+                  borderWidth: 1,
+                  borderColor: UI.color.border,
+                  backgroundColor: UI.color.control,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexDirection: "row",
+                  gap: 10,
+                }}
+              >
+                {isGoogleLoading ? (
+                  <ActivityIndicator color={UI.color.text} />
+                ) : (
+                  <>
+                    <Typography style={{ fontSize: 15, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                      G
+                    </Typography>
+                    <Typography style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                      Continue with Google
+                    </Typography>
+                  </>
+                )}
+              </View>
+            </PressableScale>
+
+            {Platform.OS === "ios" && (
+              <PressableScale onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); try { await signInWithApple(); } catch {} }}>
+                <View
+                  style={{
+                    width: "100%",
+                    height: 56,
+                    borderRadius: UI.radius.pill,
+                    borderWidth: 1,
+                    borderColor: UI.color.border,
+                    backgroundColor: UI.color.control,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: "row",
+                    gap: 10,
+                  }}
+                >
+                  {isAppleLoading ? (
+                    <ActivityIndicator color={UI.color.text} />
+                  ) : (
+                    <>
+                      <Typography style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                        
+                      </Typography>
+                      <Typography style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                        Continue with Apple
+                      </Typography>
+                    </>
+                  )}
+                </View>
+              </PressableScale>
+            )}
 
             <PressableScale onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push("/(auth)/login"); }}>
               <View

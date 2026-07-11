@@ -2,7 +2,7 @@ import { Typography, Spinner, Switch } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupSettingsRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
-import { useState, useMemo, useRef, useCallback } from "react";
+import { useState, useMemo, useRef } from "react";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { StatusBar } from "expo-status-bar";
 import {
@@ -216,6 +216,9 @@ export default function GroupSettingsScreen(): JSX.Element {
   const [icon, setIcon] = useState(group?.icon ?? "Home");
   const [currencyCode, setCurrencyCode] = useState(group?.currency ?? "USD");
   const [simplifyDebts, setSimplifyDebts] = useState(group?.simplifyDebts ?? false);
+  const [defaultSplitMethod, setDefaultSplitMethod] = useState<"equal" | "custom" | "percentage">(
+    (group as any)?.defaultSplitMethod ?? "equal"
+  );
   const currency = CURRENCIES.find((c) => c.code === currencyCode) ?? CURRENCIES[0];
 
   const [loading, setLoading] = useState(false);
@@ -326,6 +329,7 @@ export default function GroupSettingsScreen(): JSX.Element {
           icon,
           currency: currency.code,
           simplifyDebts,
+          defaultSplitMethod,
         },
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -589,6 +593,60 @@ export default function GroupSettingsScreen(): JSX.Element {
                 value={currency.code}
                 onChange={(c) => setCurrencyCode(c.code)}
               />
+            </View>
+
+            <View
+              style={{
+                borderBottomWidth: 1,
+                borderBottomColor: UI.color.border,
+                paddingBottom: 20,
+                marginBottom: 20,
+              }}
+            >
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  marginBottom: 12,
+                }}
+              >
+                Default Split Method
+              </Typography>
+              <View style={{ flexDirection: "row", gap: 8 }}>
+                {(["equal", "custom", "percentage"] as const).map((method) => {
+                  const active = defaultSplitMethod === method;
+                  return (
+                    <Pressable
+                      key={method}
+                      onPress={() => setDefaultSplitMethod(method)}
+                      style={({ pressed }) => ({
+                        flex: 1,
+                        minHeight: 42,
+                        paddingHorizontal: 12,
+                        borderRadius: UI.radius.pill,
+                        backgroundColor: active ? UI.color.text : UI.color.control,
+                        borderWidth: 1,
+                        borderColor: active ? UI.color.text : UI.color.border,
+                        alignItems: "center",
+                        justifyContent: "center",
+                        opacity: pressed ? 0.72 : 1,
+                      })}
+                    >
+                      <Typography
+                        style={{
+                          fontSize: 13,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                          color: active ? "#FFFFFF" : UI.color.text,
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {method}
+                      </Typography>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
 
             <View

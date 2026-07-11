@@ -50,7 +50,7 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
       <Animated.View style={animatedStyle}>
         <Icon
           size={ICON_SIZE}
-          color={isFocused ? UI.color.text : "#8E8E93"}
+          color={isFocused ? UI.color.text : UI.color.muted}
           strokeWidth={isFocused ? ICON_STROKE_ACTIVE : ICON_STROKE_INACTIVE}
         />
       </Animated.View>

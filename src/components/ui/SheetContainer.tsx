@@ -1,5 +1,4 @@
-import type { JSX, ReactNode } from "react";
-import { View } from "react-native";
+import type { ReactNode } from "react";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRef, forwardRef, useImperativeHandle } from "react";
@@ -16,7 +15,7 @@ export interface SheetContainerHandle {
   dismiss: () => void;
 }
 
-const SHEET_BACKDROP = (props: any) => (
+const SHEET_BACKDROP = (props: Parameters<typeof BottomSheetBackdrop>[0]) => (
   <BottomSheetBackdrop
     {...props}
     disappearsOnIndex={-1}

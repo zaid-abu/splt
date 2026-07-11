@@ -2,12 +2,11 @@ import { Typography } from "heroui-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseRouteParams } from "@/types/navigation";
+import { useState, useRef, useCallback } from "react";
 import type { JSX } from "react";
-import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { ScrollView, View, Pressable, TextInput } from "react-native";
+import { ScrollView, View, Pressable, TextInput, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRef, useCallback } from "react";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
@@ -19,7 +18,7 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
-import { UI, MetricCell } from "@/components/ui/native-ui";
+import { UI } from "@/components/ui/native-ui";
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -27,7 +26,7 @@ import { EXPENSE_CATEGORIES } from "@/types";
 
 function CommentsSection({ expenseId, currentUserId }: { expenseId: string; currentUserId: string }): JSX.Element {
   const { data: comments = [], isLoading } = useExpenseComments(expenseId);
-  const { mutateAsync: addComment, isPending } = useAddComment();
+  const { mutateAsync: addComment } = useAddComment();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
 
@@ -506,6 +505,47 @@ export default function ExpenseDetailScreen(): JSX.Element {
                   }}
                 >
                   &quot;{expense.notes}&quot;
+                </Typography>
+              </View>
+            )}
+
+            {expense.receiptUrl && (
+              <View
+                style={{
+                  marginTop: 8,
+                  paddingTop: 16,
+                  borderTopWidth: 1,
+                  borderTopColor: UI.color.border,
+                  alignItems: "center",
+                }}
+              >
+                <Pressable
+                  accessibilityRole="imagebutton"
+                  accessibilityLabel="View receipt"
+                  onPress={() => {
+                    // Open full-screen image — uses router or Linking
+                  }}
+                  style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
+                >
+                  <Image
+                    source={{ uri: expense.receiptUrl }}
+                    style={{
+                      width: "100%",
+                      height: 200,
+                      borderRadius: UI.radius.md,
+                    }}
+                    resizeMode="contain"
+                  />
+                </Pressable>
+                <Typography
+                  style={{
+                    marginTop: 8,
+                    fontSize: 13,
+                    color: UI.color.muted,
+                    fontFamily: "IBMPlexSans_500Medium",
+                  }}
+                >
+                  Receipt
                 </Typography>
               </View>
             )}

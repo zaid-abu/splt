@@ -21,7 +21,6 @@ interface UserSearchBottomSheetProps {
   title?: string;
 }
 
-const BG = UI.color.bg;
 const TEXT_PRIMARY = UI.color.textStrong;
 const TEXT_SECONDARY = UI.color.muted;
 const SEPARATOR = UI.color.border;

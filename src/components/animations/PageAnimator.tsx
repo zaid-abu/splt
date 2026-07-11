@@ -43,6 +43,7 @@ export function FocusAwareView({
         opacity.value = 0;
         translateY.value = 20;
       };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [delay, reduced])
   );
 

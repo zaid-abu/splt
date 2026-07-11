@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/queries/keys";
 import { settlementsApi } from "@/features/settlements/services/api";
+import { activitiesApi } from "@/features/activity/services/api";
 import type { Settlement } from "@/types";
 
 export function useGroupSettlements(groupId: string | undefined) {
@@ -32,6 +33,17 @@ export function useAddSettlement() {
         });
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.settlements });
+      activitiesApi.logActivity({
+        type: "settlement",
+        settlement: { id: newSettlement.id } as Settlement,
+        groupId: newSettlement.groupId,
+        userId: newSettlement.fromUserId,
+        user: newSettlement.fromUser,
+        description: `Settlement of ${newSettlement.currency} ${newSettlement.amount}`,
+        amount: newSettlement.amount,
+        currency: newSettlement.currency,
+        date: newSettlement.date,
+      });
     },
   });
 }
