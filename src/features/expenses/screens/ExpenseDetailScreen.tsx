@@ -4,7 +4,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseRouteParams } from "@/types/navigation";
 import { useState, useRef, useCallback } from "react";
 import type { JSX } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { ScrollView, View, Pressable, TextInput, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
@@ -285,7 +285,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       {/* Header */}
       <View

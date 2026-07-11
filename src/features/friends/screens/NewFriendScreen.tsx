@@ -2,7 +2,7 @@ import { Typography, Spinner } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useEffect } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { KeyboardAvoidingView, Platform, View, FlatList, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
@@ -15,12 +15,6 @@ import type { User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { EmptyState, IconButton, SearchField, UI } from "@/components/ui/native-ui";
-
-// ─── Design Tokens ───
-const BG = UI.color.bg;
-const TEXT_PRIMARY = UI.color.textStrong;
-const TEXT_SECONDARY = UI.color.muted;
-const SEPARATOR = UI.color.border;
 
 export default function NewFriendScreen(): JSX.Element {
   const router = useRouter();
@@ -100,7 +94,7 @@ export default function NewFriendScreen(): JSX.Element {
           paddingHorizontal: 24,
           paddingVertical: 16,
           borderBottomWidth: 1,
-          borderBottomColor: SEPARATOR,
+          borderBottomColor: UI.color.border,
         }}
       >
         <View style={{ marginRight: 16 }}>
@@ -110,7 +104,11 @@ export default function NewFriendScreen(): JSX.Element {
         <View style={{ flex: 1, marginRight: 12 }}>
           <Typography
             numberOfLines={1}
-            style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+            style={{
+              fontSize: 16,
+              color: UI.color.textStrong,
+              fontFamily: "IBMPlexSans_600SemiBold",
+            }}
           >
             {item.name}
           </Typography>
@@ -118,7 +116,7 @@ export default function NewFriendScreen(): JSX.Element {
             numberOfLines={1}
             style={{
               fontSize: 14,
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 4,
             }}
@@ -141,7 +139,7 @@ export default function NewFriendScreen(): JSX.Element {
                 ? UI.color.control
                 : UI.color.text,
             borderWidth: isRequested ? 1 : 0,
-            borderColor: SEPARATOR,
+            borderColor: UI.color.border,
             alignItems: "center",
             justifyContent: "center",
             borderRadius: UI.radius.pill,
@@ -158,7 +156,11 @@ export default function NewFriendScreen(): JSX.Element {
             </Typography>
           ) : isRequested ? (
             <Typography
-              style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{
+                fontSize: 14,
+                color: UI.color.textStrong,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
             >
               Requested
             </Typography>
@@ -171,8 +173,8 @@ export default function NewFriendScreen(): JSX.Element {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+      <ThemedStatusBar />
 
       {/* Header */}
       <View
@@ -189,7 +191,7 @@ export default function NewFriendScreen(): JSX.Element {
           style={{
             fontFamily: "Sora_600SemiBold",
             fontSize: 28,
-            color: TEXT_PRIMARY,
+            color: UI.color.textStrong,
             lineHeight: 36,
           }}
         >
@@ -218,7 +220,7 @@ export default function NewFriendScreen(): JSX.Element {
             paddingHorizontal: 24,
             paddingBottom: 24,
             borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
+            borderBottomColor: UI.color.border,
           }}
         >
           <SearchField
@@ -227,7 +229,7 @@ export default function NewFriendScreen(): JSX.Element {
             onClear={() => setSearchQuery("")}
             placeholder="Search by name or email..."
             autoFocus
-            rightElement={isSearching ? <Spinner size="sm" color={TEXT_SECONDARY} /> : undefined}
+            rightElement={isSearching ? <Spinner size="sm" color={UI.color.muted} /> : undefined}
           />
         </View>
 
@@ -259,7 +261,7 @@ export default function NewFriendScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 15,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                     textAlign: "center",
                   }}

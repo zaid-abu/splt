@@ -10,11 +10,255 @@ import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { PressableFeedback, Typography } from "heroui-native";
 import { UI } from "@/components/ui/native-ui";
+import { useUIStore } from "@/store/useUIStore";
 
 import type { Currency } from "@/types";
 import { CURRENCIES } from "@/types";
 
 const POPULAR_CODES = ["USD", "EUR", "GBP", "INR", "JPY"];
+
+function createCurrencyStyles(_isDarkMode?: boolean) {
+  return StyleSheet.create({
+    container: {
+      gap: 8,
+    },
+    label: {
+      marginLeft: 4,
+      fontSize: 11,
+      letterSpacing: 1.2,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_600SemiBold",
+      textTransform: "uppercase",
+    },
+    triggerContainer: {
+      minHeight: 72,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      borderRadius: UI.radius.lg,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.surface,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+    },
+    triggerLeft: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+    },
+    triggerSymbolShell: {
+      width: 52,
+      height: 48,
+      borderRadius: 18,
+      backgroundColor: UI.color.control,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    triggerSymbolText: {
+      fontSize: 16,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    triggerTextWrap: {
+      flex: 1,
+      gap: 2,
+    },
+    triggerCodeText: {
+      fontSize: 16,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    triggerNameText: {
+      fontSize: 14,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    triggerAdornment: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    triggerChangeText: {
+      fontSize: 13,
+      color: UI.color.brand,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    modalContent: {
+      flex: 1,
+      paddingHorizontal: 24,
+      paddingTop: 8,
+    },
+    headerBlock: {
+      marginBottom: 18,
+    },
+    modalTitle: {
+      fontSize: 24,
+      color: UI.color.text,
+      fontFamily: "Sora_600SemiBold",
+    },
+    modalSubtitle: {
+      marginTop: 8,
+      fontSize: 14,
+      lineHeight: 20,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    searchCard: {
+      height: 52,
+      marginBottom: 18,
+      paddingHorizontal: 16,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    searchInput: {
+      flex: 1,
+      paddingVertical: 0,
+      fontSize: 16,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    listContent: {
+      paddingBottom: 40,
+    },
+    sectionLabel: {
+      marginTop: 8,
+      marginBottom: 10,
+      fontSize: 11,
+      letterSpacing: 1.2,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_600SemiBold",
+      textTransform: "uppercase",
+    },
+    itemContainer: {
+      minHeight: 76,
+      marginBottom: 10,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      borderRadius: UI.radius.lg,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.surface,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+      gap: 12,
+    },
+    itemCurrent: {
+      backgroundColor: UI.color.subtle,
+    },
+    itemSelected: {
+      borderColor: UI.color.text,
+      backgroundColor: UI.color.subtle,
+    },
+    itemLeft: {
+      flex: 1,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 14,
+    },
+    symbolShell: {
+      width: 52,
+      height: 48,
+      borderRadius: 18,
+      backgroundColor: UI.color.control,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    symbolShellCurrent: {
+      backgroundColor: UI.color.subtle,
+    },
+    symbolShellSelected: {
+      backgroundColor: UI.color.text,
+      borderColor: UI.color.text,
+    },
+    symbolText: {
+      fontSize: 16,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    symbolTextSelected: {
+      color: UI.color.textInverse,
+    },
+    textContainer: {
+      flex: 1,
+      paddingRight: 8,
+    },
+    codeRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+      flexWrap: "wrap",
+    },
+    codeText: {
+      fontSize: 16,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    nameText: {
+      marginTop: 3,
+      fontSize: 14,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    metaPill: {
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: UI.radius.pill,
+      backgroundColor: UI.color.control,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+    },
+    metaPillText: {
+      fontSize: 11,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_600SemiBold",
+      textTransform: "uppercase",
+      letterSpacing: 1,
+    },
+    selectedBadge: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: UI.color.text,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    emptyCard: {
+      marginTop: 8,
+      paddingHorizontal: 20,
+      paddingVertical: 24,
+      borderRadius: UI.radius.lg,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.surface,
+      alignItems: "center",
+    },
+    emptyTitle: {
+      fontSize: 16,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    emptyText: {
+      marginTop: 6,
+      fontSize: 14,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+      textAlign: "center",
+    },
+  });
+}
 
 interface CurrencySelectorProps {
   value: string;
@@ -32,11 +276,13 @@ const CurrencyListItem = memo(
     isSelected,
     emphasis,
     onPress,
+    styles,
   }: {
     currency: Currency;
     isSelected: boolean;
     emphasis?: "current" | "popular";
     onPress: (currency: Currency) => void;
+    styles: ReturnType<typeof createCurrencyStyles>;
   }) => {
     const isCurrent = emphasis === "current";
 
@@ -88,7 +334,7 @@ const CurrencyListItem = memo(
 
           {isSelected ? (
             <View style={styles.selectedBadge}>
-              <icons.Check size={14} color="#FFFFFF" strokeWidth={2.4} />
+              <icons.Check size={14} color={UI.color.textInverse} strokeWidth={2.4} />
             </View>
           ) : (
             <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.75} />
@@ -98,7 +344,9 @@ const CurrencyListItem = memo(
     );
   },
   (prevProps, nextProps) =>
-    prevProps.isSelected === nextProps.isSelected && prevProps.emphasis === nextProps.emphasis
+    prevProps.styles === nextProps.styles &&
+    prevProps.isSelected === nextProps.isSelected &&
+    prevProps.emphasis === nextProps.emphasis
 );
 
 CurrencyListItem.displayName = "CurrencyListItem";
@@ -110,6 +358,8 @@ export function CurrencySelector({
 }: CurrencySelectorProps): React.JSX.Element {
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [search, setSearch] = useState("");
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
+  const styles = useMemo(() => createCurrencyStyles(isDarkMode), [isDarkMode]);
 
   const selectedCurrency = CURRENCIES.find((currency) => currency.code === value) ?? CURRENCIES[0];
 
@@ -215,6 +465,7 @@ export function CurrencySelector({
 
       return (
         <CurrencyListItem
+          styles={styles}
           currency={item.currency}
           isSelected={item.currency.code === value}
           emphasis={item.emphasis}
@@ -222,7 +473,7 @@ export function CurrencySelector({
         />
       );
     },
-    [handleSelect, value]
+    [handleSelect, value, styles]
   );
 
   return (
@@ -316,244 +567,3 @@ export function CurrencySelector({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 8,
-  },
-  label: {
-    marginLeft: 4,
-    fontSize: 11,
-    letterSpacing: 1.2,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_600SemiBold",
-    textTransform: "uppercase",
-  },
-  triggerContainer: {
-    minHeight: 72,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: UI.radius.lg,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.surface,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  triggerLeft: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  triggerSymbolShell: {
-    width: 52,
-    height: 48,
-    borderRadius: 18,
-    backgroundColor: UI.color.control,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  triggerSymbolText: {
-    fontSize: 16,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  triggerTextWrap: {
-    flex: 1,
-    gap: 2,
-  },
-  triggerCodeText: {
-    fontSize: 16,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  triggerNameText: {
-    fontSize: 14,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  triggerAdornment: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  triggerChangeText: {
-    fontSize: 13,
-    color: UI.color.brand,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  modalContent: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 8,
-  },
-  headerBlock: {
-    marginBottom: 18,
-  },
-  modalTitle: {
-    fontSize: 24,
-    color: UI.color.text,
-    fontFamily: "Sora_600SemiBold",
-  },
-  modalSubtitle: {
-    marginTop: 8,
-    fontSize: 14,
-    lineHeight: 20,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  searchCard: {
-    height: 52,
-    marginBottom: 18,
-    paddingHorizontal: 16,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 0,
-    fontSize: 16,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  listContent: {
-    paddingBottom: 40,
-  },
-  sectionLabel: {
-    marginTop: 8,
-    marginBottom: 10,
-    fontSize: 11,
-    letterSpacing: 1.2,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_600SemiBold",
-    textTransform: "uppercase",
-  },
-  itemContainer: {
-    minHeight: 76,
-    marginBottom: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: UI.radius.lg,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.surface,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  itemCurrent: {
-    backgroundColor: "#F7F1EA",
-  },
-  itemSelected: {
-    borderColor: UI.color.text,
-    backgroundColor: "#F0ECE7",
-  },
-  itemLeft: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 14,
-  },
-  symbolShell: {
-    width: 52,
-    height: 48,
-    borderRadius: 18,
-    backgroundColor: UI.color.control,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  symbolShellCurrent: {
-    backgroundColor: "#F4E8DC",
-  },
-  symbolShellSelected: {
-    backgroundColor: UI.color.text,
-    borderColor: UI.color.text,
-  },
-  symbolText: {
-    fontSize: 16,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  symbolTextSelected: {
-    color: "#FFFFFF",
-  },
-  textContainer: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  codeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    flexWrap: "wrap",
-  },
-  codeText: {
-    fontSize: 16,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  nameText: {
-    marginTop: 3,
-    fontSize: 14,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  metaPill: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: UI.radius.pill,
-    backgroundColor: UI.color.control,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-  },
-  metaPillText: {
-    fontSize: 11,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_600SemiBold",
-    textTransform: "uppercase",
-    letterSpacing: 1,
-  },
-  selectedBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: UI.color.text,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  emptyCard: {
-    marginTop: 8,
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-    borderRadius: UI.radius.lg,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.surface,
-    alignItems: "center",
-  },
-  emptyTitle: {
-    fontSize: 16,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  emptyText: {
-    marginTop: 6,
-    fontSize: 14,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-    textAlign: "center",
-  },
-});

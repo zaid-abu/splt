@@ -12,6 +12,7 @@ export const LIGHT_COLORS = {
   control: "#FFFFFF",
   text: "#1A1A1A",
   textStrong: "#000000",
+  textInverse: "#FFFFFF",
   muted: "#6E6D68",
   border: "#E7E5DE",
   brand: "#8C7A6B",
@@ -28,6 +29,7 @@ export const DARK_COLORS = {
   control: "#252525",
   text: "#F5F0EB",
   textStrong: "#FFFFFF",
+  textInverse: "#1A1A1A",
   muted: "#9E9E9E",
   border: "#3A3A3A",
   brand: "#A89A8E",
@@ -439,7 +441,7 @@ export function FilterPill({ label, isActive, onPress }: FilterPillProps): React
         style={{
           fontSize: 13,
           fontFamily: "IBMPlexSans_600SemiBold",
-          color: isActive ? "#FFFFFF" : UI.color.text,
+          color: isActive ? UI.color.textInverse : UI.color.text,
         }}
       >
         {label}

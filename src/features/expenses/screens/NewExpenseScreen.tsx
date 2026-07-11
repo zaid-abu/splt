@@ -1,7 +1,7 @@
 import DateTimePicker from "react-native-ui-datepicker";
 import dayjs from "dayjs";
 import type { JSX, ReactNode } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Keyboard,
@@ -13,7 +13,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Typography } from "heroui-native";
@@ -317,7 +317,7 @@ function ContextPicker({
 function SelectionMark({ selected }: { selected: boolean }): JSX.Element {
   return (
     <View style={[styles.selectionMark, selected && styles.selectionMarkActive]}>
-      {selected ? <icons.Check size={14} color="#FFFFFF" strokeWidth={2.6} /> : null}
+      {selected ? <icons.Check size={14} color={UI.color.textInverse} strokeWidth={2.6} /> : null}
     </View>
   );
 }
@@ -770,7 +770,11 @@ function SplitMethodSelector({
             ]}
           >
             <View style={[styles.methodIcon, active && styles.methodIconActive]}>
-              <Icon size={17} color={active ? "#FFFFFF" : UI.color.text} strokeWidth={1.8} />
+              <Icon
+                size={17}
+                color={active ? UI.color.textInverse : UI.color.text}
+                strokeWidth={1.8}
+              />
             </View>
             <Typography style={styles.methodTitle}>{method.label}</Typography>
             <Typography style={styles.methodMeta}>{method.helper}</Typography>
@@ -874,7 +878,9 @@ function ParticipantsEditor({
                   pressed && styles.pressed,
                 ]}
               >
-                {isIncluded ? <icons.Check size={15} color="#FFFFFF" strokeWidth={2.6} /> : null}
+                {isIncluded ? (
+                  <icons.Check size={15} color={UI.color.textInverse} strokeWidth={2.6} />
+                ) : null}
               </Pressable>
               <AppUserAvatar user={participant} size="sm" />
               <View style={styles.participantText}>
@@ -950,6 +956,9 @@ export default function NewExpenseScreen(): JSX.Element {
   const preferredCurrency = useUIStore((state) => state.preferredCurrency);
   const setCurrency = useUIStore((state) => state.setCurrency);
   const { toast } = useAppToast();
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
+  // eslint-disable-next-line react-hooks/globals
+  styles = useMemo(() => createNewExpenseStyles(isDarkMode), [isDarkMode]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { state, actions } = useExpenseForm({
@@ -1007,7 +1016,7 @@ export default function NewExpenseScreen(): JSX.Element {
   if (!currentUser) {
     return (
       <View style={styles.loadingScreen}>
-        <StatusBar style="dark" />
+        <ThemedStatusBar />
         <ActivityIndicator color={UI.color.text} />
       </View>
     );
@@ -1015,7 +1024,7 @@ export default function NewExpenseScreen(): JSX.Element {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.keyboardView}
@@ -1074,9 +1083,9 @@ export default function NewExpenseScreen(): JSX.Element {
               {(state.errors.members || state.errors.split) && (
                 <View
                   style={{
-                    backgroundColor: "#FFF7F5",
+                    backgroundColor: UI.color.dangerTint,
                     borderWidth: 1,
-                    borderColor: "#E85D5D",
+                    borderColor: UI.color.danger,
                     borderRadius: 12,
                     padding: 14,
                     marginBottom: 12,
@@ -1085,7 +1094,7 @@ export default function NewExpenseScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 13,
-                      color: "#E85D5D",
+                      color: UI.color.danger,
                       fontFamily: "IBMPlexSans_500Medium",
                       lineHeight: 18,
                     }}
@@ -1202,7 +1211,7 @@ export default function NewExpenseScreen(): JSX.Element {
             ]}
           >
             {state.loading || isSubmitting ? (
-              <ActivityIndicator color="#FFFFFF" style={{ marginRight: 8 }} />
+              <ActivityIndicator color={UI.color.textInverse} style={{ marginRight: 8 }} />
             ) : null}
             <Typography
               style={[styles.primaryButtonText, !hasSelection && styles.primaryButtonTextDisabled]}
@@ -1216,765 +1225,769 @@ export default function NewExpenseScreen(): JSX.Element {
   );
 }
 
-const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: UI.color.bg,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  loadingScreen: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: UI.color.bg,
-  },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingBottom: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: UI.color.border,
-    backgroundColor: UI.color.bg,
-  },
-  headerButton: {
-    width: 44,
-    height: 44,
-    borderRadius: UI.radius.pill,
-    backgroundColor: UI.color.control,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  headerButtonGhost: {
-    width: 44,
-    height: 44,
-  },
-  headerTitleWrap: {
-    flex: 1,
-    alignItems: "center",
-    paddingHorizontal: 12,
-  },
-  headerKicker: {
-    fontSize: 11,
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  headerTitle: {
-    marginTop: 2,
-    fontSize: 18,
-    color: UI.color.text,
-    fontFamily: "Sora_600SemiBold",
-  },
-  content: {
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  contextBlock: {
-    gap: 16,
-  },
-  contextIntro: {
-    flexDirection: "row",
-    gap: 14,
-    padding: 16,
-  },
-  contextIntroIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  contextIntroTitle: {
-    fontSize: 20,
-    color: UI.color.text,
-    fontFamily: "Sora_600SemiBold",
-  },
-  contextIntroText: {
-    marginTop: 4,
-    fontSize: 14,
-    lineHeight: 20,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  searchField: {
-    minHeight: 52,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-  },
-  searchInput: {
-    flex: 1,
-    padding: 0,
-    color: UI.color.text,
-    fontSize: 16,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  segmented: {
-    flexDirection: "row",
-    gap: 4,
-    padding: 4,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-  },
-  segment: {
-    flex: 1,
-    minHeight: 42,
-    borderRadius: UI.radius.pill,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  segmentActive: {
-    backgroundColor: UI.color.text,
-  },
-  segmentText: {
-    fontSize: 14,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  segmentTextActive: {
-    color: "#FFFFFF",
-  },
-  selectedChipRow: {
-    flexDirection: "row",
-    gap: 8,
-    paddingRight: 20,
-  },
-  selectedChip: {
-    minHeight: 42,
-    paddingLeft: 5,
-    paddingRight: 12,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  selectedChipText: {
-    color: UI.color.text,
-    fontSize: 14,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  listCard: {
-    overflow: "hidden",
-    borderRadius: UI.radius.lg,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.surface,
-  },
-  contextRow: {
-    minHeight: 76,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  rowDivider: {
-    borderBottomWidth: 1,
-    borderBottomColor: UI.color.border,
-  },
-  rowPressed: {
-    backgroundColor: UI.color.subtle,
-  },
-  rowText: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  rowTitle: {
-    fontSize: 15,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  rowMeta: {
-    marginTop: 2,
-    fontSize: 13,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  selectionMark: {
-    width: 24,
-    height: 24,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  selectionMarkActive: {
-    borderColor: UI.color.brand,
-    backgroundColor: UI.color.brand,
-  },
-  emptyList: {
-    padding: 24,
-    alignItems: "center",
-  },
-  emptyTitle: {
-    fontSize: 16,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  emptyText: {
-    marginTop: 4,
-    fontSize: 14,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  formStack: {
-    gap: 20,
-  },
-  surfaceCard: {
-    backgroundColor: UI.color.surface,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    borderRadius: UI.radius.lg,
-    padding: 16,
-  },
-  summaryRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  contextAvatarStack: {
-    minWidth: 58,
-    justifyContent: "center",
-  },
-  summaryText: {
-    flex: 1,
-  },
-  contextTypeRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  contextTypeText: {
-    color: UI.color.muted,
-    fontSize: 12,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  summaryTitle: {
-    marginTop: 3,
-    fontSize: 18,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  summaryMeta: {
-    marginTop: 2,
-    fontSize: 13,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  changeButton: {
-    minHeight: 38,
-    paddingHorizontal: 14,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  changeButtonText: {
-    fontSize: 13,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  amountCard: {
-    padding: 18,
-  },
-  amountHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  amountKicker: {
-    fontSize: 11,
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  amountHint: {
-    marginTop: 2,
-    fontSize: 13,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  amountInputRow: {
-    marginTop: 18,
-    flexDirection: "row",
-    alignItems: "flex-end",
-    justifyContent: "center",
-    gap: 8,
-  },
-  currencyCode: {
-    paddingBottom: 12,
-    fontSize: 20,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  amountInput: {
-    minWidth: 140,
-    maxWidth: 230,
-    padding: 0,
-    color: UI.color.text,
-    fontSize: 54,
-    lineHeight: 62,
-    textAlign: "center",
-    fontFamily: "Sora_600SemiBold",
-  },
-  titleInput: {
-    minHeight: 52,
-    marginTop: 12,
-    paddingHorizontal: 16,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    color: UI.color.text,
-    fontSize: 16,
-    textAlign: "center",
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  previewHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  previewLabel: {
-    fontSize: 11,
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  previewAmount: {
-    marginTop: 4,
-    fontSize: 22,
-    color: UI.color.text,
-    fontFamily: "Sora_600SemiBold",
-  },
-  statusPill: {
-    minHeight: 32,
-    paddingHorizontal: 12,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusPillSuccess: {
-    backgroundColor: UI.color.successTint,
-  },
-  statusPillDanger: {
-    backgroundColor: UI.color.dangerTint,
-  },
-  statusPillText: {
-    fontSize: 12,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  previewGrid: {
-    marginTop: 16,
-    flexDirection: "row",
-    gap: 10,
-  },
-  previewCell: {
-    flex: 1,
-    minHeight: 70,
-    padding: 12,
-    borderRadius: UI.radius.md,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    justifyContent: "center",
-  },
-  previewCellLabel: {
-    fontSize: 12,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  previewCellValue: {
-    marginTop: 4,
-    fontSize: 16,
-    color: UI.color.text,
-    textTransform: "capitalize",
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  section: {
-    gap: 10,
-  },
-  sectionHeader: {
-    minHeight: 26,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  sectionLabel: {
-    fontSize: 11,
-    letterSpacing: 1.1,
-    textTransform: "uppercase",
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  detailCard: {
-    padding: 0,
-    overflow: "hidden",
-  },
-  currencySelector: {
-    padding: 14,
-    gap: 12,
-  },
-  currencyCurrent: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  currencySymbol: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  currencySymbolText: {
-    fontSize: 17,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  currencyName: {
-    fontSize: 16,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  currencyMeta: {
-    marginTop: 2,
-    fontSize: 13,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  currencyChipRow: {
-    flexDirection: "row",
-    gap: 8,
-    paddingRight: 14,
-  },
-  currencyChip: {
-    minHeight: 36,
-    paddingHorizontal: 13,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  currencyChipActive: {
-    backgroundColor: UI.color.text,
-    borderColor: UI.color.text,
-  },
-  currencyChipText: {
-    fontSize: 13,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  currencyChipTextActive: {
-    color: "#FFFFFF",
-  },
-  detailDivider: {
-    height: 1,
-    backgroundColor: UI.color.border,
-  },
-  dateBlock: {
-    backgroundColor: UI.color.surface,
-  },
-  detailRow: {
-    minHeight: 72,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  detailIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  detailTitle: {
-    fontSize: 15,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  detailMeta: {
-    marginTop: 2,
-    fontSize: 13,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  datePicker: {
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: UI.color.border,
-    backgroundColor: UI.color.surface,
-  },
-  categoryRow: {
-    flexDirection: "row",
-    gap: 8,
-    paddingRight: 20,
-  },
-  categoryChip: {
-    minHeight: 48,
-    paddingLeft: 6,
-    paddingRight: 14,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  categoryChipActive: {
-    borderColor: UI.color.text,
-    backgroundColor: "#F4F3EE",
-  },
-  categoryChipText: {
-    fontSize: 14,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  categoryChipTextActive: {
-    color: UI.color.text,
-  },
-  paidByRow: {
-    flexDirection: "row",
-    gap: 8,
-    paddingRight: 20,
-  },
-  paidByChip: {
-    minHeight: 46,
-    paddingLeft: 5,
-    paddingRight: 14,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  paidByChipActive: {
-    borderColor: UI.color.text,
-    backgroundColor: UI.color.text,
-  },
-  paidByText: {
-    fontSize: 14,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  paidByTextActive: {
-    color: "#FFFFFF",
-  },
-  methodGrid: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  methodCard: {
-    flex: 1,
-    minHeight: 98,
-    padding: 12,
-    borderRadius: UI.radius.lg,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.surface,
-  },
-  methodCardActive: {
-    borderColor: UI.color.text,
-    backgroundColor: "#F4F3EE",
-  },
-  methodIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  methodIconActive: {
-    borderColor: UI.color.text,
-    backgroundColor: UI.color.text,
-  },
-  methodTitle: {
-    marginTop: 9,
-    fontSize: 14,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  methodMeta: {
-    marginTop: 2,
-    fontSize: 12,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_500Medium",
-  },
-  remainingPill: {
-    minHeight: 28,
-    paddingHorizontal: 10,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    justifyContent: "center",
-  },
-  remainingText: {
-    fontSize: 12,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  participantRow: {
-    minHeight: 70,
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  participantExcluded: {
-    opacity: 0.55,
-  },
-  checkbox: {
-    width: 28,
-    height: 28,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  checkboxActive: {
-    borderColor: UI.color.text,
-    backgroundColor: UI.color.text,
-  },
-  participantText: {
-    flex: 1,
-    marginLeft: 12,
-  },
-  sharePill: {
-    minHeight: 34,
-    paddingHorizontal: 10,
-    borderRadius: UI.radius.pill,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  shareText: {
-    fontSize: 13,
-    color: UI.color.text,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  shareInputWrap: {
-    width: 96,
-  },
-  shareInput: {
-    height: 42,
-    borderRadius: UI.radius.md,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    color: UI.color.text,
-    fontSize: 15,
-    textAlign: "right",
-    paddingHorizontal: 12,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  percentWrap: {
-    width: 94,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  percentInput: {
-    flex: 1,
-    height: 42,
-    borderRadius: UI.radius.md,
-    borderWidth: 1,
-    borderColor: UI.color.border,
-    backgroundColor: UI.color.control,
-    color: UI.color.text,
-    fontSize: 15,
-    textAlign: "right",
-    paddingHorizontal: 12,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  percentSymbol: {
-    fontSize: 14,
-    color: UI.color.muted,
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  actionBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 20,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: UI.color.border,
-    backgroundColor: UI.color.bg,
-  },
-  primaryButton: {
-    minHeight: 56,
-    borderRadius: UI.radius.pill,
-    backgroundColor: UI.color.brand,
-    alignItems: "center",
-    justifyContent: "center",
-    flexDirection: "row",
-  },
-  primaryButtonDisabled: {
-    backgroundColor: UI.color.border,
-  },
-  primaryButtonPressed: {
-    opacity: 0.82,
-  },
-  primaryButtonText: {
-    fontSize: 16,
-    color: "#FFFFFF",
-    fontFamily: "IBMPlexSans_600SemiBold",
-  },
-  primaryButtonTextDisabled: {
-    color: UI.color.muted,
-  },
-  pressed: {
-    opacity: 0.72,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});
+function createNewExpenseStyles(_isDarkMode?: boolean) {
+  return StyleSheet.create({
+    screen: {
+      flex: 1,
+      backgroundColor: UI.color.bg,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    loadingScreen: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: UI.color.bg,
+    },
+    header: {
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 20,
+      paddingBottom: 14,
+      borderBottomWidth: 1,
+      borderBottomColor: UI.color.border,
+      backgroundColor: UI.color.bg,
+    },
+    headerButton: {
+      width: 44,
+      height: 44,
+      borderRadius: UI.radius.pill,
+      backgroundColor: UI.color.control,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    headerButtonGhost: {
+      width: 44,
+      height: 44,
+    },
+    headerTitleWrap: {
+      flex: 1,
+      alignItems: "center",
+      paddingHorizontal: 12,
+    },
+    headerKicker: {
+      fontSize: 11,
+      letterSpacing: 1.1,
+      textTransform: "uppercase",
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    headerTitle: {
+      marginTop: 2,
+      fontSize: 18,
+      color: UI.color.text,
+      fontFamily: "Sora_600SemiBold",
+    },
+    content: {
+      paddingHorizontal: 20,
+      paddingTop: 20,
+    },
+    contextBlock: {
+      gap: 16,
+    },
+    contextIntro: {
+      flexDirection: "row",
+      gap: 14,
+      padding: 16,
+    },
+    contextIntroIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 18,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    contextIntroTitle: {
+      fontSize: 20,
+      color: UI.color.text,
+      fontFamily: "Sora_600SemiBold",
+    },
+    contextIntroText: {
+      marginTop: 4,
+      fontSize: 14,
+      lineHeight: 20,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    searchField: {
+      minHeight: 52,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+      paddingHorizontal: 16,
+    },
+    searchInput: {
+      flex: 1,
+      padding: 0,
+      color: UI.color.text,
+      fontSize: 16,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    segmented: {
+      flexDirection: "row",
+      gap: 4,
+      padding: 4,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+    },
+    segment: {
+      flex: 1,
+      minHeight: 42,
+      borderRadius: UI.radius.pill,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    segmentActive: {
+      backgroundColor: UI.color.text,
+    },
+    segmentText: {
+      fontSize: 14,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    segmentTextActive: {
+      color: UI.color.textInverse,
+    },
+    selectedChipRow: {
+      flexDirection: "row",
+      gap: 8,
+      paddingRight: 20,
+    },
+    selectedChip: {
+      minHeight: 42,
+      paddingLeft: 5,
+      paddingRight: 12,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    selectedChipText: {
+      color: UI.color.text,
+      fontSize: 14,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    listCard: {
+      overflow: "hidden",
+      borderRadius: UI.radius.lg,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.surface,
+    },
+    contextRow: {
+      minHeight: 76,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    rowDivider: {
+      borderBottomWidth: 1,
+      borderBottomColor: UI.color.border,
+    },
+    rowPressed: {
+      backgroundColor: UI.color.subtle,
+    },
+    rowText: {
+      flex: 1,
+      marginLeft: 12,
+    },
+    rowTitle: {
+      fontSize: 15,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    rowMeta: {
+      marginTop: 2,
+      fontSize: 13,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    selectionMark: {
+      width: 24,
+      height: 24,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    selectionMarkActive: {
+      borderColor: UI.color.brand,
+      backgroundColor: UI.color.brand,
+    },
+    emptyList: {
+      padding: 24,
+      alignItems: "center",
+    },
+    emptyTitle: {
+      fontSize: 16,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    emptyText: {
+      marginTop: 4,
+      fontSize: 14,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    formStack: {
+      gap: 20,
+    },
+    surfaceCard: {
+      backgroundColor: UI.color.surface,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      borderRadius: UI.radius.lg,
+      padding: 16,
+    },
+    summaryRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    contextAvatarStack: {
+      minWidth: 58,
+      justifyContent: "center",
+    },
+    summaryText: {
+      flex: 1,
+    },
+    contextTypeRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    contextTypeText: {
+      color: UI.color.muted,
+      fontSize: 12,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    summaryTitle: {
+      marginTop: 3,
+      fontSize: 18,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    summaryMeta: {
+      marginTop: 2,
+      fontSize: 13,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    changeButton: {
+      minHeight: 38,
+      paddingHorizontal: 14,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    changeButtonText: {
+      fontSize: 13,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    amountCard: {
+      padding: 18,
+    },
+    amountHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    amountKicker: {
+      fontSize: 11,
+      letterSpacing: 1.1,
+      textTransform: "uppercase",
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    amountHint: {
+      marginTop: 2,
+      fontSize: 13,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    amountInputRow: {
+      marginTop: 18,
+      flexDirection: "row",
+      alignItems: "flex-end",
+      justifyContent: "center",
+      gap: 8,
+    },
+    currencyCode: {
+      paddingBottom: 12,
+      fontSize: 20,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    amountInput: {
+      minWidth: 140,
+      maxWidth: 230,
+      padding: 0,
+      color: UI.color.text,
+      fontSize: 54,
+      lineHeight: 62,
+      textAlign: "center",
+      fontFamily: "Sora_600SemiBold",
+    },
+    titleInput: {
+      minHeight: 52,
+      marginTop: 12,
+      paddingHorizontal: 16,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      color: UI.color.text,
+      fontSize: 16,
+      textAlign: "center",
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    previewHeader: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: 12,
+    },
+    previewLabel: {
+      fontSize: 11,
+      letterSpacing: 1.1,
+      textTransform: "uppercase",
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    previewAmount: {
+      marginTop: 4,
+      fontSize: 22,
+      color: UI.color.text,
+      fontFamily: "Sora_600SemiBold",
+    },
+    statusPill: {
+      minHeight: 32,
+      paddingHorizontal: 12,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    statusPillSuccess: {
+      backgroundColor: UI.color.successTint,
+    },
+    statusPillDanger: {
+      backgroundColor: UI.color.dangerTint,
+    },
+    statusPillText: {
+      fontSize: 12,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    previewGrid: {
+      marginTop: 16,
+      flexDirection: "row",
+      gap: 10,
+    },
+    previewCell: {
+      flex: 1,
+      minHeight: 70,
+      padding: 12,
+      borderRadius: UI.radius.md,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      justifyContent: "center",
+    },
+    previewCellLabel: {
+      fontSize: 12,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    previewCellValue: {
+      marginTop: 4,
+      fontSize: 16,
+      color: UI.color.text,
+      textTransform: "capitalize",
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    section: {
+      gap: 10,
+    },
+    sectionHeader: {
+      minHeight: 26,
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    sectionLabel: {
+      fontSize: 11,
+      letterSpacing: 1.1,
+      textTransform: "uppercase",
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    detailCard: {
+      padding: 0,
+      overflow: "hidden",
+    },
+    currencySelector: {
+      padding: 14,
+      gap: 12,
+    },
+    currencyCurrent: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 12,
+    },
+    currencySymbol: {
+      width: 44,
+      height: 44,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    currencySymbolText: {
+      fontSize: 17,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    currencyName: {
+      fontSize: 16,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    currencyMeta: {
+      marginTop: 2,
+      fontSize: 13,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    currencyChipRow: {
+      flexDirection: "row",
+      gap: 8,
+      paddingRight: 14,
+    },
+    currencyChip: {
+      minHeight: 36,
+      paddingHorizontal: 13,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    currencyChipActive: {
+      backgroundColor: UI.color.text,
+      borderColor: UI.color.text,
+    },
+    currencyChipText: {
+      fontSize: 13,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    currencyChipTextActive: {
+      color: UI.color.textInverse,
+    },
+    detailDivider: {
+      height: 1,
+      backgroundColor: UI.color.border,
+    },
+    dateBlock: {
+      backgroundColor: UI.color.surface,
+    },
+    detailRow: {
+      minHeight: 72,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    detailIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+    },
+    detailTitle: {
+      fontSize: 15,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    detailMeta: {
+      marginTop: 2,
+      fontSize: 13,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    datePicker: {
+      padding: 10,
+      borderTopWidth: 1,
+      borderTopColor: UI.color.border,
+      backgroundColor: UI.color.surface,
+    },
+    categoryRow: {
+      flexDirection: "row",
+      gap: 8,
+      paddingRight: 20,
+    },
+    categoryChip: {
+      minHeight: 48,
+      paddingLeft: 6,
+      paddingRight: 14,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    categoryChipActive: {
+      borderColor: UI.color.text,
+      backgroundColor: UI.color.subtle,
+    },
+    categoryChipText: {
+      fontSize: 14,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    categoryChipTextActive: {
+      color: UI.color.text,
+    },
+    paidByRow: {
+      flexDirection: "row",
+      gap: 8,
+      paddingRight: 20,
+    },
+    paidByChip: {
+      minHeight: 46,
+      paddingLeft: 5,
+      paddingRight: 14,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 8,
+    },
+    paidByChipActive: {
+      borderColor: UI.color.text,
+      backgroundColor: UI.color.text,
+    },
+    paidByText: {
+      fontSize: 14,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    paidByTextActive: {
+      color: UI.color.textInverse,
+    },
+    methodGrid: {
+      flexDirection: "row",
+      gap: 8,
+    },
+    methodCard: {
+      flex: 1,
+      minHeight: 98,
+      padding: 12,
+      borderRadius: UI.radius.lg,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.surface,
+    },
+    methodCardActive: {
+      borderColor: UI.color.text,
+      backgroundColor: UI.color.subtle,
+    },
+    methodIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    methodIconActive: {
+      borderColor: UI.color.text,
+      backgroundColor: UI.color.text,
+    },
+    methodTitle: {
+      marginTop: 9,
+      fontSize: 14,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    methodMeta: {
+      marginTop: 2,
+      fontSize: 12,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_500Medium",
+    },
+    remainingPill: {
+      minHeight: 28,
+      paddingHorizontal: 10,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      justifyContent: "center",
+    },
+    remainingText: {
+      fontSize: 12,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    participantRow: {
+      minHeight: 70,
+      flexDirection: "row",
+      alignItems: "center",
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+    },
+    participantExcluded: {
+      opacity: 0.55,
+    },
+    checkbox: {
+      width: 28,
+      height: 28,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      alignItems: "center",
+      justifyContent: "center",
+      marginRight: 12,
+    },
+    checkboxActive: {
+      borderColor: UI.color.text,
+      backgroundColor: UI.color.text,
+    },
+    participantText: {
+      flex: 1,
+      marginLeft: 12,
+    },
+    sharePill: {
+      minHeight: 34,
+      paddingHorizontal: 10,
+      borderRadius: UI.radius.pill,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    shareText: {
+      fontSize: 13,
+      color: UI.color.text,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    shareInputWrap: {
+      width: 96,
+    },
+    shareInput: {
+      height: 42,
+      borderRadius: UI.radius.md,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      color: UI.color.text,
+      fontSize: 15,
+      textAlign: "right",
+      paddingHorizontal: 12,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    percentWrap: {
+      width: 94,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+    },
+    percentInput: {
+      flex: 1,
+      height: 42,
+      borderRadius: UI.radius.md,
+      borderWidth: 1,
+      borderColor: UI.color.border,
+      backgroundColor: UI.color.control,
+      color: UI.color.text,
+      fontSize: 15,
+      textAlign: "right",
+      paddingHorizontal: 12,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    percentSymbol: {
+      fontSize: 14,
+      color: UI.color.muted,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    actionBar: {
+      position: "absolute",
+      left: 0,
+      right: 0,
+      bottom: 0,
+      paddingHorizontal: 20,
+      paddingTop: 12,
+      borderTopWidth: 1,
+      borderTopColor: UI.color.border,
+      backgroundColor: UI.color.bg,
+    },
+    primaryButton: {
+      minHeight: 56,
+      borderRadius: UI.radius.pill,
+      backgroundColor: UI.color.brand,
+      alignItems: "center",
+      justifyContent: "center",
+      flexDirection: "row",
+    },
+    primaryButtonDisabled: {
+      backgroundColor: UI.color.border,
+    },
+    primaryButtonPressed: {
+      opacity: 0.82,
+    },
+    primaryButtonText: {
+      fontSize: 16,
+      color: UI.color.textInverse,
+      fontFamily: "IBMPlexSans_600SemiBold",
+    },
+    primaryButtonTextDisabled: {
+      color: UI.color.muted,
+    },
+    pressed: {
+      opacity: 0.72,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+  });
+}
+
+let styles = createNewExpenseStyles();

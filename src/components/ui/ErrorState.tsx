@@ -77,7 +77,11 @@ export function ErrorState({
           })}
         >
           <Typography
-            style={{ fontSize: 15, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+            style={{
+              fontSize: 15,
+              color: UI.color.textInverse,
+              fontFamily: "IBMPlexSans_600SemiBold",
+            }}
           >
             Try Again
           </Typography>

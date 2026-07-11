@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator } from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,10 +17,12 @@ import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/validation/
 import { FormInput } from "@/components/forms/FormInput";
 import { useAppToast } from "@/hooks/useAppToast";
 import { UI, PressableScale, IconButton } from "@/components/ui/native-ui";
+import { useUIStore } from "@/store/useUIStore";
 
 export default function ForgotPasswordScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
   const { toast } = useAppToast();
   const { mutateAsync: resetPassword, isPending } = useResetPassword();
 
@@ -76,7 +78,7 @@ export default function ForgotPasswordScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -148,7 +150,7 @@ export default function ForgotPasswordScreen(): JSX.Element {
                 >
                   <BlurView
                     intensity={Platform.OS === "ios" ? 80 : 90}
-                    tint="light"
+                    tint={isDarkMode ? "dark" : "light"}
                     style={{
                       padding: 20,
                       gap: 20,
@@ -186,11 +188,11 @@ export default function ForgotPasswordScreen(): JSX.Element {
                         opacity: isPending ? 0.7 : 1,
                       }}
                     >
-                      {isPending && <ActivityIndicator color="#FFFFFF" />}
+                      {isPending && <ActivityIndicator color={UI.color.textInverse} />}
                       <Typography
                         style={{
                           fontSize: 16,
-                          color: "#FFFFFF",
+                          color: UI.color.textInverse,
                           fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
@@ -302,7 +304,7 @@ export default function ForgotPasswordScreen(): JSX.Element {
                         <Typography
                           style={{
                             fontSize: 16,
-                            color: "#FFFFFF",
+                            color: UI.color.textInverse,
                             fontFamily: "IBMPlexSans_600SemiBold",
                           }}
                         >

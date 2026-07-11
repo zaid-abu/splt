@@ -4,13 +4,9 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { SectionLabel } from "@/components/ui/native-ui";
+import { SectionLabel, UI } from "@/components/ui/native-ui";
 import type { ExpenseCategory, SplitMethod, User } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/types";
-
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const SEPARATOR = "#E8E4DF";
 
 const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
   { key: "equal", label: "Equal", desc: "Divide equally" },
@@ -69,22 +65,22 @@ export function ExpenseFormSelectors({
                   paddingHorizontal: 20,
                   height: 48,
                   borderRadius: 0,
-                  backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                  backgroundColor: isSelected ? UI.color.brand : "transparent",
                   borderWidth: 1,
-                  borderColor: isSelected ? "#8C7A6B" : SEPARATOR,
+                  borderColor: isSelected ? UI.color.brand : UI.color.border,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <CatIcon
                   size={18}
-                  color={isSelected ? "#FFFFFF" : TEXT_PRIMARY}
+                  color={isSelected ? "#FFFFFF" : UI.color.textStrong}
                   strokeWidth={isSelected ? 2 : 1.5}
                 />
                 <Typography
                   style={{
                     fontSize: 15,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
+                    color: isSelected ? "#FFFFFF" : UI.color.textStrong,
                   }}
                 >
                   {cat.label}
@@ -123,9 +119,9 @@ export function ExpenseFormSelectors({
                   paddingRight: 20,
                   height: 48,
                   borderRadius: 0,
-                  backgroundColor: isSelected ? "#8C7A6B" : "transparent",
+                  backgroundColor: isSelected ? UI.color.brand : "transparent",
                   borderWidth: 1,
-                  borderColor: isSelected ? "#8C7A6B" : SEPARATOR,
+                  borderColor: isSelected ? UI.color.brand : UI.color.border,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
@@ -134,7 +130,7 @@ export function ExpenseFormSelectors({
                   style={{
                     fontSize: 15,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? "#FFFFFF" : TEXT_PRIMARY,
+                    color: isSelected ? "#FFFFFF" : UI.color.textStrong,
                   }}
                 >
                   {u.id === currentUserId ? "You" : u.name.split(" ")[0]}
@@ -153,7 +149,7 @@ export function ExpenseFormSelectors({
             flexDirection: "row",
             backgroundColor: "transparent",
             borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
+            borderBottomColor: UI.color.border,
           }}
         >
           {SPLIT_METHODS.map((method) => {
@@ -171,7 +167,7 @@ export function ExpenseFormSelectors({
                   paddingVertical: 12,
                   alignItems: "center",
                   borderBottomWidth: 2,
-                  borderBottomColor: isSelected ? "#8C7A6B" : "transparent",
+                  borderBottomColor: isSelected ? UI.color.brand : "transparent",
                   opacity: pressed ? 0.5 : 1,
                 })}
               >
@@ -179,7 +175,7 @@ export function ExpenseFormSelectors({
                   style={{
                     fontSize: 15,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? TEXT_PRIMARY : TEXT_SECONDARY,
+                    color: isSelected ? UI.color.textStrong : UI.color.muted,
                   }}
                 >
                   {method.label}

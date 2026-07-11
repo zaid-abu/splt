@@ -4,7 +4,7 @@ import type { FriendRouteParams } from "@/types/navigation";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import type { ComponentType, JSX } from "react";
 import { useMemo, useRef, useCallback, useState } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import {
   View,
   ScrollView,
@@ -44,20 +44,8 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { useQueryClient } from "@tanstack/react-query";
 import { EXPENSE_CATEGORIES } from "@/types";
 
-// ─── Design Tokens ───
-const BG = UI.color.bg;
-const SURFACE = UI.color.surface;
-const SURFACE_SOFT = UI.color.subtle;
-const CONTROL = UI.color.control;
-const TEXT_PRIMARY = UI.color.text;
-const TEXT_SECONDARY = UI.color.muted;
-const TEXT_SUBTLE = "#9B9A94";
 const TEXT_DANGER = UI.color.danger;
 const TEXT_SUCCESS = UI.color.success;
-const SEPARATOR = UI.color.border;
-const BRAND = UI.color.brand;
-const CARD_RADIUS = UI.radius.lg;
-const PILL_RADIUS = 999;
 
 const CATEGORY_LABELS = Object.fromEntries(
   EXPENSE_CATEGORIES.map((category) => [category.key, category.label])
@@ -78,7 +66,7 @@ function SkeletonBlock({
         width,
         height,
         borderRadius: radius,
-        backgroundColor: SURFACE_SOFT,
+        backgroundColor: UI.color.subtle,
       }}
     />
   );
@@ -86,8 +74,8 @@ function SkeletonBlock({
 
 function LoadingState({ topInset }: { topInset: number }): JSX.Element {
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+      <ThemedStatusBar />
       <View
         style={{
           paddingTop: topInset + 16,
@@ -98,22 +86,22 @@ function LoadingState({ topInset }: { topInset: number }): JSX.Element {
           justifyContent: "space-between",
         }}
       >
-        <SkeletonBlock width={44} height={44} radius={PILL_RADIUS} />
+        <SkeletonBlock width={44} height={44} radius={999} />
         <View style={{ alignItems: "center", gap: 8 }}>
           <SkeletonBlock width={132} height={22} />
           <SkeletonBlock width={84} height={14} />
         </View>
-        <SkeletonBlock width={44} height={44} radius={PILL_RADIUS} />
+        <SkeletonBlock width={44} height={44} radius={999} />
       </View>
 
       <View style={{ paddingHorizontal: 24, gap: 32 }}>
         <View
           style={{
             padding: 24,
-            backgroundColor: SURFACE,
+            backgroundColor: UI.color.surface,
             borderWidth: 1,
-            borderColor: SEPARATOR,
-            borderRadius: CARD_RADIUS,
+            borderColor: UI.color.border,
+            borderRadius: UI.radius.lg,
             alignItems: "center",
             gap: 14,
           }}
@@ -145,7 +133,7 @@ function OptionRow({
   tone?: "neutral" | "danger";
   onPress: () => void;
 }): JSX.Element {
-  const color = tone === "danger" ? TEXT_DANGER : TEXT_PRIMARY;
+  const color = tone === "danger" ? TEXT_DANGER : UI.color.text;
 
   return (
     <Pressable
@@ -165,9 +153,9 @@ function OptionRow({
           width: 44,
           height: 44,
           borderRadius: 14,
-          backgroundColor: CONTROL,
+          backgroundColor: UI.color.control,
           borderWidth: 1,
-          borderColor: SEPARATOR,
+          borderColor: UI.color.border,
           alignItems: "center",
           justifyContent: "center",
         }}
@@ -191,7 +179,7 @@ function OptionRow({
             marginTop: 2,
             fontSize: 13,
             lineHeight: 18,
-            color: TEXT_SECONDARY,
+            color: UI.color.muted,
             fontFamily: "IBMPlexSans_500Medium",
           }}
         >
@@ -515,9 +503,9 @@ export default function FriendDetailScreen(): JSX.Element {
 
   if (!friend) {
     return (
-      <SafeAreaView style={{ flex: 1, backgroundColor: BG }}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: UI.color.bg }}>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
-          <Alert status="danger" style={{ borderRadius: CARD_RADIUS, marginBottom: 16 }}>
+          <Alert status="danger" style={{ borderRadius: UI.radius.lg, marginBottom: 16 }}>
             <Alert.Indicator />
             <Alert.Content>
               <Alert.Title>Friend not found</Alert.Title>
@@ -529,11 +517,13 @@ export default function FriendDetailScreen(): JSX.Element {
             style={{
               padding: 14,
               paddingHorizontal: 24,
-              backgroundColor: BRAND,
-              borderRadius: PILL_RADIUS,
+              backgroundColor: UI.color.brand,
+              borderRadius: 999,
             }}
           >
-            <Typography style={{ color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
+            <Typography
+              style={{ color: UI.color.textInverse, fontFamily: "IBMPlexSans_600SemiBold" }}
+            >
               Go back
             </Typography>
           </Pressable>
@@ -544,7 +534,7 @@ export default function FriendDetailScreen(): JSX.Element {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <View
@@ -569,16 +559,16 @@ export default function FriendDetailScreen(): JSX.Element {
           style={({ pressed }) => ({
             width: 44,
             height: 44,
-            borderRadius: PILL_RADIUS,
-            backgroundColor: CONTROL,
+            borderRadius: 999,
+            backgroundColor: UI.color.control,
             borderWidth: 1,
-            borderColor: SEPARATOR,
+            borderColor: UI.color.border,
             alignItems: "center",
             justifyContent: "center",
             opacity: pressed ? 0.65 : 1,
           })}
         >
-          <icons.ArrowLeft size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
+          <icons.ArrowLeft size={20} color={UI.color.text} strokeWidth={1.8} />
         </Pressable>
 
         <View
@@ -595,7 +585,7 @@ export default function FriendDetailScreen(): JSX.Element {
             style={{
               fontFamily: "Sora_600SemiBold",
               fontSize: 24,
-              color: TEXT_PRIMARY,
+              color: UI.color.text,
               flexShrink: 1,
               textAlign: "center",
               marginTop: 4,
@@ -607,7 +597,7 @@ export default function FriendDetailScreen(): JSX.Element {
             numberOfLines={1}
             style={{
               fontSize: 13,
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               textAlign: "center",
               marginTop: 1,
@@ -624,16 +614,16 @@ export default function FriendDetailScreen(): JSX.Element {
           style={({ pressed }) => ({
             width: 44,
             height: 44,
-            borderRadius: PILL_RADIUS,
-            backgroundColor: CONTROL,
+            borderRadius: 999,
+            backgroundColor: UI.color.control,
             borderWidth: 1,
-            borderColor: SEPARATOR,
+            borderColor: UI.color.border,
             alignItems: "center",
             justifyContent: "center",
             opacity: pressed ? 0.65 : 1,
           })}
         >
-          <icons.MoreHorizontal size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
+          <icons.MoreHorizontal size={20} color={UI.color.text} strokeWidth={1.8} />
         </Pressable>
       </View>
 
@@ -658,10 +648,10 @@ export default function FriendDetailScreen(): JSX.Element {
             <View
               style={{
                 padding: 24,
-                backgroundColor: SURFACE,
+                backgroundColor: UI.color.surface,
                 borderWidth: 1,
-                borderColor: SEPARATOR,
-                borderRadius: CARD_RADIUS,
+                borderColor: UI.color.border,
+                borderRadius: UI.radius.lg,
                 alignItems: "center",
               }}
             >
@@ -671,10 +661,10 @@ export default function FriendDetailScreen(): JSX.Element {
                     style={{
                       width: 52,
                       height: 52,
-                      borderRadius: PILL_RADIUS,
-                      backgroundColor: CONTROL,
+                      borderRadius: 999,
+                      backgroundColor: UI.color.control,
                       borderWidth: 1,
-                      borderColor: SEPARATOR,
+                      borderColor: UI.color.border,
                       alignItems: "center",
                       justifyContent: "center",
                       marginBottom: 16,
@@ -685,7 +675,7 @@ export default function FriendDetailScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 16,
-                      color: TEXT_PRIMARY,
+                      color: UI.color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -695,7 +685,7 @@ export default function FriendDetailScreen(): JSX.Element {
                     style={{
                       marginTop: 4,
                       fontSize: 14,
-                      color: TEXT_SECONDARY,
+                      color: UI.color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                     }}
                   >
@@ -707,7 +697,7 @@ export default function FriendDetailScreen(): JSX.Element {
                       marginTop: 12,
                       fontSize: 14,
                       lineHeight: 20,
-                      color: TEXT_SECONDARY,
+                      color: UI.color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                       textAlign: "center",
                     }}
@@ -720,7 +710,7 @@ export default function FriendDetailScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 13,
-                      color: TEXT_SECONDARY,
+                      color: UI.color.muted,
                       fontFamily: "IBMPlexSans_600SemiBold",
                       textTransform: "uppercase",
                       letterSpacing: 1.2,
@@ -746,7 +736,7 @@ export default function FriendDetailScreen(): JSX.Element {
                       marginTop: 12,
                       fontSize: 14,
                       lineHeight: 20,
-                      color: TEXT_SECONDARY,
+                      color: UI.color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                       textAlign: "center",
                     }}
@@ -770,10 +760,10 @@ export default function FriendDetailScreen(): JSX.Element {
               <SectionLabel>Shared Groups</SectionLabel>
               <View
                 style={{
-                  borderRadius: CARD_RADIUS,
+                  borderRadius: UI.radius.lg,
                   borderWidth: 1,
-                  borderColor: SEPARATOR,
-                  backgroundColor: SURFACE,
+                  borderColor: UI.color.border,
+                  backgroundColor: UI.color.surface,
                 }}
               >
                 {sharedGroupsWithRecentActivity.map(({ group, latestExpense }, idx) => (
@@ -787,14 +777,14 @@ export default function FriendDetailScreen(): JSX.Element {
                       paddingVertical: 14,
                       paddingHorizontal: 16,
                       borderBottomWidth: idx < sharedGroupsWithRecentActivity.length - 1 ? 1 : 0,
-                      borderBottomColor: SEPARATOR,
-                      backgroundColor: pressed ? "#FBF7F2" : "transparent",
-                      borderTopLeftRadius: idx === 0 ? CARD_RADIUS : 0,
-                      borderTopRightRadius: idx === 0 ? CARD_RADIUS : 0,
+                      borderBottomColor: UI.color.border,
+                      backgroundColor: pressed ? UI.color.subtle : "transparent",
+                      borderTopLeftRadius: idx === 0 ? UI.radius.lg : 0,
+                      borderTopRightRadius: idx === 0 ? UI.radius.lg : 0,
                       borderBottomLeftRadius:
-                        idx === sharedGroupsWithRecentActivity.length - 1 ? CARD_RADIUS : 0,
+                        idx === sharedGroupsWithRecentActivity.length - 1 ? UI.radius.lg : 0,
                       borderBottomRightRadius:
-                        idx === sharedGroupsWithRecentActivity.length - 1 ? CARD_RADIUS : 0,
+                        idx === sharedGroupsWithRecentActivity.length - 1 ? UI.radius.lg : 0,
                     })}
                   >
                     <GroupIconBadge group={group} size="sm" />
@@ -803,7 +793,7 @@ export default function FriendDetailScreen(): JSX.Element {
                         numberOfLines={1}
                         style={{
                           fontSize: 16,
-                          color: TEXT_PRIMARY,
+                          color: UI.color.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
@@ -814,7 +804,7 @@ export default function FriendDetailScreen(): JSX.Element {
                         style={{
                           marginTop: 3,
                           fontSize: 13,
-                          color: TEXT_SECONDARY,
+                          color: UI.color.muted,
                           fontFamily: "IBMPlexSans_500Medium",
                         }}
                       >
@@ -823,7 +813,7 @@ export default function FriendDetailScreen(): JSX.Element {
                           : "No shared group expenses yet"}
                       </Typography>
                     </View>
-                    <icons.ChevronRight size={18} color={TEXT_SUBTLE} strokeWidth={1.8} />
+                    <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.8} />
                   </Pressable>
                 ))}
               </View>
@@ -839,10 +829,10 @@ export default function FriendDetailScreen(): JSX.Element {
               <SectionLabel>Spending by Category</SectionLabel>
               <View
                 style={{
-                  borderRadius: CARD_RADIUS,
+                  borderRadius: UI.radius.lg,
                   borderWidth: 1,
-                  borderColor: SEPARATOR,
-                  backgroundColor: SURFACE,
+                  borderColor: UI.color.border,
+                  backgroundColor: UI.color.surface,
                   paddingVertical: 12,
                 }}
               >
@@ -856,7 +846,7 @@ export default function FriendDetailScreen(): JSX.Element {
                       paddingVertical: 12,
                       paddingHorizontal: 16,
                       borderBottomWidth: idx < categorySpending.length - 1 ? 1 : 0,
-                      borderBottomColor: SEPARATOR,
+                      borderBottomColor: UI.color.border,
                     }}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
@@ -864,7 +854,7 @@ export default function FriendDetailScreen(): JSX.Element {
                       <Typography
                         style={{
                           fontSize: 15,
-                          color: TEXT_PRIMARY,
+                          color: UI.color.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
                           textTransform: "capitalize",
                         }}
@@ -875,7 +865,7 @@ export default function FriendDetailScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 16,
-                        color: TEXT_PRIMARY,
+                        color: UI.color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -896,10 +886,10 @@ export default function FriendDetailScreen(): JSX.Element {
 
             <View
               style={{
-                borderRadius: CARD_RADIUS,
+                borderRadius: UI.radius.lg,
                 borderWidth: sharedActivities.length === 0 ? 1 : 0,
-                borderColor: SEPARATOR,
-                backgroundColor: sharedActivities.length === 0 ? SURFACE : "transparent",
+                borderColor: UI.color.border,
+                backgroundColor: sharedActivities.length === 0 ? UI.color.surface : "transparent",
               }}
             >
               {sharedActivities.length === 0 ? (
@@ -913,21 +903,21 @@ export default function FriendDetailScreen(): JSX.Element {
                     style={{
                       width: 56,
                       height: 56,
-                      borderRadius: PILL_RADIUS,
-                      backgroundColor: CONTROL,
+                      borderRadius: 999,
+                      backgroundColor: UI.color.control,
                       alignItems: "center",
                       justifyContent: "center",
                       marginBottom: 16,
                       borderWidth: 1,
-                      borderColor: SEPARATOR,
+                      borderColor: UI.color.border,
                     }}
                   >
-                    <icons.Receipt size={24} color={TEXT_PRIMARY} strokeWidth={1.8} />
+                    <icons.Receipt size={24} color={UI.color.text} strokeWidth={1.8} />
                   </View>
                   <Typography
                     style={{
                       fontSize: 16,
-                      color: TEXT_PRIMARY,
+                      color: UI.color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                       marginBottom: 8,
                     }}
@@ -937,7 +927,7 @@ export default function FriendDetailScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 14,
-                      color: TEXT_SECONDARY,
+                      color: UI.color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                     }}
                   >
@@ -947,10 +937,10 @@ export default function FriendDetailScreen(): JSX.Element {
               ) : (
                 <View
                   style={{
-                    borderRadius: CARD_RADIUS,
+                    borderRadius: UI.radius.lg,
                     borderWidth: 1,
-                    borderColor: SEPARATOR,
-                    backgroundColor: SURFACE,
+                    borderColor: UI.color.border,
+                    backgroundColor: UI.color.surface,
                   }}
                 >
                   {sharedActivities.map((activity, idx) => (
@@ -982,10 +972,10 @@ export default function FriendDetailScreen(): JSX.Element {
               style={({ pressed }) => ({
                 flex: 1,
                 height: 56,
-                borderRadius: PILL_RADIUS,
-                backgroundColor: CONTROL,
+                borderRadius: 999,
+                backgroundColor: UI.color.control,
                 borderWidth: 1,
-                borderColor: SEPARATOR,
+                borderColor: UI.color.border,
                 alignItems: "center",
                 justifyContent: "center",
                 flexDirection: "row",
@@ -994,12 +984,16 @@ export default function FriendDetailScreen(): JSX.Element {
               })}
             >
               {isPositive ? (
-                <icons.Bell size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
+                <icons.Bell size={20} color={UI.color.text} strokeWidth={1.8} />
               ) : (
-                <icons.Handshake size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
+                <icons.Handshake size={20} color={UI.color.text} strokeWidth={1.8} />
               )}
               <Typography
-                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+                style={{
+                  fontSize: 16,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
               >
                 {isPositive ? "Remind" : "Settle Up"}
               </Typography>
@@ -1012,8 +1006,8 @@ export default function FriendDetailScreen(): JSX.Element {
             style={({ pressed }) => ({
               flex: isSettled ? 1 : 1.5,
               height: 56,
-              borderRadius: PILL_RADIUS,
-              backgroundColor: BRAND,
+              borderRadius: 999,
+              backgroundColor: UI.color.brand,
               alignItems: "center",
               justifyContent: "center",
               flexDirection: "row",
@@ -1021,9 +1015,13 @@ export default function FriendDetailScreen(): JSX.Element {
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <icons.Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
+            <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={2.5} />
             <Typography
-              style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{
+                fontSize: 16,
+                color: UI.color.textInverse,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
             >
               Add Expense
             </Typography>
@@ -1037,7 +1035,7 @@ export default function FriendDetailScreen(): JSX.Element {
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
       >
         <BottomSheetView
           style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
@@ -1051,7 +1049,7 @@ export default function FriendDetailScreen(): JSX.Element {
                   fontSize: 22,
                   lineHeight: 27,
                   fontFamily: "IBMPlexSans_600SemiBold",
-                  color: TEXT_PRIMARY,
+                  color: UI.color.text,
                 }}
               >
                 {friend.name}
@@ -1063,7 +1061,7 @@ export default function FriendDetailScreen(): JSX.Element {
                   fontSize: 14,
                   lineHeight: 19,
                   fontFamily: "IBMPlexSans_500Medium",
-                  color: TEXT_SECONDARY,
+                  color: UI.color.muted,
                 }}
               >
                 {friend.email}

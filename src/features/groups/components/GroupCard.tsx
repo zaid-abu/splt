@@ -4,17 +4,9 @@ import { View, Pressable } from "react-native";
 
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
+import { UI } from "@/components/ui/native-ui";
 import * as icons from "lucide-react-native";
 import type { Group } from "@/types";
-
-// ─── Design Tokens ───
-const SURFACE = "#FFFCF8";
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
-const TEXT_DANGER = "#E85D5D";
-const TEXT_SUCCESS = "#4CAF82";
-const SEPARATOR = "#E8E4DF";
-const CARD_RADIUS = 16;
 
 interface GroupCardProps {
   group: Group;
@@ -38,14 +30,14 @@ export const GroupCard = React.memo(function GroupCard({
   const memberCount = group.members.length;
 
   let subAmountText = "";
-  let subAmountColor = TEXT_SECONDARY;
+  let subAmountColor = UI.color.muted;
 
   if (balance < 0) {
     subAmountText = `You owe ${formatAmount(Math.abs(balance), currency)}`;
-    subAmountColor = TEXT_DANGER;
+    subAmountColor = UI.color.danger;
   } else if (balance > 0) {
     subAmountText = `Owes you ${formatAmount(balance, currency)}`;
-    subAmountColor = TEXT_SUCCESS;
+    subAmountColor = UI.color.success;
   } else {
     subAmountText = "Settled up";
   }
@@ -63,12 +55,12 @@ export const GroupCard = React.memo(function GroupCard({
         borderRightWidth: 1,
         borderTopWidth: isFirst ? 1 : 0,
         borderBottomWidth: 1,
-        borderColor: SEPARATOR,
-        backgroundColor: SURFACE,
-        borderTopLeftRadius: isFirst ? CARD_RADIUS : 0,
-        borderTopRightRadius: isFirst ? CARD_RADIUS : 0,
-        borderBottomLeftRadius: isLast ? CARD_RADIUS : 0,
-        borderBottomRightRadius: isLast ? CARD_RADIUS : 0,
+        borderColor: UI.color.border,
+        backgroundColor: UI.color.surface,
+        borderTopLeftRadius: isFirst ? UI.radius.lg : 0,
+        borderTopRightRadius: isFirst ? UI.radius.lg : 0,
+        borderBottomLeftRadius: isLast ? UI.radius.lg : 0,
+        borderBottomRightRadius: isLast ? UI.radius.lg : 0,
         opacity: pressed ? 0.5 : 1,
       })}
     >
@@ -83,7 +75,7 @@ export const GroupCard = React.memo(function GroupCard({
           numberOfLines={1}
           style={{
             fontSize: 16,
-            color: TEXT_PRIMARY,
+            color: UI.color.textStrong,
             fontFamily: "IBMPlexSans_600SemiBold",
             letterSpacing: -0.3,
           }}
@@ -93,7 +85,7 @@ export const GroupCard = React.memo(function GroupCard({
         <Typography
           style={{
             fontSize: 14,
-            color: TEXT_SECONDARY,
+            color: UI.color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginTop: 4,
           }}
@@ -119,7 +111,7 @@ export const GroupCard = React.memo(function GroupCard({
 
       <icons.ChevronRight
         size={16}
-        color={TEXT_SECONDARY}
+        color={UI.color.muted}
         strokeWidth={1.75}
         style={{ marginLeft: 10 }}
       />

@@ -8,6 +8,7 @@ import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AppContext";
 import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated";
 import { UI } from "@/components/ui/native-ui";
+import { useUIStore } from "@/store/useUIStore";
 
 const ICON_SIZE = 22;
 const ICON_STROKE_INACTIVE = 1.5;
@@ -73,6 +74,7 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
 export default function TabsLayout(): JSX.Element | null {
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
 
   if (!isAuthenticated) return <Redirect href="/(auth)/welcome" />;
 
@@ -110,7 +112,7 @@ export default function TabsLayout(): JSX.Element | null {
             >
               <BlurView
                 intensity={Platform.OS === "ios" ? 85 : 90}
-                tint="light"
+                tint={isDarkMode ? "dark" : "light"}
                 style={{
                   flex: 1,
                   backgroundColor: Platform.OS === "android" ? UI.color.control : "transparent",

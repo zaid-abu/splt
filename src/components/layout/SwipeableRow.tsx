@@ -146,7 +146,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: "#8A8782", width: 40 }}
+        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
       >
         <BottomSheetView
           style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
@@ -155,7 +155,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
             style={{
               fontSize: 22,
               fontFamily: "IBMPlexSans_600SemiBold",
-              color: "#000000",
+              color: UI.color.textStrong,
               marginBottom: 8,
             }}
           >
@@ -165,7 +165,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
             style={{
               fontSize: 16,
               fontFamily: "IBMPlexSans_500Medium",
-              color: "#8A8782",
+              color: UI.color.muted,
               marginBottom: 24,
             }}
           >
@@ -179,14 +179,19 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
                 flex: 1,
                 height: 48,
                 borderWidth: 1,
-                borderColor: "#E8E4DF",
+                borderColor: UI.color.border,
+                backgroundColor: UI.color.control,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.5 : 1,
               })}
             >
               <Typography
-                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: "#000000" }}
+                style={{
+                  fontSize: 16,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: UI.color.textStrong,
+                }}
               >
                 Cancel
               </Typography>
@@ -206,7 +211,11 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               })}
             >
               <Typography
-                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: "#FFFFFF" }}
+                style={{
+                  fontSize: 16,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: UI.color.textInverse,
+                }}
               >
                 Delete
               </Typography>

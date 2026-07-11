@@ -9,7 +9,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { Typography } from "heroui-native";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { LineChart } from "react-native-gifted-charts";
@@ -113,7 +113,7 @@ export default function AnalyticsScreen() {
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
       <View
         style={{
           paddingTop: insets.top + 18,

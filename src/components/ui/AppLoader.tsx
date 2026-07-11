@@ -10,6 +10,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { Typography } from "heroui-native";
+import { UI } from "@/components/ui/native-ui";
 
 interface AppLoaderProps {
   fullScreen?: boolean;
@@ -62,20 +63,20 @@ const styles = StyleSheet.create({
   },
   fullScreen: {
     flex: 1,
-    backgroundColor: "#F5F0EB",
+    backgroundColor: UI.color.bg,
   },
   box: {
     width: 24,
     height: 24,
     borderWidth: 1.5,
-    borderColor: "#8C7A6B",
+    borderColor: UI.color.brand,
     backgroundColor: "transparent",
     marginBottom: 16,
   },
   text: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 16,
-    color: "#8C7A6B",
+    color: UI.color.brand,
     letterSpacing: 4,
     textTransform: "uppercase",
   },

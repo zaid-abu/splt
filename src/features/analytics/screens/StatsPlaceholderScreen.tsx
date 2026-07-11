@@ -7,16 +7,17 @@
 import type { JSX } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { StatusBar } from "expo-status-bar";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
+import { UI } from "@/components/ui/native-ui";
 
 export default function StatsPlaceholderScreen(): JSX.Element {
   return (
     <FocusAwareView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
-        <StatusBar style="dark" />
+        <ThemedStatusBar />
 
         {/* Header */}
         <View className="px-5 pt-4 pb-6">
@@ -27,11 +28,8 @@ export default function StatsPlaceholderScreen(): JSX.Element {
 
         {/* Empty state */}
         <View className="flex-1 items-center justify-center px-8 pb-24">
-          <View
-            style={{ backgroundColor: "#F5F0EB" }}
-            className="w-20 h-20 rounded-none items-center justify-center mb-6 border border-border-light"
-          >
-            <icons.BarChart2 size={36} color="#1A1A1A" strokeWidth={1.5} />
+          <View className="w-20 h-20 rounded-none items-center justify-center mb-6 border border-border-light bg-surface-secondary">
+            <icons.BarChart2 size={36} color={UI.color.textStrong} strokeWidth={1.5} />
           </View>
           <Typography
             type="h3"

@@ -342,7 +342,11 @@ export function BalanceCard({
             })}
           >
             <Typography
-              style={{ fontSize: 14, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{
+                fontSize: 14,
+                color: UI.color.textInverse,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
             >
               Settle up
             </Typography>

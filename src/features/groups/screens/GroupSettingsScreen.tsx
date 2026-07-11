@@ -4,7 +4,7 @@ import type { GroupSettingsRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useState, useMemo, useRef } from "react";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -66,7 +66,7 @@ function IconShell({
     >
       <IconComponent
         size={size === 44 ? 20 : 28}
-        color={selected ? "#FFFFFF" : UI.color.text}
+        color={selected ? UI.color.textInverse : UI.color.text}
         strokeWidth={1.5}
       />
     </View>
@@ -173,7 +173,7 @@ function ConfirmationSheet({
               style={{
                 fontSize: 16,
                 fontFamily: "IBMPlexSans_600SemiBold",
-                color: "#FFFFFF",
+                color: UI.color.textInverse,
               }}
             >
               {confirmLabel}
@@ -243,7 +243,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   if (!group) {
     return (
       <View style={{ flex: 1, backgroundColor: UI.color.bg, paddingTop: insets.top }}>
-        <StatusBar style="dark" />
+        <ThemedStatusBar />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
           <View
             style={{
@@ -302,7 +302,11 @@ export default function GroupSettingsScreen(): JSX.Element {
               })}
             >
               <Typography
-                style={{ color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold", fontSize: 15 }}
+                style={{
+                  color: UI.color.textInverse,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontSize: 15,
+                }}
               >
                 Go back
               </Typography>
@@ -447,7 +451,7 @@ export default function GroupSettingsScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
@@ -636,7 +640,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                         style={{
                           fontSize: 13,
                           fontFamily: "IBMPlexSans_600SemiBold",
-                          color: active ? "#FFFFFF" : UI.color.text,
+                          color: active ? UI.color.textInverse : UI.color.text,
                           textTransform: "capitalize",
                         }}
                       >
@@ -879,7 +883,11 @@ export default function GroupSettingsScreen(): JSX.Element {
           >
             {loading && <Spinner color="white" size="sm" />}
             <Typography
-              style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{
+                fontSize: 16,
+                color: UI.color.textInverse,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
             >
               Save Changes
             </Typography>

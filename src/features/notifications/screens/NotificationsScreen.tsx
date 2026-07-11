@@ -1,6 +1,6 @@
 import { View, FlatList, Pressable, ActivityIndicator } from "react-native";
 import { Typography } from "heroui-native";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
@@ -87,10 +87,14 @@ export default function NotificationsScreen(): JSX.Element {
               })}
             >
               {isAccepting ? (
-                <ActivityIndicator color="#FFF" />
+                <ActivityIndicator color={UI.color.textInverse} />
               ) : (
                 <Typography
-                  style={{ color: "#FFF", fontSize: 14, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    color: UI.color.textInverse,
+                    fontSize: 14,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
                   Accept
                 </Typography>
@@ -136,7 +140,7 @@ export default function NotificationsScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       {/* Safe-area-aware header */}
       <View style={{ paddingTop: insets.top }}>

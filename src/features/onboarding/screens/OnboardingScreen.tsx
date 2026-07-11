@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import { View, FlatList, Dimensions, Pressable } from "react-native";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
@@ -12,11 +12,9 @@ import { ONBOARDING_SLIDES } from "../constants/slides";
 import { OnboardingSlide } from "../components/OnboardingSlide";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useUIStore } from "@/store/useUIStore";
+import { UI } from "@/components/ui/native-ui";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
-
-const TEXT_PRIMARY = "#000000";
-const TEXT_SECONDARY = "#8A8782";
 
 export function OnboardingScreen() {
   const insets = useSafeAreaInsets();
@@ -60,8 +58,8 @@ export function OnboardingScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#F5F0EB" }}>
-      <StatusBar style="dark" />
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+      <ThemedStatusBar />
 
       {/* Top Bar - Progress + Skip */}
       <View
@@ -82,7 +80,7 @@ export function OnboardingScreen() {
                 width: idx === currentIndex ? 28 : 8,
                 height: 4,
                 borderRadius: 2,
-                backgroundColor: idx === currentIndex ? TEXT_PRIMARY : "#D6D2CD",
+                backgroundColor: idx === currentIndex ? UI.color.textStrong : UI.color.muted,
               }}
             />
           ))}
@@ -92,7 +90,7 @@ export function OnboardingScreen() {
             <Typography
               style={{
                 fontSize: 15,
-                color: TEXT_SECONDARY,
+                color: UI.color.muted,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -138,7 +136,7 @@ export function OnboardingScreen() {
           paddingHorizontal: 32,
           paddingTop: 8,
           paddingBottom: Math.max(insets.bottom, 24),
-          backgroundColor: "#F5F0EB",
+          backgroundColor: UI.color.bg,
         }}
       >
         <Pressable
@@ -147,7 +145,7 @@ export function OnboardingScreen() {
             width: "100%",
             height: 56,
             borderRadius: 28,
-            backgroundColor: TEXT_PRIMARY,
+            backgroundColor: UI.color.textStrong,
             alignItems: "center",
             justifyContent: "center",
             opacity: pressed ? 0.75 : 1,
@@ -156,7 +154,7 @@ export function OnboardingScreen() {
           <Typography
             style={{
               fontSize: 16,
-              color: "#FFFFFF",
+              color: UI.color.textInverse,
               fontFamily: "IBMPlexSans_600SemiBold",
               letterSpacing: 0.5,
             }}

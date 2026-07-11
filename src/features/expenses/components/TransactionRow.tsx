@@ -60,7 +60,7 @@ export const TransactionRow = React.memo(function TransactionRow({
         paddingVertical: compact ? 14 : 16,
         paddingHorizontal: compact ? 0 : 16,
         borderRadius: compact ? 0 : UI.radius.lg,
-        backgroundColor: compact ? "transparent" : pressed ? "#FBF7F2" : "transparent",
+        backgroundColor: compact ? "transparent" : pressed ? UI.color.subtle : "transparent",
         borderBottomWidth: isLast ? 0 : 1,
         borderBottomColor: UI.color.border,
         opacity: pressed ? 0.62 : 1,

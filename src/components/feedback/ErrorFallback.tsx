@@ -56,7 +56,13 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
               backgroundColor: UI.color.text,
             }}
           >
-            <Text style={{ color: "#FFFFFF", fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold" }}>
+            <Text
+              style={{
+                color: UI.color.textInverse,
+                fontSize: 16,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
+            >
               Try Again
             </Text>
           </Pressable>

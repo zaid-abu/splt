@@ -195,17 +195,48 @@
 | Progress tracker               | ✅     | docs/progress-tracker.md             |
 | Design system docs             | ✅     | docs/design-system.md                |
 
+## Phase 16: Dark Mode Polish ✅
+
+| Item                            | Status | Notes                                                             |
+| ------------------------------- | ------ | ----------------------------------------------------------------- |
+| Uniwind theme init on startup   | ✅     | `Uniwind.setTheme()` called in `_layout.tsx`                      |
+| Native interface style          | ✅     | `app.json` set to `"automatic"` for system chrome adaptation      |
+| ThemedStatusBar component       | ✅     | Dynamic `StatusBar` based on `isDarkMode`                         |
+| BlurredSheetBackground tint     | ✅     | Dynamic `tint` prop based on theme                                |
+| Module-scope color constants    | ✅     | Fixed in GroupCard, ExpenseFormSplits, ActivityItem, AppLoader    |
+| Onboarding screen theming       | ✅     | All hardcoded colors replaced with `UI.color.*`                   |
+| SwipeableRow delete sheet       | ✅     | Hardcoded colors replaced with `UI.color.*`                       |
+| ErrorState/ErrorFallback colors | ✅     | `#FFFFFF` → `UI.color.textInverse` on dark-bg buttons             |
+| textInverse color token         | ✅     | Added to `LIGHT_COLORS`/`DARK_COLORS` for button text contrast    |
+| StatsPlaceholder colors         | ✅     | Hardcoded bg/icon replaced with Tailwind classes + `UI.color.*`   |
+| All 28 StatusBar instances      | ✅     | Replaced `StatusBar style="dark"` with `<ThemedStatusBar />`      |
+| Tab bar blur tint               | ✅     | Dynamic `tint={isDarkMode ? "dark" : "light"}`                    |
+| HapticButton text contrast      | ✅     | `#FFFFFF` → `UI.color.textInverse` for "ink" tone buttons         |
+| PrimaryButton text contrast     | ✅     | Callers use `UI.color.textInverse` instead of `#FFFFFF`           |
+| FilterPill text contrast        | ✅     | Active state uses `UI.color.textInverse`                          |
+| FriendsScreen module constants  | ✅     | Replaced module-scope `TEXT_PRIMARY`/etc. with inline `UI.color`  |
+| FriendDetailScreen constants    | ✅     | Same fix — module-scope tokens now reference `UI.color` at render |
+| NewFriendScreen constants       | ✅     | Same fix — removed module-scope `BG`/`TEXT_PRIMARY`/etc.          |
+| NewGroupScreen module constants | ✅     | Removed `BG`/`TEXT_PRIMARY`/etc. — inline `UI.color.*` now        |
+| GroupDetailScreen buttons       | ✅     | Inline styles replace `StyleSheet.create` for theme-dependent     |
+| DashboardScreen empty CTA       | ✅     | `#FFFFFF` → `UI.color.textInverse` on dark-bg buttons             |
+| BalanceCard settle-up button    | ✅     | `#FFFFFF` → `UI.color.textInverse`                                |
+| GroupsScreen create button      | ✅     | `#FFFFFF` → `UI.color.textInverse` + `UI.color.textInverse` icon  |
+| Auth screen buttons             | ✅     | login, register, forgot-password, edit, change-password           |
+| TopExpenses log-expense button  | ✅     | `#FFFFFF` → `UI.color.textInverse`                                |
+| ActivityItem view-details       | ✅     | `#FFFFFF` → `UI.color.textInverse`                                |
+| NewExpenseScreen check/icons    | ✅     | `#FFFFFF` → `UI.color.textInverse` on `UI.color.text` bg          |
+| GroupSettings icon picker       | ✅     | `#FFFFFF` → `UI.color.textInverse` for selected state             |
+| CurrencySelector dark colors    | ✅     | Hardcoded `#F7F1EA`/etc. → `UI.color.subtle`                      |
+
 ## Upcoming / Backlog
 
-| Item                          | Status | Notes                                            |
-| ----------------------------- | ------ | ------------------------------------------------ |
-| Dark mode full implementation | 📋     | CSS variables defined, needs screen-level polish |
-| Error boundaries per screen   | 📋     | Global error boundary exists                     |
-| Pull-to-refresh on lists      | 📋     | Hook exists (useRefresh)                         |
-| Push notifications            | 📋     | Not yet implemented                              |
-| Real-time subscriptions       | 📋     | Supabase real-time not yet used                  |
-| Comments on expenses          | 📋     | Schema and API exist, UI pending                 |
-| Image upload (avatars)        | 📋     | Service files exist, UI pending                  |
-| Exchange rates auto-refresh   | 📋     | Fetch on mount, no periodic refresh              |
-| Deep linking                  | 📋     | Setup exists, needs testing                      |
-| Accessibility audit           | 📋     | Labels exist, needs comprehensive review         |
+| Error boundaries per screen | 📋 | Global error boundary exists |
+| Pull-to-refresh on lists | 📋 | Hook exists (useRefresh) |
+| Push notifications | 📋 | Not yet implemented |
+| Real-time subscriptions | 📋 | Supabase real-time not yet used |
+| Comments on expenses | 📋 | Schema and API exist, UI pending |
+| Image upload (avatars) | 📋 | Service files exist, UI pending |
+| Exchange rates auto-refresh | 📋 | Fetch on mount, no periodic refresh |
+| Deep linking | 📋 | Setup exists, needs testing |
+| Accessibility audit | 📋 | Labels exist, needs comprehensive review |

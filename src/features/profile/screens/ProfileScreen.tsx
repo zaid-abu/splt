@@ -4,7 +4,7 @@ import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import type { JSX } from "react";
 import { useEffect, useCallback, useRef } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { ScrollView, View, Pressable, Share } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -97,7 +97,7 @@ export default function ProfileScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       {/* Header */}
       <View style={{ paddingTop: insets.top + 16 }}>
@@ -487,7 +487,7 @@ export default function ProfileScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 16,
-                  color: "#FFFFFF",
+                  color: UI.color.textInverse,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >

@@ -11,7 +11,7 @@ import {
   Share,
   View,
 } from "react-native";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
@@ -50,12 +50,8 @@ import { queryKeys } from "@/queries/keys";
 import { useUIStore } from "@/store/useUIStore";
 import type { Expense, Friendship, User, FriendFilter, FriendSectionKey } from "@/types";
 
-const TEXT_PRIMARY = UI.color.text;
-const TEXT_SECONDARY = UI.color.muted;
 const TEXT_DANGER = UI.color.danger;
 const TEXT_SUCCESS = UI.color.success;
-const SEPARATOR = UI.color.border;
-const CONTROL_SURFACE = UI.color.control;
 
 type FriendListItem = {
   friend: User;
@@ -100,15 +96,15 @@ function IconButton({
         width: 44,
         height: 44,
         borderRadius: 999,
-        backgroundColor: CONTROL_SURFACE,
+        backgroundColor: UI.color.control,
         borderWidth: 1,
-        borderColor: SEPARATOR,
+        borderColor: UI.color.border,
         alignItems: "center",
         justifyContent: "center",
         opacity: pressed ? 0.72 : 1,
       })}
     >
-      <Icon size={20} color={TEXT_PRIMARY} strokeWidth={2} />
+      <Icon size={20} color={UI.color.text} strokeWidth={2} />
     </Pressable>
   );
 }
@@ -500,7 +496,7 @@ export default function FriendsScreen(): JSX.Element {
                       flexDirection: "row",
                       alignItems: "center",
                       borderBottomWidth: hasDivider ? 1 : 0,
-                      borderBottomColor: SEPARATOR,
+                      borderBottomColor: UI.color.border,
                       paddingVertical: 12,
                     }}
                   >
@@ -511,7 +507,7 @@ export default function FriendsScreen(): JSX.Element {
                         style={{
                           fontSize: 15,
                           lineHeight: 20,
-                          color: TEXT_PRIMARY,
+                          color: UI.color.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
@@ -523,7 +519,7 @@ export default function FriendsScreen(): JSX.Element {
                           marginTop: 1,
                           fontSize: 13,
                           lineHeight: 17,
-                          color: TEXT_SECONDARY,
+                          color: UI.color.muted,
                           fontFamily: "IBMPlexSans_500Medium",
                         }}
                       >
@@ -540,14 +536,14 @@ export default function FriendsScreen(): JSX.Element {
                         height: 44,
                         borderRadius: 999,
                         borderWidth: 1,
-                        borderColor: SEPARATOR,
+                        borderColor: UI.color.border,
                         alignItems: "center",
                         justifyContent: "center",
                         marginRight: 8,
                         opacity: pressed ? 0.62 : 1,
                       })}
                     >
-                      <icons.X size={18} color={TEXT_SECONDARY} strokeWidth={2} />
+                      <icons.X size={18} color={UI.color.muted} strokeWidth={2} />
                     </Pressable>
                     <Pressable
                       accessibilityRole="button"
@@ -557,13 +553,13 @@ export default function FriendsScreen(): JSX.Element {
                         width: 44,
                         height: 44,
                         borderRadius: 999,
-                        backgroundColor: TEXT_PRIMARY,
+                        backgroundColor: UI.color.text,
                         alignItems: "center",
                         justifyContent: "center",
                         opacity: pressed ? 0.72 : 1,
                       })}
                     >
-                      <icons.Check size={18} color="#FFFFFF" strokeWidth={2} />
+                      <icons.Check size={18} color={UI.color.textInverse} strokeWidth={2} />
                     </Pressable>
                   </View>
                 );
@@ -589,7 +585,7 @@ export default function FriendsScreen(): JSX.Element {
                       style={{
                         fontSize: 15,
                         lineHeight: 20,
-                        color: TEXT_PRIMARY,
+                        color: UI.color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -616,7 +612,7 @@ export default function FriendsScreen(): JSX.Element {
                       minHeight: 36,
                       paddingHorizontal: 14,
                       borderRadius: 999,
-                      backgroundColor: TEXT_PRIMARY,
+                      backgroundColor: UI.color.text,
                       alignItems: "center",
                       justifyContent: "center",
                       opacity: pressed ? 0.72 : 1,
@@ -625,7 +621,7 @@ export default function FriendsScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 13,
-                        color: "#FFFFFF",
+                        color: UI.color.textInverse,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -734,7 +730,7 @@ export default function FriendsScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: hasActiveFilters ? UI.color.text : "#FFFFFF",
+                    color: hasActiveFilters ? UI.color.text : UI.color.textInverse,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
@@ -800,7 +796,7 @@ export default function FriendsScreen(): JSX.Element {
                   style={{
                     fontSize: 16,
                     lineHeight: 21,
-                    color: TEXT_PRIMARY,
+                    color: UI.color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                     letterSpacing: -0.2,
                   }}
@@ -813,7 +809,7 @@ export default function FriendsScreen(): JSX.Element {
                     marginTop: 2,
                     fontSize: 13,
                     lineHeight: 17,
-                    color: TEXT_SECONDARY,
+                    color: UI.color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                   }}
                 >
@@ -833,7 +829,7 @@ export default function FriendsScreen(): JSX.Element {
                     borderRadius: 999,
                     backgroundColor: balanceCopy.bg,
                     borderWidth: 1,
-                    borderColor: SEPARATOR,
+                    borderColor: UI.color.border,
                   }}
                 >
                   <Typography
@@ -860,9 +856,9 @@ export default function FriendsScreen(): JSX.Element {
                     minHeight: 36,
                     paddingHorizontal: 9,
                     borderRadius: 999,
-                    backgroundColor: balance === 0 ? CONTROL_SURFACE : TEXT_PRIMARY,
+                    backgroundColor: balance === 0 ? UI.color.control : UI.color.text,
                     borderWidth: 1,
-                    borderColor: balance === 0 ? SEPARATOR : TEXT_PRIMARY,
+                    borderColor: balance === 0 ? UI.color.border : UI.color.text,
                     flexDirection: "row",
                     alignItems: "center",
                     justifyContent: "center",
@@ -872,14 +868,14 @@ export default function FriendsScreen(): JSX.Element {
                 >
                   <ActionIcon
                     size={13}
-                    color={balance === 0 ? TEXT_PRIMARY : "#FFFFFF"}
+                    color={balance === 0 ? UI.color.text : UI.color.textInverse}
                     strokeWidth={2}
                   />
                   <Typography
                     style={{
                       fontSize: 12,
                       lineHeight: 15,
-                      color: balance === 0 ? TEXT_PRIMARY : "#FFFFFF",
+                      color: balance === 0 ? UI.color.text : UI.color.textInverse,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -943,7 +939,7 @@ export default function FriendsScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <View style={{ paddingTop: insets.top + 16, backgroundColor: UI.color.bg }}>
         <ScreenHeader
@@ -971,7 +967,7 @@ export default function FriendsScreen(): JSX.Element {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={TEXT_PRIMARY}
+            tintColor={UI.color.text}
             progressViewOffset={10}
           />
         }

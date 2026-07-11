@@ -2,7 +2,7 @@ import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -60,7 +60,7 @@ export default function EditProfileScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -144,9 +144,13 @@ export default function EditProfileScreen(): JSX.Element {
               opacity: pressed || isPending ? 0.78 : 1,
             })}
           >
-            {isPending && <ActivityIndicator color="#FFFFFF" />}
+            {isPending && <ActivityIndicator color={UI.color.textInverse} />}
             <Typography
-              style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{
+                fontSize: 16,
+                color: UI.color.textInverse,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
             >
               Save Changes
             </Typography>

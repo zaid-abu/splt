@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { Typography, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown, FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
@@ -443,7 +443,7 @@ export default function SettleUpScreen(): JSX.Element {
       style={styles.screen}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
       <View style={{ paddingTop: insets.top }}>
         <ScreenHeader title="Settle Up" onBackPress={() => router.back()} />
       </View>

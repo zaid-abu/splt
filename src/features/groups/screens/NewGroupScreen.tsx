@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { useState, useRef, useCallback, useMemo } from "react";
 import { View, Keyboard, Pressable } from "react-native";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useRouter } from "expo-router";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -27,10 +27,6 @@ import { IconButton, PrimaryButton, SectionLabel, UI } from "@/components/ui/nat
 
 import { GROUP_ICONS } from "@/constants/icons";
 
-const BG = UI.color.bg;
-const TEXT_PRIMARY = UI.color.textStrong;
-const TEXT_SECONDARY = UI.color.muted;
-const SEPARATOR = UI.color.border;
 const ERROR = UI.color.danger;
 
 export default function NewGroupScreen(): JSX.Element {
@@ -148,8 +144,8 @@ export default function NewGroupScreen(): JSX.Element {
   const IconComponent = (icons as any)[icon] || icons.HelpCircle;
 
   return (
-    <View style={{ flex: 1, backgroundColor: BG }}>
-      <StatusBar style="dark" />
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+      <ThemedStatusBar />
       <BottomSheet
         ref={bottomSheetRef}
         snapPoints={snapPoints}
@@ -170,14 +166,14 @@ export default function NewGroupScreen(): JSX.Element {
               paddingHorizontal: 24,
               paddingBottom: 16,
               borderBottomWidth: 1,
-              borderBottomColor: SEPARATOR,
+              borderBottomColor: UI.color.border,
             }}
           >
             <View style={{ flex: 1 }} />
             <Typography
               style={{
                 fontSize: 16,
-                color: TEXT_PRIMARY,
+                color: UI.color.textStrong,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -210,16 +206,16 @@ export default function NewGroupScreen(): JSX.Element {
                   paddingVertical: 12,
                   paddingHorizontal: 16,
                   borderWidth: 1,
-                  borderColor: SEPARATOR,
+                  borderColor: UI.color.border,
                   borderRadius: UI.radius.lg,
                 }}
               >
-                <IconComponent size={24} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                <IconComponent size={24} color={UI.color.textStrong} strokeWidth={1.5} />
                 <View
                   style={{
                     width: 1,
                     height: 24,
-                    backgroundColor: SEPARATOR,
+                    backgroundColor: UI.color.border,
                     marginHorizontal: 16,
                   }}
                 />
@@ -227,11 +223,11 @@ export default function NewGroupScreen(): JSX.Element {
                   style={{
                     flex: 1,
                     fontSize: 20,
-                    color: TEXT_PRIMARY,
+                    color: UI.color.textStrong,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                   placeholder="e.g. Day trip to Warsaw"
-                  placeholderTextColor={TEXT_SECONDARY}
+                  placeholderTextColor={UI.color.muted}
                   value={name}
                   onChangeText={(v) => {
                     setNameError("");
@@ -267,7 +263,7 @@ export default function NewGroupScreen(): JSX.Element {
                   const isSelected = icon === i;
 
                   // Generate color for picker
-                  const GROUP_BG_PALETTE = [
+                  const GROUP_COLORS = [
                     "#FCE7D0",
                     "#E8E4F9",
                     "#D5EFE2",
@@ -278,8 +274,8 @@ export default function NewGroupScreen(): JSX.Element {
                     "#E8D9F9",
                   ];
                   const colorIdx =
-                    i.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % GROUP_BG_PALETTE.length;
-                  const iconBg = GROUP_BG_PALETTE[colorIdx];
+                    i.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % GROUP_COLORS.length;
+                  const iconBg = GROUP_COLORS[colorIdx];
 
                   return (
                     <Pressable
@@ -300,12 +296,12 @@ export default function NewGroupScreen(): JSX.Element {
                           justifyContent: "center",
                           backgroundColor: isSelected ? UI.color.text : iconBg,
                           borderWidth: 1,
-                          borderColor: isSelected ? UI.color.text : SEPARATOR,
+                          borderColor: isSelected ? UI.color.text : UI.color.border,
                         }}
                       >
                         <Ico
                           size={24}
-                          color={isSelected ? "#FFFFFF" : TEXT_PRIMARY}
+                          color={isSelected ? "#FFFFFF" : UI.color.textStrong}
                           strokeWidth={isSelected ? 2 : 1.5}
                         />
                       </View>
@@ -334,7 +330,7 @@ export default function NewGroupScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 15,
-                      color: TEXT_PRIMARY,
+                      color: UI.color.textStrong,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -350,7 +346,7 @@ export default function NewGroupScreen(): JSX.Element {
                   alignItems: "center",
                   paddingVertical: 16,
                   borderBottomWidth: 1,
-                  borderBottomColor: SEPARATOR,
+                  borderBottomColor: UI.color.border,
                 }}
               >
                 <View
@@ -360,18 +356,18 @@ export default function NewGroupScreen(): JSX.Element {
                     borderRadius: UI.radius.md,
                     backgroundColor: UI.color.control,
                     borderWidth: 1,
-                    borderColor: SEPARATOR,
+                    borderColor: UI.color.border,
                     alignItems: "center",
                     justifyContent: "center",
                     marginRight: 16,
                   }}
                 >
-                  <icons.User size={20} color={TEXT_PRIMARY} strokeWidth={1.5} />
+                  <icons.User size={20} color={UI.color.textStrong} strokeWidth={1.5} />
                 </View>
                 <Typography
                   style={{
                     fontSize: 16,
-                    color: TEXT_PRIMARY,
+                    color: UI.color.textStrong,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
@@ -390,7 +386,7 @@ export default function NewGroupScreen(): JSX.Element {
                     alignItems: "center",
                     paddingVertical: 16,
                     borderBottomWidth: 1,
-                    borderBottomColor: SEPARATOR,
+                    borderBottomColor: UI.color.border,
                   }}
                 >
                   <View style={{ marginRight: 16 }}>
@@ -400,7 +396,7 @@ export default function NewGroupScreen(): JSX.Element {
                     style={{
                       flex: 1,
                       fontSize: 16,
-                      color: TEXT_PRIMARY,
+                      color: UI.color.textStrong,
                       fontFamily: "IBMPlexSans_500Medium",
                     }}
                   >
@@ -411,7 +407,7 @@ export default function NewGroupScreen(): JSX.Element {
                     onPress={() => handleRemoveUser(user.id)}
                     style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
                   >
-                    <icons.Trash2 size={20} color={TEXT_SECONDARY} strokeWidth={1.5} />
+                    <icons.Trash2 size={20} color={UI.color.muted} strokeWidth={1.5} />
                   </Pressable>
                 </Animated.View>
               ))}
@@ -423,7 +419,11 @@ export default function NewGroupScreen(): JSX.Element {
                 <SectionLabel>Currency</SectionLabel>
               </View>
               <View
-                style={{ borderBottomWidth: 1, borderBottomColor: SEPARATOR, paddingBottom: 8 }}
+                style={{
+                  borderBottomWidth: 1,
+                  borderBottomColor: UI.color.border,
+                  paddingBottom: 8,
+                }}
               >
                 <CurrencySelector value={currency.code} onChange={setCurrency} />
               </View>
@@ -436,7 +436,7 @@ export default function NewGroupScreen(): JSX.Element {
               paddingHorizontal: 24,
               paddingTop: 16,
               paddingBottom: Math.max(insets.bottom, 16),
-              backgroundColor: BG,
+              backgroundColor: UI.color.bg,
             }}
           >
             <PrimaryButton
@@ -448,7 +448,7 @@ export default function NewGroupScreen(): JSX.Element {
               {loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
               <Typography
                 style={{
-                  color: "#FFFFFF",
+                  color: UI.color.textInverse,
                   fontSize: 16,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
@@ -459,7 +459,7 @@ export default function NewGroupScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 13,
-                color: TEXT_SECONDARY,
+                color: UI.color.muted,
                 textAlign: "center",
                 fontFamily: "IBMPlexSans_500Medium",
               }}

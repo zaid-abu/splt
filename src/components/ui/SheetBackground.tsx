@@ -1,12 +1,14 @@
 import { Platform } from "react-native";
 import { BlurView } from "expo-blur";
+import { useUIStore } from "@/store/useUIStore";
 import { UI } from "@/components/ui/native-ui";
 
 export function BlurredSheetBackground(): React.JSX.Element {
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
   return (
     <BlurView
       intensity={Platform.OS === "ios" ? 90 : 80}
-      tint="light"
+      tint={isDarkMode ? "dark" : "light"}
       style={{
         flex: 1,
         backgroundColor: Platform.OS === "android" ? UI.color.surface : "transparent",

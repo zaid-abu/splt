@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -25,10 +25,12 @@ import { loginSchema, type LoginFormData } from "@/validation/schemas";
 import { FormInput } from "@/components/forms/FormInput";
 import { useAppToast } from "@/hooks/useAppToast";
 import { UI, PressableScale, IconButton } from "@/components/ui/native-ui";
+import { useUIStore } from "@/store/useUIStore";
 
 export default function LoginScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
   const { toast } = useAppToast();
   const { mutateAsync: signIn, isPending } = useSignIn();
   const { mutateAsync: signInWithGoogle, isPending: isGoogleLoading } = useSignInWithGoogle();
@@ -68,7 +70,7 @@ export default function LoginScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -138,7 +140,7 @@ export default function LoginScreen(): JSX.Element {
             >
               <BlurView
                 intensity={Platform.OS === "ios" ? 80 : 90}
-                tint="light"
+                tint={isDarkMode ? "dark" : "light"}
                 style={{
                   padding: 20,
                   gap: 20,
@@ -235,11 +237,11 @@ export default function LoginScreen(): JSX.Element {
                     opacity: isPending ? 0.7 : 1,
                   }}
                 >
-                  {isPending && <ActivityIndicator color="#FFFFFF" />}
+                  {isPending && <ActivityIndicator color={UI.color.textInverse} />}
                   <Typography
                     style={{
                       fontSize: 16,
-                      color: "#FFFFFF",
+                      color: UI.color.textInverse,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >

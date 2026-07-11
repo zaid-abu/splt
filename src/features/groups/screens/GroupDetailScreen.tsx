@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useCallback, useState, useMemo } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { View, ScrollView, Pressable, RefreshControl, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
@@ -303,7 +303,7 @@ export default function GroupDetailScreen(): JSX.Element {
   if (isLoading) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <StatusBar style="dark" />
+        <ThemedStatusBar />
         <View style={styles.skeletonHeaderBlock}>
           <Skeleton height={44} width={44} radius={UI.radius.pill} />
         </View>
@@ -336,7 +336,7 @@ export default function GroupDetailScreen(): JSX.Element {
   if (!group) {
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
-        <StatusBar style="dark" />
+        <ThemedStatusBar />
         <View style={styles.screenCenter}>
           <View style={styles.notFoundCard}>
             <EmptyIconShell icon={icons.Frown} />
@@ -346,9 +346,24 @@ export default function GroupDetailScreen(): JSX.Element {
             </Typography>
             <Pressable
               onPress={() => router.back()}
-              style={({ pressed }) => [styles.goBackButton, pressed && { opacity: 0.75 }]}
+              style={({ pressed }) => ({
+                marginTop: 20,
+                paddingVertical: 14,
+                paddingHorizontal: 24,
+                backgroundColor: UI.color.text,
+                borderRadius: UI.radius.pill,
+                opacity: pressed ? 0.75 : 1,
+              })}
             >
-              <Typography style={styles.whiteButtonText}>Go back</Typography>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: UI.color.textInverse,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                Go back
+              </Typography>
             </Pressable>
           </View>
         </View>
@@ -358,7 +373,7 @@ export default function GroupDetailScreen(): JSX.Element {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <View style={[styles.header, { paddingTop: insets.top + 16, paddingBottom: 24 }]}>
         <Pressable
@@ -506,9 +521,25 @@ export default function GroupDetailScreen(): JSX.Element {
                 <Pressable
                   accessibilityRole="button"
                   onPress={() => router.push(`/group/${group.id}/settings`)}
-                  style={({ pressed }) => [styles.inviteButton, pressed && { opacity: 0.8 }]}
+                  style={({ pressed }) => ({
+                    paddingHorizontal: 20,
+                    minHeight: 44,
+                    backgroundColor: UI.color.text,
+                    borderRadius: UI.radius.pill,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: pressed ? 0.8 : 1,
+                  })}
                 >
-                  <Typography style={styles.whiteButtonText}>Add Members</Typography>
+                  <Typography
+                    style={{
+                      fontSize: 14,
+                      color: UI.color.textInverse,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
+                  >
+                    Add Members
+                  </Typography>
                 </Pressable>
               </View>
             </Animated.View>
@@ -575,10 +606,28 @@ export default function GroupDetailScreen(): JSX.Element {
             accessibilityRole="button"
             accessibilityLabel="Add expense"
             onPress={() => router.push(`/expense/new?groupId=${group.id}`)}
-            style={({ pressed }) => [styles.actionButtonPrimary, pressed && { opacity: 0.78 }]}
+            style={({ pressed }) => ({
+              flex: 1.5,
+              height: 56,
+              borderRadius: UI.radius.pill,
+              backgroundColor: UI.color.text,
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "row",
+              gap: 10,
+              opacity: pressed ? 0.78 : 1,
+            })}
           >
-            <icons.Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
-            <Typography style={styles.actionButtonText}>Add Expense</Typography>
+            <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={2.5} />
+            <Typography
+              style={{
+                fontSize: 16,
+                color: UI.color.textInverse,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
+            >
+              Add Expense
+            </Typography>
           </Pressable>
         </BottomActionBar>
       </View>

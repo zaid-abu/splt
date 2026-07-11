@@ -14,11 +14,8 @@ import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { UI } from "@/components/ui/native-ui";
 
-const TEXT_PRIMARY = UI.color.text;
-const TEXT_SECONDARY = UI.color.muted;
 const TEXT_DANGER = UI.color.danger;
 const TEXT_SUCCESS = UI.color.success;
-const SEPARATOR = UI.color.border;
 const CARD_RADIUS = UI.radius.lg;
 
 interface ActivityItemProps {
@@ -134,19 +131,19 @@ export const ActivityItem = React.memo(function ActivityItem({
   const bgColors: Record<string, string> = {
     positive: "#E6F4EA",
     negative: "#FCE8E8",
-    neutral: SEPARATOR,
+    neutral: UI.color.border,
   };
 
   const textColors: Record<string, string> = {
     positive: TEXT_SUCCESS,
     negative: TEXT_DANGER,
-    neutral: TEXT_PRIMARY,
+    neutral: UI.color.text,
   };
 
   const iconColors: Record<string, string> = {
     positive: TEXT_SUCCESS,
     negative: TEXT_DANGER,
-    neutral: TEXT_PRIMARY,
+    neutral: UI.color.text,
   };
 
   const renderBackdrop = useCallback(
@@ -211,7 +208,7 @@ export const ActivityItem = React.memo(function ActivityItem({
           paddingVertical: 14,
           paddingHorizontal: 16,
           borderBottomWidth: isLast ? 0 : 1,
-          borderBottomColor: SEPARATOR,
+          borderBottomColor: UI.color.border,
           backgroundColor: pressed ? UI.color.subtle : "transparent",
         })}
       >
@@ -235,7 +232,7 @@ export const ActivityItem = React.memo(function ActivityItem({
             numberOfLines={1}
             style={{
               fontSize: 15,
-              color: TEXT_PRIMARY,
+              color: UI.color.text,
               fontFamily: "IBMPlexSans_600SemiBold",
               letterSpacing: -0.2,
             }}
@@ -246,7 +243,7 @@ export const ActivityItem = React.memo(function ActivityItem({
             numberOfLines={1}
             style={{
               fontSize: 13,
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 3,
             }}
@@ -275,7 +272,7 @@ export const ActivityItem = React.memo(function ActivityItem({
             numberOfLines={1}
             style={{
               fontSize: 12,
-              color: involvement.showAmount ? textColors[involvement.type] : TEXT_SECONDARY,
+              color: involvement.showAmount ? textColors[involvement.type] : UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 2,
             }}
@@ -286,7 +283,7 @@ export const ActivityItem = React.memo(function ActivityItem({
 
         <icons.ChevronRight
           size={14}
-          color={TEXT_SECONDARY}
+          color={UI.color.muted}
           strokeWidth={1.75}
           style={{ marginLeft: 8 }}
         />
@@ -298,7 +295,7 @@ export const ActivityItem = React.memo(function ActivityItem({
         enableDynamicSizing
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
       >
         <BottomSheetView
           style={{
@@ -325,7 +322,7 @@ export const ActivityItem = React.memo(function ActivityItem({
               <Typography
                 style={{
                   fontSize: 20,
-                  color: TEXT_PRIMARY,
+                  color: UI.color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
@@ -334,7 +331,7 @@ export const ActivityItem = React.memo(function ActivityItem({
               <Typography
                 style={{
                   fontSize: 14,
-                  color: TEXT_SECONDARY,
+                  color: UI.color.muted,
                   fontFamily: "IBMPlexSans_500Medium",
                   marginTop: 4,
                 }}
@@ -386,7 +383,7 @@ export const ActivityItem = React.memo(function ActivityItem({
                 <Typography
                   style={{
                     fontSize: 16,
-                    color: "#FFFFFF",
+                    color: UI.color.textInverse,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
@@ -430,7 +427,7 @@ export const ActivityItem = React.memo(function ActivityItem({
         enableDynamicSizing
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: TEXT_SECONDARY, width: 40 }}
+        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
       >
         <BottomSheetView
           style={{
@@ -442,7 +439,7 @@ export const ActivityItem = React.memo(function ActivityItem({
           <Typography
             style={{
               fontSize: 22,
-              color: TEXT_PRIMARY,
+              color: UI.color.text,
               fontFamily: "IBMPlexSans_600SemiBold",
               marginBottom: 8,
             }}
@@ -452,7 +449,7 @@ export const ActivityItem = React.memo(function ActivityItem({
           <Typography
             style={{
               fontSize: 16,
-              color: TEXT_SECONDARY,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginBottom: 24,
               lineHeight: 22,
@@ -469,7 +466,7 @@ export const ActivityItem = React.memo(function ActivityItem({
                 height: 52,
                 borderRadius: UI.radius.pill,
                 borderWidth: 1,
-                borderColor: SEPARATOR,
+                borderColor: UI.color.border,
                 backgroundColor: UI.color.control,
                 alignItems: "center",
                 justifyContent: "center",
@@ -479,7 +476,7 @@ export const ActivityItem = React.memo(function ActivityItem({
               <Typography
                 style={{
                   fontSize: 16,
-                  color: TEXT_PRIMARY,
+                  color: UI.color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >

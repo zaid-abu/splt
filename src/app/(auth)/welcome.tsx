@@ -1,13 +1,14 @@
 import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { View, Platform, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BlurView } from "expo-blur";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { UI, PressableScale } from "@/components/ui/native-ui";
+import { useUIStore } from "@/store/useUIStore";
 import { useSignInWithGoogle, useSignInWithApple } from "@/features/auth/hooks/useAuthMutations";
 
 const FEATURES = ["Record expenses in seconds", "See balances at a glance", "Settle up with ease"];
@@ -15,12 +16,13 @@ const FEATURES = ["Record expenses in seconds", "See balances at a glance", "Set
 export default function WelcomeScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
   const { mutateAsync: signInWithGoogle, isPending: isGoogleLoading } = useSignInWithGoogle();
   const { mutateAsync: signInWithApple, isPending: isAppleLoading } = useSignInWithApple();
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <View style={{ flex: 1, paddingHorizontal: 32, paddingTop: insets.top + 60 }}>
         <Animated.View entering={FadeIn.delay(100).duration(800)}>
@@ -100,7 +102,7 @@ export default function WelcomeScreen(): JSX.Element {
         >
           <BlurView
             intensity={Platform.OS === "ios" ? 80 : 90}
-            tint="light"
+            tint={isDarkMode ? "dark" : "light"}
             style={{
               padding: 20,
               gap: 14,
@@ -124,7 +126,11 @@ export default function WelcomeScreen(): JSX.Element {
                 }}
               >
                 <Typography
-                  style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 16,
+                    color: UI.color.textInverse,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
                   Get Started
                 </Typography>

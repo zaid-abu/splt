@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { useState, useMemo, useCallback } from "react";
 import { View, ScrollView, RefreshControl } from "react-native";
 import { Typography } from "heroui-native";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import { useQueryClient } from "@tanstack/react-query";
@@ -125,7 +125,7 @@ export default function ActivityScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg, paddingTop: insets.top }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
       <ScreenHeader title="Activity" />
 
       {/* Search + filters — outside FlatList so the input never unmounts on data change */}

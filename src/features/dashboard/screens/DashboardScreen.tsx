@@ -1,7 +1,7 @@
 import type { ComponentType, JSX } from "react";
 import { useCallback, useMemo, useState, useEffect } from "react";
 import { ScrollView, View, RefreshControl, Pressable, StyleSheet } from "react-native";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -374,7 +374,7 @@ export default function DashboardScreen(): JSX.Element {
 
   return (
     <View style={styles.screen}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <View
         style={{
@@ -954,7 +954,7 @@ export default function DashboardScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 14,
-                        color: "#FFFFFF",
+                        color: UI.color.textInverse,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -1079,7 +1079,7 @@ export default function DashboardScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 15,
-                        color: "#FFFFFF",
+                        color: UI.color.textInverse,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >

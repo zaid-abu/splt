@@ -2,7 +2,7 @@ import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useCallback, useMemo } from "react";
-import { StatusBar } from "expo-status-bar";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { View, Pressable, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -202,10 +202,10 @@ export default function GroupsScreen(): JSX.Element {
                 opacity: pressed ? 0.7 : 1,
               })}
             >
-              <icons.Plus size={20} color="#FFFFFF" strokeWidth={2} />
+              <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={2} />
               <Typography
                 style={{
-                  color: "#FFFFFF",
+                  color: UI.color.textInverse,
                   fontSize: 16,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   marginLeft: 8,
@@ -259,7 +259,7 @@ export default function GroupsScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <StatusBar style="dark" />
+      <ThemedStatusBar />
 
       <View style={{ paddingTop: insets.top + 16 }}>
         <ScreenHeader

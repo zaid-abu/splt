@@ -7,7 +7,8 @@ import { supabase } from "@/services/supabase/client";
 
 import { AppProvider } from "@/providers/AppProvider";
 import { useUIStore } from "@/store/useUIStore";
-import { applyTheme } from "@/components/ui/native-ui";
+import { UI, applyTheme } from "@/components/ui/native-ui";
+import { Uniwind } from "uniwind";
 import "../global.css";
 
 export { ErrorFallback as ErrorBoundary } from "@/components/feedback/ErrorFallback";
@@ -44,6 +45,7 @@ export default function RootLayout(): JSX.Element | null {
 
   // Apply theme on every render so UI.color is updated before children render
   applyTheme(isDarkMode);
+  Uniwind.setTheme(isDarkMode ? "dark" : "light");
 
   useEffect(() => {
     if (!loaded) return;
@@ -60,7 +62,11 @@ export default function RootLayout(): JSX.Element | null {
     <AppProvider>
       <Stack
         key={isDarkMode ? "dark" : "light"}
-        screenOptions={{ headerShown: false, animation: "slide_from_right" }}
+        screenOptions={{
+          headerShown: false,
+          animation: "slide_from_right",
+          contentStyle: { backgroundColor: UI.color.bg },
+        }}
       >
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="onboarding" />
