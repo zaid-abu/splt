@@ -14,7 +14,6 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { EmptyState, UI } from "@/components/ui/native-ui";
 
-
 interface UserSearchBottomSheetProps {
   onSelect: (user: User) => void;
   excludeUserIds?: string[];
@@ -130,71 +129,71 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
       const isProcessingThis = isProcessing === item.id;
 
       return (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              paddingHorizontal: 24,
-              paddingVertical: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: SEPARATOR,
-              opacity: isExcluded ? 0.5 : 1,
-            }}
-          >
-            <AppUserAvatar user={item} size="lg" />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            paddingHorizontal: 24,
+            paddingVertical: 16,
+            borderBottomWidth: 1,
+            borderBottomColor: SEPARATOR,
+            opacity: isExcluded ? 0.5 : 1,
+          }}
+        >
+          <AppUserAvatar user={item} size="lg" />
 
-            <View style={{ flex: 1, marginLeft: 16, marginRight: 12 }}>
+          <View style={{ flex: 1, marginLeft: 16, marginRight: 12 }}>
+            <Typography
+              numberOfLines={1}
+              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+            >
+              {item.name}
+            </Typography>
+            <Typography
+              numberOfLines={1}
+              style={{
+                fontSize: 14,
+                color: TEXT_SECONDARY,
+                fontFamily: "IBMPlexSans_500Medium",
+                marginTop: 4,
+              }}
+            >
+              {item.email}
+            </Typography>
+          </View>
+
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => handleUserSelect(item)}
+            disabled={isExcluded || !!isProcessing}
+            style={({ pressed }) => ({
+              height: 40,
+              paddingHorizontal: isExcluded ? 16 : 0,
+              width: isExcluded ? undefined : 40,
+              backgroundColor: isExcluded ? UI.color.subtle : UI.color.text,
+              alignItems: "center",
+              justifyContent: "center",
+              borderRadius: UI.radius.pill,
+              opacity: pressed || (!!isProcessing && !isProcessingThis) ? 0.5 : 1,
+            })}
+          >
+            {isProcessingThis ? (
+              <Spinner size="sm" color="white" />
+            ) : isExcluded ? (
               <Typography
-                numberOfLines={1}
-                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
-              >
-                {item.name}
-              </Typography>
-              <Typography
-                numberOfLines={1}
                 style={{
                   fontSize: 14,
                   color: TEXT_SECONDARY,
-                  fontFamily: "IBMPlexSans_500Medium",
-                  marginTop: 4,
+                  fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
-                {item.email}
+                Added
               </Typography>
-            </View>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => handleUserSelect(item)}
-              disabled={isExcluded || !!isProcessing}
-              style={({ pressed }) => ({
-                height: 40,
-                paddingHorizontal: isExcluded ? 16 : 0,
-                width: isExcluded ? undefined : 40,
-                backgroundColor: isExcluded ? UI.color.subtle : UI.color.text,
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: UI.radius.pill,
-                opacity: pressed || (!!isProcessing && !isProcessingThis) ? 0.5 : 1,
-              })}
-            >
-              {isProcessingThis ? (
-                <Spinner size="sm" color="white" />
-              ) : isExcluded ? (
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  Added
-                </Typography>
-              ) : (
-                <icons.Plus size={20} color="white" strokeWidth={1.5} />
-              )}
-            </Pressable>
-          </View>
+            ) : (
+              <icons.Plus size={20} color="white" strokeWidth={1.5} />
+            )}
+          </Pressable>
+        </View>
       );
     };
 

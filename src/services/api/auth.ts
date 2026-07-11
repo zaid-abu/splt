@@ -7,8 +7,7 @@ import * as QueryParams from "expo-auth-session/build/QueryParams";
 
 WebBrowser.maybeCompleteAuthSession();
 
-const getRedirectUri = () =>
-  makeRedirectUri({ scheme: "splt", path: "auth/callback" });
+const getRedirectUri = () => makeRedirectUri({ scheme: "splt", path: "auth/callback" });
 
 async function signInWithOAuthProvider(provider: "google" | "apple") {
   const redirectTo = getRedirectUri();

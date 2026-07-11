@@ -10,8 +10,6 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { SectionLabel, UI } from "@/components/ui/native-ui";
 import type { User, Group, SplitMethod } from "@/types";
 
-
-
 interface SelectionTabsProps {
   selectionTab: "friends" | "groups";
   setSelectionTab: (tab: "friends" | "groups") => void;

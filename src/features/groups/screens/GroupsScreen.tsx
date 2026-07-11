@@ -170,7 +170,9 @@ export default function GroupsScreen(): JSX.Element {
       <View style={{ paddingHorizontal: UI.space.page }}>
         {isLoading ? (
           <View style={{ paddingTop: 20 }}>
-            {[1, 2, 3].map((i) => <ListRowSkeleton key={i} />)}
+            {[1, 2, 3].map((i) => (
+              <ListRowSkeleton key={i} />
+            ))}
           </View>
         ) : (
           <EmptyState
@@ -294,7 +296,11 @@ export default function GroupsScreen(): JSX.Element {
           showsVerticalScrollIndicator={false}
           extraData={{ filteredLength: filtered.length }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.color.text} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={UI.color.text}
+            />
           }
         />
       </FocusAwareView>

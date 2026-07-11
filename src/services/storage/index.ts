@@ -2,10 +2,7 @@ import { supabase } from "@/services/supabase/client";
 
 const BUCKET = "receipts";
 
-export async function uploadReceipt(
-  expenseId: string,
-  uri: string
-): Promise<string> {
+export async function uploadReceipt(expenseId: string, uri: string): Promise<string> {
   const ext = uri.split(".").pop() ?? "jpg";
   const filePath = `${expenseId}/receipt.${ext}`;
 

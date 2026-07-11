@@ -21,9 +21,10 @@ export default function ActivityScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
-  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(currentUser?.id);
-  const isAppLoading =
-    useUIStore((s) => s.isAppLoading) || isLoadingActivities;
+  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(
+    currentUser?.id
+  );
+  const isAppLoading = useUIStore((s) => s.isAppLoading) || isLoadingActivities;
 
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
@@ -155,58 +156,64 @@ export default function ActivityScreen(): JSX.Element {
 
       {isAppLoading && groupedActivities.length === 0 ? (
         <View style={{ paddingHorizontal: UI.space.page, gap: 0 }}>
-          {[1, 2, 3].map((i) => <ListRowSkeleton key={i} />)}
+          {[1, 2, 3].map((i) => (
+            <ListRowSkeleton key={i} />
+          ))}
         </View>
       ) : (
-      <Animated.FlatList
-        data={groupedActivities}
-        keyExtractor={(item) => item.title}
-        keyboardShouldPersistTaps="handled"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.color.text} />
-        }
-        renderItem={({ item: section }: { item: { title: string; data: Activity[] } }) => (
-          <View style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
-            {/* Month header */}
-            <Typography
-              style={{
-                fontSize: 11,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                color: UI.color.muted,
-                textTransform: "uppercase",
-                letterSpacing: 1.4,
-                marginBottom: 10,
-                paddingLeft: 2,
-              }}
-            >
-              {section.title}
-            </Typography>
+        <Animated.FlatList
+          data={groupedActivities}
+          keyExtractor={(item) => item.title}
+          keyboardShouldPersistTaps="handled"
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={UI.color.text}
+            />
+          }
+          renderItem={({ item: section }: { item: { title: string; data: Activity[] } }) => (
+            <View style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+              {/* Month header */}
+              <Typography
+                style={{
+                  fontSize: 11,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: UI.color.muted,
+                  textTransform: "uppercase",
+                  letterSpacing: 1.4,
+                  marginBottom: 10,
+                  paddingLeft: 2,
+                }}
+              >
+                {section.title}
+              </Typography>
 
-            {/* Card container */}
-            <View
-              style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                overflow: "hidden",
-              }}
-            >
-              {section.data.map((activity, idx) => (
-                <ActivityItem
-                  key={activity.id}
-                  activity={activity}
-                  index={idx}
-                  isLast={idx === section.data.length - 1}
-                />
-              ))}
+              {/* Card container */}
+              <View
+                style={{
+                  backgroundColor: UI.color.surface,
+                  borderRadius: UI.radius.lg,
+                  borderWidth: 1,
+                  borderColor: UI.color.border,
+                  overflow: "hidden",
+                }}
+              >
+                {section.data.map((activity, idx) => (
+                  <ActivityItem
+                    key={activity.id}
+                    activity={activity}
+                    index={idx}
+                    isLast={idx === section.data.length - 1}
+                  />
+                ))}
+              </View>
             </View>
-          </View>
-        )}
-        ListEmptyComponent={ListEmptyComponent}
-        contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
-        showsVerticalScrollIndicator={false}
-      />
+          )}
+          ListEmptyComponent={ListEmptyComponent}
+          contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
+          showsVerticalScrollIndicator={false}
+        />
       )}
     </FocusAwareView>
   );

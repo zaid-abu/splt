@@ -37,7 +37,10 @@ export default function WelcomeScreen(): JSX.Element {
           </Typography>
         </Animated.View>
 
-        <Animated.View entering={FadeInDown.delay(300).duration(600).springify()} style={{ marginBottom: 56 }}>
+        <Animated.View
+          entering={FadeInDown.delay(300).duration(600).springify()}
+          style={{ marginBottom: 56 }}
+        >
           <Typography
             style={{
               fontFamily: "Sora_600SemiBold",
@@ -95,12 +98,21 @@ export default function WelcomeScreen(): JSX.Element {
             overflow: "hidden",
           }}
         >
-          <BlurView intensity={Platform.OS === "ios" ? 80 : 90} tint="light" style={{
-            padding: 20,
-            gap: 14,
-            backgroundColor: Platform.OS === "android" ? UI.color.control : "transparent",
-          }}>
-            <PressableScale onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push("/(auth)/register"); }}>
+          <BlurView
+            intensity={Platform.OS === "ios" ? 80 : 90}
+            tint="light"
+            style={{
+              padding: 20,
+              gap: 14,
+              backgroundColor: Platform.OS === "android" ? UI.color.control : "transparent",
+            }}
+          >
+            <PressableScale
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push("/(auth)/register");
+              }}
+            >
               <View
                 style={{
                   width: "100%",
@@ -111,13 +123,22 @@ export default function WelcomeScreen(): JSX.Element {
                   justifyContent: "center",
                 }}
               >
-                <Typography style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
+                <Typography
+                  style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+                >
                   Get Started
                 </Typography>
               </View>
             </PressableScale>
 
-            <PressableScale onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); try { await signInWithGoogle(); } catch {} }}>
+            <PressableScale
+              onPress={async () => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                try {
+                  await signInWithGoogle();
+                } catch {}
+              }}
+            >
               <View
                 style={{
                   width: "100%",
@@ -136,10 +157,22 @@ export default function WelcomeScreen(): JSX.Element {
                   <ActivityIndicator color={UI.color.text} />
                 ) : (
                   <>
-                    <Typography style={{ fontSize: 15, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                    <Typography
+                      style={{
+                        fontSize: 15,
+                        color: UI.color.text,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
                       G
                     </Typography>
-                    <Typography style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                    <Typography
+                      style={{
+                        fontSize: 16,
+                        color: UI.color.text,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
                       Continue with Google
                     </Typography>
                   </>
@@ -148,7 +181,14 @@ export default function WelcomeScreen(): JSX.Element {
             </PressableScale>
 
             {Platform.OS === "ios" && (
-              <PressableScale onPress={async () => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); try { await signInWithApple(); } catch {} }}>
+              <PressableScale
+                onPress={async () => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  try {
+                    await signInWithApple();
+                  } catch {}
+                }}
+              >
                 <View
                   style={{
                     width: "100%",
@@ -167,10 +207,22 @@ export default function WelcomeScreen(): JSX.Element {
                     <ActivityIndicator color={UI.color.text} />
                   ) : (
                     <>
-                      <Typography style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                      <Typography
+                        style={{
+                          fontSize: 16,
+                          color: UI.color.text,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
                         
                       </Typography>
-                      <Typography style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                      <Typography
+                        style={{
+                          fontSize: 16,
+                          color: UI.color.text,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
                         Continue with Apple
                       </Typography>
                     </>
@@ -179,7 +231,12 @@ export default function WelcomeScreen(): JSX.Element {
               </PressableScale>
             )}
 
-            <PressableScale onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); router.push("/(auth)/login"); }}>
+            <PressableScale
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push("/(auth)/login");
+              }}
+            >
               <View
                 style={{
                   width: "100%",
@@ -192,7 +249,13 @@ export default function WelcomeScreen(): JSX.Element {
                   justifyContent: "center",
                 }}
               >
-                <Typography style={{ fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: UI.color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
                   Log in
                 </Typography>
               </View>

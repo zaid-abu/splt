@@ -41,8 +41,6 @@ import { CURRENCIES, EXPENSE_CATEGORIES } from "@/types";
 import type { Currency, ExpenseCategory, Group, SplitMethod, User } from "@/types";
 import type { ExpenseNewRouteParams } from "@/types/navigation";
 
-
-
 const SPLIT_METHODS: {
   key: SplitMethod;
   label: string;
@@ -500,7 +498,12 @@ function PreviewCard({
         <View
           style={[styles.statusPill, balanced ? styles.statusPillSuccess : styles.statusPillDanger]}
         >
-          <Typography style={[styles.statusPillText, { color: balanced ? UI.color.success : UI.color.danger }]}>
+          <Typography
+            style={[
+              styles.statusPillText,
+              { color: balanced ? UI.color.success : UI.color.danger },
+            ]}
+          >
             {status}
           </Typography>
         </View>
@@ -835,7 +838,10 @@ function ParticipantsEditor({
             ]}
           >
             <Typography
-              style={[styles.remainingText, { color: remainingBalanced ? UI.color.success : UI.color.danger }]}
+              style={[
+                styles.remainingText,
+                { color: remainingBalanced ? UI.color.success : UI.color.danger },
+              ]}
             >
               {remainingText}
             </Typography>

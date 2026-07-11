@@ -20,7 +20,6 @@ import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { UI, ScreenHeader, MetricCell, applyTheme } from "@/components/ui/native-ui";
 import { Uniwind } from "uniwind";
 
-
 import { SettingsItem } from "@/features/profile/components/SettingsItem";
 
 export default function ProfileScreen(): JSX.Element {

@@ -11,10 +11,8 @@ import * as icons from "lucide-react-native";
 import { PressableFeedback, Typography } from "heroui-native";
 import { UI } from "@/components/ui/native-ui";
 
-
 import type { Currency } from "@/types";
 import { CURRENCIES } from "@/types";
-
 
 const POPULAR_CODES = ["USD", "EUR", "GBP", "INR", "JPY"];
 

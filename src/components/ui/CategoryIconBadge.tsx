@@ -6,8 +6,6 @@ import { UI } from "@/components/ui/native-ui";
 import { EXPENSE_CATEGORIES } from "@/types";
 import type { ExpenseCategory } from "@/types";
 
-
-
 type CategoryTone = {
   fill: string;
   icon: string;

@@ -6,8 +6,6 @@ import * as icons from "lucide-react-native";
 import { UI } from "@/components/ui/native-ui";
 import type { Group } from "@/types";
 
-
-
 type GroupTone = {
   fill: string;
   icon: string;

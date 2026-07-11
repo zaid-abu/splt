@@ -6,7 +6,6 @@ import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { UI } from "@/components/ui/native-ui";
 
-
 export function useConfirmationSheet() {
   const sheetRef = useRef<BottomSheetModal>(null);
 

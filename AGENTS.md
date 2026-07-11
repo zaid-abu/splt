@@ -12,27 +12,27 @@ Splt is a cross-platform mobile expense-splitting app (similar to Splitwise) bui
 
 ## Tech Stack
 
-| Category | Technology |
-|----------|-----------|
-| Framework | Expo 56, React Native 0.85, React 19 |
-| Routing | Expo Router (file-based, `src/app/`) |
-| UI Library | HeroUI Native 1.x |
-| Styling | Uniwind + Tailwind CSS v4 + `global.css` |
-| State (Server) | TanStack React Query v5 |
-| State (Client) | Zustand v5 (persisted via AsyncStorage) |
-| Forms | React Hook Form v7 + Zod v4 |
-| Navigation | Expo Router + Gorhom Bottom Sheet v5 |
-| Icons | Lucide React Native |
-| Charts | react-native-gifted-charts |
-| Date Picker | react-native-ui-datepicker |
-| Animations | react-native-reanimated v4, Lottie |
-| Haptics | expo-haptics |
-| Lists | @shopify/flash-list |
-| Testing | Jest + @testing-library/react-native |
-| Linting | ESLint (expo-config) |
-| Formatting | Prettier |
-| CI/CD | GitHub Actions + EAS Build |
-| Auth | Supabase Auth (email/password) |
+| Category       | Technology                               |
+| -------------- | ---------------------------------------- |
+| Framework      | Expo 56, React Native 0.85, React 19     |
+| Routing        | Expo Router (file-based, `src/app/`)     |
+| UI Library     | HeroUI Native 1.x                        |
+| Styling        | Uniwind + Tailwind CSS v4 + `global.css` |
+| State (Server) | TanStack React Query v5                  |
+| State (Client) | Zustand v5 (persisted via AsyncStorage)  |
+| Forms          | React Hook Form v7 + Zod v4              |
+| Navigation     | Expo Router + Gorhom Bottom Sheet v5     |
+| Icons          | Lucide React Native                      |
+| Charts         | react-native-gifted-charts               |
+| Date Picker    | react-native-ui-datepicker               |
+| Animations     | react-native-reanimated v4, Lottie       |
+| Haptics        | expo-haptics                             |
+| Lists          | @shopify/flash-list                      |
+| Testing        | Jest + @testing-library/react-native     |
+| Linting        | ESLint (expo-config)                     |
+| Formatting     | Prettier                                 |
+| CI/CD          | GitHub Actions + EAS Build               |
+| Auth           | Supabase Auth (email/password)           |
 
 ## Project Structure
 
@@ -109,13 +109,16 @@ splt/
 ## Architecture Patterns
 
 ### State Management (4-Tier)
+
 1. **React State** — Component-local temporary state
 2. **React Context** — Deeply shared configs (AuthContext)
 3. **Zustand** — Global UI state (currency, dark mode, exchange rates)
 4. **React Query** — Server state (data fetching, caching, mutations)
 
 ### Feature-Sliced Design
+
 Each feature in `src/features/` contains its own:
+
 - `screens/` — Screen components (consumed by Expo Router)
 - `components/` — Feature-specific components
 - `hooks/` — Custom hooks
@@ -124,7 +127,9 @@ Each feature in `src/features/` contains its own:
 - `utils/` — Utility functions
 
 ### Service Layer
+
 All Supabase interactions are hidden behind service objects:
+
 - `AuthService` (signUp, signIn, signOut, getSession, changePassword, resetPassword, updateProfile, deleteAccount, getCurrentUser)
 - `expensesApi` (fetchGroupExpenses, fetchUserExpenses, fetchExpense, addExpense, updateExpense, deleteExpense)
 - `groupsApi` (fetchGroups, fetchGroup, createGroup, updateGroup, deleteGroup, addMembers, removeMember)
@@ -133,6 +138,7 @@ All Supabase interactions are hidden behind service objects:
 - `activitiesApi` (fetchActivities, logActivity, deleteActivity)
 
 ### Routing Structure
+
 - Root Stack: `(auth)` → `onboarding` → `(tabs)` + modal routes
 - Tab Bar: Dashboard | Groups | Friends | Activity (no text labels, only icons + active dot)
 - Auth guard: Routes redirect to `(auth)/welcome` if unauthenticated
@@ -143,6 +149,7 @@ All Supabase interactions are hidden behind service objects:
 Tables: `users`, `groups`, `group_members`, `expenses`, `expense_splits`, `settlements`, `activities`, `friendships`, `comments`
 
 Key relationships:
+
 - `groups` → `group_members` (many-to-many via join table with balance)
 - `expenses` → `expense_splits` (one-to-many), expenses belong to groups
 - `settlements` → users (from_user_id, to_user_id)
@@ -152,6 +159,7 @@ Key relationships:
 ## Key Conventions
 
 ### Code Style
+
 - TypeScript strict mode enabled
 - Path alias `@/` maps to `./src/`, `@/assets/` maps to `./assets/`
 - No semicolons in JS/TS (Prettier config: `semi: true`, singleQuote: false)
@@ -159,6 +167,7 @@ Key relationships:
 - Arrow parens always, LF line endings
 
 ### Naming
+
 - Screens: `*Screen.tsx` (e.g., `DashboardScreen.tsx`)
 - Components: PascalCase (e.g., `MemberAvatar.tsx`)
 - Hooks: `use*` prefix (e.g., `useFriends.ts`)
@@ -168,6 +177,7 @@ Key relationships:
 - Zustand store: `useUIStore` pattern
 
 ### UI Conventions
+
 - App background: `#F7F6F1` (warm cream)
 - Card surface: `#FEFDFA` (ivory)
 - Control interior: `#FFFFFF` (white)
@@ -178,6 +188,7 @@ Key relationships:
 - No shadows on cards (flat-by-default). Chrome lift on tab bar, toast lift for feedback.
 
 ### Form Validation
+
 - Zod schemas in `src/validation/schemas.ts`
 - Forms use React Hook Form + Zod resolver
 - Login: email + password
@@ -219,9 +230,11 @@ npx eas build --platform android --profile production
 ```
 
 ## Environment Variables
+
 - `EXPO_PUBLIC_SUPABASE_URL` — Supabase project URL
 - `EXPO_PUBLIC_SUPABASE_ANON_KEY` — Supabase anonymous key
 
 ## CI/CD
+
 - **CI:** Runs on push/PR to `main` — install, typecheck, lint, format check
 - **CD:** Manual trigger or tag `v*` — builds signed Android APK, uploads artifact, creates GitHub Release

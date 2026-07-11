@@ -5,13 +5,7 @@ import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  ActivityIndicator,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator } from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
@@ -289,7 +283,12 @@ export default function ForgotPasswordScreen(): JSX.Element {
                   </Animated.View>
 
                   <View style={{ gap: 14, marginTop: 32 }}>
-                    <PressableScale onPress={() => { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); router.push("/(auth)/login"); }}>
+                    <PressableScale
+                      onPress={() => {
+                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                        router.push("/(auth)/login");
+                      }}
+                    >
                       <View
                         style={{
                           width: "100%",

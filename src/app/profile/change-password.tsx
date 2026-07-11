@@ -3,7 +3,15 @@ import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator, Pressable, TextInput } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  ActivityIndicator,
+  Pressable,
+  TextInput,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -88,11 +96,7 @@ export default function ChangePasswordScreen(): JSX.Element {
           >
             Change Password
           </Typography>
-          <IconButton
-            icon={icons.X}
-            accessibilityLabel="Close"
-            onPress={() => router.back()}
-          />
+          <IconButton icon={icons.X} accessibilityLabel="Close" onPress={() => router.back()} />
         </View>
 
         <ScrollView
@@ -102,7 +106,10 @@ export default function ChangePasswordScreen(): JSX.Element {
         >
           <TextInput
             value={newPassword}
-            onChangeText={(v) => { setError(""); setNewPassword(v); }}
+            onChangeText={(v) => {
+              setError("");
+              setNewPassword(v);
+            }}
             placeholder="New password"
             placeholderTextColor={UI.color.muted}
             secureTextEntry
@@ -119,7 +126,10 @@ export default function ChangePasswordScreen(): JSX.Element {
 
           <TextInput
             value={confirmPassword}
-            onChangeText={(v) => { setError(""); setConfirmPassword(v); }}
+            onChangeText={(v) => {
+              setError("");
+              setConfirmPassword(v);
+            }}
             placeholder="Confirm new password"
             placeholderTextColor={UI.color.muted}
             secureTextEntry
@@ -135,9 +145,7 @@ export default function ChangePasswordScreen(): JSX.Element {
           />
 
           {error && (
-            <Typography
-              style={{ color: ERROR, fontSize: 13, fontFamily: "IBMPlexSans_500Medium" }}
-            >
+            <Typography style={{ color: ERROR, fontSize: 13, fontFamily: "IBMPlexSans_500Medium" }}>
               {error}
             </Typography>
           )}

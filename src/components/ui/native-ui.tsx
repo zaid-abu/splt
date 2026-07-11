@@ -43,9 +43,27 @@ export const UI = {
   radius: { sm: 8, md: 12, lg: 16, xl: 20, pill: 999 },
   space: { page: 24 },
   shadow: {
-    sm: { shadowColor: "#000", shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.04, shadowRadius: 4, elevation: 2 },
-    md: { shadowColor: "#000", shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.08, shadowRadius: 8, elevation: 4 },
-    lg: { shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.12, shadowRadius: 16, elevation: 8 },
+    sm: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    md: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    lg: {
+      shadowColor: "#000",
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.12,
+      shadowRadius: 16,
+      elevation: 8,
+    },
   },
 };
 
@@ -55,12 +73,20 @@ export function applyTheme(isDark: boolean): void {
 }
 
 export const TYPO = {
-  hero: (size = 32) => ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.02 }) as const,
-  title: (size = 24) => ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.01 }) as const,
+  hero: (size = 32) =>
+    ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.02 }) as const,
+  title: (size = 24) =>
+    ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.01 }) as const,
   body: (size = 17) => ({ fontFamily: "IBMPlexSans_400Regular", fontSize: size }) as const,
   medium: (size = 16) => ({ fontFamily: "IBMPlexSans_500Medium", fontSize: size }) as const,
   semi: (size = 16) => ({ fontFamily: "IBMPlexSans_600SemiBold", fontSize: size }) as const,
-  label: () => ({ fontFamily: "IBMPlexSans_600SemiBold", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase" }) as const,
+  label: () =>
+    ({
+      fontFamily: "IBMPlexSans_600SemiBold",
+      fontSize: 11,
+      letterSpacing: 1.2,
+      textTransform: "uppercase",
+    }) as const,
 };
 
 export function PressableScale({

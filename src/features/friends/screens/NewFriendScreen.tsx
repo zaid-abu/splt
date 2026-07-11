@@ -92,81 +92,81 @@ export default function NewFriendScreen(): JSX.Element {
     const isAdded = status === "accepted";
     const isDisabled = !!addingUserId || isRequested || isAdded;
 
-      return (
-          <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            paddingHorizontal: 24,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
-          }}
-        >
-          <View style={{ marginRight: 16 }}>
-            <AppUserAvatar user={item} size="md" />
-          </View>
-
-          <View style={{ flex: 1, marginRight: 12 }}>
-            <Typography
-              numberOfLines={1}
-              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
-            >
-              {item.name}
-            </Typography>
-            <Typography
-              numberOfLines={1}
-              style={{
-                fontSize: 14,
-                color: TEXT_SECONDARY,
-                fontFamily: "IBMPlexSans_500Medium",
-                marginTop: 4,
-              }}
-            >
-              {item.email}
-            </Typography>
-          </View>
-
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => handleAddFriend(item)}
-            disabled={isDisabled}
-            style={({ pressed }) => ({
-              height: 44,
-              paddingHorizontal: isRequested || isAdded ? 16 : 0,
-              width: isRequested || isAdded ? undefined : 44,
-              backgroundColor: isAdded
-                ? UI.color.success
-                : isRequested
-                  ? UI.color.control
-                  : UI.color.text,
-              borderWidth: isRequested ? 1 : 0,
-              borderColor: SEPARATOR,
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: UI.radius.pill,
-              opacity: pressed || (!!addingUserId && !isAdding) ? 0.5 : 1,
-            })}
-          >
-            {isAdding ? (
-              <Spinner size="sm" color="white" />
-            ) : isAdded ? (
-              <Typography
-                style={{ fontSize: 14, color: "white", fontFamily: "IBMPlexSans_600SemiBold" }}
-              >
-                Added
-              </Typography>
-            ) : isRequested ? (
-              <Typography
-                style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
-              >
-                Requested
-              </Typography>
-            ) : (
-              <icons.UserPlus size={20} color="white" strokeWidth={1.5} />
-            )}
-          </Pressable>
+    return (
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          paddingHorizontal: 24,
+          paddingVertical: 16,
+          borderBottomWidth: 1,
+          borderBottomColor: SEPARATOR,
+        }}
+      >
+        <View style={{ marginRight: 16 }}>
+          <AppUserAvatar user={item} size="md" />
         </View>
+
+        <View style={{ flex: 1, marginRight: 12 }}>
+          <Typography
+            numberOfLines={1}
+            style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+          >
+            {item.name}
+          </Typography>
+          <Typography
+            numberOfLines={1}
+            style={{
+              fontSize: 14,
+              color: TEXT_SECONDARY,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginTop: 4,
+            }}
+          >
+            {item.email}
+          </Typography>
+        </View>
+
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => handleAddFriend(item)}
+          disabled={isDisabled}
+          style={({ pressed }) => ({
+            height: 44,
+            paddingHorizontal: isRequested || isAdded ? 16 : 0,
+            width: isRequested || isAdded ? undefined : 44,
+            backgroundColor: isAdded
+              ? UI.color.success
+              : isRequested
+                ? UI.color.control
+                : UI.color.text,
+            borderWidth: isRequested ? 1 : 0,
+            borderColor: SEPARATOR,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: UI.radius.pill,
+            opacity: pressed || (!!addingUserId && !isAdding) ? 0.5 : 1,
+          })}
+        >
+          {isAdding ? (
+            <Spinner size="sm" color="white" />
+          ) : isAdded ? (
+            <Typography
+              style={{ fontSize: 14, color: "white", fontFamily: "IBMPlexSans_600SemiBold" }}
+            >
+              Added
+            </Typography>
+          ) : isRequested ? (
+            <Typography
+              style={{ fontSize: 14, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+            >
+              Requested
+            </Typography>
+          ) : (
+            <icons.UserPlus size={20} color="white" strokeWidth={1.5} />
+          )}
+        </Pressable>
+      </View>
     );
   };
 

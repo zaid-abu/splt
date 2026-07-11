@@ -40,7 +40,6 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { GROUP_ICONS } from "@/constants/icons";
 import { UI, IconButton, SectionLabel } from "@/components/ui/native-ui";
 
-
 const TEXT_DANGER = UI.color.danger;
 
 function IconShell({

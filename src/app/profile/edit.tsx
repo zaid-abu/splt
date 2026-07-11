@@ -3,7 +3,15 @@ import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator, Pressable, TextInput } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  ActivityIndicator,
+  Pressable,
+  TextInput,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -77,11 +85,7 @@ export default function EditProfileScreen(): JSX.Element {
           >
             Edit Profile
           </Typography>
-          <IconButton
-            icon={icons.X}
-            accessibilityLabel="Close"
-            onPress={() => router.back()}
-          />
+          <IconButton icon={icons.X} accessibilityLabel="Close" onPress={() => router.back()} />
         </View>
 
         <ScrollView
@@ -91,7 +95,10 @@ export default function EditProfileScreen(): JSX.Element {
         >
           <TextInput
             value={name}
-            onChangeText={(v) => { setNameError(""); setName(v); }}
+            onChangeText={(v) => {
+              setNameError("");
+              setName(v);
+            }}
             placeholder="Full Name"
             placeholderTextColor={UI.color.muted}
             autoCapitalize="words"
@@ -106,9 +113,7 @@ export default function EditProfileScreen(): JSX.Element {
           />
 
           {nameError && (
-            <Typography
-              style={{ color: ERROR, fontSize: 13, fontFamily: "IBMPlexSans_500Medium" }}
-            >
+            <Typography style={{ color: ERROR, fontSize: 13, fontFamily: "IBMPlexSans_500Medium" }}>
               {nameError}
             </Typography>
           )}

@@ -58,6 +58,7 @@ npm run test
 ```
 
 Jest config (`jest.config.js`):
+
 - Preset: `jest-expo`
 - Path alias: `@/` → `./src/`
 - Setup: `@testing-library/react-native/extend-expect`
@@ -74,6 +75,7 @@ npx eas build --platform android --profile production
 ```
 
 EAS config (`eas.json`):
+
 - `development` — dev client, internal distribution
 - `preview` — internal distribution
 - `production` — auto-increment version
@@ -81,10 +83,12 @@ EAS config (`eas.json`):
 ## CI/CD
 
 ### CI (`.github/workflows/ci.yml`)
+
 Trigger: push/PR to `main`
 Steps: checkout → setup Node 20 → install → generate types → typecheck → lint → format check
 
 ### CD (`.github/workflows/cd.yml`)
+
 Trigger: manual (`workflow_dispatch`) or tag `v*`
 Steps: checkout → setup Node 20 → install → prebuild Android → setup Java 17 → decode keystore → build APK → upload artifact → create GitHub Release
 Secrets required: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_ALIAS`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_PASSWORD`
@@ -92,6 +96,7 @@ Secrets required: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `ANDROID_KEYSTORE_BASE64`
 ## App Configuration
 
 See `app.json`:
+
 - App name: `splt`
 - Scheme: `splt`
 - Bundle ID: `com.splt.app`

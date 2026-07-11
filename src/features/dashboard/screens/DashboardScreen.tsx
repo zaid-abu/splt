@@ -73,7 +73,11 @@ function IconShell({ icon: Icon, tone }: { icon: LucideIcon; tone: string }): JS
         height: 44,
         borderRadius: UI.radius.lg,
         backgroundColor:
-          tone === "danger" ? UI.color.dangerTint : tone === "success" ? UI.color.successTint : UI.color.control,
+          tone === "danger"
+            ? UI.color.dangerTint
+            : tone === "success"
+              ? UI.color.successTint
+              : UI.color.control,
         borderWidth: 1,
         borderColor: UI.color.border,
         alignItems: "center",
@@ -83,7 +87,11 @@ function IconShell({ icon: Icon, tone }: { icon: LucideIcon; tone: string }): JS
       <Icon
         size={20}
         color={
-          tone === "danger" ? UI.color.danger : tone === "success" ? UI.color.success : UI.color.muted
+          tone === "danger"
+            ? UI.color.danger
+            : tone === "success"
+              ? UI.color.success
+              : UI.color.muted
         }
         strokeWidth={2}
       />
@@ -131,23 +139,72 @@ export default function DashboardScreen(): JSX.Element {
   const { data: notifications = [] } = useNotifications(currentUser?.id);
   const hasNotifications = notifications.length > 0;
 
-  const styles = useMemo(() => StyleSheet.create({
-  screen: { flex: 1, backgroundColor: UI.color.bg },
-  row: { flexDirection: "row", alignItems: "center" },
-  rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  surfaceCard: { backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg },
-  cardPadded: { backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg, padding: 14 },
-  textTitle: { fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
-  textSubtitle: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" },
-  textSemi: { fontFamily: "IBMPlexSans_600SemiBold", color: UI.color.text },
-  textMedium: { fontFamily: "IBMPlexSans_500Medium", color: UI.color.muted },
-  sectionPad: { paddingHorizontal: UI.space.page },
-  iconShell: { width: 44, height: 44, borderRadius: UI.radius.lg, backgroundColor: UI.color.control, borderWidth: 1, borderColor: UI.color.border, alignItems: "center", justifyContent: "center" },
-  emptyIconShell: { width: 56, height: 56, borderRadius: UI.radius.lg, backgroundColor: UI.color.control, borderWidth: 1, borderColor: UI.color.border, alignItems: "center", justifyContent: "center", marginBottom: 16 },
-  pillButton: { minHeight: 44, paddingHorizontal: 14, borderRadius: UI.radius.pill, alignItems: "center", justifyContent: "center" },
-  iconButton: { width: 44, height: 44, borderRadius: UI.radius.pill, backgroundColor: UI.color.control, borderWidth: 1, borderColor: UI.color.border, alignItems: "center", justifyContent: "center" },
-  pressed: { opacity: 0.7 },
-}), []);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: UI.color.bg },
+        row: { flexDirection: "row", alignItems: "center" },
+        rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+        surfaceCard: {
+          backgroundColor: UI.color.surface,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          borderRadius: UI.radius.lg,
+        },
+        cardPadded: {
+          backgroundColor: UI.color.surface,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          borderRadius: UI.radius.lg,
+          padding: 14,
+        },
+        textTitle: { fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+        textSubtitle: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" },
+        textSemi: { fontFamily: "IBMPlexSans_600SemiBold", color: UI.color.text },
+        textMedium: { fontFamily: "IBMPlexSans_500Medium", color: UI.color.muted },
+        sectionPad: { paddingHorizontal: UI.space.page },
+        iconShell: {
+          width: 44,
+          height: 44,
+          borderRadius: UI.radius.lg,
+          backgroundColor: UI.color.control,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        emptyIconShell: {
+          width: 56,
+          height: 56,
+          borderRadius: UI.radius.lg,
+          backgroundColor: UI.color.control,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 16,
+        },
+        pillButton: {
+          minHeight: 44,
+          paddingHorizontal: 14,
+          borderRadius: UI.radius.pill,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        iconButton: {
+          width: 44,
+          height: 44,
+          borderRadius: UI.radius.pill,
+          backgroundColor: UI.color.control,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          alignItems: "center",
+          justifyContent: "center",
+        },
+        pressed: { opacity: 0.7 },
+      }),
+    []
+  );
 
   const [refreshing, setRefreshing] = useState(false);
   const [activityFilter, setActivityFilter] = useState<"all" | "paid" | "owe">("all");
@@ -168,7 +225,7 @@ export default function DashboardScreen(): JSX.Element {
       }, 400);
       return () => clearTimeout(timer);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFirstLoad]);
 
   const perUserBalances = useMemo(
@@ -308,7 +365,9 @@ export default function DashboardScreen(): JSX.Element {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await queryClient.invalidateQueries({ queryKey: ["groups", "expenses", "settlements", "friends", "notifications", "activities"] });
+    await queryClient.invalidateQueries({
+      queryKey: ["groups", "expenses", "settlements", "friends", "notifications", "activities"],
+    });
     setRefreshing(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [queryClient]);
@@ -604,13 +663,16 @@ export default function DashboardScreen(): JSX.Element {
                 </HapticButton>
               </View>
               <View style={{ flex: 1 }}>
-                <HapticButton tone="outlined" onPress={() =>
-                  owedToYou > 0
-                    ? router.push(`/settle/${owedUsers[0].id}`)
-                    : youOwe > 0
-                      ? router.push(`/settle/${oweUsers[0].id}`)
-                      : router.push("/(tabs)/friends")
-                }>
+                <HapticButton
+                  tone="outlined"
+                  onPress={() =>
+                    owedToYou > 0
+                      ? router.push(`/settle/${owedUsers[0].id}`)
+                      : youOwe > 0
+                        ? router.push(`/settle/${oweUsers[0].id}`)
+                        : router.push("/(tabs)/friends")
+                  }
+                >
                   Settle up
                 </HapticButton>
               </View>
@@ -618,7 +680,10 @@ export default function DashboardScreen(): JSX.Element {
           </FocusAwareView>
 
           {friends.length <= 1 && (
-            <FocusAwareView delay={75} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+            <FocusAwareView
+              delay={75}
+              style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
+            >
               <View
                 style={{
                   backgroundColor: UI.color.surface,
@@ -669,7 +734,11 @@ export default function DashboardScreen(): JSX.Element {
                     ? "Add friends to start splitting expenses together."
                     : "You have a few friends. Add more to split group expenses."}
                 </Typography>
-                <HapticButton tone="outlined" height={44} onPress={() => router.push("/friend/new")}>
+                <HapticButton
+                  tone="outlined"
+                  height={44}
+                  onPress={() => router.push("/friend/new")}
+                >
                   {friends.length === 0 ? "Add friend" : "Find friends"}
                 </HapticButton>
               </View>
@@ -677,7 +746,10 @@ export default function DashboardScreen(): JSX.Element {
           )}
 
           {(owedUsers.length > 0 || oweUsers.length > 0) && (
-            <FocusAwareView delay={90} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+            <FocusAwareView
+              delay={90}
+              style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
+            >
               <View style={{ marginBottom: 14 }}>
                 <Typography style={TYPO.semi(18)}>Need attention</Typography>
               </View>
@@ -697,11 +769,21 @@ export default function DashboardScreen(): JSX.Element {
                     <AppUserAvatar user={user} size="sm" />
                     <View style={{ flex: 1, marginLeft: 12 }}>
                       <Typography style={TYPO.semi(15)}>{user.name}</Typography>
-                      <Typography style={[TYPO.medium(13), { color: UI.color.success, marginTop: 1 }]}>
-                        Owes you {formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), preferredCurrency.code)}
+                      <Typography
+                        style={[TYPO.medium(13), { color: UI.color.success, marginTop: 1 }]}
+                      >
+                        Owes you{" "}
+                        {formatAmount(
+                          Math.abs(perUserBalances.get(user.id) ?? 0),
+                          preferredCurrency.code
+                        )}
                       </Typography>
                     </View>
-                    <HapticButton tone="outlined" height={36} onPress={() => router.push(`/settle/${user.id}`)}>
+                    <HapticButton
+                      tone="outlined"
+                      height={36}
+                      onPress={() => router.push(`/settle/${user.id}`)}
+                    >
                       Remind
                     </HapticButton>
                   </View>
@@ -721,11 +803,21 @@ export default function DashboardScreen(): JSX.Element {
                     <AppUserAvatar user={user} size="sm" />
                     <View style={{ flex: 1, marginLeft: 12 }}>
                       <Typography style={TYPO.semi(15)}>{user.name}</Typography>
-                      <Typography style={[TYPO.medium(13), { color: UI.color.danger, marginTop: 1 }]}>
-                        You owe {formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), preferredCurrency.code)}
+                      <Typography
+                        style={[TYPO.medium(13), { color: UI.color.danger, marginTop: 1 }]}
+                      >
+                        You owe{" "}
+                        {formatAmount(
+                          Math.abs(perUserBalances.get(user.id) ?? 0),
+                          preferredCurrency.code
+                        )}
                       </Typography>
                     </View>
-                    <HapticButton tone="ink" height={36} onPress={() => router.push(`/settle/${user.id}`)}>
+                    <HapticButton
+                      tone="ink"
+                      height={36}
+                      onPress={() => router.push(`/settle/${user.id}`)}
+                    >
                       Settle
                     </HapticButton>
                   </View>
@@ -946,7 +1038,9 @@ export default function DashboardScreen(): JSX.Element {
                   );
                 })
               ) : (
-                <View style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}>
+                <View
+                  style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}
+                >
                   <EmptyIconShell icon={icons.PackageOpen} />
                   <Typography
                     style={{

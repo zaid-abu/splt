@@ -25,10 +25,13 @@ export function HapticButton({
   style,
 }: HapticButtonProps): JSX.Element {
   const bgColor =
-    tone === "brand" ? UI.color.brand
-    : tone === "danger" ? UI.color.danger
-    : tone === "outlined" ? UI.color.control
-    : UI.color.text;
+    tone === "brand"
+      ? UI.color.brand
+      : tone === "danger"
+        ? UI.color.danger
+        : tone === "outlined"
+          ? UI.color.control
+          : UI.color.text;
   const textColor = tone === "outlined" ? UI.color.text : "#FFFFFF";
   const borderColor = tone === "outlined" ? UI.color.border : "transparent";
 

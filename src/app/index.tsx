@@ -26,7 +26,14 @@ function LoadingScreen(): React.JSX.Element {
   }, [opacity, scale, dotOpacity]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg, alignItems: "center", justifyContent: "center" }}>
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: UI.color.bg,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
       <Animated.Text
         style={{
           fontFamily: "Sora_600SemiBold",

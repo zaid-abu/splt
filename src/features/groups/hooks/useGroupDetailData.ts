@@ -10,7 +10,8 @@ import type { User } from "@/types";
 export function useGroupDetailData(groupId: string, currentUserId: string | undefined) {
   const { data: groups = [], isLoading: isGroupsLoading } = useGroups(currentUserId);
   const { data: allExpenses = [], isLoading: isExpensesLoading } = useUserExpenses(currentUserId);
-  const { data: settlements = [], isLoading: isSettlementsLoading } = useUserSettlements(currentUserId);
+  const { data: settlements = [], isLoading: isSettlementsLoading } =
+    useUserSettlements(currentUserId);
 
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);

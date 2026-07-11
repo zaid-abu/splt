@@ -13,7 +13,15 @@ interface ListRowProps {
   disabled?: boolean;
 }
 
-export function ListRow({ leading, title, subtitle, trailing, onPress, isLast, disabled }: ListRowProps): JSX.Element {
+export function ListRow({
+  leading,
+  title,
+  subtitle,
+  trailing,
+  onPress,
+  isLast,
+  disabled,
+}: ListRowProps): JSX.Element {
   const content = (
     <View
       style={{

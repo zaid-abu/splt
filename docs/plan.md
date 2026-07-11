@@ -6,16 +6,16 @@ Generated from `docs/improvements.md`. Every item is broken into tasks, subtasks
 
 ## Legend
 
-| Symbol | Meaning |
-|--------|---------|
-| ⬜ | Not started |
-| 🔄 | In progress |
-| ✅ | Done |
-| ❌ | Blocked / Skipped |
-| 🔴 | Critical priority |
-| 🟠 | High priority |
-| 🟡 | Medium priority |
-| 🟢 | Low priority |
+| Symbol | Meaning           |
+| ------ | ----------------- |
+| ⬜     | Not started       |
+| 🔄     | In progress       |
+| ✅     | Done              |
+| ❌     | Blocked / Skipped |
+| 🔴     | Critical priority |
+| 🟠     | High priority     |
+| 🟡     | Medium priority   |
+| 🟢     | Low priority      |
 
 ---
 
@@ -23,21 +23,22 @@ Generated from `docs/improvements.md`. Every item is broken into tasks, subtasks
 
 > **Goal:** Zero typecheck errors, zero lint errors, no silent failures.
 > **Exit criteria:** `npm run lint` = 0 errors, `npx tsc --noEmit` = 0 errors.
-> 
+>
 > **Status: ALL COMPLETE ✅**
 
 ---
 
 ### 1.1 🔴 Fix ActivityScreen unfiltered `invalidateQueries`
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 15 min |
-| Files | `src/features/activity/screens/ActivityScreen.tsx` |
-| Source | A1 |
+| Field     | Value                                              |
+| --------- | -------------------------------------------------- |
+| Status    | ✅                                                 |
+| Estimated | 15 min                                             |
+| Files     | `src/features/activity/screens/ActivityScreen.tsx` |
+| Source    | A1                                                 |
 
 **Steps:**
+
 - [x] ✅ Line ~36: Replace `queryClient.invalidateQueries()` with `queryClient.invalidateQueries({ queryKey: ["expenses", "settlements"] })`
 - [x] ✅ Verify pull-to-refresh only re-fetches expense/settlement queries
 
@@ -47,14 +48,15 @@ Generated from `docs/improvements.md`. Every item is broken into tasks, subtasks
 
 ### 1.2 🔴 Fix `currentUser!` non-null assertion in ActivityScreen
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 10 min |
-| Files | `src/features/activity/screens/ActivityScreen.tsx` |
-| Source | A2 |
+| Field     | Value                                              |
+| --------- | -------------------------------------------------- |
+| Status    | ✅                                                 |
+| Estimated | 10 min                                             |
+| Files     | `src/features/activity/screens/ActivityScreen.tsx` |
+| Source    | A2                                                 |
 
 **Steps:**
+
 - [x] ✅ Removed `currentUser!` non-null assertions (lines 49, 62) — `currentUser` is typed as non-nullable `User` via fallback
 
 **Acceptance:** Screen renders without crash. ✅
@@ -63,14 +65,15 @@ Generated from `docs/improvements.md`. Every item is broken into tasks, subtasks
 
 ### 1.3 🟡 Fix hardcoded color in tab bar
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 5 min |
-| Files | `src/app/(tabs)/_layout.tsx` |
-| Source | A3 |
+| Field     | Value                        |
+| --------- | ---------------------------- |
+| Status    | ✅                           |
+| Estimated | 5 min                        |
+| Files     | `src/app/(tabs)/_layout.tsx` |
+| Source    | A3                           |
 
 **Steps:**
+
 - [x] ✅ Line 53: Replace `"#8E8E93"` with `UI.color.muted`
 
 **Acceptance:** Inactive tab icon color matches the design system's `muted` token in both light and dark mode. ✅
@@ -79,14 +82,15 @@ Generated from `docs/improvements.md`. Every item is broken into tasks, subtasks
 
 ### 1.4 🟡 Delete dead `_QuickAction` + suppress remaining lint warnings
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 20 min |
-| Files | `src/features/dashboard/screens/DashboardScreen.tsx`, `src/components/animations/PageAnimator.tsx`, `src/components/ui/AppLoader.tsx` |
-| Source | A5 |
+| Field     | Value                                                                                                                                 |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | ✅                                                                                                                                    |
+| Estimated | 20 min                                                                                                                                |
+| Files     | `src/features/dashboard/screens/DashboardScreen.tsx`, `src/components/animations/PageAnimator.tsx`, `src/components/ui/AppLoader.tsx` |
+| Source    | A5                                                                                                                                    |
 
 **Steps:**
+
 - [x] ✅ Deleted the entire `_QuickAction` function from DashboardScreen (~70 lines of dead code)
 - [x] ✅ `PageAnimator.tsx:46` — added eslint-disable-next-line for stable Animated.Value refs
 - [x] ✅ `AppLoader.tsx:40` — same suppression for rotation/scale Animated.Values
@@ -98,14 +102,15 @@ Generated from `docs/improvements.md`. Every item is broken into tasks, subtasks
 
 ### 1.5 🟡 Add skeleton to GroupDetailScreen
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 30 min |
-| Files | `src/features/groups/screens/GroupDetailScreen.tsx`, `src/features/groups/hooks/useGroupDetailData.ts` |
-| Source | C5 |
+| Field     | Value                                                                                                  |
+| --------- | ------------------------------------------------------------------------------------------------------ |
+| Status    | ✅                                                                                                     |
+| Estimated | 30 min                                                                                                 |
+| Files     | `src/features/groups/screens/GroupDetailScreen.tsx`, `src/features/groups/hooks/useGroupDetailData.ts` |
+| Source    | C5                                                                                                     |
 
 **Steps:**
+
 - [x] ✅ Added `isLoading` return to `useGroupDetailData` hook
 - [x] ✅ Imported `Skeleton` and `ListRowSkeleton` from `@/components/ui/Skeleton`
 - [x] ✅ Added loading check: BalanceCard skeleton (~170px), group balances skeleton (3 rows), transactions skeleton (2 rows)
@@ -117,14 +122,15 @@ Generated from `docs/improvements.md`. Every item is broken into tasks, subtasks
 
 ### 1.6 🟡 Add RefreshControl to GroupDetailScreen
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 15 min |
-| Files | `src/features/groups/screens/GroupDetailScreen.tsx` |
-| Source | C4 |
+| Field     | Value                                               |
+| --------- | --------------------------------------------------- |
+| Status    | ✅                                                  |
+| Estimated | 15 min                                              |
+| Files     | `src/features/groups/screens/GroupDetailScreen.tsx` |
+| Source    | C4                                                  |
 
 **Steps:**
+
 - [x] ✅ Added `RefreshControl` with `refreshing` state and `onRefresh` callback
 - [x] ✅ Wired to ScrollView with targeted `invalidateQueries` using `queryKeys.groupDetails(id)`
 - [x] ✅ Imported `useQueryClient` and `queryKeys`
@@ -135,12 +141,12 @@ Generated from `docs/improvements.md`. Every item is broken into tasks, subtasks
 
 ### 1.7 🟠 Add confirmation sheet to group member removal
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | — |
-| Files | `src/features/groups/screens/GroupSettingsScreen.tsx` |
-| Source | C3 |
+| Field     | Value                                                 |
+| --------- | ----------------------------------------------------- |
+| Status    | ✅                                                    |
+| Estimated | —                                                     |
+| Files     | `src/features/groups/screens/GroupSettingsScreen.tsx` |
+| Source    | C3                                                    |
 
 Already implemented. GroupSettingsScreen has `ConfirmationSheet` at lines 841-848 with title "Remove Member?", confirmLabel "Remove", and confirmColor danger. The `handleRemoveMemberClick` function presents it with member name.
 
@@ -152,21 +158,22 @@ Already implemented. GroupSettingsScreen has `ConfirmationSheet` at lines 841-84
 
 > **Goal:** Every screen has loading state, pull-to-refresh, and consistent interaction patterns.
 > **Exit criteria:** No screen renders blank while loading. Settlement screen shows confirmation.
-> 
+>
 > **Status: 7/7 complete ✅**
 
 ---
 
 ### 2.1 🟡 Close/back button clarity on NewExpenseScreen
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 15 min |
-| Files | `src/features/expenses/screens/NewExpenseScreen.tsx` |
-| Source | C1 |
+| Field     | Value                                                |
+| --------- | ---------------------------------------------------- |
+| Status    | ✅                                                   |
+| Estimated | 15 min                                               |
+| Files     | `src/features/expenses/screens/NewExpenseScreen.tsx` |
+| Source    | C1                                                   |
 
 **Steps:**
+
 - [x] ✅ Context-picker step shows `X` icon (dismiss), form step shows `ChevronLeft` (go back)
 - [x] ✅ Label changes from "Close" to "Go back" accordingly
 
@@ -176,14 +183,15 @@ Already implemented. GroupSettingsScreen has `ConfirmationSheet` at lines 841-84
 
 ### 2.2 🟡 Settlement success toast before dismiss
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 15 min |
-| Files | `src/features/settlements/screens/SettlementScreen.tsx` |
-| Source | C8 |
+| Field     | Value                                                   |
+| --------- | ------------------------------------------------------- |
+| Status    | ✅                                                      |
+| Estimated | 15 min                                                  |
+| Files     | `src/features/settlements/screens/SettlementScreen.tsx` |
+| Source    | C8                                                      |
 
 **Steps:**
+
 - [x] ✅ Success toast shows after settlement: "Settlement Recorded — $X paid to [name]"
 - [x] ✅ `router.back()` delayed by 600ms so user sees the toast
 
@@ -193,12 +201,12 @@ Already implemented. GroupSettingsScreen has `ConfirmationSheet` at lines 841-84
 
 ### 2.3 🟡 NewExpenseScreen header text resize
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | — |
-| Files | `src/features/expenses/screens/NewExpenseScreen.tsx` |
-| Source | C7 |
+| Field     | Value                                                |
+| --------- | ---------------------------------------------------- |
+| Status    | ✅                                                   |
+| Estimated | —                                                    |
+| Files     | `src/features/expenses/screens/NewExpenseScreen.tsx` |
+| Source    | C7                                                   |
 
 Already correct. `headerTitle` style uses `fontSize: 18` (matches design system headline scale). No change needed.
 
@@ -208,27 +216,29 @@ Already correct. `headerTitle` style uses `fontSize: 18` (matches design system 
 
 ### 2.4 🟡 Activity feed from database
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 3 hrs |
-| Files | `src/features/activity/screens/ActivityScreen.tsx`, `src/features/expenses/queries/useExpenses.ts`, `src/features/settlements/queries/useSettlements.ts` |
-| Source | A4 |
+| Field     | Value                                                                                                                                                    |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | ✅                                                                                                                                                       |
+| Estimated | 3 hrs                                                                                                                                                    |
+| Files     | `src/features/activity/screens/ActivityScreen.tsx`, `src/features/expenses/queries/useExpenses.ts`, `src/features/settlements/queries/useSettlements.ts` |
+| Source    | A4                                                                                                                                                       |
 
 **Steps:**
+
 - [x] ✅ Added `activitiesApi.logActivity` calls to `useAddExpense` and `useAddSettlement` mutation `onSuccess` handlers
 - [x] ✅ Replaced `ActivityScreen`'s manual expense/settlement merge with `useUserActivities` query
 - [x] ✅ Removed `useUserExpenses`/`useUserSettlements` queries from ActivityScreen
 - [x] ✅ Created migration `202607110009_backfill_activities.sql`
 
 **Acceptance:** Activity screen shows all historical activities from the database. New expenses/settlements auto-appear in the feed. ✅:
-  ```sql
-  INSERT INTO activities (type, expense_id, group_id, user_id, description, amount, currency, date)
-  SELECT 'expense', id, group_id, paid_by, title, amount, currency, date FROM expenses;
-  
-  INSERT INTO activities (type, settlement_id, group_id, user_id, description, amount, currency, date)
-  SELECT 'settlement', id, group_id, from_user_id, 'Settlement', amount, currency, date FROM settlements;
-  ```
+
+```sql
+INSERT INTO activities (type, expense_id, group_id, user_id, description, amount, currency, date)
+SELECT 'expense', id, group_id, paid_by, title, amount, currency, date FROM expenses;
+
+INSERT INTO activities (type, settlement_id, group_id, user_id, description, amount, currency, date)
+SELECT 'settlement', id, group_id, from_user_id, 'Settlement', amount, currency, date FROM settlements;
+```
 
 **Acceptance:** Activity screen shows all historical activities. New expenses/settlements auto-appear in feed.
 
@@ -236,14 +246,15 @@ Already correct. `headerTitle` style uses `fontSize: 18` (matches design system 
 
 ### 2.5 🟡 Pull-to-refresh on all remaining list screens
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 30 min |
-| Files | `src/features/friends/screens/FriendDetailScreen.tsx`, `src/features/activity/screens/ActivityScreen.tsx` |
-| Source | C4 (extended) |
+| Field     | Value                                                                                                     |
+| --------- | --------------------------------------------------------------------------------------------------------- |
+| Status    | ✅                                                                                                        |
+| Estimated | 30 min                                                                                                    |
+| Files     | `src/features/friends/screens/FriendDetailScreen.tsx`, `src/features/activity/screens/ActivityScreen.tsx` |
+| Source    | C4 (extended)                                                                                             |
 
 **Steps:**
+
 - [x] ✅ FriendDetailScreen: Added RefreshControl with targeted `queryClient.invalidateQueries`
 - [x] ✅ ActivityScreen: RefreshControl already existed, scoped to `["activities"]`
 
@@ -253,12 +264,12 @@ Already correct. `headerTitle` style uses `fontSize: 18` (matches design system 
 
 ### 2.6 🟡 Add skeleton to FriendDetailScreen
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | — |
-| Files | `src/features/friends/screens/FriendDetailScreen.tsx` |
-| Source | C6 |
+| Field     | Value                                                 |
+| --------- | ----------------------------------------------------- |
+| Status    | ✅                                                    |
+| Estimated | —                                                     |
+| Files     | `src/features/friends/screens/FriendDetailScreen.tsx` |
+| Source    | C6                                                    |
 
 Already implemented. FriendDetailScreen has a full `LoadingState` component with balance card skeleton, info rows, and activity list skeletons. Wired via `isLoading` check on all queries.
 
@@ -268,14 +279,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 2.7 🟡 Standardize StyleSheet.create pattern
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 4 hrs |
-| Files | `src/features/dashboard/screens/DashboardScreen.tsx`, `src/features/groups/screens/GroupDetailScreen.tsx`, `src/features/settlements/screens/SettlementScreen.tsx`, `src/features/friends/screens/FriendDetailScreen.tsx` |
-| Source | B1 |
+| Field     | Value                                                                                                                                                                                                                     |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | ✅                                                                                                                                                                                                                        |
+| Estimated | 4 hrs                                                                                                                                                                                                                     |
+| Files     | `src/features/dashboard/screens/DashboardScreen.tsx`, `src/features/groups/screens/GroupDetailScreen.tsx`, `src/features/settlements/screens/SettlementScreen.tsx`, `src/features/friends/screens/FriendDetailScreen.tsx` |
+| Source    | B1                                                                                                                                                                                                                        |
 
 **Steps:**
+
 - [x] ✅ GroupDetailScreen: Full refactor — all inline styles moved to `StyleSheet.create` (screen, header, iconButton, cardSurface, listCard, text styles, action buttons, etc.)
 - [x] ✅ SettlementScreen: Added `StyleSheet.create` with common patterns (screen, pillButton, surfaceCard, submitButton, amountInput, swapButton, summaryBox, stickySubmit, etc.)
 - [x] ✅ DashboardScreen: Added `StyleSheet.create` with common patterns (screen, surfaceCard, iconShell, text styles, pillButton, etc.)
@@ -284,6 +296,7 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 **Acceptance:** All 4 screens use `StyleSheet.create` for repeated style patterns. Dynamic styles (pressed state, conditional colors) remain inline. Zero lint warnings. ✅
 
 **Steps:**
+
 - [ ] ⬜ For each screen, move all static styles into `const styles = StyleSheet.create({...})`
 - [ ] ⬜ Keep dynamic styles (those using `UI.color.*`, `pressed`, state values) inline — these can't be pre-computed
 - [ ] ⬜ Pattern template:
@@ -304,21 +317,22 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 > **Goal:** Reduce signup friction with social login. Enable receipt photo attachments.
 > **Exit criteria:** User can sign up with Google/Apple. User can attach a photo to an expense.
-> 
+>
 > **Status: 4/4 complete ✅**
 
 ---
 
 ### 3.1 🟠 Social login — Google OAuth ✅
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 4 hrs |
-| Files | `src/app/(auth)/welcome.tsx`, `src/app/(auth)/login.tsx`, `src/services/api/auth.ts`, `src/features/auth/hooks/useAuthMutations.ts`, `src/services/supabase/client.ts` |
-| Source | D5 |
+| Field     | Value                                                                                                                                                                  |
+| --------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | ✅                                                                                                                                                                     |
+| Estimated | 4 hrs                                                                                                                                                                  |
+| Files     | `src/app/(auth)/welcome.tsx`, `src/app/(auth)/login.tsx`, `src/services/api/auth.ts`, `src/features/auth/hooks/useAuthMutations.ts`, `src/services/supabase/client.ts` |
+| Source    | D5                                                                                                                                                                     |
 
 **Steps:**
+
 - [x] ✅ Added `signInWithGoogle` to AuthService (supabase.auth.signInWithOAuth with Google provider)
 - [x] ✅ Added `useSignInWithGoogle` mutation hook
 - [x] ✅ Added "Continue with Google" buttons to WelcomeScreen and LoginScreen
@@ -332,14 +346,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 3.2 🟠 Social login — Apple Sign In ✅
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 3 hrs |
-| Files | `src/app/(auth)/welcome.tsx`, `src/services/api/auth.ts`, `src/features/auth/hooks/useAuthMutations.ts` |
-| Source | D5 |
+| Field     | Value                                                                                                   |
+| --------- | ------------------------------------------------------------------------------------------------------- |
+| Status    | ✅                                                                                                      |
+| Estimated | 3 hrs                                                                                                   |
+| Files     | `src/app/(auth)/welcome.tsx`, `src/services/api/auth.ts`, `src/features/auth/hooks/useAuthMutations.ts` |
+| Source    | D5                                                                                                      |
 
 **Steps:**
+
 - [x] ✅ Installed `expo-apple-authentication`
 - [x] ✅ Added `signInWithApple` to AuthService
 - [x] ✅ Added `useSignInWithApple` mutation hook
@@ -352,14 +367,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 3.3 🟠 Receipt photo attachment ✅
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 5 hrs |
-| Files | `src/features/expenses/screens/NewExpenseScreen.tsx`, `src/features/expenses/screens/ExpenseDetailScreen.tsx`, `src/services/storage/index.ts`, `src/features/expenses/hooks/useExpenseForm.ts`, `src/services/api/mappers.ts`, `src/types/index.ts`, `supabase/migrations/202607110011_receipt_url.sql` |
-| Source | D3 |
+| Field     | Value                                                                                                                                                                                                                                                                                                    |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | ✅                                                                                                                                                                                                                                                                                                       |
+| Estimated | 5 hrs                                                                                                                                                                                                                                                                                                    |
+| Files     | `src/features/expenses/screens/NewExpenseScreen.tsx`, `src/features/expenses/screens/ExpenseDetailScreen.tsx`, `src/services/storage/index.ts`, `src/features/expenses/hooks/useExpenseForm.ts`, `src/services/api/mappers.ts`, `src/types/index.ts`, `supabase/migrations/202607110011_receipt_url.sql` |
+| Source    | D3                                                                                                                                                                                                                                                                                                       |
 
 **Steps:**
+
 - [x] ✅ Installed `expo-image-picker`
 - [x] ✅ Created `src/services/storage/index.ts` with `uploadReceipt`, `getReceiptUrl`, `deleteReceipt`
 - [x] ✅ Added `receipt_url` column migration
@@ -374,14 +390,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 3.4 🟡 Group default split method ✅
 
-| Field | Value |
-|-------|-------|
-| Status | ✅ |
-| Estimated | 2 hrs |
-| Files | `src/types/index.ts`, `src/services/api/mappers.ts`, `src/features/groups/screens/GroupSettingsScreen.tsx`, `src/features/expenses/hooks/useExpenseForm.ts`, `supabase/migrations/202607110010_group_default_split.sql` |
-| Source | D7 |
+| Field     | Value                                                                                                                                                                                                                   |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | ✅                                                                                                                                                                                                                      |
+| Estimated | 2 hrs                                                                                                                                                                                                                   |
+| Files     | `src/types/index.ts`, `src/services/api/mappers.ts`, `src/features/groups/screens/GroupSettingsScreen.tsx`, `src/features/expenses/hooks/useExpenseForm.ts`, `supabase/migrations/202607110010_group_default_split.sql` |
+| Source    | D7                                                                                                                                                                                                                      |
 
 **Steps:**
+
 - [x] ✅ Migration: `ALTER TABLE groups ADD COLUMN default_split_method TEXT DEFAULT 'equal'`
 - [x] ✅ Updated `Group` type with `defaultSplitMethod?: SplitMethod` field
 - [x] ✅ Updated `mapGroup`, `toGroupInsert`, `toGroupUpdate` mappers
@@ -402,14 +419,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 4.1 🔴 Push notifications — infrastructure
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 6 hrs |
-| Files | `src/services/notifications/`, `supabase/functions/`, `src/app/_layout.tsx`, `src/features/notifications/` |
-| Source | D1 |
+| Field     | Value                                                                                                      |
+| --------- | ---------------------------------------------------------------------------------------------------------- |
+| Status    | ⬜                                                                                                         |
+| Estimated | 6 hrs                                                                                                      |
+| Files     | `src/services/notifications/`, `supabase/functions/`, `src/app/_layout.tsx`, `src/features/notifications/` |
+| Source    | D1                                                                                                         |
 
 **Steps:**
+
 - [ ] ⬜ Install `expo-notifications` and `expo-device`
 - [ ] ⬜ Create `src/services/notifications/register.ts`:
   - Request permission
@@ -431,6 +449,7 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 - [ ] ⬜ In DashboardScreen, show badge count on bell icon: `useNotifications(currentUser.id).length`
 
 **Edge cases:**
+
 - [ ] ⬜ Handle revoked permission gracefully (no crash, just no push)
 - [ ] ⬜ Handle token refresh (Expo tokens can change)
 - [ ] ⬜ Rate limit: don't send >5 notifications/hr to same user
@@ -442,14 +461,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 4.2 🟠 Recurring expenses — schema + creation
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 8 hrs |
-| Files | `supabase/migrations/`, `src/features/expenses/`, `src/types/index.ts` |
-| Source | D2 |
+| Field     | Value                                                                  |
+| --------- | ---------------------------------------------------------------------- |
+| Status    | ⬜                                                                     |
+| Estimated | 8 hrs                                                                  |
+| Files     | `supabase/migrations/`, `src/features/expenses/`, `src/types/index.ts` |
+| Source    | D2                                                                     |
 
 **Steps:**
+
 - [ ] ⬜ Migration: Create `recurring_expenses` table:
   ```sql
   CREATE TABLE recurring_expenses (
@@ -484,14 +504,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 4.3 🟠 Recurring expenses — auto-generation
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 4 hrs |
-| Files | `supabase/functions/`, `src/features/expenses/` |
-| Source | D2 |
+| Field     | Value                                           |
+| --------- | ----------------------------------------------- |
+| Status    | ⬜                                              |
+| Estimated | 4 hrs                                           |
+| Files     | `supabase/functions/`, `src/features/expenses/` |
+| Source    | D2                                              |
 
 **Steps:**
+
 - [ ] ⬜ Create Supabase Edge Function `generate-recurring-expenses`:
   - Runs via `pg_cron` or scheduled HTTP trigger (Supabase cron)
   - Queries `recurring_expenses` where `next_due_date <= today` AND `is_active = true`
@@ -502,6 +523,7 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 - [ ] ⬜ GroupDetailScreen: if group has recurring expenses, show "Upcoming this month" card
 
 **Edge cases:**
+
 - [ ] ⬜ What happens if group is deleted? → CASCADE handles it
 - [ ] ⬜ What if payer leaves group? → Mark series as paused, notify group
 - [ ] ⬜ What if amount/currency changes? → Edit series, future instances use new values
@@ -519,14 +541,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 5.1 🟡 Split by shares (weighted split)
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 4 hrs |
-| Files | `src/features/expenses/hooks/useExpenseForm.ts`, `src/features/expenses/screens/NewExpenseScreen.tsx`, `src/features/expenses/utils/splits.ts`, `src/types/index.ts` |
-| Source | D6 |
+| Field     | Value                                                                                                                                                                |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | ⬜                                                                                                                                                                   |
+| Estimated | 4 hrs                                                                                                                                                                |
+| Files     | `src/features/expenses/hooks/useExpenseForm.ts`, `src/features/expenses/screens/NewExpenseScreen.tsx`, `src/features/expenses/utils/splits.ts`, `src/types/index.ts` |
+| Source    | D6                                                                                                                                                                   |
 
 **Steps:**
+
 - [ ] ⬜ Add `'shares'` to `SplitMethod` type
 - [ ] ⬜ Add share count field per participant in the participants editor (`ParticipantEditor`)
 - [ ] ⬜ Each participant gets a `+` / `-` stepper for their share count (default: 1)
@@ -543,18 +566,23 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 5.2 🟠 Undo for destructive actions
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 3 hrs |
-| Files | `src/features/expenses/queries/useExpenses.ts`, `src/features/settlements/queries/useSettlements.ts`, `src/features/friends/queries/useFriends.ts`, `src/hooks/useAppToast.tsx` |
-| Source | C2 |
+| Field     | Value                                                                                                                                                                           |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Status    | ⬜                                                                                                                                                                              |
+| Estimated | 3 hrs                                                                                                                                                                           |
+| Files     | `src/features/expenses/queries/useExpenses.ts`, `src/features/settlements/queries/useSettlements.ts`, `src/features/friends/queries/useFriends.ts`, `src/hooks/useAppToast.tsx` |
+| Source    | C2                                                                                                                                                                              |
 
 **Steps:**
+
 - [ ] ⬜ Create a reusable `undoMiddleware` for React Query mutations:
   ```typescript
   function withUndo<T>(mutationFn, undoFn, toastLabel) {
-    return { mutationFn, onSuccess: () => toast.show({ label: toastLabel, action: { label: 'Undo', onPress: undoFn } }) };
+    return {
+      mutationFn,
+      onSuccess: () =>
+        toast.show({ label: toastLabel, action: { label: "Undo", onPress: undoFn } }),
+    };
   }
   ```
 - [ ] ⬜ Apply to: `useDeleteExpense`, `useDeleteSettlement`, `useRemoveFriend`, `useRejectFriend`
@@ -568,14 +596,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 5.3 🟡 Haptic feedback on tab bar (active tab)
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 10 min |
-| Files | `src/app/(tabs)/_layout.tsx` |
-| Source | C11 |
+| Field     | Value                        |
+| --------- | ---------------------------- |
+| Status    | ⬜                           |
+| Estimated | 10 min                       |
+| Files     | `src/app/(tabs)/_layout.tsx` |
+| Source    | C11                          |
 
 **Steps:**
+
 - [ ] ⬜ Line ~39: Remove the `!isFocused` guard. Fire `Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)` on every tab press.
 - [ ] ⬜ For active tab, use `Haptics.ImpactFeedbackStyle.Soft` instead of `Light` to indicate "already here"
 
@@ -592,14 +621,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 6.1 🟡 Data export (CSV)
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 3 hrs |
-| Files | `src/features/profile/screens/ProfileScreen.tsx`, `src/utils/export.ts` (new) |
-| Source | D8 |
+| Field     | Value                                                                         |
+| --------- | ----------------------------------------------------------------------------- |
+| Status    | ⬜                                                                            |
+| Estimated | 3 hrs                                                                         |
+| Files     | `src/features/profile/screens/ProfileScreen.tsx`, `src/utils/export.ts` (new) |
+| Source    | D8                                                                            |
 
 **Steps:**
+
 - [ ] ⬜ Create `src/utils/export.ts` with `exportExpensesAsCSV(expenses, currentUser)` and `exportBalancesAsCSV(balances)`
 - [ ] ⬜ Use `expo-sharing` and `expo-file-system` to write CSV and open share sheet
 - [ ] ⬜ Add "Export expenses" button in ProfileScreen (in the Account section)
@@ -611,14 +641,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 6.2 🟢 Contacts integration
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 4 hrs |
-| Files | `src/features/friends/screens/NewFriendScreen.tsx`, `src/features/friends/services/contacts.ts` (new) |
-| Source | D9 |
+| Field     | Value                                                                                                 |
+| --------- | ----------------------------------------------------------------------------------------------------- |
+| Status    | ⬜                                                                                                    |
+| Estimated | 4 hrs                                                                                                 |
+| Files     | `src/features/friends/screens/NewFriendScreen.tsx`, `src/features/friends/services/contacts.ts` (new) |
+| Source    | D9                                                                                                    |
 
 **Steps:**
+
 - [ ] ⬜ Install `expo-contacts`
 - [ ] ⬜ Create `src/features/friends/services/contacts.ts`:
   - `requestContactsPermission()` → boolean
@@ -637,14 +668,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 6.3 🟢 Multi-currency live refresh
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 1 hr |
-| Files | `src/store/useUIStore.ts` |
-| Source | D10 |
+| Field     | Value                     |
+| --------- | ------------------------- |
+| Status    | ⬜                        |
+| Estimated | 1 hr                      |
+| Files     | `src/store/useUIStore.ts` |
+| Source    | D10                       |
 
 **Steps:**
+
 - [ ] ⬜ Add `lastRatesUpdate` timestamp to UIState
 - [ ] ⬜ Add `useEffect` in `AppProvider` that calls `fetchExchangeRates()` on mount
 - [ ] ⬜ Add `setInterval` in `useUIStore.fetchExchangeRates` implementation to refresh every 4 hours
@@ -657,14 +689,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 6.4 🟡 Single source-of-truth design tokens
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 3 hrs |
-| Files | `src/components/ui/native-ui.tsx`, `src/global.css`, `design-tokens.json` |
-| Source | B2 |
+| Field     | Value                                                                     |
+| --------- | ------------------------------------------------------------------------- |
+| Status    | ⬜                                                                        |
+| Estimated | 3 hrs                                                                     |
+| Files     | `src/components/ui/native-ui.tsx`, `src/global.css`, `design-tokens.json` |
+| Source    | B2                                                                        |
 
 **Steps:**
+
 - [ ] ⬜ Clean up `design-tokens.json` to be the canonical source
 - [ ] ⬜ Write a build script `scripts/generate-tokens.ts` that reads `design-tokens.json` and outputs:
   - `src/components/ui/tokens.generated.ts` — the JS color/radius/space constants
@@ -678,14 +711,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 6.5 🟢 Tab bar first-run tooltip
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 2 hrs |
-| Files | `src/features/dashboard/screens/DashboardScreen.tsx`, `src/app/(tabs)/_layout.tsx` |
-| Source | C9 |
+| Field     | Value                                                                              |
+| --------- | ---------------------------------------------------------------------------------- |
+| Status    | ⬜                                                                                 |
+| Estimated | 2 hrs                                                                              |
+| Files     | `src/features/dashboard/screens/DashboardScreen.tsx`, `src/app/(tabs)/_layout.tsx` |
+| Source    | C9                                                                                 |
 
 **Steps:**
+
 - [ ] ⬜ Store `@splt_has_seen_tabs` flag in AsyncStorage (similar to `@splt_onboarded`)
 - [ ] ⬜ On first Dashboard render after onboarding, show a subtle tooltip: "Tap an icon to navigate" with arrow pointing to tab bar
 - [ ] ⬜ Dismiss on any tab interaction or after 5 seconds
@@ -697,14 +731,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 6.6 🟢 Consolidate duplicate SearchField
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 1.5 hrs |
-| Files | `src/features/expenses/screens/NewExpenseScreen.tsx`, `src/components/ui/native-ui.tsx` |
-| Source | C12 |
+| Field     | Value                                                                                   |
+| --------- | --------------------------------------------------------------------------------------- |
+| Status    | ⬜                                                                                      |
+| Estimated | 1.5 hrs                                                                                 |
+| Files     | `src/features/expenses/screens/NewExpenseScreen.tsx`, `src/components/ui/native-ui.tsx` |
+| Source    | C12                                                                                     |
 
 **Steps:**
+
 - [ ] ⬜ Update the `SearchField` in `native-ui.tsx` to accept a `placeholder` prop and a `variant` prop (`"card"` for lg radius, `"pill"` for pill radius)
 - [ ] ⬜ Replace the inline `SearchField` component in NewExpenseScreen with the shared one
 - [ ] ⬜ Verify all existing usages still render correctly
@@ -715,14 +750,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 6.7 🟡 OCR receipt scanning
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 8 hrs |
-| Files | `src/features/expenses/services/ocr.ts` (new), `src/features/expenses/screens/NewExpenseScreen.tsx` |
-| Source | D4 |
+| Field     | Value                                                                                               |
+| --------- | --------------------------------------------------------------------------------------------------- |
+| Status    | ⬜                                                                                                  |
+| Estimated | 8 hrs                                                                                               |
+| Files     | `src/features/expenses/services/ocr.ts` (new), `src/features/expenses/screens/NewExpenseScreen.tsx` |
+| Source    | D4                                                                                                  |
 
 **Steps:**
+
 - [ ] ⬜ Install `expo-vision` or `react-native-vision-camera` + frame processor
 - [ ] ⬜ Create `src/features/expenses/services/ocr.ts`:
   - `scanReceipt(imageUri): Promise<{ amount?: number, merchant?: string, date?: Date }>`
@@ -738,14 +774,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 6.8 🟢 Font weight loading
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 30 min |
-| Files | `assets/fonts/`, `src/app/_layout.tsx`, `src/global.css` |
-| Source | B3, B4 |
+| Field     | Value                                                    |
+| --------- | -------------------------------------------------------- |
+| Status    | ⬜                                                       |
+| Estimated | 30 min                                                   |
+| Files     | `assets/fonts/`, `src/app/_layout.tsx`, `src/global.css` |
+| Source    | B3, B4                                                   |
 
 **Steps:**
+
 - [ ] ⬜ Download `IBMPlexSans-Bold.ttf` (700 weight) from Google Fonts
 - [ ] ⬜ Download `IBMPlexSans-BoldItalic.ttf` if available
 - [ ] ⬜ Update `useFonts` in `_layout.tsx` to load new fonts
@@ -759,14 +796,15 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ### 6.9 🟢 Amount formatting threshold adjustment
 
-| Field | Value |
-|-------|-------|
-| Status | ⬜ |
-| Estimated | 10 min |
-| Files | `src/components/ui/AmountDisplay.tsx` |
-| Source | C10 |
+| Field     | Value                                 |
+| --------- | ------------------------------------- |
+| Status    | ⬜                                    |
+| Estimated | 10 min                                |
+| Files     | `src/components/ui/AmountDisplay.tsx` |
+| Source    | C10                                   |
 
 **Steps:**
+
 - [ ] ⬜ Change compact notation threshold from `1_000_000` to `10_000_000` (10M)
 - [ ] ⬜ Change K notation threshold from `10_000` to `100_000` for zero-decimal currencies
 - [ ] ⬜ Rationale: personal finance amounts rarely exceed 10M, and showing full numbers is more trustworthy
@@ -777,13 +815,13 @@ Already implemented. FriendDetailScreen has a full `LoadingState` component with
 
 ## Appendix A: Anti-Features (Do NOT Build)
 
-| # | Feature | Reason |
-|---|---------|--------|
-| E1 | Integrated payment processing | Regulatory burden, fraud liability. Keep "record and track" positioning. |
-| E2 | Gamification / streaks | Violates PRODUCT.md. Money is stressful, not a game. |
-| E3 | Web app / responsive dashboard | Design system is RN-native. Web would double maintenance. |
-| E4 | Public API / developer platform | Premature. No proven demand yet. |
-| E5 | In-app chat / messaging | Expense comments are sufficient. Chat = scope creep + moderation liability. |
+| #   | Feature                         | Reason                                                                      |
+| --- | ------------------------------- | --------------------------------------------------------------------------- |
+| E1  | Integrated payment processing   | Regulatory burden, fraud liability. Keep "record and track" positioning.    |
+| E2  | Gamification / streaks          | Violates PRODUCT.md. Money is stressful, not a game.                        |
+| E3  | Web app / responsive dashboard  | Design system is RN-native. Web would double maintenance.                   |
+| E4  | Public API / developer platform | Premature. No proven demand yet.                                            |
+| E5  | In-app chat / messaging         | Expense comments are sufficient. Chat = scope creep + moderation liability. |
 
 ---
 
@@ -895,27 +933,27 @@ Phase 6 (Ecosystem & Polish):
 
 ## Appendix D: Supabase Migrations Summary
 
-| # | Phase | Migration | Description |
-|---|-------|-----------|-------------|
-| M1 | 2.4 | `backfill_activities` | Insert activity rows for all existing expenses and settlements |
-| M2 | 3.3 | `add_receipt_url` | Add `receipt_url TEXT` to `expenses` |
-| M3 | 3.4 | `add_default_split` | Add `default_split_method TEXT DEFAULT 'equal'` to `groups` |
-| M4 | 4.1 | `add_push_token` | Add `expo_push_token TEXT` to `users` |
-| M5 | 4.2 | `create_recurring_tables` | Create `recurring_expenses` and `recurring_expense_splits` tables |
-| M6 | 4.2 | `add_recurring_fk` | Add `recurring_expense_id UUID` to `expenses` |
-| M7 | 4.3 | `generate_recurring_fn` | Create `generate_recurring_expenses()` database function |
-| M8 | 4.1 | `notification_triggers` | Create triggers that call edge function on expense/settlement/friend events |
+| #   | Phase | Migration                 | Description                                                                 |
+| --- | ----- | ------------------------- | --------------------------------------------------------------------------- |
+| M1  | 2.4   | `backfill_activities`     | Insert activity rows for all existing expenses and settlements              |
+| M2  | 3.3   | `add_receipt_url`         | Add `receipt_url TEXT` to `expenses`                                        |
+| M3  | 3.4   | `add_default_split`       | Add `default_split_method TEXT DEFAULT 'equal'` to `groups`                 |
+| M4  | 4.1   | `add_push_token`          | Add `expo_push_token TEXT` to `users`                                       |
+| M5  | 4.2   | `create_recurring_tables` | Create `recurring_expenses` and `recurring_expense_splits` tables           |
+| M6  | 4.2   | `add_recurring_fk`        | Add `recurring_expense_id UUID` to `expenses`                               |
+| M7  | 4.3   | `generate_recurring_fn`   | Create `generate_recurring_expenses()` database function                    |
+| M8  | 4.1   | `notification_triggers`   | Create triggers that call edge function on expense/settlement/friend events |
 
 ---
 
 ## Summary: Phase Timeline
 
-| Phase | Est. Days | Cumulative | Key Deliverable |
-|-------|-----------|------------|-----------------|
-| 1 — Bug Fixes | 2 | 2 | ✅ 0 lint errors, 0 type errors, skeletons on group detail |
-| 2 — UX Polish | 3 | 5 | ✅ Activity from DB, settlement toast, close button fix, skeletons everywhere |
-| 3 — Auth & Media | 5 | 10 | ✅ Google+Apple sign-in, receipt photos, group default splits |
-| 4 — Notifications & Recurring | 10 | 20 | Push notifications, recurring expenses auto-create |
-| 5 — Advanced Splits & Quality | 4 | 24 | Shares split method, undo for deletions |
-| 6 — Ecosystem & Polish | 6 | 30 | CSV export, contacts, OCR, token generation |
-| **Total** | **30 days** | | Feature-complete against Splitwise, design-system clean |
+| Phase                         | Est. Days   | Cumulative | Key Deliverable                                                               |
+| ----------------------------- | ----------- | ---------- | ----------------------------------------------------------------------------- |
+| 1 — Bug Fixes                 | 2           | 2          | ✅ 0 lint errors, 0 type errors, skeletons on group detail                    |
+| 2 — UX Polish                 | 3           | 5          | ✅ Activity from DB, settlement toast, close button fix, skeletons everywhere |
+| 3 — Auth & Media              | 5           | 10         | ✅ Google+Apple sign-in, receipt photos, group default splits                 |
+| 4 — Notifications & Recurring | 10          | 20         | Push notifications, recurring expenses auto-create                            |
+| 5 — Advanced Splits & Quality | 4           | 24         | Shares split method, undo for deletions                                       |
+| 6 — Ecosystem & Polish        | 6           | 30         | CSV export, contacts, OCR, token generation                                   |
+| **Total**                     | **30 days** |            | Feature-complete against Splitwise, design-system clean                       |

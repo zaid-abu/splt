@@ -24,7 +24,13 @@ import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { EXPENSE_CATEGORIES } from "@/types";
 
-function CommentsSection({ expenseId, currentUserId }: { expenseId: string; currentUserId: string }): JSX.Element {
+function CommentsSection({
+  expenseId,
+  currentUserId,
+}: {
+  expenseId: string;
+  currentUserId: string;
+}): JSX.Element {
   const { data: comments = [], isLoading } = useExpenseComments(expenseId);
   const { mutateAsync: addComment } = useAddComment();
   const [text, setText] = useState("");
@@ -36,7 +42,9 @@ function CommentsSection({ expenseId, currentUserId }: { expenseId: string; curr
     try {
       await addComment({ expenseId, userId: currentUserId, text: text.trim() });
       setText("");
-    } catch { /* handled by query client */ }
+    } catch {
+      /* handled by query client */
+    }
     setSending(false);
   };
 
@@ -74,7 +82,18 @@ function CommentsSection({ expenseId, currentUserId }: { expenseId: string; curr
               borderBottomColor: UI.color.border,
             }}
           >
-            <AppUserAvatar user={comment.user as any ?? { id: comment.user_id, name: "?", initials: "?", email: "", defaultCurrency: "USD" }} size="sm" />
+            <AppUserAvatar
+              user={
+                (comment.user as any) ?? {
+                  id: comment.user_id,
+                  name: "?",
+                  initials: "?",
+                  email: "",
+                  defaultCurrency: "USD",
+                }
+              }
+              size="sm"
+            />
             <View style={{ flex: 1, marginLeft: 12 }}>
               <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
                 <Typography
@@ -93,7 +112,10 @@ function CommentsSection({ expenseId, currentUserId }: { expenseId: string; curr
                     fontFamily: "IBMPlexSans_500Medium",
                   }}
                 >
-                  {new Date(comment.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  {new Date(comment.created_at).toLocaleDateString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                  })}
                 </Typography>
               </View>
               <Typography

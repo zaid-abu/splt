@@ -133,7 +133,7 @@ function HalfCard({
               flex: 1,
               marginRight: 8,
               fontSize: 12,
-        color: UI.color.muted,
+              color: UI.color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               lineHeight: 16,
             }}
@@ -174,7 +174,8 @@ export function BalanceCard({
   const netBalance = owedToYou - youOwe;
   const netBalanceLabel =
     netBalance > 0 ? "Net owed to you" : netBalance < 0 ? "Net you owe" : "Net balance";
-  const netBalanceColor = netBalance < 0 ? UI.color.danger : netBalance > 0 ? UI.color.success : UI.color.muted;
+  const netBalanceColor =
+    netBalance < 0 ? UI.color.danger : netBalance > 0 ? UI.color.success : UI.color.muted;
   const netBalanceAmount = Math.abs(netBalance).toFixed(2);
 
   if (isAllSettled) {

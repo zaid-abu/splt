@@ -37,7 +37,7 @@ export function AppLoader({ fullScreen = false }: AppLoaderProps): JSX.Element {
       -1,
       true
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => {

@@ -8,7 +8,6 @@ import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { UI } from "@/components/ui/native-ui";
 
-
 interface SwipeableRowProps {
   children: React.ReactNode;
   onDelete?: () => void;

@@ -5,7 +5,15 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import type { ComponentType, JSX } from "react";
 import { useMemo, useRef, useCallback, useState } from "react";
 import { StatusBar } from "expo-status-bar";
-import { View, ScrollView, Pressable, Alert as RNAlert, Share, RefreshControl, StyleSheet } from "react-native";
+import {
+  View,
+  ScrollView,
+  Pressable,
+  Alert as RNAlert,
+  Share,
+  RefreshControl,
+  StyleSheet,
+} from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
@@ -233,19 +241,48 @@ export default function FriendDetailScreen(): JSX.Element {
   const { data: allFriendships = [] } = useAllFriendships(currentUser?.id);
   const { mutateAsync: removeFriend } = useRemoveFriend();
 
-  const styles = useMemo(() => StyleSheet.create({
-  screen: { flex: 1, backgroundColor: UI.color.bg },
-  row: { flexDirection: "row", alignItems: "center" },
-  card: { backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg, overflow: "hidden" },
-  textTitle: { fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
-  textSubtitle: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" },
-  textLabel: { fontSize: 12, color: UI.color.muted, fontFamily: "IBMPlexSans_600SemiBold", textTransform: "uppercase", letterSpacing: 1 },
-  pillButton: { paddingHorizontal: 14, paddingVertical: 10, borderRadius: UI.radius.pill, borderWidth: 1 },
-  pillButtonActive: { backgroundColor: UI.color.text, borderColor: UI.color.text },
-  pillButtonInactive: { backgroundColor: UI.color.control, borderColor: UI.color.border },
-  sectionPad: { paddingHorizontal: 24 },
-  bottomAction: { flex: 1, height: 56, borderRadius: UI.radius.pill, alignItems: "center", justifyContent: "center", flexDirection: "row", gap: 8 },
-}), []);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: UI.color.bg },
+        row: { flexDirection: "row", alignItems: "center" },
+        card: {
+          backgroundColor: UI.color.surface,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          borderRadius: UI.radius.lg,
+          overflow: "hidden",
+        },
+        textTitle: { fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+        textSubtitle: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" },
+        textLabel: {
+          fontSize: 12,
+          color: UI.color.muted,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          textTransform: "uppercase",
+          letterSpacing: 1,
+        },
+        pillButton: {
+          paddingHorizontal: 14,
+          paddingVertical: 10,
+          borderRadius: UI.radius.pill,
+          borderWidth: 1,
+        },
+        pillButtonActive: { backgroundColor: UI.color.text, borderColor: UI.color.text },
+        pillButtonInactive: { backgroundColor: UI.color.control, borderColor: UI.color.border },
+        sectionPad: { paddingHorizontal: 24 },
+        bottomAction: {
+          flex: 1,
+          height: 56,
+          borderRadius: UI.radius.pill,
+          alignItems: "center",
+          justifyContent: "center",
+          flexDirection: "row",
+          gap: 8,
+        },
+      }),
+    []
+  );
 
   const balances = balancesUtil.getUserBalances(
     currentUser.id,
@@ -269,7 +306,9 @@ export default function FriendDetailScreen(): JSX.Element {
   const [refreshing, setRefreshing] = useState(false);
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ["expenses", "settlements", "friends", "groups"] });
+    await queryClient.invalidateQueries({
+      queryKey: ["expenses", "settlements", "friends", "groups"],
+    });
     setRefreshing(false);
   }, [queryClient]);
 
@@ -604,230 +643,44 @@ export default function FriendDetailScreen(): JSX.Element {
           contentContainerStyle={{ paddingBottom: 140 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.color.text} />
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={UI.color.text}
+            />
           }
         >
-        {/* ── Balance Card ─────────────────────────────────────────────── */}
-        <Animated.View
-          entering={FadeInDown.duration(400).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 40 }}
-        >
-          <View
-            style={{
-              padding: 24,
-              backgroundColor: SURFACE,
-              borderWidth: 1,
-              borderColor: SEPARATOR,
-              borderRadius: CARD_RADIUS,
-              alignItems: "center",
-            }}
-          >
-            {isSettled ? (
-              <>
-                <View
-                  style={{
-                    width: 52,
-                    height: 52,
-                    borderRadius: PILL_RADIUS,
-                    backgroundColor: CONTROL,
-                    borderWidth: 1,
-                    borderColor: SEPARATOR,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 16,
-                  }}
-                >
-                  <icons.Check size={24} color={TEXT_SUCCESS} strokeWidth={1.8} />
-                </View>
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  All settled up
-                </Typography>
-                <Typography
-                  style={{
-                    marginTop: 4,
-                    fontSize: 14,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_500Medium",
-                  }}
-                >
-                  No pending balances
-                </Typography>
-                <Typography
-                  numberOfLines={2}
-                  style={{
-                    marginTop: 12,
-                    fontSize: 14,
-                    lineHeight: 20,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_500Medium",
-                    textAlign: "center",
-                  }}
-                >
-                  {lastActivityCopy}
-                </Typography>
-              </>
-            ) : (
-              <>
-                <Typography
-                  style={{
-                    fontSize: 13,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    textTransform: "uppercase",
-                    letterSpacing: 1.2,
-                    marginBottom: 8,
-                  }}
-                >
-                  {isPositive ? `${friend.name} owes you` : `You owe ${friend.name}`}
-                </Typography>
-                <Typography
-                  numberOfLines={1}
-                  adjustsFontSizeToFit
-                  style={{
-                    fontSize: 40,
-                    color: isPositive ? TEXT_SUCCESS : TEXT_DANGER,
-                    fontFamily: "Sora_600SemiBold",
-                  }}
-                >
-                  {formatAmount(Math.abs(netBalance), preferredCurrency.code)}
-                </Typography>
-                <Typography
-                  numberOfLines={2}
-                  style={{
-                    marginTop: 12,
-                    fontSize: 14,
-                    lineHeight: 20,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_500Medium",
-                    textAlign: "center",
-                  }}
-                >
-                  {isPositive
-                    ? "Send a reminder or add another shared expense."
-                    : "Settle this balance when you are ready."}{" "}
-                  {lastActivityCopy}
-                </Typography>
-              </>
-            )}
-          </View>
-        </Animated.View>
-
-        {/* ── Shared Groups ─────────────────────────────────────────────── */}
-        {sharedGroupsWithRecentActivity.length > 0 && (
+          {/* ── Balance Card ─────────────────────────────────────────────── */}
           <Animated.View
-            entering={FadeInDown.duration(400).delay(50).springify()}
+            entering={FadeInDown.duration(400).springify()}
             style={{ paddingHorizontal: 24, marginBottom: 40 }}
           >
-            <SectionLabel>Shared Groups</SectionLabel>
             <View
               style={{
-                borderRadius: CARD_RADIUS,
+                padding: 24,
+                backgroundColor: SURFACE,
                 borderWidth: 1,
                 borderColor: SEPARATOR,
-                backgroundColor: SURFACE,
-              }}
-            >
-              {sharedGroupsWithRecentActivity.map(({ group, latestExpense }, idx) => (
-                <Pressable
-                  key={group.id}
-                  accessibilityRole="button"
-                  onPress={() => router.push(`/group/${group.id}`)}
-                  style={({ pressed }) => ({
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingVertical: 14,
-                    paddingHorizontal: 16,
-                    borderBottomWidth: idx < sharedGroupsWithRecentActivity.length - 1 ? 1 : 0,
-                    borderBottomColor: SEPARATOR,
-                    backgroundColor: pressed ? "#FBF7F2" : "transparent",
-                    borderTopLeftRadius: idx === 0 ? CARD_RADIUS : 0,
-                    borderTopRightRadius: idx === 0 ? CARD_RADIUS : 0,
-                    borderBottomLeftRadius:
-                      idx === sharedGroupsWithRecentActivity.length - 1 ? CARD_RADIUS : 0,
-                    borderBottomRightRadius:
-                      idx === sharedGroupsWithRecentActivity.length - 1 ? CARD_RADIUS : 0,
-                  })}
-                >
-                  <GroupIconBadge group={group} size="sm" />
-                  <View style={{ flex: 1, minWidth: 0, marginLeft: 12, marginRight: 12 }}>
-                    <Typography
-                      numberOfLines={1}
-                      style={{
-                        fontSize: 16,
-                        color: TEXT_PRIMARY,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      {group.name}
-                    </Typography>
-                    <Typography
-                      numberOfLines={1}
-                      style={{
-                        marginTop: 3,
-                        fontSize: 13,
-                        color: TEXT_SECONDARY,
-                        fontFamily: "IBMPlexSans_500Medium",
-                      }}
-                    >
-                      {latestExpense
-                        ? `Latest: ${latestExpense.title}`
-                        : "No shared group expenses yet"}
-                    </Typography>
-                  </View>
-                  <icons.ChevronRight size={18} color={TEXT_SUBTLE} strokeWidth={1.8} />
-                </Pressable>
-              ))}
-            </View>
-          </Animated.View>
-        )}
-
-        {/* ── Category Spending ────────────────────────────────────────── */}
-        {categorySpending.length > 0 && (
-          <Animated.View
-            entering={FadeInDown.duration(400).delay(100).springify()}
-            style={{ paddingHorizontal: 24, marginBottom: 40 }}
-          >
-            <SectionLabel>Spending by Category</SectionLabel>
-            <View
-              style={{
                 borderRadius: CARD_RADIUS,
-                borderWidth: 1,
-                borderColor: SEPARATOR,
-                backgroundColor: SURFACE,
-                paddingVertical: 12,
+                alignItems: "center",
               }}
             >
-              {categorySpending.map((item, idx) => (
-                <View
-                  key={item.cat}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
-                    borderBottomWidth: idx < categorySpending.length - 1 ? 1 : 0,
-                    borderBottomColor: SEPARATOR,
-                  }}
-                >
-                  <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                    <CategoryIconBadge category={item.cat as any} size="sm" />
-                    <Typography
-                      style={{
-                        fontSize: 15,
-                        color: TEXT_PRIMARY,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                        textTransform: "capitalize",
-                      }}
-                    >
-                      {CATEGORY_LABELS[item.cat] ?? item.cat}
-                    </Typography>
+              {isSettled ? (
+                <>
+                  <View
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: PILL_RADIUS,
+                      backgroundColor: CONTROL,
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 16,
+                    }}
+                  >
+                    <icons.Check size={24} color={TEXT_SUCCESS} strokeWidth={1.8} />
                   </View>
                   <Typography
                     style={{
@@ -836,72 +689,85 @@ export default function FriendDetailScreen(): JSX.Element {
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
-                    {formatAmount(item.amount, preferredCurrency.code)}
+                    All settled up
                   </Typography>
-                </View>
-              ))}
+                  <Typography
+                    style={{
+                      marginTop: 4,
+                      fontSize: 14,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "IBMPlexSans_500Medium",
+                    }}
+                  >
+                    No pending balances
+                  </Typography>
+                  <Typography
+                    numberOfLines={2}
+                    style={{
+                      marginTop: 12,
+                      fontSize: 14,
+                      lineHeight: 20,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "IBMPlexSans_500Medium",
+                      textAlign: "center",
+                    }}
+                  >
+                    {lastActivityCopy}
+                  </Typography>
+                </>
+              ) : (
+                <>
+                  <Typography
+                    style={{
+                      fontSize: 13,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                      textTransform: "uppercase",
+                      letterSpacing: 1.2,
+                      marginBottom: 8,
+                    }}
+                  >
+                    {isPositive ? `${friend.name} owes you` : `You owe ${friend.name}`}
+                  </Typography>
+                  <Typography
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    style={{
+                      fontSize: 40,
+                      color: isPositive ? TEXT_SUCCESS : TEXT_DANGER,
+                      fontFamily: "Sora_600SemiBold",
+                    }}
+                  >
+                    {formatAmount(Math.abs(netBalance), preferredCurrency.code)}
+                  </Typography>
+                  <Typography
+                    numberOfLines={2}
+                    style={{
+                      marginTop: 12,
+                      fontSize: 14,
+                      lineHeight: 20,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "IBMPlexSans_500Medium",
+                      textAlign: "center",
+                    }}
+                  >
+                    {isPositive
+                      ? "Send a reminder or add another shared expense."
+                      : "Settle this balance when you are ready."}{" "}
+                    {lastActivityCopy}
+                  </Typography>
+                </>
+              )}
             </View>
           </Animated.View>
-        )}
 
-        {/* ── Transactions ─────────────────────────────────────────────── */}
-        <Animated.View
-          entering={FadeInDown.duration(400).delay(150).springify()}
-          style={{ paddingHorizontal: 24, marginBottom: 40 }}
-        >
-          <SectionLabel>Recent Activity</SectionLabel>
-
-          <View
-            style={{
-              borderRadius: CARD_RADIUS,
-              borderWidth: sharedActivities.length === 0 ? 1 : 0,
-              borderColor: SEPARATOR,
-              backgroundColor: sharedActivities.length === 0 ? SURFACE : "transparent",
-            }}
-          >
-            {sharedActivities.length === 0 ? (
-              <View
-                style={{
-                  paddingVertical: 36,
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: PILL_RADIUS,
-                    backgroundColor: CONTROL,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginBottom: 16,
-                    borderWidth: 1,
-                    borderColor: SEPARATOR,
-                  }}
-                >
-                  <icons.Receipt size={24} color={TEXT_PRIMARY} strokeWidth={1.8} />
-                </View>
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: TEXT_PRIMARY,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    marginBottom: 8,
-                  }}
-                >
-                  No shared activity
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: TEXT_SECONDARY,
-                    fontFamily: "IBMPlexSans_500Medium",
-                  }}
-                >
-                  Add an expense to get started
-                </Typography>
-              </View>
-            ) : (
+          {/* ── Shared Groups ─────────────────────────────────────────────── */}
+          {sharedGroupsWithRecentActivity.length > 0 && (
+            <Animated.View
+              entering={FadeInDown.duration(400).delay(50).springify()}
+              style={{ paddingHorizontal: 24, marginBottom: 40 }}
+            >
+              <SectionLabel>Shared Groups</SectionLabel>
               <View
                 style={{
                   borderRadius: CARD_RADIUS,
@@ -910,82 +776,259 @@ export default function FriendDetailScreen(): JSX.Element {
                   backgroundColor: SURFACE,
                 }}
               >
-                {sharedActivities.map((activity, idx) => (
-                  <ActivityItem
-                    key={activity.id}
-                    activity={activity}
-                    index={idx}
-                    isLast={idx === sharedActivities.length - 1}
-                  />
+                {sharedGroupsWithRecentActivity.map(({ group, latestExpense }, idx) => (
+                  <Pressable
+                    key={group.id}
+                    accessibilityRole="button"
+                    onPress={() => router.push(`/group/${group.id}`)}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 14,
+                      paddingHorizontal: 16,
+                      borderBottomWidth: idx < sharedGroupsWithRecentActivity.length - 1 ? 1 : 0,
+                      borderBottomColor: SEPARATOR,
+                      backgroundColor: pressed ? "#FBF7F2" : "transparent",
+                      borderTopLeftRadius: idx === 0 ? CARD_RADIUS : 0,
+                      borderTopRightRadius: idx === 0 ? CARD_RADIUS : 0,
+                      borderBottomLeftRadius:
+                        idx === sharedGroupsWithRecentActivity.length - 1 ? CARD_RADIUS : 0,
+                      borderBottomRightRadius:
+                        idx === sharedGroupsWithRecentActivity.length - 1 ? CARD_RADIUS : 0,
+                    })}
+                  >
+                    <GroupIconBadge group={group} size="sm" />
+                    <View style={{ flex: 1, minWidth: 0, marginLeft: 12, marginRight: 12 }}>
+                      <Typography
+                        numberOfLines={1}
+                        style={{
+                          fontSize: 16,
+                          color: TEXT_PRIMARY,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
+                        {group.name}
+                      </Typography>
+                      <Typography
+                        numberOfLines={1}
+                        style={{
+                          marginTop: 3,
+                          fontSize: 13,
+                          color: TEXT_SECONDARY,
+                          fontFamily: "IBMPlexSans_500Medium",
+                        }}
+                      >
+                        {latestExpense
+                          ? `Latest: ${latestExpense.title}`
+                          : "No shared group expenses yet"}
+                      </Typography>
+                    </View>
+                    <icons.ChevronRight size={18} color={TEXT_SUBTLE} strokeWidth={1.8} />
+                  </Pressable>
                 ))}
               </View>
-            )}
-          </View>
-        </Animated.View>
-      </ScrollView>
+            </Animated.View>
+          )}
+
+          {/* ── Category Spending ────────────────────────────────────────── */}
+          {categorySpending.length > 0 && (
+            <Animated.View
+              entering={FadeInDown.duration(400).delay(100).springify()}
+              style={{ paddingHorizontal: 24, marginBottom: 40 }}
+            >
+              <SectionLabel>Spending by Category</SectionLabel>
+              <View
+                style={{
+                  borderRadius: CARD_RADIUS,
+                  borderWidth: 1,
+                  borderColor: SEPARATOR,
+                  backgroundColor: SURFACE,
+                  paddingVertical: 12,
+                }}
+              >
+                {categorySpending.map((item, idx) => (
+                  <View
+                    key={item.cat}
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      paddingVertical: 12,
+                      paddingHorizontal: 16,
+                      borderBottomWidth: idx < categorySpending.length - 1 ? 1 : 0,
+                      borderBottomColor: SEPARATOR,
+                    }}
+                  >
+                    <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+                      <CategoryIconBadge category={item.cat as any} size="sm" />
+                      <Typography
+                        style={{
+                          fontSize: 15,
+                          color: TEXT_PRIMARY,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        {CATEGORY_LABELS[item.cat] ?? item.cat}
+                      </Typography>
+                    </View>
+                    <Typography
+                      style={{
+                        fontSize: 16,
+                        color: TEXT_PRIMARY,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
+                      {formatAmount(item.amount, preferredCurrency.code)}
+                    </Typography>
+                  </View>
+                ))}
+              </View>
+            </Animated.View>
+          )}
+
+          {/* ── Transactions ─────────────────────────────────────────────── */}
+          <Animated.View
+            entering={FadeInDown.duration(400).delay(150).springify()}
+            style={{ paddingHorizontal: 24, marginBottom: 40 }}
+          >
+            <SectionLabel>Recent Activity</SectionLabel>
+
+            <View
+              style={{
+                borderRadius: CARD_RADIUS,
+                borderWidth: sharedActivities.length === 0 ? 1 : 0,
+                borderColor: SEPARATOR,
+                backgroundColor: sharedActivities.length === 0 ? SURFACE : "transparent",
+              }}
+            >
+              {sharedActivities.length === 0 ? (
+                <View
+                  style={{
+                    paddingVertical: 36,
+                    alignItems: "center",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: PILL_RADIUS,
+                      backgroundColor: CONTROL,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      marginBottom: 16,
+                      borderWidth: 1,
+                      borderColor: SEPARATOR,
+                    }}
+                  >
+                    <icons.Receipt size={24} color={TEXT_PRIMARY} strokeWidth={1.8} />
+                  </View>
+                  <Typography
+                    style={{
+                      fontSize: 16,
+                      color: TEXT_PRIMARY,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                      marginBottom: 8,
+                    }}
+                  >
+                    No shared activity
+                  </Typography>
+                  <Typography
+                    style={{
+                      fontSize: 14,
+                      color: TEXT_SECONDARY,
+                      fontFamily: "IBMPlexSans_500Medium",
+                    }}
+                  >
+                    Add an expense to get started
+                  </Typography>
+                </View>
+              ) : (
+                <View
+                  style={{
+                    borderRadius: CARD_RADIUS,
+                    borderWidth: 1,
+                    borderColor: SEPARATOR,
+                    backgroundColor: SURFACE,
+                  }}
+                >
+                  {sharedActivities.map((activity, idx) => (
+                    <ActivityItem
+                      key={activity.id}
+                      activity={activity}
+                      index={idx}
+                      isLast={idx === sharedActivities.length - 1}
+                    />
+                  ))}
+                </View>
+              )}
+            </View>
+          </Animated.View>
+        </ScrollView>
       </FocusAwareView>
 
       {/* ── Bottom Action Bar ──────────────────────────────────────────── */}
       <View style={{ position: "absolute", bottom: 0, left: 0, right: 0 }}>
         <BottomActionBar>
-        {!isSettled && (
+          {!isSettled && (
+            <Pressable
+              accessibilityRole="button"
+              onPress={
+                isPositive
+                  ? handleRemind
+                  : () => router.push({ pathname: "/settle/[id]", params: { id: friend.id } })
+              }
+              style={({ pressed }) => ({
+                flex: 1,
+                height: 56,
+                borderRadius: PILL_RADIUS,
+                backgroundColor: CONTROL,
+                borderWidth: 1,
+                borderColor: SEPARATOR,
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
+                gap: 10,
+                opacity: pressed ? 0.65 : 1,
+              })}
+            >
+              {isPositive ? (
+                <icons.Bell size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
+              ) : (
+                <icons.Handshake size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
+              )}
+              <Typography
+                style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+              >
+                {isPositive ? "Remind" : "Settle Up"}
+              </Typography>
+            </Pressable>
+          )}
+
           <Pressable
             accessibilityRole="button"
-            onPress={
-              isPositive
-                ? handleRemind
-                : () => router.push({ pathname: "/settle/[id]", params: { id: friend.id } })
-            }
+            onPress={() => router.push(`/expense/new?friendId=${friend.id}`)}
             style={({ pressed }) => ({
-              flex: 1,
+              flex: isSettled ? 1 : 1.5,
               height: 56,
               borderRadius: PILL_RADIUS,
-              backgroundColor: CONTROL,
-              borderWidth: 1,
-              borderColor: SEPARATOR,
+              backgroundColor: BRAND,
               alignItems: "center",
               justifyContent: "center",
               flexDirection: "row",
               gap: 10,
-              opacity: pressed ? 0.65 : 1,
+              opacity: pressed ? 0.8 : 1,
             })}
           >
-            {isPositive ? (
-              <icons.Bell size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
-            ) : (
-              <icons.Handshake size={20} color={TEXT_PRIMARY} strokeWidth={1.8} />
-            )}
+            <icons.Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
             <Typography
-              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
             >
-              {isPositive ? "Remind" : "Settle Up"}
+              Add Expense
             </Typography>
           </Pressable>
-        )}
-
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => router.push(`/expense/new?friendId=${friend.id}`)}
-          style={({ pressed }) => ({
-            flex: isSettled ? 1 : 1.5,
-            height: 56,
-            borderRadius: PILL_RADIUS,
-            backgroundColor: BRAND,
-            alignItems: "center",
-            justifyContent: "center",
-            flexDirection: "row",
-            gap: 10,
-            opacity: pressed ? 0.8 : 1,
-          })}
-        >
-          <icons.Plus size={20} color="#FFFFFF" strokeWidth={2.5} />
-          <Typography
-            style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
-          >
-            Add Expense
-          </Typography>
-        </Pressable>
-      </BottomActionBar>
+        </BottomActionBar>
       </View>
 
       <BottomSheetModal
@@ -1078,5 +1121,3 @@ export default function FriendDetailScreen(): JSX.Element {
     </View>
   );
 }
-
-

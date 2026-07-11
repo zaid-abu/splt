@@ -6,21 +6,22 @@ A comprehensive audit of all remaining UI/UX issues, functional gaps, and featur
 
 ## Legend
 
-| Marker | Meaning |
-|--------|---------|
-| 🔴 | Critical — ship-blocking bug or broken flow |
-| 🟠 | High — degrades UX significantly, should fix this sprint |
-| 🟡 | Medium — important polish, fix within 2 sprints |
-| 🟢 | Low — nice-to-have, queue for later |
-| ⚡ | Quick win — <1hr to fix |
-| 🐢 | Medium effort — 2-8hrs |
-| 🐘 | Large effort — new feature, days |
+| Marker | Meaning                                                  |
+| ------ | -------------------------------------------------------- |
+| 🔴     | Critical — ship-blocking bug or broken flow              |
+| 🟠     | High — degrades UX significantly, should fix this sprint |
+| 🟡     | Medium — important polish, fix within 2 sprints          |
+| 🟢     | Low — nice-to-have, queue for later                      |
+| ⚡     | Quick win — <1hr to fix                                  |
+| 🐢     | Medium effort — 2-8hrs                                   |
+| 🐘     | Large effort — new feature, days                         |
 
 ---
 
 ## Section A: Bug Fixes & Immediate Corrections
 
 ### A1. 🟠 `queryClient.invalidateQueries()` fires without filter
+
 **Status: ✅ FIXED**
 
 **Files:** `ActivityScreen.tsx:36`, `ActivityScreen.tsx` `onRefresh`
@@ -34,6 +35,7 @@ Same issue previously fixed in DashboardScreen — the pull-to-refresh invalidat
 ---
 
 ### A2. 🟠 Non-null assertion on `currentUser`
+
 **Status: ✅ FIXED**
 
 **File:** `ActivityScreen.tsx:49`
@@ -51,6 +53,7 @@ If the screen briefly renders before auth redirect, this crashes. The same patte
 ---
 
 ### A3. 🟡 Hardcoded color in tab bar
+
 **Status: ✅ FIXED**
 
 **File:** `src/app/(tabs)/_layout.tsx:53`
@@ -66,9 +69,11 @@ color={isFocused ? UI.color.text : "#8E8E93"}
 ---
 
 ### A4. 🟡 `ActivityScreen` builds activities from expenses/settlements client-side
+
 **Status: ✅ FIXED — now uses database-backed activities feed**
 
 The screen manually merges two arrays and creates `Activity` objects on-the-fly. This means:
+
 - No server-side activity data (the `activities` table exists but isn't used)
 - Activity descriptions are generic (just the expense title)
 - Past activities from database aren't shown
@@ -81,14 +86,15 @@ The screen manually merges two arrays and creates `Activity` objects on-the-fly.
 ---
 
 ### A5. 🟡 4 remaining lint warnings
+
 **Status: ✅ FIXED (0 warnings)**
 
-| File | Warning |
-|------|---------|
-| `PageAnimator.tsx:46` | Missing deps in useCallback |
-| `AppLoader.tsx:40` | Missing deps in useEffect |
-| `DashboardScreen.tsx:66` | `_QuickAction` unused |
-| `DashboardScreen.tsx:227` | Missing dep `balanceScale` |
+| File                      | Warning                     |
+| ------------------------- | --------------------------- |
+| `PageAnimator.tsx:46`     | Missing deps in useCallback |
+| `AppLoader.tsx:40`        | Missing deps in useEffect   |
+| `DashboardScreen.tsx:66`  | `_QuickAction` unused       |
+| `DashboardScreen.tsx:227` | Missing dep `balanceScale`  |
 
 3/4 are animation hooks where adding deps causes infinite loops (Animated.Value refs). These should be suppressed with `// eslint-disable-next-line` comments rather than left as warnings. `_QuickAction` should be deleted entirely since it's dead code.
 
@@ -112,6 +118,7 @@ Pick one and standardize. `StyleSheet.create` is more performant (styles are sen
 ### B2. 🟡 `global.css` CSS variables and `native-ui.tsx` JS objects are now aligned — but should be a single source of truth
 
 The two theme systems are now colour-matched, but they're still two separate things. Ideally:
+
 - Define tokens once (in `design-tokens.json`)
 - Generate both CSS variables and JS constants from the same source
 
@@ -144,6 +151,7 @@ The italic variant also uses `Sora_600SemiBold` but Sora SemiBold doesn't have a
 ## Section C: UI/UX Improvements
 
 ### C1. 🟠 Close/back button ambiguity
+
 **Status: ✅ FIXED**
 
 **File:** `NewExpenseScreen.tsx:1018`
@@ -180,6 +188,7 @@ Users can delete expenses, settlements, groups, remove friends, and reject reque
 ---
 
 ### C4. 🟡 Pull-to-refresh on group detail/activity screens
+
 **Status: ✅ FIXED**
 
 The `useRefresh` hook exists at `src/hooks/useRefresh.ts` but is only used on DashboardScreen. GroupDetailScreen and ActivityScreen don't have pull-to-refresh.
@@ -191,6 +200,7 @@ The `useRefresh` hook exists at `src/hooks/useRefresh.ts` but is only used on Da
 ---
 
 ### C5. 🟡 No skeleton on GroupDetailScreen
+
 **Status: ✅ FIXED**
 
 DashboardScreen has a beautiful skeleton loading state. GroupDetailScreen just loads a blank view until data arrives.
@@ -202,6 +212,7 @@ DashboardScreen has a beautiful skeleton loading state. GroupDetailScreen just l
 ---
 
 ### C6. 🟡 FriendDetailScreen has no loading state at all
+
 **Status: ✅ Already implemented**
 
 Similar to C5 — the screen renders nothing until queries resolve.
@@ -221,6 +232,7 @@ The header title "Choose people" / "Expense details" uses 28px Sora which domina
 ---
 
 ### C8. 🟡 SettlementScreen dismisses immediately after submit
+
 **Status: ✅ FIXED**
 
 After recording a settlement, the screen calls `router.back()` immediately. The user gets no visual confirmation before being thrown back. The success haptic fires but there's no toast or animation.
@@ -276,12 +288,14 @@ Two different SearchField implementations exist. The NewExpenseScreen version us
 ### D1. 🔴 Push notifications
 
 The single biggest UX gap. Without push notifications:
+
 - Users must open the app to see new expenses
 - Friend requests go unnoticed
 - Settlement reminders don't exist
 - Group invitations are invisible until app is opened
 
 **What to implement:**
+
 - Expo Notifications + Supabase Edge Functions
 - Event triggers: new expense in your group, friend request, settlement recorded, someone comments on your expense
 - In-app: badge count on dashboard bell icon
@@ -298,6 +312,7 @@ The single biggest UX gap. Without push notifications:
 Monthly rent, weekly utilities, subscription sharing — these are the bread-and-butter use cases that make users open the app repeatedly.
 
 **What to implement:**
+
 - New expense option: "Repeat" with frequency picker (daily/weekly/biweekly/monthly/yearly)
 - Auto-create next instance on due date
 - Show upcoming recurring expenses on dashboard
@@ -314,6 +329,7 @@ Monthly rent, weekly utilities, subscription sharing — these are the bread-and
 Most real-world expenses come with a receipt or photo. Users want to attach an image to verify amounts.
 
 **What to implement:**
+
 - Camera/gallery picker using `expo-image-picker`
 - Upload to Supabase Storage bucket
 - Display thumbnail in expense detail
@@ -330,6 +346,7 @@ Most real-world expenses come with a receipt or photo. Users want to attach an i
 Once images are attached, extracting the amount/date/merchant from a receipt photo makes expense entry near-instant.
 
 **What to implement:**
+
 - Use Google Cloud Vision API or Apple's Vision framework (on-device)
 - Extract: total amount, merchant name, date
 - Pre-fill the expense form with extracted data
@@ -346,6 +363,7 @@ Once images are attached, extracting the amount/date/merchant from a receipt pho
 Email/password is the highest-friction auth method. During onboarding, asking users to create a password dramatically increases drop-off.
 
 **What to implement:**
+
 - `@supabase/ssr` with Google OAuth (already supported by Supabase)
 - Apple Sign In via `expo-apple-authentication`
 - Auto-generate name from OAuth profile
@@ -364,6 +382,7 @@ Current split methods: Equal, Custom amount, Percentage. Missing: **Shares** (e.
 This is the Splitwise default for many use cases — "I'll cover 2/3 of rent since my room is bigger."
 
 **What to implement:**
+
 - Add "shares" as a 4th split method
 - Each participant gets a share count (integer)
 - Total = sum of shares
@@ -378,6 +397,7 @@ This is the Splitwise default for many use cases — "I'll cover 2/3 of rent sin
 A group like "Apartment" should default to shares (for rent/utilities). A group like "Trip" should default to equal. Currently, every new expense starts with Equal.
 
 **What to implement:**
+
 - Add `default_split_method` column to `groups` table
 - NewExpenseScreen preselects the group's default method
 - Let user override per-expense
@@ -391,6 +411,7 @@ A group like "Apartment" should default to shares (for rent/utilities). A group 
 Users want to export their balances or expense history for tax purposes, reimbursement at work, or personal accounting.
 
 **What to implement:**
+
 - "Export data" button in Profile > Settings
 - Export expenses as CSV (date, title, amount, paid by, category, your share)
 - Export balances summary as CSV
@@ -405,6 +426,7 @@ Users want to export their balances or expense history for tax purposes, reimbur
 Instead of searching by name/email, let users find friends from their phone contacts who already use Splt.
 
 **What to implement:**
+
 - `expo-contacts` to read phone contacts
 - Match contacts against registered users by email/phone
 - Show "Friends on Splt" section in NewFriendScreen
@@ -418,6 +440,7 @@ Instead of searching by name/email, let users find friends from their phone cont
 Exchange rates are fetched once on app launch from open.er-api.com (free tier, no auth). They never refresh during the session. For a travel app, stale rates are misleading.
 
 **What to implement:**
+
 - Add a background refresh interval (every 4 hours)
 - Show "last updated" timestamp in currency selector
 - Use the user's device locale for default currency
@@ -466,33 +489,33 @@ These are features that Splitwise has but would hurt Splt's product positioning:
 
 Ordered by impact ÷ effort:
 
-| # | Task | Effort | Impact | Priority |
-|---|------|--------|--------|----------|
-| 1 | Fix ActivityScreen unfiltered `invalidateQueries` | ⚡ | 🟠 | **Now** |
-| 2 | Fix `currentUser!` in ActivityScreen | ⚡ | 🟠 | **Now** |
-| 3 | Tab bar hardcoded color | ⚡ | 🟡 | **Now** |
-| 4 | Delete dead `_QuickAction` + suppress lint warnings | ⚡ | 🟡 | **Now** |
-| 5 | Add skeleton to GroupDetailScreen | ⚡ | 🟡 | **Now** |
-| 6 | Add RefreshControl to GroupDetailScreen | ⚡ | 🟡 | **Now** |
-| 7 | Add confirm sheet to group member removal | ⚡ | 🟡 | **Now** |
-| 8 | Social login (Google + Apple) | 🐢 | 🟠 | Next sprint |
-| 9 | Receipt photo attachment | 🐢 | 🟠 | Next sprint |
-| 10 | Group default split method | ⚡ | 🟡 | Next sprint |
-| 11 | Pull-to-refresh on all list screens | ⚡ | 🟡 | Next sprint |
-| 12 | Activity feed from database | 🐢 | 🟡 | Next sprint |
-| 13 | Settlement success toast before dismiss | ⚡ | 🟡 | Next sprint |
-| 14 | Standardize StyleSheet.create vs inline | 🐢 | 🟡 | Next sprint |
-| 15 | Push notifications | 🐘 | 🔴 | 2 sprints |
-| 16 | Recurring expenses | 🐘 | 🟠 | 2-3 sprints |
-| 17 | Split by shares | 🐢 | 🟡 | 3 sprints |
-| 18 | Undo for destructive actions | 🐢 | 🟠 | 3 sprints |
-| 19 | Contacts integration | 🐢 | 🟢 | Later |
-| 20 | Data export (CSV) | 🐢 | 🟡 | Later |
-| 21 | OCR receipt scanning | 🐘 | 🟡 | Later |
-| 22 | Multi-currency live refresh | ⚡ | 🟢 | Later |
-| 23 | Tab bar first-run tooltip | 🐢 | 🟢 | Later |
-| 24 | Single source-of-truth design tokens | 🐢 | 🟡 | Later |
-| 25 | Consolidate duplicate SearchField | 🐢 | 🟢 | Later |
+| #   | Task                                                | Effort | Impact | Priority    |
+| --- | --------------------------------------------------- | ------ | ------ | ----------- |
+| 1   | Fix ActivityScreen unfiltered `invalidateQueries`   | ⚡     | 🟠     | **Now**     |
+| 2   | Fix `currentUser!` in ActivityScreen                | ⚡     | 🟠     | **Now**     |
+| 3   | Tab bar hardcoded color                             | ⚡     | 🟡     | **Now**     |
+| 4   | Delete dead `_QuickAction` + suppress lint warnings | ⚡     | 🟡     | **Now**     |
+| 5   | Add skeleton to GroupDetailScreen                   | ⚡     | 🟡     | **Now**     |
+| 6   | Add RefreshControl to GroupDetailScreen             | ⚡     | 🟡     | **Now**     |
+| 7   | Add confirm sheet to group member removal           | ⚡     | 🟡     | **Now**     |
+| 8   | Social login (Google + Apple)                       | 🐢     | 🟠     | Next sprint |
+| 9   | Receipt photo attachment                            | 🐢     | 🟠     | Next sprint |
+| 10  | Group default split method                          | ⚡     | 🟡     | Next sprint |
+| 11  | Pull-to-refresh on all list screens                 | ⚡     | 🟡     | Next sprint |
+| 12  | Activity feed from database                         | 🐢     | 🟡     | Next sprint |
+| 13  | Settlement success toast before dismiss             | ⚡     | 🟡     | Next sprint |
+| 14  | Standardize StyleSheet.create vs inline             | 🐢     | 🟡     | Next sprint |
+| 15  | Push notifications                                  | 🐘     | 🔴     | 2 sprints   |
+| 16  | Recurring expenses                                  | 🐘     | 🟠     | 2-3 sprints |
+| 17  | Split by shares                                     | 🐢     | 🟡     | 3 sprints   |
+| 18  | Undo for destructive actions                        | 🐢     | 🟠     | 3 sprints   |
+| 19  | Contacts integration                                | 🐢     | 🟢     | Later       |
+| 20  | Data export (CSV)                                   | 🐢     | 🟡     | Later       |
+| 21  | OCR receipt scanning                                | 🐘     | 🟡     | Later       |
+| 22  | Multi-currency live refresh                         | ⚡     | 🟢     | Later       |
+| 23  | Tab bar first-run tooltip                           | 🐢     | 🟢     | Later       |
+| 24  | Single source-of-truth design tokens                | 🐢     | 🟡     | Later       |
+| 25  | Consolidate duplicate SearchField                   | 🐢     | 🟢     | Later       |
 
 ---
 
@@ -516,19 +539,19 @@ For every task above, verify:
 
 When adding new UI, always reference:
 
-| Token | Light | Dark |
-|-------|-------|------|
-| Background | `UI.color.bg` → `#F7F6F1` | `#121212` |
-| Surface | `UI.color.surface` → `#FEFDFA` | `#1E1E1E` |
-| Control | `UI.color.control` → `#FFFFFF` | `#252525` |
-| Text | `UI.color.text` → `#1A1A1A` | `#F5F0EB` |
-| Muted | `UI.color.muted` → `#6E6D68` | `#9E9E9E` |
-| Border | `UI.color.border` → `#E7E5DE` | `#3A3A3A` |
-| Danger | `UI.color.danger` → `#E85D5D` | `#E85D5D` |
-| Success | `UI.color.success` → `#4CAF82` | `#4CAF82` |
-| Brand | `UI.color.brand` → `#8C7A6B` | `#A89A8E` |
-| Card radius | `UI.radius.lg` → `16` | `16` |
-| Pill radius | `UI.radius.pill` → `999` | `999` |
-| Page padding | `UI.space.page` → `24` | `24` |
+| Token        | Light                          | Dark      |
+| ------------ | ------------------------------ | --------- |
+| Background   | `UI.color.bg` → `#F7F6F1`      | `#121212` |
+| Surface      | `UI.color.surface` → `#FEFDFA` | `#1E1E1E` |
+| Control      | `UI.color.control` → `#FFFFFF` | `#252525` |
+| Text         | `UI.color.text` → `#1A1A1A`    | `#F5F0EB` |
+| Muted        | `UI.color.muted` → `#6E6D68`   | `#9E9E9E` |
+| Border       | `UI.color.border` → `#E7E5DE`  | `#3A3A3A` |
+| Danger       | `UI.color.danger` → `#E85D5D`  | `#E85D5D` |
+| Success      | `UI.color.success` → `#4CAF82` | `#4CAF82` |
+| Brand        | `UI.color.brand` → `#8C7A6B`   | `#A89A8E` |
+| Card radius  | `UI.radius.lg` → `16`          | `16`      |
+| Pill radius  | `UI.radius.pill` → `999`       | `999`     |
+| Page padding | `UI.space.page` → `24`         | `24`      |
 
 Typography presets: `TYPO.hero()`, `TYPO.title()`, `TYPO.body()`, `TYPO.medium()`, `TYPO.semi()`, `TYPO.label()`

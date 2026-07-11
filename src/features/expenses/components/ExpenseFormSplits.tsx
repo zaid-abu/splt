@@ -12,7 +12,6 @@ const TEXT_PRIMARY = "#000000";
 const TEXT_SECONDARY = "#8A8782";
 const SEPARATOR = "#E8E4DF";
 
-
 const SPLIT_METHODS: { key: SplitMethod; label: string; desc: string }[] = [
   { key: "equal", label: "Equal", desc: "Divide equally" },
   { key: "custom", label: "Custom", desc: "Enter amounts" },

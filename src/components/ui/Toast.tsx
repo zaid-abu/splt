@@ -5,7 +5,13 @@ import * as icons from "lucide-react-native";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
 import { UI } from "@/components/ui/native-ui";
 
-export function CustomToast({ props, options }: { props: { id: string; hide: (id: string) => void }; options: { label?: string; description?: string; variant?: string } }): JSX.Element {
+export function CustomToast({
+  props,
+  options,
+}: {
+  props: { id: string; hide: (id: string) => void };
+  options: { label?: string; description?: string; variant?: string };
+}): JSX.Element {
   const isDanger = options.variant === "danger";
   const isSuccess = options.variant === "success";
 

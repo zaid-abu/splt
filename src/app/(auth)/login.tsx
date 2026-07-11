@@ -249,8 +249,17 @@ export default function LoginScreen(): JSX.Element {
               </PressableScale>
             </Animated.View>
 
-            <Animated.View entering={FadeInDown.delay(500).duration(600)} style={{ paddingTop: 12 }}>
-              <PressableScale onPress={async () => { try { await signInWithGoogle(); } catch {} }}>
+            <Animated.View
+              entering={FadeInDown.delay(500).duration(600)}
+              style={{ paddingTop: 12 }}
+            >
+              <PressableScale
+                onPress={async () => {
+                  try {
+                    await signInWithGoogle();
+                  } catch {}
+                }}
+              >
                 <View
                   style={{
                     width: "100%",
@@ -269,8 +278,22 @@ export default function LoginScreen(): JSX.Element {
                     <ActivityIndicator color={UI.color.text} />
                   ) : (
                     <>
-                      <Typography style={{ fontSize: 14, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>G</Typography>
-                      <Typography style={{ fontSize: 15, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}>
+                      <Typography
+                        style={{
+                          fontSize: 14,
+                          color: UI.color.text,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
+                        G
+                      </Typography>
+                      <Typography
+                        style={{
+                          fontSize: 15,
+                          color: UI.color.text,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
                         Continue with Google
                       </Typography>
                     </>
@@ -278,7 +301,6 @@ export default function LoginScreen(): JSX.Element {
                 </View>
               </PressableScale>
             </Animated.View>
-
           </View>
 
           <View style={{ flex: 1 }} />

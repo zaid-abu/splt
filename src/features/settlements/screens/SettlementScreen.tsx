@@ -13,12 +13,7 @@ import { Typography, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, {
-  FadeInDown,
-  FadeIn,
-  FadeOut,
-  LinearTransition,
-} from "react-native-reanimated";
+import Animated, { FadeInDown, FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 
@@ -64,43 +59,177 @@ export default function SettleUpScreen(): JSX.Element {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const { mutateAsync: addSettlement, isPending: isAddingSettlement } = useAddSettlement();
 
-  const styles = useMemo(() => StyleSheet.create({
-  screen: { flex: 1, backgroundColor: UI.color.bg },
-  row: { flexDirection: "row", alignItems: "center" },
-  center: { alignItems: "center", justifyContent: "center" },
-  pillButton: { paddingHorizontal: 20, paddingVertical: 10, borderRadius: UI.radius.pill, backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border },
-  pillButtonText: { fontSize: 13, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
-  surfaceCard: { backgroundColor: UI.color.surface, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg, padding: 16 },
-  submitButton: { backgroundColor: UI.color.brand, height: 56, borderRadius: UI.radius.pill, justifyContent: "center", alignItems: "center" },
-  submitButtonText: { fontSize: 16, color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold", letterSpacing: 1 },
-  brandPill: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: UI.radius.pill, borderWidth: 1 },
-  brandPillSelected: { backgroundColor: UI.color.brand, borderColor: UI.color.brand },
-  brandPillDeselected: { backgroundColor: UI.color.surface, borderColor: UI.color.border },
-  brandPillText: { fontFamily: "IBMPlexSans_600SemiBold", fontSize: 13 },
-  brandPillTextSelected: { color: "#FFF" },
-  brandPillTextDeselected: { color: UI.color.text },
-  avatarShell: { alignItems: "center" },
-  avatarLabel: { fontSize: 13, fontFamily: "IBMPlexSans_600SemiBold", marginTop: 8, color: UI.color.text },
-  swapButton: { backgroundColor: UI.color.surface, paddingHorizontal: 16, paddingVertical: 10, borderRadius: UI.radius.pill, borderWidth: 1, borderColor: UI.color.border, flexDirection: "row", alignItems: "center", gap: 6 },
-  swapText: { fontSize: 12, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold", textTransform: "uppercase", letterSpacing: 1 },
-  amountContainer: { alignItems: "center", marginVertical: 32, paddingHorizontal: 24 },
-  amountLabel: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium", marginBottom: 8 },
-  amountRow: { flexDirection: "row", alignItems: "center", justifyContent: "center", borderBottomWidth: 2, borderBottomColor: UI.color.border, paddingBottom: 8, minWidth: 200 },
-  amountSymbol: { fontSize: 32, color: UI.color.text, fontFamily: "IBMPlexSans_500Medium", marginRight: 8 },
-  amountInput: { fontSize: 48, fontFamily: "IBMPlexSans_600SemiBold", color: UI.color.text, letterSpacing: -2, textAlign: "center", minWidth: 120, padding: 0 },
-  quickAmountRow: { flexDirection: "row", gap: 12, marginTop: 24 },
-  directionFlow: { paddingHorizontal: 24, paddingVertical: 24 },
-  directionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-  flowLine: { height: 1, backgroundColor: UI.color.border, width: "100%", position: "absolute", top: "50%", zIndex: -1 },
-  recipientSelector: { paddingHorizontal: 24, paddingBottom: 16 },
-  recipientLabel: { fontSize: 12, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium", marginBottom: 8 },
-  recipientCard: { alignItems: "center", padding: 12, borderWidth: 1, borderRadius: UI.radius.lg, width: 80 },
-  noteInput: { borderWidth: 1, borderColor: UI.color.border, padding: 16, borderRadius: UI.radius.lg, fontSize: 15, fontFamily: "IBMPlexSans_500Medium", backgroundColor: UI.color.surface },
-  summaryBox: { backgroundColor: UI.color.subtle, borderWidth: 1, borderColor: UI.color.border, borderRadius: UI.radius.lg, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 12 },
-  summaryLabel: { fontSize: 13, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium", marginBottom: 4 },
-  summaryText: { fontSize: 15, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
-  stickySubmit: { paddingHorizontal: 24, paddingBottom: 24, paddingTop: 12, backgroundColor: UI.color.bg, borderTopWidth: 1, borderTopColor: UI.color.border },
-}), []);
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: UI.color.bg },
+        row: { flexDirection: "row", alignItems: "center" },
+        center: { alignItems: "center", justifyContent: "center" },
+        pillButton: {
+          paddingHorizontal: 20,
+          paddingVertical: 10,
+          borderRadius: UI.radius.pill,
+          backgroundColor: UI.color.surface,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+        },
+        pillButtonText: {
+          fontSize: 13,
+          color: UI.color.text,
+          fontFamily: "IBMPlexSans_600SemiBold",
+        },
+        surfaceCard: {
+          backgroundColor: UI.color.surface,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          borderRadius: UI.radius.lg,
+          padding: 16,
+        },
+        submitButton: {
+          backgroundColor: UI.color.brand,
+          height: 56,
+          borderRadius: UI.radius.pill,
+          justifyContent: "center",
+          alignItems: "center",
+        },
+        submitButtonText: {
+          fontSize: 16,
+          color: "#FFF",
+          fontFamily: "IBMPlexSans_600SemiBold",
+          letterSpacing: 1,
+        },
+        brandPill: {
+          paddingHorizontal: 16,
+          paddingVertical: 10,
+          borderRadius: UI.radius.pill,
+          borderWidth: 1,
+        },
+        brandPillSelected: { backgroundColor: UI.color.brand, borderColor: UI.color.brand },
+        brandPillDeselected: { backgroundColor: UI.color.surface, borderColor: UI.color.border },
+        brandPillText: { fontFamily: "IBMPlexSans_600SemiBold", fontSize: 13 },
+        brandPillTextSelected: { color: "#FFF" },
+        brandPillTextDeselected: { color: UI.color.text },
+        avatarShell: { alignItems: "center" },
+        avatarLabel: {
+          fontSize: 13,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          marginTop: 8,
+          color: UI.color.text,
+        },
+        swapButton: {
+          backgroundColor: UI.color.surface,
+          paddingHorizontal: 16,
+          paddingVertical: 10,
+          borderRadius: UI.radius.pill,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+        },
+        swapText: {
+          fontSize: 12,
+          color: UI.color.text,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          textTransform: "uppercase",
+          letterSpacing: 1,
+        },
+        amountContainer: { alignItems: "center", marginVertical: 32, paddingHorizontal: 24 },
+        amountLabel: {
+          fontSize: 14,
+          color: UI.color.muted,
+          fontFamily: "IBMPlexSans_500Medium",
+          marginBottom: 8,
+        },
+        amountRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          borderBottomWidth: 2,
+          borderBottomColor: UI.color.border,
+          paddingBottom: 8,
+          minWidth: 200,
+        },
+        amountSymbol: {
+          fontSize: 32,
+          color: UI.color.text,
+          fontFamily: "IBMPlexSans_500Medium",
+          marginRight: 8,
+        },
+        amountInput: {
+          fontSize: 48,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          color: UI.color.text,
+          letterSpacing: -2,
+          textAlign: "center",
+          minWidth: 120,
+          padding: 0,
+        },
+        quickAmountRow: { flexDirection: "row", gap: 12, marginTop: 24 },
+        directionFlow: { paddingHorizontal: 24, paddingVertical: 24 },
+        directionRow: {
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+        },
+        flowLine: {
+          height: 1,
+          backgroundColor: UI.color.border,
+          width: "100%",
+          position: "absolute",
+          top: "50%",
+          zIndex: -1,
+        },
+        recipientSelector: { paddingHorizontal: 24, paddingBottom: 16 },
+        recipientLabel: {
+          fontSize: 12,
+          color: UI.color.muted,
+          fontFamily: "IBMPlexSans_500Medium",
+          marginBottom: 8,
+        },
+        recipientCard: {
+          alignItems: "center",
+          padding: 12,
+          borderWidth: 1,
+          borderRadius: UI.radius.lg,
+          width: 80,
+        },
+        noteInput: {
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          padding: 16,
+          borderRadius: UI.radius.lg,
+          fontSize: 15,
+          fontFamily: "IBMPlexSans_500Medium",
+          backgroundColor: UI.color.surface,
+        },
+        summaryBox: {
+          backgroundColor: UI.color.subtle,
+          borderWidth: 1,
+          borderColor: UI.color.border,
+          borderRadius: UI.radius.lg,
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          marginBottom: 12,
+        },
+        summaryLabel: {
+          fontSize: 13,
+          color: UI.color.muted,
+          fontFamily: "IBMPlexSans_500Medium",
+          marginBottom: 4,
+        },
+        summaryText: { fontSize: 15, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+        stickySubmit: {
+          paddingHorizontal: 24,
+          paddingBottom: 24,
+          paddingTop: 12,
+          backgroundColor: UI.color.bg,
+          borderTopWidth: 1,
+          borderTopColor: UI.color.border,
+        },
+      }),
+    []
+  );
 
   const targetGroup = groups.find((g) => g.id === routeGroupId);
 
@@ -218,7 +347,12 @@ export default function SettleUpScreen(): JSX.Element {
   if (!friend && (!isGroupRoute || debtOptions.length === 0)) {
     return (
       <View
-        style={{ flex: 1, backgroundColor: UI.color.bg, alignItems: "center", justifyContent: "center" }}
+        style={{
+          flex: 1,
+          backgroundColor: UI.color.bg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
       >
         <Typography
           style={{ fontSize: 18, color: UI.color.text, fontFamily: "IBMPlexSans_500Medium" }}
@@ -227,9 +361,17 @@ export default function SettleUpScreen(): JSX.Element {
         </Typography>
         <Pressable
           onPress={() => router.back()}
-          style={{ marginTop: 16, padding: 14, paddingHorizontal: 24, backgroundColor: UI.color.brand, borderRadius: UI.radius.pill }}
+          style={{
+            marginTop: 16,
+            padding: 14,
+            paddingHorizontal: 24,
+            backgroundColor: UI.color.brand,
+            borderRadius: UI.radius.pill,
+          }}
         >
-          <Typography style={{ color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold" }}>Go Back</Typography>
+          <Typography style={{ color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
+            Go Back
+          </Typography>
         </Pressable>
       </View>
     );
@@ -286,10 +428,10 @@ export default function SettleUpScreen(): JSX.Element {
   }
 
   const isYouDirection = direction === "you";
-  const settlementCurrency = isGroupRoute && targetGroup?.currency
-    ? targetGroup.currency
-    : preferredCurrency.code;
-  const settlementCurrencyObj = CURRENCIES.find((c) => c.code === settlementCurrency) ?? preferredCurrency;
+  const settlementCurrency =
+    isGroupRoute && targetGroup?.currency ? targetGroup.currency : preferredCurrency.code;
+  const settlementCurrencyObj =
+    CURRENCIES.find((c) => c.code === settlementCurrency) ?? preferredCurrency;
 
   const leftUser = isYouDirection ? currentUser : friend;
   const rightUser = isYouDirection ? friend : currentUser;
@@ -303,10 +445,7 @@ export default function SettleUpScreen(): JSX.Element {
     >
       <StatusBar style="dark" />
       <View style={{ paddingTop: insets.top }}>
-        <ScreenHeader
-          title="Settle Up"
-          onBackPress={() => router.back()}
-        />
+        <ScreenHeader title="Settle Up" onBackPress={() => router.back()} />
       </View>
 
       <ScrollView
@@ -571,7 +710,11 @@ export default function SettleUpScreen(): JSX.Element {
                 })}
               >
                 <Typography
-                  style={{ fontSize: 13, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 13,
+                    color: UI.color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
                   Full: {formatAmount(Math.abs(netBalance), preferredCurrency.code)}
                 </Typography>
@@ -592,7 +735,11 @@ export default function SettleUpScreen(): JSX.Element {
                 })}
               >
                 <Typography
-                  style={{ fontSize: 13, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+                  style={{
+                    fontSize: 13,
+                    color: UI.color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
                 >
                   Half: {(Math.abs(netBalance) / 2).toFixed(2)}
                 </Typography>
@@ -710,7 +857,7 @@ export default function SettleUpScreen(): JSX.Element {
       </ScrollView>
 
       {/* Sticky Submit Button */}
-        <View style={[styles.stickySubmit, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+      <View style={[styles.stickySubmit, { paddingBottom: Math.max(insets.bottom, 24) }]}>
         <View style={styles.summaryBox}>
           <Typography
             style={{

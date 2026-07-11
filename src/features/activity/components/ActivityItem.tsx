@@ -14,7 +14,6 @@ import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { UI } from "@/components/ui/native-ui";
 
-
 const TEXT_PRIMARY = UI.color.text;
 const TEXT_SECONDARY = UI.color.muted;
 const TEXT_DANGER = UI.color.danger;
@@ -28,7 +27,11 @@ interface ActivityItemProps {
   isLast?: boolean;
 }
 
-export const ActivityItem = React.memo(function ActivityItem({ activity, index, isLast }: ActivityItemProps): React.JSX.Element {
+export const ActivityItem = React.memo(function ActivityItem({
+  activity,
+  index,
+  isLast,
+}: ActivityItemProps): React.JSX.Element {
   const { currentUser } = useAuth();
   const { mutateAsync: deleteExpense } = useDeleteExpense();
   const { mutateAsync: deleteSettlement } = useDeleteSettlement();
@@ -455,7 +458,8 @@ export const ActivityItem = React.memo(function ActivityItem({ activity, index, 
               lineHeight: 22,
             }}
           >
-            Are you sure you want to delete &ldquo;{activity.description}&rdquo;? This cannot be undone.
+            Are you sure you want to delete &ldquo;{activity.description}&rdquo;? This cannot be
+            undone.
           </Typography>
           <View style={{ flexDirection: "row", gap: 12 }}>
             <Pressable

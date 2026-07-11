@@ -57,7 +57,6 @@ const TEXT_SUCCESS = UI.color.success;
 const SEPARATOR = UI.color.border;
 const CONTROL_SURFACE = UI.color.control;
 
-
 type FriendListItem = {
   friend: User;
   balance: number;
@@ -699,7 +698,9 @@ export default function FriendsScreen(): JSX.Element {
       <View style={{ paddingHorizontal: UI.space.page }}>
         {isLoading ? (
           <View style={{ paddingTop: 20 }}>
-            {[1, 2, 3, 4].map((i) => <ListRowSkeleton key={i} />)}
+            {[1, 2, 3, 4].map((i) => (
+              <ListRowSkeleton key={i} />
+            ))}
           </View>
         ) : (
           <View style={{ marginTop: 20 }}>

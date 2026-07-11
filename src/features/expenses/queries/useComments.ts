@@ -13,8 +13,15 @@ export function useAddComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ expenseId, userId, text }: { expenseId: string; userId: string; text: string }) =>
-      CommentsService.addComment(expenseId, userId, text),
+    mutationFn: ({
+      expenseId,
+      userId,
+      text,
+    }: {
+      expenseId: string;
+      userId: string;
+      text: string;
+    }) => CommentsService.addComment(expenseId, userId, text),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["expense-comments", variables.expenseId] });
     },

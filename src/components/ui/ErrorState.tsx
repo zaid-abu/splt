@@ -10,7 +10,11 @@ interface ErrorStateProps {
   onRetry?: () => void;
 }
 
-export function ErrorState({ title = "Something went wrong", message = "An unexpected error occurred.", onRetry }: ErrorStateProps): JSX.Element {
+export function ErrorState({
+  title = "Something went wrong",
+  message = "An unexpected error occurred.",
+  onRetry,
+}: ErrorStateProps): JSX.Element {
   return (
     <View
       style={{
@@ -72,7 +76,9 @@ export function ErrorState({ title = "Something went wrong", message = "An unexp
             opacity: pressed ? 0.75 : 1,
           })}
         >
-          <Typography style={{ fontSize: 15, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
+          <Typography
+            style={{ fontSize: 15, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+          >
             Try Again
           </Typography>
         </Pressable>
