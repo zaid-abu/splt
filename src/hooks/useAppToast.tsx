@@ -1,16 +1,21 @@
 import { useToast as useHeroToast } from "heroui-native";
 import { CustomToast } from "@/components/ui/Toast";
 
+interface ToastOptions {
+  label: string;
+  description?: string;
+  type?: "info" | "success" | "danger";
+  variant?: "info" | "success" | "danger" | "warning";
+  duration?: number;
+  [key: string]: unknown;
+}
+
 export function useAppToast() {
   const { toast } = useHeroToast();
 
-  const show = (options: string | any) => {
-    let config: any;
-    if (typeof options === "string") {
-      config = { label: options };
-    } else {
-      config = options;
-    }
+  const show = (options: string | ToastOptions) => {
+    const config: ToastOptions =
+      typeof options === "string" ? { label: options } : options;
 
     return toast.show({
       ...config,

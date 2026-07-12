@@ -40,13 +40,15 @@ export const groupsApi = {
   },
 
   async createGroup(groupData: Partial<Group>): Promise<Group> {
-    const { data, error } = await (supabase
+    const { data, error } = await supabase
       .from("groups")
       .insert(toGroupInsert(groupData))
       .select("*, members:group_members(*, user:users(*))")
-      .single() as unknown as { data: GroupRow; error: Error | null });
+      .maybeSingle()
+      .returns<GroupRow>();
 
     if (error) throw error;
+    if (!data) throw new Error("Failed to create group");
 
     const memberIds = groupData.members?.map((member) => member.userId) ?? [];
     if (memberIds.length > 0) {

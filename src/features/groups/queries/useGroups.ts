@@ -23,7 +23,7 @@ export function useCreateGroup() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (groupData: any) => groupsApi.createGroup(groupData),
+    mutationFn: (groupData: Partial<Group>) => groupsApi.createGroup(groupData),
     onSuccess: (newGroup) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.groups });
       queryClient.setQueryData(queryKeys.groupDetails(newGroup.id), newGroup);
