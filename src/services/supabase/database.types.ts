@@ -55,6 +55,43 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["expense_splits"]["Insert"]>;
         Relationships: [];
       };
+      expense_comments: {
+        Row: {
+          id: string;
+          expense_id: string;
+          user_id: string;
+          text: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          expense_id: string;
+          user_id: string;
+          text: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          expense_id?: string;
+          user_id?: string;
+          text?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "expense_comments_expense_id_fkey";
+            columns: ["expense_id"];
+            referencedRelation: "expenses";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "expense_comments_user_id_fkey";
+            columns: ["user_id"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       expenses: {
         Row: {
           id: string;
