@@ -11,7 +11,7 @@ import { Typography } from "heroui-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { LineChart } from "react-native-gifted-charts";
+import { BarChart } from "react-native-gifted-charts";
 import * as icons from "lucide-react-native";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -27,13 +27,12 @@ import { CategoryBreakdown } from "../components/CategoryBreakdown";
 import { TopExpenses } from "../components/TopExpenses";
 
 import { Card } from "@/components/ui/Card";
-import { UI, SectionLabel, ScreenHeader } from "@/components/ui/native-ui";
+import { UI, SectionLabel, ScreenHeader, TYPO } from "@/components/ui/native-ui";
 
 const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
-  { key: "week", label: "Week" },
-  { key: "month", label: "Month" },
-  { key: "3mo", label: "3 Months" },
-  { key: "year", label: "Year" },
+  { key: "week", label: "This Week" },
+  { key: "month", label: "This Month" },
+  { key: "year", label: "This Year" },
   { key: "all", label: "All Time" },
 ];
 
@@ -77,19 +76,22 @@ export default function AnalyticsScreen() {
     ? biggestCategory.category.charAt(0).toUpperCase() + biggestCategory.category.slice(1)
     : "None";
 
-  const trendChartData = useMemo(() => {
-    const labelEvery = Math.max(1, Math.ceil(trendData.length / 4));
+  const barChartData = useMemo(() => {
+    const labelEvery = Math.max(1, Math.ceil(trendData.length / 5));
     return trendData.map((point, index) => ({
       value: point.value,
       label:
-        index === 0 || index === trendData.length - 1 || index % labelEvery === 0
-          ? point.label.replace(" ", "\n")
+        index === 0 ||
+        index === trendData.length - 1 ||
+        index % labelEvery === 0 ||
+        trendData.length <= 5
+          ? point.label
           : "",
     }));
   }, [trendData]);
 
-  const trendMax = trendData.reduce((max, point) => Math.max(max, point.value), 0);
   const chartWidth = Math.max(220, width - UI.space.page * 2 - 56);
+  const barSpacing = Math.max(8, (chartWidth - 40) / Math.max(1, barChartData.length) - 24);
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
@@ -103,11 +105,14 @@ export default function AnalyticsScreen() {
       >
         <ScreenHeader title="Analytics" onBackPress={() => router.back()} />
 
-        {/* Period Selector */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: UI.space.page, gap: 8, paddingBottom: 18 }}
+          contentContainerStyle={{
+            paddingHorizontal: UI.space.page,
+            gap: 8,
+            paddingBottom: 18,
+          }}
         >
           {PERIODS.map((p) => {
             const isSelected = period === p.key;
@@ -119,19 +124,21 @@ export default function AnalyticsScreen() {
                   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                   setPeriod(p.key);
                 }}
-                style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 8,
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                style={({ pressed }) => ({
+                  paddingHorizontal: 16,
+                  paddingVertical: 10,
                   backgroundColor: isSelected ? UI.color.text : UI.color.control,
                   borderWidth: 1,
                   borderColor: isSelected ? UI.color.text : UI.color.border,
-                  borderRadius: 999,
-                }}
+                  borderRadius: UI.radius.pill,
+                  opacity: pressed ? 0.72 : 1,
+                })}
               >
                 <Typography
                   style={{
-                    fontSize: 13,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    ...TYPO.semi(13),
                     color: isSelected ? UI.color.textInverse : UI.color.muted,
                   }}
                 >
@@ -171,16 +178,20 @@ export default function AnalyticsScreen() {
             />
           </View>
         ) : (
-          <View style={{ paddingHorizontal: UI.space.page, gap: 24 }}>
-            <Card padding={16}>
+          <View
+            style={{
+              paddingHorizontal: UI.space.page,
+              gap: 20,
+            }}
+          >
+            {/* Spending Summary */}
+            <Card padding={20}>
               <SectionLabel style={{ marginBottom: 12 }}>Spending summary</SectionLabel>
               <Typography
                 style={{
-                  fontSize: 38,
-                  color: UI.color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  ...TYPO.hero(38),
                   lineHeight: 46,
-                  marginBottom: 16,
+                  marginBottom: 20,
                 }}
               >
                 {formatAmount(totalSpent, preferredCurrency.code)}
@@ -189,7 +200,10 @@ export default function AnalyticsScreen() {
               <View style={{ flexDirection: "row", gap: 10 }}>
                 {[
                   { label: "Expenses", value: String(expenseCount) },
-                  { label: "Average", value: formatAmount(averageExpense, preferredCurrency.code) },
+                  {
+                    label: "Average",
+                    value: formatAmount(averageExpense, preferredCurrency.code),
+                  },
                   { label: "Top category", value: biggestCategoryLabel },
                 ].map((item) => (
                   <View
@@ -197,7 +211,7 @@ export default function AnalyticsScreen() {
                     style={{
                       flex: 1,
                       backgroundColor: UI.color.control,
-                      borderRadius: 14,
+                      borderRadius: UI.radius.md,
                       borderWidth: 1,
                       borderColor: UI.color.border,
                       paddingHorizontal: 12,
@@ -207,11 +221,8 @@ export default function AnalyticsScreen() {
                     <Typography
                       numberOfLines={1}
                       style={{
-                        fontSize: 11,
+                        ...TYPO.label(),
                         color: UI.color.muted,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                        textTransform: "uppercase",
-                        letterSpacing: 0.8,
                         marginBottom: 5,
                       }}
                     >
@@ -221,9 +232,8 @@ export default function AnalyticsScreen() {
                       numberOfLines={1}
                       adjustsFontSizeToFit
                       style={{
-                        fontSize: 16,
+                        ...TYPO.semi(16),
                         color: UI.color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
                       {item.value}
@@ -233,33 +243,34 @@ export default function AnalyticsScreen() {
               </View>
             </Card>
 
-            <Card padding={16}>
-              <SectionLabel style={{ marginBottom: 12 }}>Trend</SectionLabel>
-              {trendChartData.length > 0 && trendMax > 0 ? (
-                <View style={{ marginLeft: -10, marginTop: 2 }}>
-                  <LineChart
-                    data={trendChartData}
-                    areaChart
-                    curved
-                    isAnimated
-                    height={170}
+            {/* Spending Trend (Bar Chart) */}
+            <Card padding={20}>
+              <SectionLabel style={{ marginBottom: 12 }}>Spending over time</SectionLabel>
+              {barChartData.length > 0 ? (
+                <View
+                  style={{
+                    marginLeft: -8,
+                    marginTop: 8,
+                    paddingBottom: 8,
+                  }}
+                >
+                  <BarChart
+                    data={barChartData}
+                    height={180}
                     width={chartWidth}
-                    spacing={Math.max(34, chartWidth / Math.max(4, trendChartData.length - 1))}
-                    color={UI.color.text}
-                    thickness={2}
-                    startFillColor={UI.color.text}
-                    endFillColor={UI.color.text}
-                    startOpacity={0.1}
-                    endOpacity={0.01}
-                    hideDataPoints
-                    hideYAxisText
+                    spacing={barSpacing}
+                    barWidth={18}
+                    barBorderRadius={4}
+                    frontColor={UI.color.text}
+                    gradientColor={UI.color.muted}
+                    isAnimated
                     yAxisThickness={0}
                     xAxisThickness={1}
                     xAxisColor={UI.color.border}
                     rulesColor={UI.color.border}
                     rulesThickness={1}
                     noOfSections={3}
-                    maxValue={trendMax * 1.2}
+                    showValuesAsTopLabel={false}
                     xAxisLabelTextStyle={{
                       color: UI.color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
@@ -269,16 +280,16 @@ export default function AnalyticsScreen() {
                 </View>
               ) : (
                 <View style={{ paddingVertical: 28, alignItems: "center" }}>
-                  <icons.LineChart size={38} color={UI.color.muted} strokeWidth={1.25} />
+                  <icons.BarChart3 size={38} color={UI.color.muted} strokeWidth={1.25} />
                   <Typography
                     style={{
-                      marginTop: 12,
+                      ...TYPO.medium(15),
                       color: UI.color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
+                      marginTop: 12,
                       marginBottom: 16,
                     }}
                   >
-                    No spending trend for this period.
+                    No spending data for this period.
                   </Typography>
                   <Pressable
                     accessibilityRole="button"
@@ -286,16 +297,15 @@ export default function AnalyticsScreen() {
                     style={({ pressed }) => ({
                       paddingHorizontal: 18,
                       paddingVertical: 10,
-                      borderRadius: 999,
+                      borderRadius: UI.radius.pill,
                       backgroundColor: UI.color.text,
                       opacity: pressed ? 0.8 : 1,
                     })}
                   >
                     <Typography
                       style={{
-                        fontSize: 14,
+                        ...TYPO.semi(14),
                         color: UI.color.textInverse,
-                        fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
                       Log an expense

@@ -33,6 +33,7 @@ const SIZE_MAP = {
   sm: { size: 32, radius: 12, font: 12, inset: 2 },
   md: { size: 48, radius: 18, font: 16, inset: 2 },
   lg: { size: 64, radius: 22, font: 22, inset: 3 },
+  xl: { size: 96, radius: 28, font: 32, inset: 4 },
 } as const;
 
 function getSize(size: AvatarSize | undefined) {

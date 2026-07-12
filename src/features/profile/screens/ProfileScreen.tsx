@@ -1,16 +1,21 @@
-import { Switch, Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import type { JSX } from "react";
 import { useState, useCallback, useRef, useEffect } from "react";
-import { ScrollView, View, Pressable, RefreshControl, Share } from "react-native";
+import { ScrollView, View, Pressable, RefreshControl, Share, Linking, Platform } from "react-native";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { UI, ScreenHeader, MetricCell, SectionLabel, applyTheme } from "@/components/ui/native-ui";
+import { Typography } from "heroui-native";
+import { UI, ScreenHeader, MetricCell, SectionLabel, TYPO } from "@/components/ui/native-ui";
 import { Card } from "@/components/ui/Card";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -23,10 +28,54 @@ import { useUserSettlements } from "@/features/settlements/queries/useSettlement
 import { useAuth } from "@/context/AppContext";
 import { useSignOut, useDeleteAccount } from "@/features/auth/hooks/useAuthMutations";
 import { useUIStore } from "@/store/useUIStore";
+import { useFriends } from "@/features/friends/queries/useFriends";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 import type { Currency } from "@/types";
 import { SettingsItem } from "@/features/profile/components/SettingsItem";
-import { Uniwind } from "uniwind";
+import dayjs from "dayjs";
+
+function DarkModeToggle({ value, onValueChange }: { value: boolean; onValueChange: (v: boolean) => void }) {
+  const rotation = useSharedValue(value ? 1 : 0);
+
+  useEffect(() => {
+    rotation.value = withSpring(value ? 1 : 0, { mass: 0.5, stiffness: 120, damping: 12 });
+  }, [value, rotation]);
+
+  const iconStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotation.value * 360}deg` }],
+  }));
+
+  return (
+    <Pressable
+      onPress={() => {
+        Haptics.selectionAsync();
+        onValueChange(!value);
+      }}
+      accessibilityRole="switch"
+      accessibilityState={{ checked: value }}
+      accessibilityLabel={`Switch to ${value ? "light" : "dark"} mode`}
+      style={({ pressed }) => ({
+        width: 52,
+        height: 28,
+        borderRadius: UI.radius.pill,
+        backgroundColor: value ? "#2A2A2A" : UI.color.control,
+        borderWidth: 1,
+        borderColor: value ? "#3A3A3A" : UI.color.border,
+        alignItems: "center",
+        justifyContent: "center",
+        opacity: pressed ? 0.7 : 1,
+      })}
+    >
+      <Animated.View style={iconStyle}>
+        {value ? (
+          <icons.Moon size={16} color="#F5F0EB" strokeWidth={1.75} />
+        ) : (
+          <icons.Sun size={16} color={UI.color.text} strokeWidth={1.75} />
+        )}
+      </Animated.View>
+    </Pressable>
+  );
+}
 
 export default function ProfileScreen(): JSX.Element {
   const router = useRouter();
@@ -50,8 +99,12 @@ export default function ProfileScreen(): JSX.Element {
     error: settlementsError,
     refetch: refetchSettlements,
   } = useUserSettlements(currentUser?.id);
+  const {
+    data: friends = [],
+    isLoading: isLoadingFriends,
+  } = useFriends(currentUser?.id);
 
-  const isFirstLoad = isLoadingGroups || isLoadingExpenses || isLoadingSettlements;
+  const isFirstLoad = isLoadingGroups || isLoadingExpenses || isLoadingSettlements || isLoadingFriends;
   const hasError = !!groupsError || !!expensesError || !!settlementsError;
 
   const insets = useSafeAreaInsets();
@@ -61,6 +114,8 @@ export default function ProfileScreen(): JSX.Element {
   const setCurrency = useUIStore((s) => s.setCurrency);
   const isDarkMode = useUIStore((s) => s.isDarkMode);
   const setDarkMode = useUIStore((s) => s.setDarkMode);
+  const hapticFeedback = useUIStore((s) => s.hapticFeedback);
+  const setHapticFeedback = useUIStore((s) => s.setHapticFeedback);
 
   const owedToYou = balancesUtil.getTotalOwedToMe(
     currentUser.id,
@@ -85,6 +140,7 @@ export default function ProfileScreen(): JSX.Element {
   const { mutateAsync: deleteAccount } = useDeleteAccount();
   const deleteSheetRef = useRef<BottomSheetModal>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const appVersion = "1.0.0";
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -109,29 +165,54 @@ export default function ProfileScreen(): JSX.Element {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [queryClient]);
 
-  const handleThemeToggle = (value: boolean) => {
-    Haptics.selectionAsync();
-    setDarkMode(value);
-    applyTheme(value);
-    Uniwind.setTheme(value ? "dark" : "light");
-  };
+  const handleSignOut = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    signOut();
+  }, [signOut]);
 
-  useEffect(() => {
-    applyTheme(isDarkMode);
-    Uniwind.setTheme(isDarkMode ? "dark" : "light");
-  }, [isDarkMode]);
-
-  const handleShareInvite = async () => {
+  const handleShare = useCallback(async () => {
     try {
       await Share.share({
         message: "Join me on Splt \u2014 the simple way to split expenses with friends!",
       });
     } catch {}
-  };
+  }, []);
+
+  const handleRate = useCallback(() => {
+    const url = Platform.OS === "ios"
+      ? "https://apps.apple.com/app/splt"
+      : "https://play.google.com/store/apps/details?id=com.splt.app";
+    Linking.openURL(url).catch(() => {});
+  }, []);
+
+  const handleFeedback = useCallback(() => {
+    Linking.openURL("mailto:support@splt.app").catch(() => {});
+  }, []);
 
   const handleCurrencyChange = (currency: Currency) => {
     setCurrency(currency);
   };
+
+  const handleHapticToggle = useCallback(
+    (enabled: boolean) => {
+      if (!enabled) {
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      }
+      setHapticFeedback(enabled);
+    },
+    [setHapticFeedback]
+  );
+
+  const handleDarkModeToggle = useCallback(
+    (value: boolean) => {
+      setDarkMode(value);
+    },
+    [setDarkMode]
+  );
+
+  const memberSince = currentUser.createdAt
+    ? dayjs(currentUser.createdAt).format("MMMM YYYY")
+    : null;
 
   // ── Loading State ──────────────────────────────────────────────────────────
 
@@ -144,17 +225,9 @@ export default function ProfileScreen(): JSX.Element {
         </View>
         <View style={{ flex: 1, paddingHorizontal: UI.space.page, paddingTop: 16 }}>
           <FocusAwareView delay={0} style={{ marginBottom: 40 }}>
-            <View
-              style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                padding: UI.space.page,
-              }}
-            >
+            <Card>
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
-                <Skeleton width={64} height={64} radius={22} />
+                <Skeleton width={96} height={96} radius={28} />
                 <View style={{ marginLeft: 16, flex: 1, gap: 8 }}>
                   <View style={{ width: "60%" }}>
                     <Skeleton height={22} />
@@ -175,38 +248,25 @@ export default function ProfileScreen(): JSX.Element {
                   <Skeleton height={58} radius={UI.radius.md} />
                 </View>
               </View>
-            </View>
+            </Card>
           </FocusAwareView>
           <FocusAwareView delay={60} style={{ marginBottom: 40 }}>
             <View style={{ marginBottom: 14, width: 120 }}>
               <Skeleton height={14} radius={6} />
             </View>
-            <View
-              style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-              }}
-            >
-              <View style={{ padding: 16, gap: 12 }}>
+            <Card>
+              <View style={{ padding: UI.space.page, gap: 12 }}>
                 <Skeleton height={52} radius={UI.radius.md} />
-                <Skeleton height={72} radius={UI.radius.lg} />
+                <Skeleton height={52} radius={UI.radius.md} />
+                <Skeleton height={52} radius={UI.radius.md} />
               </View>
-            </View>
+            </Card>
           </FocusAwareView>
           <FocusAwareView delay={120} style={{ marginBottom: 40 }}>
             <View style={{ marginBottom: 14, width: 120 }}>
               <Skeleton height={14} radius={6} />
             </View>
-            <View
-              style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-              }}
-            >
+            <Card>
               <View style={{ padding: UI.space.page, gap: 12 }}>
                 <View style={{ width: "70%" }}>
                   <Skeleton height={16} />
@@ -215,7 +275,7 @@ export default function ProfileScreen(): JSX.Element {
                 <Skeleton height={52} radius={UI.radius.pill} />
                 <Skeleton height={52} radius={UI.radius.pill} />
               </View>
-            </View>
+            </Card>
           </FocusAwareView>
         </View>
       </FocusAwareView>
@@ -269,9 +329,8 @@ export default function ProfileScreen(): JSX.Element {
             >
               <Typography
                 style={{
-                  fontSize: 15,
+                  ...TYPO.semi(15),
                   color: UI.color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
                 Edit
@@ -298,15 +357,13 @@ export default function ProfileScreen(): JSX.Element {
               onPress={() => router.push("/profile/edit")}
               style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
             >
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
-                <AppUserAvatar user={currentUser} size="lg" />
-                <View style={{ marginLeft: 16, flex: 1 }}>
+              <View style={{ flexDirection: "row", alignItems: "center" }}>
+                <AppUserAvatar user={currentUser} size={"xl" as any} />
+                <View style={{ marginLeft: 20, flex: 1 }}>
                   <Typography
                     style={{
-                      fontSize: 24,
+                      ...TYPO.title(24),
                       color: UI.color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                      letterSpacing: -0.5,
                     }}
                     numberOfLines={1}
                   >
@@ -314,35 +371,92 @@ export default function ProfileScreen(): JSX.Element {
                   </Typography>
                   <Typography
                     style={{
-                      fontSize: 14,
+                      ...TYPO.medium(14),
                       color: UI.color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
+                      marginTop: 4,
                     }}
                     numberOfLines={1}
                   >
                     {currentUser.email}
                   </Typography>
+                  {memberSince && (
+                    <Typography
+                      style={{
+                        ...TYPO.medium(12),
+                        color: UI.color.muted,
+                        marginTop: 4,
+                        opacity: 0.7,
+                      }}
+                    >
+                      Member since {memberSince}
+                    </Typography>
+                  )}
                 </View>
                 <icons.ChevronRight size={20} color={UI.color.muted} strokeWidth={1.5} />
               </View>
             </Pressable>
 
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <MetricCell label="Groups" value={String(groups.length)} />
-              <MetricCell
-                label="Owed"
-                value={`+${preferredCurrency.symbol}${owedToYou.toFixed(0)}`}
-                tone={owedToYou > 0 ? "success" : "neutral"}
+            {/* Quick Stats */}
+            <View style={{ flexDirection: "row", gap: 10, marginTop: 24 }}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push("/(tabs)/groups")}
+                style={{ flex: 1 }}
+              >
+                <MetricCell label="Groups" value={String(groups.length)} />
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push("/(tabs)/friends")}
+                style={{ flex: 1 }}
+              >
+                <MetricCell label="Friends" value={String(friends.length)} />
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => router.push("/(tabs)/activity")}
+                style={{ flex: 1 }}
+              >
+                <MetricCell label="Expenses" value={String(expenses.length)} />
+              </Pressable>
+            </View>
+
+            {/* Balance Summary */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: 16,
+                marginTop: 16,
+                paddingTop: 16,
+                borderTopWidth: 1,
+                borderTopColor: UI.color.border,
+              }}
+            >
+              <Typography
+                style={{
+                  ...TYPO.semi(14),
+                  color: UI.color.success,
+                }}
+              >
+                Owed {preferredCurrency.symbol}
+                {owedToYou.toFixed(0)}
+              </Typography>
+              <View
+                style={{
+                  width: 1,
+                  backgroundColor: UI.color.border,
+                }}
               />
-              <MetricCell
-                label="Owe"
-                value={
-                  youOwe > 0
-                    ? `-${preferredCurrency.symbol}${youOwe.toFixed(0)}`
-                    : `${preferredCurrency.symbol}0`
-                }
-                tone={youOwe > 0 ? "danger" : "neutral"}
-              />
+              <Typography
+                style={{
+                  ...TYPO.semi(14),
+                  color: UI.color.danger,
+                }}
+              >
+                Owe {preferredCurrency.symbol}
+                {youOwe.toFixed(0)}
+              </Typography>
             </View>
           </Card>
         </FocusAwareView>
@@ -354,35 +468,57 @@ export default function ProfileScreen(): JSX.Element {
             <SectionLabel>Preferences</SectionLabel>
           </View>
 
-          <View
-            style={{
-              backgroundColor: UI.color.surface,
-              borderRadius: UI.radius.lg,
-              borderWidth: 1,
-              borderColor: UI.color.border,
-              marginBottom: 12,
-            }}
-          >
+          <Card style={{ marginBottom: 10 }}>
             <SettingsItem
-              icon="Moon"
+              icon={isDarkMode ? "Moon" : "Sun"}
               title="Dark Mode"
               subtitle="Switch between light and dark themes"
-              rightElement={<Switch isSelected={isDarkMode} onSelectedChange={handleThemeToggle} />}
+              rightElement={
+                <DarkModeToggle value={isDarkMode} onValueChange={handleDarkModeToggle} />
+              }
             />
-          </View>
+            <SettingsItem
+              icon="Smartphone"
+              title="Haptic Feedback"
+              subtitle="Vibrations on interactions"
+              isLast
+              rightElement={
+                <Pressable
+                  onPress={() => handleHapticToggle(!hapticFeedback)}
+                  accessibilityRole="switch"
+                  accessibilityState={{ checked: hapticFeedback }}
+                  accessibilityLabel="Toggle haptic feedback"
+                  style={({ pressed }) => ({
+                    width: 52,
+                    height: 28,
+                    borderRadius: UI.radius.pill,
+                    backgroundColor: hapticFeedback ? UI.color.text : UI.color.border,
+                    borderWidth: 1,
+                    borderColor: hapticFeedback ? UI.color.text : UI.color.border,
+                    alignItems: hapticFeedback ? "flex-end" : "flex-start",
+                    justifyContent: "center",
+                    paddingHorizontal: 3,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
+                >
+                  <View
+                    style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 10,
+                      backgroundColor: hapticFeedback ? UI.color.textInverse : UI.color.control,
+                    }}
+                  />
+                </Pressable>
+              }
+            />
+          </Card>
 
-          <View
-            style={{
-              backgroundColor: UI.color.surface,
-              borderRadius: UI.radius.lg,
-              borderWidth: 1,
-              borderColor: UI.color.border,
-            }}
-          >
+          <Card>
             <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
               <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
             </View>
-          </View>
+          </Card>
         </FocusAwareView>
 
         {/* ── Account ──────────────────────────────────────────────────────── */}
@@ -392,80 +528,74 @@ export default function ProfileScreen(): JSX.Element {
             <SectionLabel>Account</SectionLabel>
           </View>
 
-          <View
-            style={{
-              backgroundColor: UI.color.surface,
-              borderRadius: UI.radius.lg,
-              borderWidth: 1,
-              borderColor: UI.color.border,
-            }}
-          >
-            <View style={{ padding: UI.space.page }}>
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: UI.color.muted,
-                  fontFamily: "IBMPlexSans_500Medium",
-                  marginBottom: 20,
-                  lineHeight: 20,
-                }}
-              >
-                {currentUser.createdAt
-                  ? `Account created on ${currentUser.createdAt.toLocaleDateString()}`
-                  : "Account details are synced with your profile."}
-              </Typography>
+          <Card style={{ marginBottom: 10 }}>
+            <SettingsItem
+              icon="Lock"
+              title="Change Password"
+              onPress={() => router.push("/profile/change-password")}
+            />
+            <SettingsItem
+              icon="LogOut"
+              title="Log Out"
+              isLast
+              onPress={handleSignOut}
+            />
+          </Card>
 
-              <SettingsItem
-                icon="Lock"
-                title="Change Password"
-                onPress={() => router.push("/profile/change-password")}
-              />
-
-              <View style={{ height: 12 }} />
-
-              <HapticButton onPress={() => signOut()} tone="outlined" height={52}>
-                Log Out
-              </HapticButton>
-
-              <View style={{ height: 10 }} />
-
-              <HapticButton onPress={handleShareInvite} tone="outlined" height={52}>
-                Tell a Friend
-              </HapticButton>
-
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: UI.color.border,
-                  marginVertical: 16,
-                }}
-              />
-
-              <HapticButton
-                onPress={() => deleteSheetRef.current?.present()}
-                tone="danger"
-                height={52}
-              >
-                Delete Account
-              </HapticButton>
-            </View>
-          </View>
+          <Card padding={16}>
+            <HapticButton
+              onPress={() => deleteSheetRef.current?.present()}
+              tone="danger"
+              height={52}
+            >
+              Delete Account
+            </HapticButton>
+          </Card>
         </FocusAwareView>
 
-        {/* ── Version ──────────────────────────────────────────────────────── */}
+        {/* ── About ────────────────────────────────────────────────────────── */}
 
-        <View style={{ alignItems: "center", marginBottom: 32, marginTop: -8 }}>
-          <Typography
-            style={{
-              fontSize: 12,
-              color: UI.color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
-              opacity: 0.4,
-            }}
-          >
-            SPLT v1.0.0
-          </Typography>
-        </View>
+        <FocusAwareView delay={400} style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}>
+          <View style={{ marginBottom: 14 }}>
+            <SectionLabel>About</SectionLabel>
+          </View>
+
+          <Card>
+            <SettingsItem
+              icon="Info"
+              title="Version"
+              rightElement={
+                <Typography
+                  style={{
+                    ...TYPO.medium(14),
+                    color: UI.color.muted,
+                  }}
+                >
+                  {appVersion}
+                </Typography>
+              }
+            />
+            <SettingsItem
+              icon="Star"
+              title="Rate Splt"
+              subtitle="Love the app? Leave a review"
+              onPress={handleRate}
+            />
+            <SettingsItem
+              icon="Share2"
+              title="Share Splt"
+              subtitle="Tell your friends about us"
+              onPress={handleShare}
+            />
+            <SettingsItem
+              icon="MessageSquare"
+              title="Send Feedback"
+              subtitle="Help us improve"
+              isLast
+              onPress={handleFeedback}
+            />
+          </Card>
+        </FocusAwareView>
       </ScrollView>
 
       {/* ── Delete Account Sheet ───────────────────────────────────────────── */}
@@ -487,9 +617,8 @@ export default function ProfileScreen(): JSX.Element {
         >
           <Typography
             style={{
-              fontSize: 22,
+              ...TYPO.title(22),
               color: UI.color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
               marginBottom: 8,
             }}
           >
@@ -497,9 +626,8 @@ export default function ProfileScreen(): JSX.Element {
           </Typography>
           <Typography
             style={{
-              fontSize: 16,
+              ...TYPO.medium(16),
               color: UI.color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
               marginBottom: 24,
               lineHeight: 22,
             }}
@@ -536,3 +664,4 @@ export default function ProfileScreen(): JSX.Element {
     </FocusAwareView>
   );
 }
+

@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   View,
   Pressable,
@@ -13,7 +13,13 @@ import { Typography, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter, usePathname } from "expo-router";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Animated, { FadeInDown, FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+  ZoomIn,
+} from "react-native-reanimated";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 
@@ -31,7 +37,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useAppToast } from "@/hooks/useAppToast";
-import { ScreenHeader, UI } from "@/components/ui/native-ui";
+import { ScreenHeader, UI, TYPO } from "@/components/ui/native-ui";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 
@@ -62,6 +68,8 @@ export default function SettleUpScreen(): JSX.Element {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const { mutateAsync: addSettlement, isPending: isAddingSettlement } = useAddSettlement();
 
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const styles = useMemo(
     () =>
       StyleSheet.create({
@@ -77,9 +85,8 @@ export default function SettleUpScreen(): JSX.Element {
           borderColor: UI.color.border,
         },
         pillButtonText: {
-          fontSize: 13,
+          ...TYPO.semi(13),
           color: UI.color.text,
-          fontFamily: "IBMPlexSans_600SemiBold",
         },
         surfaceCard: {
           backgroundColor: UI.color.surface,
@@ -96,9 +103,8 @@ export default function SettleUpScreen(): JSX.Element {
           alignItems: "center",
         },
         submitButtonText: {
-          fontSize: 16,
+          ...TYPO.semi(16),
           color: UI.color.textInverse,
-          fontFamily: "IBMPlexSans_600SemiBold",
           letterSpacing: 1,
         },
         brandPill: {
@@ -114,8 +120,7 @@ export default function SettleUpScreen(): JSX.Element {
         brandPillTextDeselected: { color: UI.color.text },
         avatarShell: { alignItems: "center" },
         avatarLabel: {
-          fontSize: 13,
-          fontFamily: "IBMPlexSans_600SemiBold",
+          ...TYPO.semi(13),
           marginTop: 8,
           color: UI.color.text,
         },
@@ -131,17 +136,15 @@ export default function SettleUpScreen(): JSX.Element {
           gap: 6,
         },
         swapText: {
-          fontSize: 12,
+          ...TYPO.semi(12),
           color: UI.color.text,
-          fontFamily: "IBMPlexSans_600SemiBold",
           textTransform: "uppercase",
           letterSpacing: 1,
         },
         amountContainer: { alignItems: "center", marginVertical: 32, paddingHorizontal: 24 },
         amountLabel: {
-          fontSize: 14,
+          ...TYPO.medium(14),
           color: UI.color.muted,
-          fontFamily: "IBMPlexSans_500Medium",
           marginBottom: 8,
         },
         amountRow: {
@@ -154,9 +157,8 @@ export default function SettleUpScreen(): JSX.Element {
           minWidth: 200,
         },
         amountSymbol: {
-          fontSize: 32,
+          ...TYPO.medium(32),
           color: UI.color.text,
-          fontFamily: "IBMPlexSans_500Medium",
           marginRight: 8,
         },
         amountInput: {
@@ -185,9 +187,8 @@ export default function SettleUpScreen(): JSX.Element {
         },
         recipientSelector: { paddingHorizontal: 24, paddingBottom: 16 },
         recipientLabel: {
-          fontSize: 12,
+          ...TYPO.medium(12),
           color: UI.color.muted,
-          fontFamily: "IBMPlexSans_500Medium",
           marginBottom: 8,
         },
         recipientCard: {
@@ -216,12 +217,11 @@ export default function SettleUpScreen(): JSX.Element {
           marginBottom: 12,
         },
         summaryLabel: {
-          fontSize: 13,
+          ...TYPO.medium(13),
           color: UI.color.muted,
-          fontFamily: "IBMPlexSans_500Medium",
           marginBottom: 4,
         },
-        summaryText: { fontSize: 15, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+        summaryText: { ...TYPO.semi(15), color: UI.color.text },
         stickySubmit: {
           paddingHorizontal: 24,
           paddingBottom: 24,
@@ -350,6 +350,15 @@ export default function SettleUpScreen(): JSX.Element {
   const isLoading =
     isLoadingGroups || isLoadingExpenses || isLoadingSettlements || isLoadingFriends;
 
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => {
+        router.back();
+      }, 1800);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess, router]);
+
   if (isLoading) {
     return (
       <View style={{ flex: 1, backgroundColor: UI.color.bg, paddingTop: insets.top }}>
@@ -399,7 +408,10 @@ export default function SettleUpScreen(): JSX.Element {
         }}
       >
         <Typography
-          style={{ fontSize: 18, color: UI.color.text, fontFamily: "IBMPlexSans_500Medium" }}
+          style={{
+            ...TYPO.medium(18),
+            color: UI.color.text,
+          }}
         >
           {isGroupRoute ? "All settled up!" : "Friend not found"}
         </Typography>
@@ -417,7 +429,10 @@ export default function SettleUpScreen(): JSX.Element {
           }}
         >
           <Typography
-            style={{ color: UI.color.textInverse, fontFamily: "IBMPlexSans_600SemiBold" }}
+            style={{
+              ...TYPO.semi(16),
+              color: UI.color.textInverse,
+            }}
           >
             Go Back
           </Typography>
@@ -460,13 +475,7 @@ export default function SettleUpScreen(): JSX.Element {
         note: note.trim(),
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      toast.show({
-        label: "Settlement Recorded",
-        description: `${settlementCurrencyObj.symbol}${parsedAmount.toFixed(2)} ${direction === "you" ? "paid to" : "received from"} ${friend!.name.split(" ")[0]}`,
-        variant: "success",
-        placement: "top",
-      });
-      setTimeout(() => router.back(), 600);
+      setShowSuccess(true);
     } catch (e: any) {
       toast.show({
         label: "Error",
@@ -524,8 +533,7 @@ export default function SettleUpScreen(): JSX.Element {
               <AppUserAvatar user={leftUser} size="lg" />
               <Typography
                 style={{
-                  fontSize: 13,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  ...TYPO.semi(13),
                   marginTop: 8,
                   color: UI.color.text,
                 }}
@@ -550,6 +558,8 @@ export default function SettleUpScreen(): JSX.Element {
                   Haptics.selectionAsync();
                   setDirection((prev) => (prev === "you" ? "them" : "you"));
                 }}
+                accessibilityRole="button"
+                accessibilityLabel="Swap direction"
                 style={({ pressed }) => ({
                   backgroundColor: UI.color.surface,
                   paddingHorizontal: 16,
@@ -566,9 +576,8 @@ export default function SettleUpScreen(): JSX.Element {
                 <icons.ArrowRightLeft size={16} color={UI.color.text} strokeWidth={2.5} />
                 <Typography
                   style={{
-                    fontSize: 12,
+                    ...TYPO.semi(12),
                     color: UI.color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
                     textTransform: "uppercase",
                     letterSpacing: 1,
                   }}
@@ -588,6 +597,7 @@ export default function SettleUpScreen(): JSX.Element {
                     Haptics.selectionAsync();
                     setShowRecipientSelector(!showRecipientSelector);
                   }}
+                  accessibilityRole="button"
                   style={{ alignItems: "center", opacity: showRecipientSelector ? 0.7 : 1 }}
                 >
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
@@ -596,8 +606,7 @@ export default function SettleUpScreen(): JSX.Element {
                   </View>
                   <Typography
                     style={{
-                      fontSize: 13,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      ...TYPO.semi(13),
                       marginTop: 8,
                       color: UI.color.text,
                     }}
@@ -610,8 +619,7 @@ export default function SettleUpScreen(): JSX.Element {
                   <AppUserAvatar user={rightUser} size="lg" />
                   <Typography
                     style={{
-                      fontSize: 13,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      ...TYPO.semi(13),
                       marginTop: 8,
                       color: UI.color.text,
                     }}
@@ -633,9 +641,8 @@ export default function SettleUpScreen(): JSX.Element {
           >
             <Typography
               style={{
-                fontSize: 12,
+                ...TYPO.medium(12),
                 color: UI.color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
                 marginBottom: 8,
               }}
             >
@@ -661,6 +668,7 @@ export default function SettleUpScreen(): JSX.Element {
                       setShowRecipientSelector(false);
                       setAmountStr(opt.amount.toFixed(2));
                     }}
+                    accessibilityRole="button"
                     style={{
                       alignItems: "center",
                       padding: 12,
@@ -675,8 +683,7 @@ export default function SettleUpScreen(): JSX.Element {
                     <AppUserAvatar user={optFriend} size="sm" />
                     <Typography
                       style={{
-                        fontSize: 11,
-                        fontFamily: "IBMPlexSans_600SemiBold",
+                        ...TYPO.semi(11),
                         marginTop: 8,
                         color: isSelected ? UI.color.textInverse : UI.color.text,
                       }}
@@ -698,9 +705,8 @@ export default function SettleUpScreen(): JSX.Element {
         >
           <Typography
             style={{
-              fontSize: 14,
+              ...TYPO.medium(14),
               color: UI.color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
               marginBottom: 8,
             }}
           >
@@ -720,9 +726,8 @@ export default function SettleUpScreen(): JSX.Element {
           >
             <Typography
               style={{
-                fontSize: 32,
+                ...TYPO.medium(32),
                 color: UI.color.text,
-                fontFamily: "IBMPlexSans_500Medium",
                 marginRight: 8,
               }}
             >
@@ -755,6 +760,8 @@ export default function SettleUpScreen(): JSX.Element {
                   Haptics.selectionAsync();
                   setAmountStr(Math.abs(netBalance).toFixed(2));
                 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Set full amount: ${formatAmount(Math.abs(netBalance), preferredCurrency.code)}`}
                 style={({ pressed }) => ({
                   paddingHorizontal: 20,
                   paddingVertical: 10,
@@ -767,9 +774,8 @@ export default function SettleUpScreen(): JSX.Element {
               >
                 <Typography
                   style={{
-                    fontSize: 13,
+                    ...TYPO.semi(13),
                     color: UI.color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
                   Full: {formatAmount(Math.abs(netBalance), preferredCurrency.code)}
@@ -780,6 +786,8 @@ export default function SettleUpScreen(): JSX.Element {
                   Haptics.selectionAsync();
                   setAmountStr((Math.abs(netBalance) / 2).toFixed(2));
                 }}
+                accessibilityRole="button"
+                accessibilityLabel={`Set half amount: ${(Math.abs(netBalance) / 2).toFixed(2)}`}
                 style={({ pressed }) => ({
                   paddingHorizontal: 20,
                   paddingVertical: 10,
@@ -792,9 +800,8 @@ export default function SettleUpScreen(): JSX.Element {
               >
                 <Typography
                   style={{
-                    fontSize: 13,
+                    ...TYPO.semi(13),
                     color: UI.color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
                   Half: {(Math.abs(netBalance) / 2).toFixed(2)}
@@ -808,7 +815,10 @@ export default function SettleUpScreen(): JSX.Element {
         <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
           <Pressable onPress={() => setShowOptional(!showOptional)} style={{ padding: 8 }}>
             <Typography
-              style={{ fontSize: 13, color: UI.color.brand, fontFamily: "IBMPlexSans_500Medium" }}
+              style={{
+                ...TYPO.medium(13),
+                color: UI.color.brand,
+              }}
             >
               {showOptional ? "Hide Options" : "+ Add Note or Group"}
             </Typography>
@@ -840,9 +850,8 @@ export default function SettleUpScreen(): JSX.Element {
                 <View>
                   <Typography
                     style={{
-                      fontSize: 12,
+                      ...TYPO.medium(12),
                       color: UI.color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
                       marginBottom: 8,
                       marginLeft: 4,
                     }}
@@ -867,9 +876,8 @@ export default function SettleUpScreen(): JSX.Element {
                     >
                       <Typography
                         style={{
-                          fontSize: 13,
+                          ...TYPO.semi(13),
                           color: !selectedGroupId ? UI.color.textInverse : UI.color.text,
-                          fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
                         None
@@ -892,9 +900,8 @@ export default function SettleUpScreen(): JSX.Element {
                         >
                           <Typography
                             style={{
-                              fontSize: 13,
+                              ...TYPO.semi(13),
                               color: isSelected ? UI.color.textInverse : UI.color.text,
-                              fontFamily: "IBMPlexSans_600SemiBold",
                             }}
                           >
                             {g.name}
@@ -913,57 +920,113 @@ export default function SettleUpScreen(): JSX.Element {
       </ScrollView>
 
       {/* Sticky Submit Button */}
-      <View style={[styles.stickySubmit, { paddingBottom: Math.max(insets.bottom, 24) }]}>
-        <View style={styles.summaryBox}>
-          <Typography
-            style={{
-              fontSize: 13,
-              color: UI.color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
-              marginBottom: 4,
-            }}
-          >
-            Recording payment
-          </Typography>
-          <Typography
-            style={{
-              fontSize: 15,
-              color: UI.color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
-            }}
-          >
-            {leftName} pays {rightName}
-          </Typography>
-        </View>
-        <Pressable
-          onPress={handleSubmit}
-          disabled={isAddingSettlement || !parsedAmount}
-          style={({ pressed }) => ({
-            backgroundColor: UI.color.brand,
-            height: 56,
-            borderRadius: UI.radius.pill,
-            justifyContent: "center",
-            alignItems: "center",
-            opacity: pressed || isAddingSettlement || !parsedAmount ? 0.8 : 1,
-          })}
-        >
-          {isAddingSettlement ? (
-            <Spinner color={UI.color.textInverse} size="sm" />
-          ) : (
+      {!showSuccess && (
+        <View style={[styles.stickySubmit, { paddingBottom: Math.max(insets.bottom, 24) }]}>
+          <View style={styles.summaryBox}>
             <Typography
               style={{
-                fontSize: 16,
-                color: UI.color.textInverse,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                letterSpacing: 1,
+                ...TYPO.medium(13),
+                color: UI.color.muted,
+                marginBottom: 4,
               }}
             >
-              Record {settlementCurrencyObj.symbol}
-              {parsedAmount.toFixed(2)}
+              Recording payment
             </Typography>
-          )}
-        </Pressable>
-      </View>
+            <Typography
+              style={{
+                ...TYPO.semi(15),
+                color: UI.color.text,
+              }}
+            >
+              {leftName} pays {rightName}
+            </Typography>
+          </View>
+          <Pressable
+            onPress={handleSubmit}
+            disabled={isAddingSettlement || !parsedAmount}
+            accessibilityRole="button"
+            accessibilityLabel="Record settlement"
+            style={({ pressed }) => ({
+              backgroundColor: UI.color.brand,
+              height: 56,
+              borderRadius: UI.radius.pill,
+              justifyContent: "center",
+              alignItems: "center",
+              opacity: pressed || isAddingSettlement || !parsedAmount ? 0.8 : 1,
+            })}
+          >
+            {isAddingSettlement ? (
+              <Spinner color={UI.color.textInverse} size="sm" />
+            ) : (
+              <Typography
+                style={{
+                  ...TYPO.semi(16),
+                  color: UI.color.textInverse,
+                  letterSpacing: 1,
+                }}
+              >
+                Record {settlementCurrencyObj.symbol}
+                {parsedAmount.toFixed(2)}
+              </Typography>
+            )}
+          </Pressable>
+        </View>
+      )}
+
+      {/* Success Animation Overlay */}
+      {showSuccess && (
+        <Animated.View
+          entering={FadeIn.duration(300)}
+          exiting={FadeOut.duration(200)}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: UI.color.bg,
+            alignItems: "center",
+            justifyContent: "center",
+            paddingBottom: insets.bottom + 60,
+          }}
+        >
+          <Animated.View entering={ZoomIn.duration(500).springify()}>
+            <View
+              style={{
+                width: 100,
+                height: 100,
+                borderRadius: 50,
+                backgroundColor: UI.color.success,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 24,
+              }}
+            >
+              <icons.Check size={48} color={UI.color.textInverse} strokeWidth={3} />
+            </View>
+          </Animated.View>
+
+          <Typography
+            style={{
+              ...TYPO.hero(28),
+              color: UI.color.text,
+              marginBottom: 8,
+            }}
+          >
+            Settlement Recorded!
+          </Typography>
+          <Typography
+            style={{
+              ...TYPO.medium(16),
+              color: UI.color.muted,
+            }}
+          >
+            {settlementCurrencyObj.symbol}
+            {parsedAmount.toFixed(2)} {direction === "you" ? "paid to" : "received from"}{" "}
+            {friend.name.split(" ")[0]}
+          </Typography>
+        </Animated.View>
+      )}
     </KeyboardAvoidingView>
   );
 }
