@@ -5,6 +5,7 @@ import { Text, TextInput } from "react-native";
 import { useFonts } from "expo-font";
 import { supabase } from "@/services/supabase/client";
 
+import * as SystemUI from "expo-system-ui";
 import { AppProvider } from "@/providers/AppProvider";
 import { useUIStore } from "@/store/useUIStore";
 import { UI, applyTheme } from "@/components/ui/native-ui";
@@ -46,6 +47,10 @@ export default function RootLayout(): JSX.Element | null {
   // Apply theme on every render so UI.color is updated before children render
   applyTheme(isDarkMode);
   Uniwind.setTheme(isDarkMode ? "dark" : "light");
+
+  useEffect(() => {
+    SystemUI.setBackgroundColorAsync(UI.color.bg);
+  }, [isDarkMode]);
 
   useEffect(() => {
     if (!loaded) return;

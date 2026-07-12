@@ -1,21 +1,11 @@
 import { Typography, Switch } from "heroui-native";
-import Animated, { FadeInDown } from "react-native-reanimated";
-import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
+import * as WebBrowser from "expo-web-browser";
 import type { JSX } from "react";
 import { useState } from "react";
-import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  ActivityIndicator,
-  Pressable,
-} from "react-native";
-import { BlurView } from "expo-blur";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { View, Pressable } from "react-native";
 import * as icons from "lucide-react-native";
+import { useRouter } from "expo-router";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -25,13 +15,11 @@ import { registerSchema, type RegisterFormData } from "@/validation/schemas";
 import { FormInput } from "@/components/forms/FormInput";
 import { PasswordStrengthMeter } from "@/components/forms/PasswordStrengthMeter";
 import { useAppToast } from "@/hooks/useAppToast";
-import { UI, PressableScale, IconButton } from "@/components/ui/native-ui";
-import { useUIStore } from "@/store/useUIStore";
+import { UI } from "@/components/ui/native-ui";
+import AuthFormLayout from "@/components/layout/AuthFormLayout";
 
 export default function RegisterScreen(): JSX.Element {
   const router = useRouter();
-  const insets = useSafeAreaInsets();
-  const isDarkMode = useUIStore((s) => s.isDarkMode);
   const { toast } = useAppToast();
   const { mutateAsync: signUp, isPending } = useSignUp();
 
@@ -46,9 +34,24 @@ export default function RegisterScreen(): JSX.Element {
 
   const watchedPassword = useWatch({ control, name: "password" });
 
+  const openLink = async (url: string) => {
+    await WebBrowser.openBrowserAsync(url, {
+      presentationStyle: WebBrowser.WebBrowserPresentationStyle.PAGE_SHEET,
+    });
+  };
+
   const onSubmit = async (data: RegisterFormData): Promise<void> => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     try {
+      if (!termsAccepted) {
+        toast.show({
+          label: "Terms Required",
+          description: "Please accept the terms of service to continue.",
+          variant: "danger",
+          placement: "top",
+        });
+        return;
+      }
       await signUp(data);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       const hasOnboarded = await AsyncStorage.getItem("@splt_onboarded");
@@ -61,7 +64,7 @@ export default function RegisterScreen(): JSX.Element {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       toast.show({
         label: "Registration Failed",
-        description: err.message || "Failed to create account",
+        description: err.message || "Could not create account.",
         variant: "danger",
         placement: "top",
       });
@@ -72,279 +75,197 @@ export default function RegisterScreen(): JSX.Element {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
   };
 
-  const submitDisabled = isPending || !termsAccepted;
-
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
-      <ThemedStatusBar />
-
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-      >
-        <View
-          style={{
-            paddingTop: insets.top + 16,
-            paddingHorizontal: 24,
-            paddingBottom: 16,
-            backgroundColor: UI.color.bg,
-            zIndex: 10,
-          }}
-        >
-          <IconButton
-            icon={icons.ArrowLeft}
-            accessibilityLabel="Go back"
-            onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
-          />
-        </View>
-
-        <ScrollView
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingHorizontal: 24,
-            paddingTop: 8,
-            paddingBottom: insets.bottom + 24,
-          }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View style={{ flex: 1 }}>
-            <Animated.View
-              entering={FadeInDown.delay(200).duration(600).springify()}
-              style={{ marginBottom: 40 }}
-            >
-              <Typography
-                style={{
-                  fontFamily: "Sora_600SemiBold",
-                  fontSize: 40,
-                  color: UI.color.textStrong,
-                  lineHeight: 46,
-                  letterSpacing: -0.02,
-                  marginBottom: 12,
-                }}
-              >
-                Create{"\n"}account.
-              </Typography>
-              <Typography
-                style={{
-                  fontFamily: "IBMPlexSans_400Regular",
-                  fontSize: 17,
-                  color: UI.color.muted,
-                  lineHeight: 24,
-                }}
-              >
-                Join SPLT and start splitting expenses with friends.
-              </Typography>
-            </Animated.View>
-
-            <Animated.View
-              entering={FadeInDown.delay(300).duration(600).springify()}
-              style={{
-                borderRadius: UI.radius.lg,
-                overflow: "hidden",
-              }}
-            >
-              <BlurView
-                intensity={Platform.OS === "ios" ? 80 : 90}
-                tint={isDarkMode ? "dark" : "light"}
-                style={{
-                  padding: 20,
-                  gap: 20,
-                  backgroundColor: Platform.OS === "android" ? UI.color.control : "transparent",
-                }}
-              >
-                <FormInput
-                  control={control}
-                  name="name"
-                  label="Full Name"
-                  placeholder="Maria Doe"
-                  autoCapitalize="words"
-                  autoComplete="name"
-                  leftElement={<icons.User size={18} color={UI.color.muted} />}
-                />
-
-                <FormInput
-                  control={control}
-                  name="email"
-                  label="Email Address"
-                  placeholder="maria@splt.app"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  leftElement={<icons.Mail size={18} color={UI.color.muted} />}
-                />
-
-                <View>
-                  <FormInput
-                    control={control}
-                    name="password"
-                    label="Password"
-                    placeholder="••••••••"
-                    secureTextEntry={!showPassword}
-                    autoComplete="new-password"
-                    accessibilityHint="Create a strong password with at least 6 characters"
-                    leftElement={<icons.Lock size={18} color={UI.color.muted} />}
-                    rightElement={
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={showPassword ? "Hide password" : "Show password"}
-                        onPress={() => {
-                          Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                          setShowPassword(!showPassword);
-                        }}
-                        hitSlop={8}
-                        style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-                      >
-                        {showPassword ? (
-                          <icons.EyeOff size={18} color={UI.color.muted} />
-                        ) : (
-                          <icons.Eye size={18} color={UI.color.muted} />
-                        )}
-                      </Pressable>
-                    }
-                  />
-                  <PasswordStrengthMeter password={watchedPassword ?? ""} />
-                </View>
-
-                <FormInput
-                  control={control}
-                  name="confirmPassword"
-                  label="Confirm Password"
-                  placeholder="••••••••"
-                  secureTextEntry={!showConfirmPassword}
-                  autoComplete="new-password"
-                  leftElement={<icons.Lock size={18} color={UI.color.muted} />}
-                  rightElement={
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={showConfirmPassword ? "Hide password" : "Show password"}
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        setShowConfirmPassword(!showConfirmPassword);
-                      }}
-                      hitSlop={8}
-                      style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-                    >
-                      {showConfirmPassword ? (
-                        <icons.EyeOff size={18} color={UI.color.muted} />
-                      ) : (
-                        <icons.Eye size={18} color={UI.color.muted} />
-                      )}
-                    </Pressable>
-                  }
-                />
-
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                  <Switch
-                    isSelected={termsAccepted}
-                    onSelectedChange={setTermsAccepted}
-                    accessibilityLabel="Accept terms of service"
-                  />
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="View terms of service"
-                    onPress={() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)}
-                    hitSlop={8}
-                    style={{ flex: 1 }}
-                  >
-                    <Typography
-                      style={{
-                        fontSize: 14,
-                        color: UI.color.muted,
-                        fontFamily: "IBMPlexSans_400Regular",
-                        lineHeight: 20,
-                      }}
-                    >
-                      I agree to the{" "}
-                      <Typography
-                        style={{
-                          fontSize: 14,
-                          color: UI.color.text,
-                          fontFamily: "IBMPlexSans_600SemiBold",
-                        }}
-                      >
-                        Terms of Service
-                      </Typography>
-                    </Typography>
-                  </Pressable>
-                </View>
-              </BlurView>
-            </Animated.View>
-
-            <Animated.View
-              entering={FadeInDown.delay(700).duration(600).springify()}
-              style={{ marginTop: 24 }}
-            >
-              <PressableScale onPress={handleSubmit(onSubmit, onInvalid)}>
-                <View
-                  style={{
-                    width: "100%",
-                    height: 56,
-                    borderRadius: UI.radius.pill,
-                    backgroundColor: UI.color.text,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexDirection: "row",
-                    gap: 8,
-                    opacity: submitDisabled ? 0.45 : 1,
-                  }}
-                >
-                  {isPending && <ActivityIndicator color={UI.color.textInverse} />}
-                  <Typography
-                    style={{
-                      fontSize: 16,
-                      color: UI.color.textInverse,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                    }}
-                  >
-                    {isPending ? "Creating account\u2026" : "Create Account"}
-                  </Typography>
-                </View>
-              </PressableScale>
-            </Animated.View>
-          </View>
-
-          <View style={{ flex: 1 }} />
-
-          <Animated.View
-            entering={FadeInDown.delay(800).duration(600)}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 8,
-              paddingVertical: 16,
-              marginTop: 48,
+    <AuthFormLayout
+      title={"Create\naccount."}
+      subtitle="Enter your details to get started."
+      onSubmit={handleSubmit(onSubmit, onInvalid)}
+      isPending={isPending}
+      submitLabel="Create Account"
+      submitLoadingLabel="Creating account\u2026"
+      footer={
+        <>
+          <Typography
+            style={{ fontSize: 16, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" }}
+          >
+            Already have an account?
+          </Typography>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Sign in"
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push("/(auth)/login");
             }}
+            hitSlop={8}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
           >
             <Typography
-              style={{ fontSize: 16, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" }}
+              style={{
+                fontSize: 16,
+                color: UI.color.text,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
             >
-              Already have an account?
+              Sign in
             </Typography>
+          </Pressable>
+        </>
+      }
+    >
+      <FormInput
+        control={control}
+        name="name"
+        label="Full Name"
+        placeholder="John Doe"
+        autoCapitalize="words"
+        autoComplete="name"
+        returnKeyType="next"
+        leftElement={<icons.User size={18} color={UI.color.muted} />}
+      />
+
+      <FormInput
+        control={control}
+        name="email"
+        label="Email Address"
+        placeholder="hello@splt.app"
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
+        returnKeyType="next"
+        leftElement={<icons.Mail size={18} color={UI.color.muted} />}
+      />
+
+      <View>
+        <FormInput
+          control={control}
+          name="password"
+          label="Password"
+          placeholder="••••••••"
+          secureTextEntry={!showPassword}
+          autoComplete="new-password"
+          accessibilityHint="Create a strong password"
+          returnKeyType="next"
+          leftElement={<icons.Lock size={18} color={UI.color.muted} />}
+          rightElement={
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Sign in instead"
+              accessibilityLabel={showPassword ? "Hide password" : "Show password"}
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push("/(auth)/login");
+                setShowPassword(!showPassword);
               }}
               hitSlop={8}
               style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
             >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: UI.color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                Sign in
-              </Typography>
+              {showPassword ? (
+                <icons.EyeOff size={18} color={UI.color.muted} />
+              ) : (
+                <icons.Eye size={18} color={UI.color.muted} />
+              )}
             </Pressable>
-          </Animated.View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </View>
+          }
+        />
+        <PasswordStrengthMeter password={watchedPassword || ""} />
+        {watchedPassword && watchedPassword.length > 0 && watchedPassword.length < 6 && (
+          <Typography
+            style={{
+              fontSize: 12,
+              color: UI.color.danger,
+              fontFamily: "IBMPlexSans_500Medium",
+              marginTop: -8,
+              marginBottom: 16,
+            }}
+          >
+            Password must be at least 6 characters.
+          </Typography>
+        )}
+      </View>
+
+      <View>
+        <FormInput
+          control={control}
+          name="confirmPassword"
+          label="Confirm Password"
+          placeholder="••••••••"
+          secureTextEntry={!showConfirmPassword}
+          autoComplete="new-password"
+          accessibilityHint="Re-enter your password"
+          returnKeyType="done"
+          blurOnSubmit
+          leftElement={<icons.Lock size={18} color={UI.color.muted} />}
+          rightElement={
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={showConfirmPassword ? "Hide password" : "Show password"}
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setShowConfirmPassword(!showConfirmPassword);
+              }}
+              hitSlop={8}
+              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+            >
+              {showConfirmPassword ? (
+                <icons.EyeOff size={18} color={UI.color.muted} />
+              ) : (
+                <icons.Eye size={18} color={UI.color.muted} />
+              )}
+            </Pressable>
+          }
+        />
+      </View>
+
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 12,
+        }}
+      >
+        <Switch
+          isSelected={termsAccepted}
+          onSelectedChange={(v: boolean) => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            setTermsAccepted(v);
+          }}
+          accessibilityLabel="Accept terms of service"
+        />
+        <Typography
+          style={{
+            flex: 1,
+            fontSize: 14,
+            color: UI.color.text,
+            fontFamily: "IBMPlexSans_500Medium",
+            lineHeight: 20,
+          }}
+        >
+          I accept the{" "}
+          <Typography
+            style={{
+              fontFamily: "IBMPlexSans_600SemiBold",
+              color: UI.color.textStrong,
+              fontSize: 14,
+              textDecorationLine: "underline",
+            }}
+            onPress={() => openLink("https://splt.app/terms")}
+          >
+            Terms of Service
+          </Typography>{" "}
+          and{" "}
+          <Typography
+            style={{
+              fontFamily: "IBMPlexSans_600SemiBold",
+              color: UI.color.textStrong,
+              fontSize: 14,
+              textDecorationLine: "underline",
+            }}
+            onPress={() => openLink("https://splt.app/privacy")}
+          >
+            Privacy Policy
+          </Typography>
+          .
+        </Typography>
+      </View>
+    </AuthFormLayout>
   );
 }

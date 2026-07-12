@@ -17,7 +17,7 @@ export function useConfirmationSheet() {
 }
 
 interface ConfirmationSheetProps {
-  sheetRef: RefObject<BottomSheetModal>;
+  sheetRef: RefObject<BottomSheetModal | null>;
   title: string;
   description: string;
   confirmLabel?: string;
@@ -144,7 +144,7 @@ export function ConfirmationSheet({
                   style={{
                     fontSize: 16,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: "#FFFFFF",
+                    color: UI.color.textInverse,
                   }}
                 >
                   {confirmLabel}

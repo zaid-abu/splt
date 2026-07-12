@@ -7,6 +7,7 @@ import type { JSX } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { ScrollView, View, Pressable, TextInput, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
@@ -18,10 +19,12 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { UI } from "@/components/ui/native-ui";
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
+import { useAppToast } from "@/hooks/useAppToast";
 import { EXPENSE_CATEGORIES } from "@/types";
 
 function CommentsSection({
@@ -31,7 +34,7 @@ function CommentsSection({
   expenseId: string;
   currentUserId: string;
 }): JSX.Element {
-  const { data: comments = [], isLoading } = useExpenseComments(expenseId);
+  const { data: comments = [], isLoading, isError, refetch } = useExpenseComments(expenseId);
   const { mutateAsync: addComment } = useAddComment();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
@@ -58,7 +61,11 @@ function CommentsSection({
         overflow: "hidden",
       }}
     >
-      {comments.length === 0 && !isLoading ? (
+      {isError ? (
+        <View style={{ paddingVertical: 24, alignItems: "center" }}>
+          <ErrorState onRetry={() => refetch()} />
+        </View>
+      ) : comments.length === 0 && !isLoading ? (
         <View style={{ paddingVertical: 24, alignItems: "center" }}>
           <Typography
             style={{
@@ -160,7 +167,10 @@ function CommentsSection({
         />
         <Pressable
           accessibilityRole="button"
-          onPress={handleSend}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            handleSend();
+          }}
           disabled={!text.trim() || sending}
           hitSlop={8}
           style={({ pressed }) => ({
@@ -175,7 +185,11 @@ function CommentsSection({
             opacity: pressed ? 0.7 : 1,
           })}
         >
-          <icons.Send size={16} color={text.trim() ? "#FFFFFF" : UI.color.muted} strokeWidth={2} />
+          <icons.Send
+            size={16}
+            color={text.trim() ? UI.color.textInverse : UI.color.muted}
+            strokeWidth={2}
+          />
         </Pressable>
       </View>
     </View>
@@ -187,9 +201,15 @@ export default function ExpenseDetailScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
+  const {
+    data: expenses = [],
+    isLoading: isExpensesLoading,
+    isError: isExpensesError,
+    refetch: refetchExpenses,
+  } = useUserExpenses(currentUser?.id);
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { mutateAsync: deleteExpense } = useDeleteExpense();
+  const { toast } = useAppToast();
 
   const isAppLoading = useUIStore((s) => s.isAppLoading);
   const deleteSheetRef = useRef<BottomSheetModal>(null);
@@ -210,6 +230,35 @@ export default function ExpenseDetailScreen(): JSX.Element {
   const expense = expenses.find((e) => e.id === id);
   const group = groups.find((g) => g.id === expense?.groupId);
   const category = EXPENSE_CATEGORIES.find((c) => c.key === expense?.category);
+
+  if (!expense && isExpensesLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: UI.color.bg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      />
+    );
+  }
+
+  if (isExpensesError) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: UI.color.bg,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
+        <ErrorState onRetry={() => refetchExpenses()} />
+      </View>
+    );
+  }
 
   if (!expense) {
     return (
@@ -257,7 +306,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
           })}
         >
           <Typography
-            style={{ fontSize: 16, color: "#FFFFFF", fontFamily: "IBMPlexSans_600SemiBold" }}
+            style={{
+              fontSize: 16,
+              color: UI.color.textInverse,
+              fontFamily: "IBMPlexSans_600SemiBold",
+            }}
           >
             Go back
           </Typography>
@@ -300,7 +353,10 @@ export default function ExpenseDetailScreen(): JSX.Element {
       >
         <Pressable
           accessibilityRole="button"
-          onPress={() => router.back()}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.back();
+          }}
           style={({ pressed }) => ({
             width: 44,
             height: 44,
@@ -319,9 +375,10 @@ export default function ExpenseDetailScreen(): JSX.Element {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Pressable
             accessibilityRole="button"
-            onPress={() =>
-              router.push({ pathname: "/expense/new", params: { expenseId: expense.id } })
-            }
+            onPress={() => {
+              Haptics.selectionAsync();
+              router.push({ pathname: "/expense/new", params: { expenseId: expense.id } });
+            }}
             style={({ pressed }) => ({
               width: 44,
               height: 44,
@@ -339,7 +396,10 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
           <Pressable
             accessibilityRole="button"
-            onPress={() => deleteSheetRef.current?.present()}
+            onPress={() => {
+              Haptics.selectionAsync();
+              deleteSheetRef.current?.present();
+            }}
             style={({ pressed }) => ({
               width: 44,
               height: 44,
@@ -636,6 +696,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
                     key={split.userId}
                     onPress={() => {
                       if (!isMe) {
+                        Haptics.selectionAsync();
                         router.push(`/friend/${split.userId}`);
                       }
                     }}
@@ -703,7 +764,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 14,
-                  color: "#FFFFFF",
+                  color: UI.color.textInverse,
                   opacity: 0.7,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   textTransform: "uppercase",
@@ -716,7 +777,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 28,
-                  color: "#FFFFFF",
+                  color: UI.color.textInverse,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   marginBottom: 8,
                 }}
@@ -726,7 +787,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 14,
-                  color: "#FFFFFF",
+                  color: UI.color.textInverse,
                   opacity: 0.9,
                   fontFamily: "IBMPlexSans_500Medium",
                   lineHeight: 20,
@@ -740,15 +801,16 @@ export default function ExpenseDetailScreen(): JSX.Element {
               {!paidByMe && !myShare.paid && (
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() =>
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                     router.push({
                       pathname: `/settle/${expense.paidBy}`,
                       params: {
                         amount: myShare.amount.toString(),
                         groupId: expense.groupId || undefined,
                       },
-                    } as any)
-                  }
+                    } as any);
+                  }}
                   style={({ pressed }) => ({
                     marginTop: 24,
                     height: 48,
@@ -834,7 +896,10 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
           <View style={{ flexDirection: "row", gap: 12 }}>
             <Pressable
-              onPress={() => deleteSheetRef.current?.dismiss()}
+              onPress={() => {
+                Haptics.selectionAsync();
+                deleteSheetRef.current?.dismiss();
+              }}
               style={({ pressed }) => ({
                 flex: 1,
                 height: 48,
@@ -857,12 +922,21 @@ export default function ExpenseDetailScreen(): JSX.Element {
               </Typography>
             </Pressable>
             <Pressable
-              onPress={() => {
+              onPress={async () => {
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
                 deleteSheetRef.current?.dismiss();
-                setTimeout(() => {
+                try {
+                  await deleteExpense(expense.id);
                   router.back();
-                  setTimeout(() => deleteExpense(expense.id), 400);
-                }, 300);
+                } catch (err) {
+                  const msg = err instanceof Error ? err.message : "Failed to delete expense";
+                  toast.show({
+                    label: "Error",
+                    description: msg,
+                    variant: "danger",
+                    placement: "top",
+                  });
+                }
               }}
               style={({ pressed }) => ({
                 flex: 1,
@@ -875,7 +949,11 @@ export default function ExpenseDetailScreen(): JSX.Element {
               })}
             >
               <Typography
-                style={{ fontSize: 16, fontFamily: "IBMPlexSans_600SemiBold", color: "#FFFFFF" }}
+                style={{
+                  fontSize: 16,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: UI.color.textInverse,
+                }}
               >
                 Delete
               </Typography>

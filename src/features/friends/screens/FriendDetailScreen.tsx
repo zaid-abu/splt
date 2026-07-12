@@ -33,7 +33,9 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { UI, SectionLabel } from "@/components/ui/native-ui";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 
@@ -44,33 +46,9 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { useQueryClient } from "@tanstack/react-query";
 import { EXPENSE_CATEGORIES } from "@/types";
 
-const TEXT_DANGER = UI.color.danger;
-const TEXT_SUCCESS = UI.color.success;
-
 const CATEGORY_LABELS = Object.fromEntries(
   EXPENSE_CATEGORIES.map((category) => [category.key, category.label])
 );
-
-function SkeletonBlock({
-  width,
-  height,
-  radius = 12,
-}: {
-  width: number | `${number}%`;
-  height: number;
-  radius?: number;
-}): JSX.Element {
-  return (
-    <View
-      style={{
-        width,
-        height,
-        borderRadius: radius,
-        backgroundColor: UI.color.subtle,
-      }}
-    />
-  );
-}
 
 function LoadingState({ topInset }: { topInset: number }): JSX.Element {
   return (
@@ -86,12 +64,12 @@ function LoadingState({ topInset }: { topInset: number }): JSX.Element {
           justifyContent: "space-between",
         }}
       >
-        <SkeletonBlock width={44} height={44} radius={999} />
+        <Skeleton width={44} height={44} radius={999} />
         <View style={{ alignItems: "center", gap: 8 }}>
-          <SkeletonBlock width={132} height={22} />
-          <SkeletonBlock width={84} height={14} />
+          <Skeleton width={132} height={22} />
+          <Skeleton width={84} height={14} />
         </View>
-        <SkeletonBlock width={44} height={44} radius={999} />
+        <Skeleton width={44} height={44} radius={999} />
       </View>
 
       <View style={{ paddingHorizontal: 24, gap: 32 }}>
@@ -106,14 +84,16 @@ function LoadingState({ topInset }: { topInset: number }): JSX.Element {
             gap: 14,
           }}
         >
-          <SkeletonBlock width={120} height={14} />
-          <SkeletonBlock width={188} height={42} />
-          <SkeletonBlock width="72%" height={16} />
+          <Skeleton width={120} height={14} />
+          <Skeleton width={188} height={42} />
+          <View style={{ width: "72%" }}>
+            <Skeleton height={16} />
+          </View>
         </View>
         <View style={{ gap: 12 }}>
-          <SkeletonBlock width={132} height={13} />
-          <SkeletonBlock width="100%" height={72} />
-          <SkeletonBlock width="100%" height={72} />
+          <Skeleton width={132} height={13} />
+          <Skeleton height={72} />
+          <Skeleton height={72} />
         </View>
       </View>
     </View>
@@ -133,12 +113,15 @@ function OptionRow({
   tone?: "neutral" | "danger";
   onPress: () => void;
 }): JSX.Element {
-  const color = tone === "danger" ? TEXT_DANGER : UI.color.text;
+  const color = tone === "danger" ? UI.color.danger : UI.color.text;
 
   return (
     <Pressable
       accessibilityRole="button"
-      onPress={onPress}
+      onPress={() => {
+        Haptics.selectionAsync();
+        onPress();
+      }}
       style={({ pressed }) => ({
         minHeight: 64,
         flexDirection: "row",
@@ -220,13 +203,30 @@ export default function FriendDetailScreen(): JSX.Element {
   const isAppLoading = useUIStore((s) => s.isAppLoading);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
-  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
-  const { data: expenses = [], isLoading: isLoadingExpenses } = useUserExpenses(currentUser?.id);
-  const { data: settlements = [], isLoading: isLoadingSettlements } = useUserSettlements(
-    currentUser?.id
-  );
+  const {
+    data: groups = [],
+    isLoading: isLoadingGroups,
+    isError: isGroupsError,
+    refetch: refetchGroups,
+  } = useGroups(currentUser?.id);
+  const {
+    data: expenses = [],
+    isLoading: isLoadingExpenses,
+    isError: isExpensesError,
+    refetch: refetchExpenses,
+  } = useUserExpenses(currentUser?.id);
+  const {
+    data: settlements = [],
+    isLoading: isLoadingSettlements,
+    isError: isSettlementsError,
+    refetch: refetchSettlements,
+  } = useUserSettlements(currentUser?.id);
   const { data: friendsList = [], isLoading: isLoadingFriends } = useFriends(currentUser?.id);
-  const { data: allFriendships = [] } = useAllFriendships(currentUser?.id);
+  const {
+    data: allFriendships = [],
+    isError: isFriendshipsError,
+    refetch: refetchFriendships,
+  } = useAllFriendships(currentUser?.id);
   const { mutateAsync: removeFriend } = useRemoveFriend();
 
   const styles = useMemo(
@@ -431,6 +431,7 @@ export default function FriendDetailScreen(): JSX.Element {
     if (!friend || netBalance <= 0) return;
 
     try {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       await Share.share({
         message: `Hey ${friend.name.split(" ")[0]}, quick reminder that you owe me ${formatAmount(Math.abs(netBalance), preferredCurrency.code)} on Splt.`,
       });
@@ -501,6 +502,23 @@ export default function FriendDetailScreen(): JSX.Element {
     return <LoadingState topInset={insets.top} />;
   }
 
+  if (isGroupsError || isExpensesError || isSettlementsError || isFriendshipsError) {
+    return (
+      <SafeAreaView style={{ flex: 1, backgroundColor: UI.color.bg }}>
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
+          <ErrorState
+            onRetry={() => {
+              if (isGroupsError) refetchGroups();
+              if (isExpensesError) refetchExpenses();
+              if (isSettlementsError) refetchSettlements();
+              if (isFriendshipsError) refetchFriendships();
+            }}
+          />
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   if (!friend) {
     return (
       <SafeAreaView style={{ flex: 1, backgroundColor: UI.color.bg }}>
@@ -513,12 +531,15 @@ export default function FriendDetailScreen(): JSX.Element {
             </Alert.Content>
           </Alert>
           <Pressable
-            onPress={() => router.back()}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.back();
+            }}
             style={{
               padding: 14,
               paddingHorizontal: 24,
               backgroundColor: UI.color.brand,
-              borderRadius: 999,
+              borderRadius: UI.radius.pill,
             }}
           >
             <Typography
@@ -550,6 +571,7 @@ export default function FriendDetailScreen(): JSX.Element {
         <Pressable
           accessibilityRole="button"
           onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             if (router.canGoBack()) {
               router.back();
             } else {
@@ -610,7 +632,10 @@ export default function FriendDetailScreen(): JSX.Element {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Friend options"
-          onPress={handleOpenOptions}
+          onPress={() => {
+            Haptics.selectionAsync();
+            handleOpenOptions();
+          }}
           style={({ pressed }) => ({
             width: 44,
             height: 44,
@@ -661,7 +686,7 @@ export default function FriendDetailScreen(): JSX.Element {
                     style={{
                       width: 52,
                       height: 52,
-                      borderRadius: 999,
+                      borderRadius: UI.radius.pill,
                       backgroundColor: UI.color.control,
                       borderWidth: 1,
                       borderColor: UI.color.border,
@@ -670,7 +695,7 @@ export default function FriendDetailScreen(): JSX.Element {
                       marginBottom: 16,
                     }}
                   >
-                    <icons.Check size={24} color={TEXT_SUCCESS} strokeWidth={1.8} />
+                    <icons.Check size={24} color={UI.color.success} strokeWidth={1.8} />
                   </View>
                   <Typography
                     style={{
@@ -724,7 +749,7 @@ export default function FriendDetailScreen(): JSX.Element {
                     adjustsFontSizeToFit
                     style={{
                       fontSize: 40,
-                      color: isPositive ? TEXT_SUCCESS : TEXT_DANGER,
+                      color: isPositive ? UI.color.success : UI.color.danger,
                       fontFamily: "Sora_600SemiBold",
                     }}
                   >
@@ -770,7 +795,10 @@ export default function FriendDetailScreen(): JSX.Element {
                   <Pressable
                     key={group.id}
                     accessibilityRole="button"
-                    onPress={() => router.push(`/group/${group.id}`)}
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      router.push(`/group/${group.id}`);
+                    }}
                     style={({ pressed }) => ({
                       flexDirection: "row",
                       alignItems: "center",
@@ -903,7 +931,7 @@ export default function FriendDetailScreen(): JSX.Element {
                     style={{
                       width: 56,
                       height: 56,
-                      borderRadius: 999,
+                      borderRadius: UI.radius.pill,
                       backgroundColor: UI.color.control,
                       alignItems: "center",
                       justifyContent: "center",
@@ -964,15 +992,18 @@ export default function FriendDetailScreen(): JSX.Element {
           {!isSettled && (
             <Pressable
               accessibilityRole="button"
-              onPress={
-                isPositive
-                  ? handleRemind
-                  : () => router.push({ pathname: "/settle/[id]", params: { id: friend.id } })
-              }
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                if (isPositive) {
+                  handleRemind();
+                } else {
+                  router.push({ pathname: "/settle/[id]", params: { id: friend.id } });
+                }
+              }}
               style={({ pressed }) => ({
                 flex: 1,
                 height: 56,
-                borderRadius: 999,
+                borderRadius: UI.radius.pill,
                 backgroundColor: UI.color.control,
                 borderWidth: 1,
                 borderColor: UI.color.border,
@@ -1002,11 +1033,14 @@ export default function FriendDetailScreen(): JSX.Element {
 
           <Pressable
             accessibilityRole="button"
-            onPress={() => router.push(`/expense/new?friendId=${friend.id}`)}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push(`/expense/new?friendId=${friend.id}`);
+            }}
             style={({ pressed }) => ({
               flex: isSettled ? 1 : 1.5,
               height: 56,
-              borderRadius: 999,
+              borderRadius: UI.radius.pill,
               backgroundColor: UI.color.brand,
               alignItems: "center",
               justifyContent: "center",

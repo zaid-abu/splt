@@ -1,11 +1,11 @@
-import { View, FlatList, Pressable, ActivityIndicator } from "react-native";
+import { View, FlatList, Pressable, ActivityIndicator, RefreshControl } from "react-native";
 import { Typography } from "heroui-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import type { JSX } from "react";
+import { useCallback, useState, type JSX } from "react";
 
 import { useNotifications } from "@/features/notifications/queries/useNotifications";
 import type { AppNotification } from "@/types";
@@ -13,6 +13,7 @@ import { useAuth } from "@/context/AppContext";
 import { useAcceptFriend, useRejectFriend } from "@/features/friends/queries/useFriends";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { UI, ScreenHeader, EmptyState } from "@/components/ui/native-ui";
 
 export default function NotificationsScreen(): JSX.Element {
@@ -20,9 +21,21 @@ export default function NotificationsScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
-  const { data: notifications = [], isLoading } = useNotifications(currentUser?.id);
+  const {
+    data: notifications = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useNotifications(currentUser?.id);
+  const [refreshing, setRefreshing] = useState(false);
   const { mutateAsync: acceptFriend, isPending: isAccepting } = useAcceptFriend();
   const { mutateAsync: rejectFriend, isPending: isRejecting } = useRejectFriend();
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await refetch?.();
+    setRefreshing(false);
+  }, [refetch]);
 
   const handleAccept = async (friendshipId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -147,25 +160,38 @@ export default function NotificationsScreen(): JSX.Element {
         <ScreenHeader title="Notifications" onBackPress={() => router.back()} />
       </View>
 
-      <FlatList
-        data={notifications}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={{ paddingBottom: 100 }}
-        ListEmptyComponent={
-          <View style={{ padding: 40, alignItems: "center", justifyContent: "center" }}>
-            {isLoading ? (
-              <ActivityIndicator size="large" color={UI.color.text} />
-            ) : (
-              <EmptyState
-                icon={icons.BellOff}
-                title="All caught up!"
-                subtitle="You have no new notifications right now."
-              />
-            )}
-          </View>
-        }
-      />
+      {isError ? (
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <ErrorState onRetry={() => refetch()} />
+        </View>
+      ) : (
+        <FlatList
+          data={notifications}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ paddingBottom: 100 }}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={UI.color.text}
+            />
+          }
+          ListEmptyComponent={
+            <View style={{ padding: 40, alignItems: "center", justifyContent: "center" }}>
+              {isLoading ? (
+                <ActivityIndicator size="large" color={UI.color.text} />
+              ) : (
+                <EmptyState
+                  icon={icons.BellOff}
+                  title="All caught up!"
+                  subtitle="You have no new notifications right now."
+                />
+              )}
+            </View>
+          }
+        />
+      )}
     </FocusAwareView>
   );
 }

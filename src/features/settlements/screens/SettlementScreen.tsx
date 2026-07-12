@@ -32,6 +32,7 @@ import { CURRENCIES } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useAppToast } from "@/hooks/useAppToast";
 import { ScreenHeader, UI } from "@/components/ui/native-ui";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 
 export default function SettleUpScreen(): JSX.Element {
@@ -50,10 +51,12 @@ export default function SettleUpScreen(): JSX.Element {
   const isGroupRoute = pathname.includes("/group/");
   const routeGroupId = isGroupRoute ? id : groupId;
 
-  const { data: groups = [] } = useGroups(currentUser?.id);
-  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
-  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
-  const { data: combinedFriends = [] } = useFriends(currentUser?.id);
+  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
+  const { data: expenses = [], isLoading: isLoadingExpenses } = useUserExpenses(currentUser?.id);
+  const { data: settlements = [], isLoading: isLoadingSettlements } = useUserSettlements(
+    currentUser?.id
+  );
+  const { data: combinedFriends = [], isLoading: isLoadingFriends } = useFriends(currentUser?.id);
 
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
@@ -94,7 +97,7 @@ export default function SettleUpScreen(): JSX.Element {
         },
         submitButtonText: {
           fontSize: 16,
-          color: "#FFF",
+          color: UI.color.textInverse,
           fontFamily: "IBMPlexSans_600SemiBold",
           letterSpacing: 1,
         },
@@ -107,7 +110,7 @@ export default function SettleUpScreen(): JSX.Element {
         brandPillSelected: { backgroundColor: UI.color.brand, borderColor: UI.color.brand },
         brandPillDeselected: { backgroundColor: UI.color.surface, borderColor: UI.color.border },
         brandPillText: { fontFamily: "IBMPlexSans_600SemiBold", fontSize: 13 },
-        brandPillTextSelected: { color: "#FFF" },
+        brandPillTextSelected: { color: UI.color.textInverse },
         brandPillTextDeselected: { color: UI.color.text },
         avatarShell: { alignItems: "center" },
         avatarLabel: {
@@ -344,6 +347,47 @@ export default function SettleUpScreen(): JSX.Element {
     routeGroupId || (sharedGroups.length === 1 ? sharedGroups[0].id : undefined)
   );
 
+  const isLoading =
+    isLoadingGroups || isLoadingExpenses || isLoadingSettlements || isLoadingFriends;
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: UI.color.bg, paddingTop: insets.top }}>
+        <ThemedStatusBar />
+        <ScreenHeader
+          title="Settle Up"
+          onBackPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.back();
+          }}
+        />
+        <View style={{ padding: 24, gap: 24 }}>
+          <View
+            style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
+          >
+            <View style={{ alignItems: "center", gap: 8 }}>
+              <Skeleton width={80} height={80} radius={999} />
+              <Skeleton width={60} height={14} />
+            </View>
+            <Skeleton width={100} height={36} radius={999} />
+            <View style={{ alignItems: "center", gap: 8 }}>
+              <Skeleton width={80} height={80} radius={999} />
+              <Skeleton width={60} height={14} />
+            </View>
+          </View>
+          <View style={{ alignItems: "center", gap: 12 }}>
+            <Skeleton height={14} />
+            <Skeleton width={200} height={48} />
+          </View>
+          <View>
+            <Skeleton height={14} />
+            <Skeleton height={56} />
+          </View>
+        </View>
+      </View>
+    );
+  }
+
   if (!friend && (!isGroupRoute || debtOptions.length === 0)) {
     return (
       <View
@@ -360,7 +404,10 @@ export default function SettleUpScreen(): JSX.Element {
           {isGroupRoute ? "All settled up!" : "Friend not found"}
         </Typography>
         <Pressable
-          onPress={() => router.back()}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.back();
+          }}
           style={{
             marginTop: 16,
             padding: 14,
@@ -369,7 +416,9 @@ export default function SettleUpScreen(): JSX.Element {
             borderRadius: UI.radius.pill,
           }}
         >
-          <Typography style={{ color: "#FFF", fontFamily: "IBMPlexSans_600SemiBold" }}>
+          <Typography
+            style={{ color: UI.color.textInverse, fontFamily: "IBMPlexSans_600SemiBold" }}
+          >
             Go Back
           </Typography>
         </Pressable>
@@ -390,6 +439,7 @@ export default function SettleUpScreen(): JSX.Element {
   const parsedAmount = parseFloat(amountStr) || 0;
 
   async function handleSubmit() {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (!parsedAmount || parsedAmount <= 0) {
       toast.show({
         label: "Error",
@@ -445,7 +495,13 @@ export default function SettleUpScreen(): JSX.Element {
     >
       <ThemedStatusBar />
       <View style={{ paddingTop: insets.top }}>
-        <ScreenHeader title="Settle Up" onBackPress={() => router.back()} />
+        <ScreenHeader
+          title="Settle Up"
+          onBackPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            router.back();
+          }}
+        />
       </View>
 
       <ScrollView
@@ -622,7 +678,7 @@ export default function SettleUpScreen(): JSX.Element {
                         fontSize: 11,
                         fontFamily: "IBMPlexSans_600SemiBold",
                         marginTop: 8,
-                        color: isSelected ? "#FFF" : UI.color.text,
+                        color: isSelected ? UI.color.textInverse : UI.color.text,
                       }}
                       numberOfLines={1}
                     >
@@ -812,7 +868,7 @@ export default function SettleUpScreen(): JSX.Element {
                       <Typography
                         style={{
                           fontSize: 13,
-                          color: !selectedGroupId ? "#FFF" : UI.color.text,
+                          color: !selectedGroupId ? UI.color.textInverse : UI.color.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
@@ -837,7 +893,7 @@ export default function SettleUpScreen(): JSX.Element {
                           <Typography
                             style={{
                               fontSize: 13,
-                              color: isSelected ? "#FFF" : UI.color.text,
+                              color: isSelected ? UI.color.textInverse : UI.color.text,
                               fontFamily: "IBMPlexSans_600SemiBold",
                             }}
                           >
@@ -892,12 +948,12 @@ export default function SettleUpScreen(): JSX.Element {
           })}
         >
           {isAddingSettlement ? (
-            <Spinner color="white" size="sm" />
+            <Spinner color={UI.color.textInverse} size="sm" />
           ) : (
             <Typography
               style={{
                 fontSize: 16,
-                color: "#FFF",
+                color: UI.color.textInverse,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 letterSpacing: 1,
               }}

@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupSettingsRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useState, useMemo, useRef } from "react";
-import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import {
   KeyboardAvoidingView,
@@ -39,8 +39,8 @@ import { CURRENCIES } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { GROUP_ICONS } from "@/constants/icons";
 import { UI, IconButton, SectionLabel } from "@/components/ui/native-ui";
-
-const TEXT_DANGER = UI.color.danger;
+import { ConfirmationSheet } from "@/components/dialogs/ConfirmationSheet";
+import { Skeleton } from "@/components/ui/Skeleton";
 
 function IconShell({
   IconComponent,
@@ -73,118 +73,6 @@ function IconShell({
   );
 }
 
-const SHEET_BACKDROP = (props: any) => (
-  <BottomSheetBackdrop
-    {...props}
-    disappearsOnIndex={-1}
-    appearsOnIndex={0}
-    pressBehavior="close"
-    opacity={0.4}
-  />
-);
-
-function ConfirmationSheet({
-  title,
-  message,
-  confirmLabel = "Confirm",
-  confirmColor = TEXT_DANGER,
-  sheetRef,
-  onConfirm,
-}: {
-  title: string;
-  message: string;
-  confirmLabel?: string;
-  confirmColor?: string;
-  sheetRef: React.RefObject<BottomSheetModal | null>;
-  onConfirm: () => void;
-}): JSX.Element {
-  return (
-    <BottomSheetModal
-      ref={sheetRef}
-      index={0}
-      enableDynamicSizing
-      backdropComponent={SHEET_BACKDROP}
-      backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-      handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
-    >
-      <BottomSheetView style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 24 }}>
-        <Typography
-          style={{
-            fontSize: 22,
-            fontFamily: "IBMPlexSans_600SemiBold",
-            color: UI.color.text,
-            marginBottom: 8,
-          }}
-        >
-          {title}
-        </Typography>
-        <Typography
-          style={{
-            fontSize: 16,
-            fontFamily: "IBMPlexSans_500Medium",
-            color: UI.color.muted,
-            marginBottom: 24,
-            lineHeight: 22,
-          }}
-        >
-          {message}
-        </Typography>
-        <View style={{ flexDirection: "row", gap: 12 }}>
-          <Pressable
-            onPress={() => sheetRef.current?.dismiss()}
-            style={({ pressed }) => ({
-              flex: 1,
-              height: 52,
-              borderRadius: UI.radius.pill,
-              borderWidth: 1,
-              borderColor: UI.color.border,
-              backgroundColor: UI.color.control,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: pressed ? 0.65 : 1,
-            })}
-          >
-            <Typography
-              style={{
-                fontSize: 16,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                color: UI.color.text,
-              }}
-            >
-              Cancel
-            </Typography>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              sheetRef.current?.dismiss();
-              setTimeout(onConfirm, 300);
-            }}
-            style={({ pressed }) => ({
-              flex: 1,
-              height: 52,
-              borderRadius: UI.radius.pill,
-              backgroundColor: confirmColor,
-              alignItems: "center",
-              justifyContent: "center",
-              opacity: pressed ? 0.8 : 1,
-            })}
-          >
-            <Typography
-              style={{
-                fontSize: 16,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                color: UI.color.textInverse,
-              }}
-            >
-              {confirmLabel}
-            </Typography>
-          </Pressable>
-        </View>
-      </BottomSheetView>
-    </BottomSheetModal>
-  );
-}
-
 export default function GroupSettingsScreen(): JSX.Element {
   const { id } = useLocalSearchParams<GroupSettingsRouteParams>();
   const router = useRouter();
@@ -196,10 +84,10 @@ export default function GroupSettingsScreen(): JSX.Element {
   const { mutateAsync: removeGroupMember } = useRemoveGroupMember();
   const { mutateAsync: addGroupMembers } = useAddGroupMembers();
 
-  const { data: groups = [] } = useGroups(currentUser?.id);
-  const { data: expenses = [] } = useGroupExpenses(id);
-  const { data: settlements = [] } = useGroupSettlements(id);
-  const { data: friends = [] } = useFriends(currentUser?.id);
+  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
+  const { data: expenses = [], isLoading: isLoadingExpenses } = useGroupExpenses(id);
+  const { data: settlements = [], isLoading: isLoadingSettlements } = useGroupSettlements(id);
+  const { data: friends = [], isLoading: isLoadingFriends } = useFriends(currentUser?.id);
   const { mutateAsync: addFriend } = useAddFriend();
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
@@ -449,6 +337,31 @@ export default function GroupSettingsScreen(): JSX.Element {
     }
   };
 
+  const isLoading =
+    isLoadingGroups || isLoadingExpenses || isLoadingSettlements || isLoadingFriends;
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+        <ThemedStatusBar />
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === "ios" ? "padding" : undefined}
+        >
+          <View style={{ padding: UI.space.page, gap: 24, paddingTop: insets.top + 16 }}>
+            <Skeleton height={36} />
+            <Skeleton height={48} />
+            <Skeleton height={56} />
+            <Skeleton height={14} />
+            <Skeleton height={44} />
+            <Skeleton height={14} />
+            <Skeleton height={44} />
+          </View>
+        </KeyboardAvoidingView>
+      </View>
+    );
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <ThemedStatusBar />
@@ -551,7 +464,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               <Typography
                 style={{
                   marginBottom: 16,
-                  color: TEXT_DANGER,
+                  color: UI.color.danger,
                   fontSize: 13,
                   fontFamily: "IBMPlexSans_500Medium",
                 }}
@@ -881,7 +794,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               opacity: pressed || loading ? 0.78 : 1,
             })}
           >
-            {loading && <Spinner color="white" size="sm" />}
+            {loading && <Spinner color={UI.color.textInverse} size="sm" />}
             <Typography
               style={{
                 fontSize: 16,
@@ -896,29 +809,38 @@ export default function GroupSettingsScreen(): JSX.Element {
 
         <ConfirmationSheet
           title="Delete Group?"
-          message={`Are you sure you want to delete "${group.name}"? This cannot be undone.`}
+          description={`Are you sure you want to delete "${group.name}"? This cannot be undone.`}
           confirmLabel="Delete"
-          confirmColor={TEXT_DANGER}
+          confirmTone="danger"
           sheetRef={deleteSheetRef}
-          onConfirm={handleDeleteGroup}
+          onConfirm={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            handleDeleteGroup();
+          }}
         />
 
         <ConfirmationSheet
           title="Remove Member?"
-          message={`Are you sure you want to remove ${memberToRemove?.name} from "${group.name}"?`}
+          description={`Are you sure you want to remove ${memberToRemove?.name} from "${group.name}"?`}
           confirmLabel="Remove"
-          confirmColor={TEXT_DANGER}
+          confirmTone="danger"
           sheetRef={removeMemberSheetRef}
-          onConfirm={confirmRemoveMember}
+          onConfirm={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            confirmRemoveMember();
+          }}
         />
 
         <ConfirmationSheet
           title="Leave Group?"
-          message={`Are you sure you want to leave "${group.name}"? Your expense history will be preserved.`}
+          description={`Are you sure you want to leave "${group.name}"? Your expense history will be preserved.`}
           confirmLabel="Leave"
-          confirmColor={UI.color.text}
+          confirmTone="brand"
           sheetRef={leaveSheetRef}
-          onConfirm={handleLeaveGroup}
+          onConfirm={() => {
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+            handleLeaveGroup();
+          }}
         />
 
         <UserSearchBottomSheet

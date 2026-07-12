@@ -8,7 +8,6 @@ import {
   Platform,
   ScrollView,
   View,
-  ActivityIndicator,
   Pressable,
   TextInput,
 } from "react-native";
@@ -19,9 +18,27 @@ import { useMutation } from "@tanstack/react-query";
 
 import { AuthService } from "@/services/api/auth";
 import { useAppToast } from "@/hooks/useAppToast";
-import { UI, IconButton } from "@/components/ui/native-ui";
+import { UI, IconButton, SectionLabel } from "@/components/ui/native-ui";
+import { HapticButton } from "@/components/ui/HapticButton";
+import { BottomActionBar } from "@/components/ui/BottomActionBar";
 
 const ERROR = UI.color.danger;
+const WARNING = "#F5A623";
+const SUCCESS = UI.color.success;
+
+function getPasswordStrength(password: string): { label: string; color: string; width: string } {
+  if (password.length === 0) return { label: "", color: "transparent", width: "0%" };
+  if (password.length < 6) return { label: "Too short", color: ERROR, width: "25%" };
+  if (password.length < 8) return { label: "Weak", color: ERROR, width: "40%" };
+  const hasUpper = /[A-Z]/.test(password);
+  const hasLower = /[a-z]/.test(password);
+  const hasNumber = /\d/.test(password);
+  const hasSpecial = /[^A-Za-z0-9]/.test(password);
+  const score = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+  if (score <= 1) return { label: "Fair", color: WARNING, width: "55%" };
+  if (score <= 2) return { label: "Good", color: WARNING, width: "70%" };
+  return { label: "Strong", color: SUCCESS, width: "100%" };
+}
 
 export default function ChangePasswordScreen(): JSX.Element {
   const router = useRouter();
@@ -35,6 +52,10 @@ export default function ChangePasswordScreen(): JSX.Element {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const strength = getPasswordStrength(newPassword);
 
   const handleSave = async () => {
     if (newPassword.length < 6) {
@@ -68,6 +89,54 @@ export default function ChangePasswordScreen(): JSX.Element {
       });
     }
   };
+
+  const renderField = (
+    label: string,
+    value: string,
+    onChange: (v: string) => void,
+    show: boolean,
+    toggleShow: () => void
+  ) => (
+    <View>
+      <View style={{ marginBottom: 12 }}>
+        <SectionLabel>{label}</SectionLabel>
+      </View>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          borderBottomWidth: 1,
+          borderBottomColor: UI.color.border,
+          paddingBottom: 12,
+        }}
+      >
+        <TextInput
+          value={value}
+          onChangeText={onChange}
+          placeholder={label}
+          placeholderTextColor={UI.color.muted}
+          secureTextEntry={!show}
+          autoComplete="new-password"
+          style={{
+            flex: 1,
+            fontSize: 16,
+            color: UI.color.text,
+            fontFamily: "IBMPlexSans_500Medium",
+            padding: 0,
+          }}
+        />
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={show ? "Hide password" : "Show password"}
+          onPress={toggleShow}
+          hitSlop={8}
+          style={{ marginLeft: 12 }}
+        >
+          <icons.Eye size={20} color={show ? UI.color.text : UI.color.muted} strokeWidth={1.75} />
+        </Pressable>
+      </View>
+    </View>
+  );
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
@@ -104,90 +173,86 @@ export default function ChangePasswordScreen(): JSX.Element {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <TextInput
-            value={newPassword}
-            onChangeText={(v) => {
+          {renderField(
+            "New password",
+            newPassword,
+            (v) => {
               setError("");
               setNewPassword(v);
-            }}
-            placeholder="New password"
-            placeholderTextColor={UI.color.muted}
-            secureTextEntry
-            autoComplete="new-password"
-            style={{
-              fontSize: 16,
-              color: UI.color.text,
-              fontFamily: "IBMPlexSans_500Medium",
-              borderBottomWidth: 1,
-              borderBottomColor: UI.color.border,
-              paddingBottom: 12,
-            }}
-          />
+            },
+            showPassword,
+            () => setShowPassword(!showPassword)
+          )}
 
-          <TextInput
-            value={confirmPassword}
-            onChangeText={(v) => {
+          {newPassword.length > 0 && (
+            <View style={{ marginTop: -16 }}>
+              <View
+                style={{
+                  height: 4,
+                  borderRadius: 2,
+                  backgroundColor: UI.color.border,
+                  overflow: "hidden",
+                }}
+              >
+                <View
+                  style={{
+                    height: "100%",
+                    width: strength.width as any,
+                    borderRadius: 2,
+                    backgroundColor: strength.color,
+                  }}
+                />
+              </View>
+              <Typography
+                style={{
+                  fontSize: 12,
+                  color: strength.color,
+                  fontFamily: "IBMPlexSans_500Medium",
+                  marginTop: 4,
+                }}
+              >
+                {strength.label}
+              </Typography>
+            </View>
+          )}
+
+          {renderField(
+            "Confirm new password",
+            confirmPassword,
+            (v) => {
               setError("");
               setConfirmPassword(v);
-            }}
-            placeholder="Confirm new password"
-            placeholderTextColor={UI.color.muted}
-            secureTextEntry
-            autoComplete="new-password"
-            style={{
-              fontSize: 16,
-              color: UI.color.text,
-              fontFamily: "IBMPlexSans_500Medium",
-              borderBottomWidth: 1,
-              borderBottomColor: error ? ERROR : UI.color.border,
-              paddingBottom: 12,
-            }}
-          />
+            },
+            showConfirm,
+            () => setShowConfirm(!showConfirm)
+          )}
 
           {error && (
-            <Typography style={{ color: ERROR, fontSize: 13, fontFamily: "IBMPlexSans_500Medium" }}>
+            <Typography
+              style={{
+                color: ERROR,
+                fontSize: 13,
+                fontFamily: "IBMPlexSans_500Medium",
+                marginTop: -16,
+              }}
+            >
               {error}
             </Typography>
           )}
         </ScrollView>
 
-        <View
-          style={{
-            paddingHorizontal: UI.space.page,
-            paddingBottom: Math.max(insets.bottom, 16),
-            paddingTop: 16,
-            borderTopWidth: 1,
-            borderTopColor: UI.color.border,
-            backgroundColor: UI.color.bg,
-          }}
-        >
-          <Pressable
-            accessibilityRole="button"
-            disabled={isPending}
+        <BottomActionBar>
+          <HapticButton
             onPress={handleSave}
-            style={({ pressed }) => ({
-              height: 56,
-              borderRadius: UI.radius.pill,
-              backgroundColor: UI.color.text,
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "row",
-              gap: 8,
-              opacity: pressed || isPending ? 0.78 : 1,
-            })}
+            disabled={isPending}
+            loading={isPending}
+            tone="ink"
+            height={56}
+            style={{ flex: 1 }}
           >
-            {isPending && <ActivityIndicator color={UI.color.textInverse} />}
-            <Typography
-              style={{
-                fontSize: 16,
-                color: UI.color.textInverse,
-                fontFamily: "IBMPlexSans_600SemiBold",
-              }}
-            >
-              Update Password
-            </Typography>
-          </Pressable>
-        </View>
+            Update Password
+          </HapticButton>
+        </BottomActionBar>
       </KeyboardAvoidingView>
     </View>
   );

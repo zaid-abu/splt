@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <rect width="1024" height="1024" fill="#3d2b82"/>
-  <text x="512" y="550" font-family="'Avenir Next', 'Montserrat', 'Helvetica Neue', 'Arial Black', sans-serif" font-weight="900" font-size="240" fill="#ffffff" text-anchor="middle" dominant-baseline="middle" letter-spacing="-5">SP<tspan fill="#d4e9fa">/</tspan>LT</text>
+  <rect width="1024" height="1024" rx="224" ry="224" fill="#F7F6F1"/>
+  <rect x="362" y="352" width="140" height="320" rx="40" ry="40" fill="#1A1A1A"/>
+  <rect x="522" y="352" width="140" height="320" rx="40" ry="40" fill="none" stroke="#8C7A6B" stroke-width="10"/>
 </svg>

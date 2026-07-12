@@ -11,7 +11,7 @@ export function useAnalytics(
   preferredCurrencyCode: string,
   convertCurrency: (amount: number, from: string, to: string) => number
 ) {
-  const { data: expenses = [], isLoading, refetch } = useUserExpenses(userId);
+  const { data: expenses = [], isLoading, isError, refetch } = useUserExpenses(userId);
 
   return useMemo(() => {
     if (!userId)
@@ -22,6 +22,7 @@ export function useAnalytics(
         trendData: [],
         topExpenses: [],
         isLoading,
+        isError,
         refetch,
       };
 
@@ -124,7 +125,17 @@ export function useAnalytics(
       trendData: finalTrendData,
       topExpenses,
       isLoading,
+      isError,
       refetch,
     };
-  }, [expenses, userId, period, preferredCurrencyCode, convertCurrency, isLoading, refetch]);
+  }, [
+    expenses,
+    userId,
+    period,
+    preferredCurrencyCode,
+    convertCurrency,
+    isLoading,
+    isError,
+    refetch,
+  ]);
 }

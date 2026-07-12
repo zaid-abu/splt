@@ -1,17 +1,31 @@
 import { useMemo } from "react";
 import { useGroups } from "@/features/groups/queries/useGroups";
-import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
-import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
+import { useGroupExpenses } from "@/features/expenses/queries/useExpenses";
+import { useGroupSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 import { calculateTotalGroupExpenses } from "@/features/groups/utils/calculations";
 import { useUIStore } from "@/store/useUIStore";
 import type { User } from "@/types";
 
 export function useGroupDetailData(groupId: string, currentUserId: string | undefined) {
-  const { data: groups = [], isLoading: isGroupsLoading } = useGroups(currentUserId);
-  const { data: allExpenses = [], isLoading: isExpensesLoading } = useUserExpenses(currentUserId);
-  const { data: settlements = [], isLoading: isSettlementsLoading } =
-    useUserSettlements(currentUserId);
+  const {
+    data: groups = [],
+    isLoading: isGroupsLoading,
+    isError: isGroupsError,
+    refetch: refetchGroups,
+  } = useGroups(currentUserId);
+  const {
+    data: groupExpenses = [],
+    isLoading: isExpensesLoading,
+    isError: isExpensesError,
+    refetch: refetchExpenses,
+  } = useGroupExpenses(groupId);
+  const {
+    data: settlements = [],
+    isLoading: isSettlementsLoading,
+    isError: isSettlementsError,
+    refetch: refetchSettlements,
+  } = useGroupSettlements(groupId);
 
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
@@ -20,10 +34,10 @@ export function useGroupDetailData(groupId: string, currentUserId: string | unde
 
   const expenses = useMemo(
     () =>
-      allExpenses
-        .filter((e) => e.groupId === groupId)
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
-    [allExpenses, groupId]
+      groupExpenses.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      ),
+    [groupExpenses]
   );
 
   const totalExpensesInGroupCurrency = useMemo(
@@ -91,6 +105,12 @@ export function useGroupDetailData(groupId: string, currentUserId: string | unde
   }, [group]);
 
   const isLoading = isGroupsLoading || isExpensesLoading || isSettlementsLoading;
+  const isError = isGroupsError || isExpensesError || isSettlementsError;
+  const refetch = () => {
+    refetchGroups();
+    refetchExpenses();
+    refetchSettlements();
+  };
 
   return {
     group,
@@ -103,5 +123,7 @@ export function useGroupDetailData(groupId: string, currentUserId: string | unde
     owedToYou,
     userById,
     isLoading,
+    isError,
+    refetch,
   };
 }

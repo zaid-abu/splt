@@ -2,6 +2,7 @@ import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useState, useCallback, useMemo } from "react";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { View, Pressable, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -9,20 +10,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import { FlashList } from "@shopify/flash-list";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { GroupCard } from "@/features/groups/components/GroupCard";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import {
-  UI,
-  ScreenHeader,
-  MetricCell,
-  SearchField,
-  FilterPill,
-  EmptyState,
-} from "@/components/ui/native-ui";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { UI, ScreenHeader, MetricCell, SearchField, FilterPill } from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -46,11 +41,16 @@ export default function GroupsScreen(): JSX.Element {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
-  const { data: groups = [], isLoading } = useGroups(currentUser?.id);
+  const {
+    data: groups = [],
+    isLoading,
+    isError: isGroupsError,
+    refetch: refetchGroups,
+  } = useGroups(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: settlements = [] } = useUserSettlements(currentUser?.id);
 
-  const [search, setSearch] = useState("");
+  const { search, setSearch, debouncedSearch } = useDebouncedSearch();
   const [filter, setFilter] = useState<GroupFilter>("all");
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
@@ -97,14 +97,15 @@ export default function GroupsScreen(): JSX.Element {
       (acc, item) => {
         if (item.netBalance < 0) acc.youOwe += Math.abs(item.netBalance);
         if (item.netBalance > 0) acc.owedToYou += item.netBalance;
+        acc.netTotal += item.netBalance;
         return acc;
       },
-      { youOwe: 0, owedToYou: 0 }
+      { youOwe: 0, owedToYou: 0, netTotal: 0 }
     );
   }, [activeGroups]);
 
   const filtered = useMemo(() => {
-    const term = search.trim().toLowerCase();
+    const term = debouncedSearch.trim().toLowerCase();
     return activeGroups.filter((item) => {
       if (term && !item.group.name.toLowerCase().includes(term)) return false;
       if (filter === "owe") return item.netBalance < -0.005;
@@ -112,7 +113,7 @@ export default function GroupsScreen(): JSX.Element {
       if (filter === "settled") return Math.abs(item.netBalance) <= 0.005;
       return true;
     });
-  }, [activeGroups, filter, search]);
+  }, [activeGroups, filter, debouncedSearch]);
 
   const ListHeaderComponent = useCallback(
     () => (
@@ -129,6 +130,17 @@ export default function GroupsScreen(): JSX.Element {
               label="Owed"
               value={formatAmount(totals.owedToYou, preferredCurrency.code)}
               tone={totals.owedToYou > 0 ? "success" : "neutral"}
+            />
+            <MetricCell
+              label="Net"
+              value={formatAmount(Math.abs(totals.netTotal), preferredCurrency.code)}
+              tone={
+                totals.netTotal < -0.005
+                  ? "danger"
+                  : totals.netTotal > 0.005
+                    ? "success"
+                    : "neutral"
+              }
             />
           </View>
         </View>
@@ -162,7 +174,7 @@ export default function GroupsScreen(): JSX.Element {
         </View>
       </View>
     ),
-    [activeGroups.length, filter, preferredCurrency.code, search, totals]
+    [activeGroups.length, filter, preferredCurrency.code, search, setSearch, totals]
   );
 
   const ListEmptyComponent = useCallback(
@@ -175,45 +187,86 @@ export default function GroupsScreen(): JSX.Element {
             ))}
           </View>
         ) : (
-          <EmptyState
-            icon={icons.Users}
-            title="No groups found"
-            subtitle={
-              search
+          <View
+            style={{
+              alignItems: "center",
+              justifyContent: "center",
+              padding: 32,
+              backgroundColor: UI.color.surface,
+              borderRadius: UI.radius.lg,
+              borderWidth: 1,
+              borderColor: UI.color.border,
+            }}
+          >
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: UI.radius.xl,
+                backgroundColor: UI.color.control,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 16,
+              }}
+            >
+              <icons.Users size={32} color={UI.color.text} strokeWidth={1.5} />
+            </View>
+            <Typography
+              style={{
+                fontSize: 18,
+                color: UI.color.text,
+                fontFamily: "IBMPlexSans_600SemiBold",
+                textAlign: "center",
+                marginBottom: 8,
+              }}
+            >
+              No groups found
+            </Typography>
+            <Typography
+              style={{
+                fontSize: 15,
+                color: UI.color.muted,
+                fontFamily: "IBMPlexSans_500Medium",
+                textAlign: "center",
+                lineHeight: 21,
+                marginBottom: search || filter !== "all" ? 0 : 20,
+              }}
+            >
+              {search
                 ? "Try a different search term."
                 : filter !== "all"
                   ? "No groups match this filter."
-                  : "Create a group with friends to start splitting expenses easily."
-            }
-          />
-        )}
-        {!search && filter === "all" && !isLoading && (
-          <View style={{ marginTop: 16 }}>
-            <Pressable
-              onPress={() => router.push("/group/new")}
-              style={({ pressed }) => ({
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                backgroundColor: UI.color.text,
-                height: 56,
-                borderRadius: UI.radius.pill,
-                paddingHorizontal: 32,
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={2} />
-              <Typography
-                style={{
-                  color: UI.color.textInverse,
-                  fontSize: 16,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  marginLeft: 8,
-                }}
+                  : "Create a group with friends to start splitting expenses easily."}
+            </Typography>
+            {!search && filter === "all" && (
+              <Pressable
+                onPress={() => router.push("/group/new")}
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  backgroundColor: UI.color.text,
+                  height: 52,
+                  borderRadius: UI.radius.pill,
+                  paddingHorizontal: 28,
+                  opacity: pressed ? 0.72 : 1,
+                })}
               >
-                Create Group
-              </Typography>
-            </Pressable>
+                <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={2} />
+                <Typography
+                  style={{
+                    color: UI.color.textInverse,
+                    fontSize: 16,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                    marginLeft: 8,
+                  }}
+                >
+                  Create Group
+                </Typography>
+              </Pressable>
+            )}
           </View>
         )}
       </View>
@@ -223,7 +276,7 @@ export default function GroupsScreen(): JSX.Element {
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries();
+    await queryClient.refetchQueries({ queryKey: ["groups"] });
     setRefreshing(false);
   }, [queryClient]);
 
@@ -239,12 +292,18 @@ export default function GroupsScreen(): JSX.Element {
       const isFirst = index === 0;
 
       return (
-        <Animated.View layout={LinearTransition.springify()}>
+        <Animated.View
+          entering={FadeInDown.duration(350)
+            .delay(Math.min(index * 30, 200))
+            .springify()}
+          layout={LinearTransition.springify()}
+        >
           <View style={{ paddingHorizontal: UI.space.page }}>
             <GroupCard
               group={item.group}
               balance={item.netBalance}
               currency={preferredCurrency.code}
+              latestExpenseAt={item.latestExpenseAt}
               index={index}
               isFirst={isFirst}
               isLast={isLast}
@@ -277,7 +336,7 @@ export default function GroupsScreen(): JSX.Element {
                 borderRadius: UI.radius.pill,
                 borderWidth: 1,
                 borderColor: UI.color.border,
-                opacity: pressed ? 0.5 : 1,
+                opacity: pressed ? 0.65 : 1,
               })}
             >
               <icons.Plus size={20} color={UI.color.text} strokeWidth={1.5} />
@@ -286,24 +345,30 @@ export default function GroupsScreen(): JSX.Element {
         />
       </View>
 
-      <FocusAwareView delay={0} style={{ flex: 1 }}>
-        <FlashList
-          data={filtered}
-          renderItem={renderItem}
-          ListHeaderComponent={ListHeaderComponent}
-          ListEmptyComponent={ListEmptyComponent}
-          contentContainerStyle={{ paddingBottom: 130 }}
-          showsVerticalScrollIndicator={false}
-          extraData={{ filteredLength: filtered.length }}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={UI.color.text}
-            />
-          }
-        />
-      </FocusAwareView>
+      {isGroupsError ? (
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <ErrorState onRetry={() => refetchGroups()} />
+        </View>
+      ) : (
+        <FocusAwareView delay={0} style={{ flex: 1 }}>
+          <FlashList
+            data={filtered}
+            renderItem={renderItem}
+            ListHeaderComponent={ListHeaderComponent}
+            ListEmptyComponent={ListEmptyComponent}
+            contentContainerStyle={{ paddingBottom: 130 }}
+            showsVerticalScrollIndicator={false}
+            extraData={{ filteredLength: filtered.length }}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={UI.color.text}
+              />
+            }
+          />
+        </FocusAwareView>
+      )}
     </View>
   );
 }

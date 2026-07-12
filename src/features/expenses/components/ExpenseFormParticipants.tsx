@@ -112,7 +112,7 @@ export function ExpenseSelectionTabs({
               >
                 <Typography
                   style={{
-                    color: active ? "#FFFFFF" : UI.color.text,
+                    color: active ? UI.color.textInverse : UI.color.text,
                     fontSize: 14,
                     textTransform: "capitalize",
                     fontFamily: "IBMPlexSans_600SemiBold",
@@ -257,7 +257,9 @@ export function ExpenseSelectionTabs({
                         justifyContent: "center",
                       }}
                     >
-                      {isSelected && <icons.Check size={13} color="#FFFFFF" strokeWidth={3} />}
+                      {isSelected && (
+                        <icons.Check size={13} color={UI.color.textInverse} strokeWidth={3} />
+                      )}
                     </View>
                   </Pressable>
                 );
@@ -333,7 +335,9 @@ export function ExpenseSelectionTabs({
                         justifyContent: "center",
                       }}
                     >
-                      {isSelected && <icons.Check size={13} color="#FFFFFF" strokeWidth={3} />}
+                      {isSelected && (
+                        <icons.Check size={13} color={UI.color.textInverse} strokeWidth={3} />
+                      )}
                     </View>
                   </Pressable>
                 );

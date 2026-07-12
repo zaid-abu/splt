@@ -1,5 +1,6 @@
 import type { JSX } from "react";
-import { useState, useMemo, useCallback } from "react";
+import { useMemo, useCallback, useState } from "react";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { View, ScrollView, RefreshControl } from "react-native";
 import { Typography } from "heroui-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
@@ -7,12 +8,13 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import { useQueryClient } from "@tanstack/react-query";
 
-import Animated from "react-native-reanimated";
+import Animated, { FadeInDown } from "react-native-reanimated";
 import { useUserActivities } from "@/features/activity/queries/useActivities";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { UI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import type { Activity, ActivityFilterType } from "@/types";
@@ -21,20 +23,27 @@ export default function ActivityScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
-  const { data: activities = [], isLoading: isLoadingActivities } = useUserActivities(
-    currentUser?.id
-  );
+  const {
+    data: activities = [],
+    isLoading: isLoadingActivities,
+    isError,
+    refetch,
+  } = useUserActivities(currentUser?.id);
   const isAppLoading = useUIStore((s) => s.isAppLoading) || isLoadingActivities;
 
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ["activities"] });
+    await queryClient.refetchQueries({ queryKey: ["activities"] });
     setRefreshing(false);
   }, [queryClient]);
 
-  const [searchQuery, setSearchQuery] = useState("");
+  const {
+    search: searchQuery,
+    setSearch: setSearchQuery,
+    debouncedSearch: debouncedSearchQuery,
+  } = useDebouncedSearch();
   const [activeFilter, setActiveFilter] = useState<ActivityFilterType>("All");
 
   const sortedActivities = useMemo(() => {
@@ -44,8 +53,8 @@ export default function ActivityScreen(): JSX.Element {
   const filteredActivities = useMemo(() => {
     let result = sortedActivities;
 
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
+    if (debouncedSearchQuery.trim()) {
+      const q = debouncedSearchQuery.toLowerCase();
       result = result.filter((a) => a.description.toLowerCase().includes(q));
     }
 
@@ -67,7 +76,7 @@ export default function ActivityScreen(): JSX.Element {
     }
 
     return result;
-  }, [sortedActivities, searchQuery, activeFilter]);
+  }, [sortedActivities, debouncedSearchQuery, activeFilter]);
 
   const groupedActivities = useMemo(() => {
     const groups: Record<string, Activity[]> = {};
@@ -126,10 +135,15 @@ export default function ActivityScreen(): JSX.Element {
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg, paddingTop: insets.top }}>
       <ThemedStatusBar />
-      <ScreenHeader title="Activity" />
+      <Animated.View entering={FadeInDown.duration(350).springify()}>
+        <ScreenHeader title="Activity" />
+      </Animated.View>
 
       {/* Search + filters — outside FlatList so the input never unmounts on data change */}
-      <View style={{ backgroundColor: UI.color.bg }}>
+      <Animated.View
+        entering={FadeInDown.duration(350).delay(40).springify()}
+        style={{ backgroundColor: UI.color.bg }}
+      >
         <View style={{ paddingHorizontal: UI.space.page, paddingBottom: 20 }}>
           <SearchField
             value={searchQuery}
@@ -152,69 +166,75 @@ export default function ActivityScreen(): JSX.Element {
             />
           ))}
         </ScrollView>
-      </View>
+      </Animated.View>
 
-      {isAppLoading && groupedActivities.length === 0 ? (
-        <View style={{ paddingHorizontal: UI.space.page, gap: 0 }}>
-          {[1, 2, 3].map((i) => (
-            <ListRowSkeleton key={i} />
-          ))}
-        </View>
-      ) : (
-        <Animated.FlatList
-          data={groupedActivities}
-          keyExtractor={(item) => item.title}
-          keyboardShouldPersistTaps="handled"
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={UI.color.text}
-            />
-          }
-          renderItem={({ item: section }: { item: { title: string; data: Activity[] } }) => (
-            <View style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
-              {/* Month header */}
-              <Typography
-                style={{
-                  fontSize: 11,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  color: UI.color.muted,
-                  textTransform: "uppercase",
-                  letterSpacing: 1.4,
-                  marginBottom: 10,
-                  paddingLeft: 2,
-                }}
-              >
-                {section.title}
-              </Typography>
+      <Animated.View entering={FadeInDown.duration(350).delay(80).springify()} style={{ flex: 1 }}>
+        {isError ? (
+          <View style={{ flex: 1, justifyContent: "center" }}>
+            <ErrorState onRetry={() => refetch()} />
+          </View>
+        ) : isAppLoading && groupedActivities.length === 0 ? (
+          <View style={{ paddingHorizontal: UI.space.page, gap: 0 }}>
+            {[1, 2, 3].map((i) => (
+              <ListRowSkeleton key={i} />
+            ))}
+          </View>
+        ) : (
+          <Animated.FlatList
+            data={groupedActivities}
+            keyExtractor={(item) => item.title}
+            keyboardShouldPersistTaps="handled"
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={UI.color.text}
+              />
+            }
+            renderItem={({ item: section }: { item: { title: string; data: Activity[] } }) => (
+              <View style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+                {/* Month header */}
+                <Typography
+                  style={{
+                    fontSize: 11,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                    color: UI.color.muted,
+                    textTransform: "uppercase",
+                    letterSpacing: 1.4,
+                    marginBottom: 10,
+                    paddingLeft: 2,
+                  }}
+                >
+                  {section.title}
+                </Typography>
 
-              {/* Card container */}
-              <View
-                style={{
-                  backgroundColor: UI.color.surface,
-                  borderRadius: UI.radius.lg,
-                  borderWidth: 1,
-                  borderColor: UI.color.border,
-                  overflow: "hidden",
-                }}
-              >
-                {section.data.map((activity, idx) => (
-                  <ActivityItem
-                    key={activity.id}
-                    activity={activity}
-                    index={idx}
-                    isLast={idx === section.data.length - 1}
-                  />
-                ))}
+                {/* Card container */}
+                <View
+                  style={{
+                    backgroundColor: UI.color.surface,
+                    borderRadius: UI.radius.lg,
+                    borderWidth: 1,
+                    borderColor: UI.color.border,
+                    overflow: "hidden",
+                  }}
+                >
+                  {section.data.map((activity, idx) => (
+                    <ActivityItem
+                      key={activity.id}
+                      activity={activity}
+                      index={idx}
+                      isLast={idx === section.data.length - 1}
+                    />
+                  ))}
+                </View>
               </View>
-            </View>
-          )}
-          ListEmptyComponent={ListEmptyComponent}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
+            )}
+            ListEmptyComponent={ListEmptyComponent}
+            contentContainerStyle={{ paddingBottom: insets.bottom + 120 }}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </Animated.View>
     </FocusAwareView>
   );
 }

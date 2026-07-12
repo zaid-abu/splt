@@ -1,17 +1,9 @@
 import { Typography } from "heroui-native";
-import { useRouter } from "expo-router";
+import { useRouter, useNavigation } from "expo-router";
 import type { JSX } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  ActivityIndicator,
-  Pressable,
-  TextInput,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, TextInput, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -19,7 +11,9 @@ import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AppContext";
 import { useUpdateProfile } from "@/features/profile/hooks/useUpdateProfile";
 import { useAppToast } from "@/hooks/useAppToast";
-import { UI, IconButton } from "@/components/ui/native-ui";
+import { UI, IconButton, SectionLabel } from "@/components/ui/native-ui";
+import { HapticButton } from "@/components/ui/HapticButton";
+import { BottomActionBar } from "@/components/ui/BottomActionBar";
 
 const ERROR = UI.color.danger;
 
@@ -30,8 +24,37 @@ export default function EditProfileScreen(): JSX.Element {
   const { toast } = useAppToast();
   const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
 
+  const navigation = useNavigation();
   const [name, setName] = useState(currentUser.name);
   const [nameError, setNameError] = useState("");
+  const hasUnsavedChanges = name !== currentUser.name;
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("beforeRemove", (e: any) => {
+      if (!hasUnsavedChanges) return;
+      e.preventDefault();
+      Alert.alert("Unsaved Changes", "You have unsaved changes. Go back anyway?", [
+        { text: "Stay", style: "cancel" },
+        {
+          text: "Discard",
+          style: "destructive",
+          onPress: () => navigation.dispatch(e.data.action),
+        },
+      ]);
+    });
+    return unsubscribe;
+  }, [navigation, hasUnsavedChanges]);
+
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      Alert.alert("Unsaved Changes", "You have unsaved changes. Go back anyway?", [
+        { text: "Stay", style: "cancel" },
+        { text: "Discard", style: "destructive", onPress: () => router.back() },
+      ]);
+    } else {
+      router.back();
+    }
+  };
 
   const handleSave = async () => {
     if (!name.trim()) {
@@ -85,7 +108,7 @@ export default function EditProfileScreen(): JSX.Element {
           >
             Edit Profile
           </Typography>
-          <IconButton icon={icons.X} accessibilityLabel="Close" onPress={() => router.back()} />
+          <IconButton icon={icons.X} accessibilityLabel="Close" onPress={handleClose} />
         </View>
 
         <ScrollView
@@ -93,69 +116,84 @@ export default function EditProfileScreen(): JSX.Element {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          <TextInput
-            value={name}
-            onChangeText={(v) => {
-              setNameError("");
-              setName(v);
-            }}
-            placeholder="Full Name"
-            placeholderTextColor={UI.color.muted}
-            autoCapitalize="words"
-            style={{
-              fontSize: 16,
-              color: UI.color.text,
-              fontFamily: "IBMPlexSans_500Medium",
-              borderBottomWidth: 1,
-              borderBottomColor: nameError ? ERROR : UI.color.border,
-              paddingBottom: 12,
-            }}
-          />
+          <View>
+            <View style={{ marginBottom: 12 }}>
+              <SectionLabel>Name</SectionLabel>
+            </View>
+            <TextInput
+              value={name}
+              onChangeText={(v) => {
+                setNameError("");
+                setName(v);
+              }}
+              placeholder="Full Name"
+              placeholderTextColor={UI.color.muted}
+              autoCapitalize="words"
+              style={{
+                fontSize: 16,
+                color: UI.color.text,
+                fontFamily: "IBMPlexSans_500Medium",
+                borderBottomWidth: 1,
+                borderBottomColor: nameError ? ERROR : UI.color.border,
+                paddingBottom: 12,
+              }}
+            />
+            {nameError && (
+              <Typography
+                style={{
+                  color: ERROR,
+                  fontSize: 13,
+                  fontFamily: "IBMPlexSans_500Medium",
+                  marginTop: 8,
+                }}
+              >
+                {nameError}
+              </Typography>
+            )}
+          </View>
 
-          {nameError && (
-            <Typography style={{ color: ERROR, fontSize: 13, fontFamily: "IBMPlexSans_500Medium" }}>
-              {nameError}
-            </Typography>
-          )}
-        </ScrollView>
-
-        <View
-          style={{
-            paddingHorizontal: UI.space.page,
-            paddingBottom: Math.max(insets.bottom, 16),
-            paddingTop: 16,
-            borderTopWidth: 1,
-            borderTopColor: UI.color.border,
-            backgroundColor: UI.color.bg,
-          }}
-        >
-          <Pressable
-            accessibilityRole="button"
-            disabled={isPending}
-            onPress={handleSave}
-            style={({ pressed }) => ({
-              height: 56,
-              borderRadius: UI.radius.pill,
-              backgroundColor: UI.color.text,
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "row",
-              gap: 8,
-              opacity: pressed || isPending ? 0.78 : 1,
-            })}
-          >
-            {isPending && <ActivityIndicator color={UI.color.textInverse} />}
+          <View>
+            <View style={{ marginBottom: 12 }}>
+              <SectionLabel>Email</SectionLabel>
+            </View>
             <Typography
               style={{
                 fontSize: 16,
-                color: UI.color.textInverse,
-                fontFamily: "IBMPlexSans_600SemiBold",
+                color: UI.color.muted,
+                fontFamily: "IBMPlexSans_500Medium",
+                paddingBottom: 12,
+                borderBottomWidth: 1,
+                borderBottomColor: UI.color.border,
               }}
             >
-              Save Changes
+              {currentUser.email}
             </Typography>
-          </Pressable>
-        </View>
+            <Typography
+              style={{
+                fontSize: 12,
+                color: UI.color.muted,
+                fontFamily: "IBMPlexSans_500Medium",
+                marginTop: 6,
+                opacity: 0.6,
+              }}
+            >
+              Email cannot be changed
+            </Typography>
+          </View>
+        </ScrollView>
+
+        <BottomActionBar>
+          <HapticButton
+            onPress={handleSave}
+            disabled={isPending}
+            loading={isPending}
+            tone="ink"
+            height={56}
+            style={{ flex: 1 }}
+          >
+            Save Changes
+          </HapticButton>
+        </BottomActionBar>
       </KeyboardAvoidingView>
     </View>
   );

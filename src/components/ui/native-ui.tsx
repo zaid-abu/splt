@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import { useMemo } from "react";
 import { Pressable, TextInput, View, Animated } from "react-native";
-import type { TextInputProps, ViewStyle } from "react-native";
+import type { TextInputProps, ViewStyle, TextStyle } from "react-native";
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
@@ -16,6 +16,7 @@ export const LIGHT_COLORS = {
   muted: "#6E6D68",
   border: "#E7E5DE",
   brand: "#8C7A6B",
+  ink: "#1A1A1A",
   danger: "#E85D5D",
   success: "#4CAF82",
   subtle: "#F4F3EE",
@@ -33,6 +34,7 @@ export const DARK_COLORS = {
   muted: "#9E9E9E",
   border: "#3A3A3A",
   brand: "#A89A8E",
+  ink: "#F5F0EB",
   danger: "#E85D5D",
   success: "#4CAF82",
   subtle: "#2A2A2A",
@@ -207,7 +209,7 @@ export function PrimaryButton({
   style,
 }: PrimaryButtonProps): React.JSX.Element {
   const backgroundColor =
-    tone === "brand" ? UI.color.brand : tone === "danger" ? UI.color.danger : UI.color.text;
+    tone === "brand" ? UI.color.brand : tone === "danger" ? UI.color.danger : UI.color.ink;
 
   return (
     <Pressable
@@ -231,16 +233,25 @@ export function PrimaryButton({
   );
 }
 
-export function SectionLabel({ children }: { children: ReactNode }): React.JSX.Element {
+export function SectionLabel({
+  children,
+  style,
+}: {
+  children: ReactNode;
+  style?: TextStyle;
+}): React.JSX.Element {
   return (
     <Typography
-      style={{
-        fontSize: 11,
-        color: UI.color.muted,
-        fontFamily: "IBMPlexSans_600SemiBold",
-        letterSpacing: 1.2,
-        textTransform: "uppercase",
-      }}
+      style={[
+        {
+          fontSize: 11,
+          color: UI.color.muted,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          letterSpacing: 1.2,
+          textTransform: "uppercase",
+        },
+        style,
+      ]}
     >
       {children}
     </Typography>

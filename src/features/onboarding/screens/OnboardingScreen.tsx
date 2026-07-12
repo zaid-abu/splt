@@ -4,6 +4,7 @@ import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
+import * as icons from "lucide-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Animated, { FadeIn } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
@@ -44,6 +45,16 @@ export function OnboardingScreen() {
     }
   };
 
+  const handleBack = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    if (currentIndex > 0) {
+      flatListRef.current?.scrollToIndex({
+        index: currentIndex - 1,
+        animated: true,
+      });
+    }
+  };
+
   const handleSkip = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     handleComplete();
@@ -72,7 +83,12 @@ export function OnboardingScreen() {
           zIndex: 10,
         }}
       >
-        <View style={{ flexDirection: "row", gap: 6 }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+          {currentIndex > 0 && (
+            <Pressable onPress={handleBack} hitSlop={16} style={{ padding: 4, marginRight: 4 }}>
+              <icons.ChevronLeft size={24} color={UI.color.text} strokeWidth={1.5} />
+            </Pressable>
+          )}
           {ONBOARDING_SLIDES.map((_, idx) => (
             <View
               key={idx}

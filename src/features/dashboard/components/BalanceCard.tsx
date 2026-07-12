@@ -335,7 +335,7 @@ export function BalanceCard({
               flex: 1,
               minHeight: 44,
               borderRadius: 999,
-              backgroundColor: UI.color.text,
+              backgroundColor: UI.color.ink,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.8 : 1,
@@ -344,7 +344,7 @@ export function BalanceCard({
             <Typography
               style={{
                 fontSize: 14,
-                color: UI.color.textInverse,
+                color: "#FFFFFF",
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >

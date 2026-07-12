@@ -12,9 +12,9 @@ interface PasswordStrengthMeterProps {
   password: string;
 }
 
-const FILL_COLORS = [UI.color.border, UI.color.muted, "#6E6D68", UI.color.text];
+const FILL_COLORS = [UI.color.border, UI.color.muted, UI.color.muted, UI.color.text];
 
-const LABEL_COLORS = [UI.color.muted, UI.color.muted, "#6E6D68", UI.color.text];
+const LABEL_COLORS = [UI.color.muted, UI.color.muted, UI.color.muted, UI.color.text];
 
 export function PasswordStrengthMeter({
   password,

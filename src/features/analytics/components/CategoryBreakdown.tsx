@@ -5,12 +5,14 @@ import { PieChart } from "react-native-gifted-charts";
 import { EXPENSE_CATEGORIES, ExpenseCategory } from "@/types";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 import { UI } from "@/components/ui/native-ui";
 
 interface Props {
   data: { category: ExpenseCategory; amount: number }[];
   totalSpent: number;
   currencyCode: string;
+  onLogExpense?: () => void;
 }
 
 // Fixed earthy color palette for categories
@@ -26,7 +28,7 @@ const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
   other: "#6B7280",
 };
 
-export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
+export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense }: Props) {
   const [selectedCategory, setSelectedCategory] = useState<ExpenseCategory | null>(null);
 
   if (data.length === 0) {
@@ -45,10 +47,38 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
       >
         <icons.PieChart size={38} color={UI.color.muted} strokeWidth={1.25} />
         <Typography
-          style={{ marginTop: 12, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" }}
+          style={{
+            marginTop: 12,
+            color: UI.color.muted,
+            fontFamily: "IBMPlexSans_500Medium",
+            marginBottom: 16,
+          }}
         >
           No category data
         </Typography>
+        {onLogExpense && (
+          <Pressable
+            accessibilityRole="button"
+            onPress={onLogExpense}
+            style={({ pressed }) => ({
+              paddingHorizontal: 18,
+              paddingVertical: 10,
+              borderRadius: 999,
+              backgroundColor: UI.color.text,
+              opacity: pressed ? 0.8 : 1,
+            })}
+          >
+            <Typography
+              style={{
+                fontSize: 14,
+                color: UI.color.textInverse,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
+            >
+              Log an expense
+            </Typography>
+          </Pressable>
+        )}
       </View>
     );
   }
@@ -98,6 +128,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
           innerCircleColor={UI.color.surface}
           focusOnPress
           onPress={(item: any) => {
+            Haptics.selectionAsync();
             LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
             setSelectedCategory((prev) =>
               prev === item.category ? null : (item.category as ExpenseCategory)
@@ -163,6 +194,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode }: Props) {
             <Pressable
               key={item.category}
               onPress={() => {
+                Haptics.selectionAsync();
                 LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                 setSelectedCategory((prev) => (prev === item.category ? null : item.category));
               }}

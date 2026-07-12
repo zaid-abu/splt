@@ -3,33 +3,59 @@ import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import type { JSX } from "react";
-import { useEffect, useCallback, useRef } from "react";
-import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { ScrollView, View, Pressable, Share } from "react-native";
+import { useState, useCallback, useRef, useEffect } from "react";
+import { ScrollView, View, Pressable, RefreshControl, Share } from "react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
+import * as icons from "lucide-react-native";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
+import { UI, ScreenHeader, MetricCell, SectionLabel, applyTheme } from "@/components/ui/native-ui";
+import { Card } from "@/components/ui/Card";
+import { HapticButton } from "@/components/ui/HapticButton";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { ErrorState } from "@/components/ui/ErrorState";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
-import * as balancesUtil from "@/features/settlements/utils/balances";
 import { useAuth } from "@/context/AppContext";
 import { useSignOut, useDeleteAccount } from "@/features/auth/hooks/useAuthMutations";
 import { useUIStore } from "@/store/useUIStore";
+import * as balancesUtil from "@/features/settlements/utils/balances";
 import type { Currency } from "@/types";
-import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { CurrencySelector } from "@/components/forms/CurrencySelector";
-import { UI, ScreenHeader, MetricCell, applyTheme } from "@/components/ui/native-ui";
-import { Uniwind } from "uniwind";
-
 import { SettingsItem } from "@/features/profile/components/SettingsItem";
+import { Uniwind } from "uniwind";
 
 export default function ProfileScreen(): JSX.Element {
   const router = useRouter();
   const { currentUser } = useAuth();
-  const { data: groups = [] } = useGroups(currentUser?.id);
-  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
-  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+
+  const {
+    data: groups = [],
+    isLoading: isLoadingGroups,
+    error: groupsError,
+    refetch: refetchGroups,
+  } = useGroups(currentUser?.id);
+  const {
+    data: expenses = [],
+    isLoading: isLoadingExpenses,
+    error: expensesError,
+    refetch: refetchExpenses,
+  } = useUserExpenses(currentUser?.id);
+  const {
+    data: settlements = [],
+    isLoading: isLoadingSettlements,
+    error: settlementsError,
+    refetch: refetchSettlements,
+  } = useUserSettlements(currentUser?.id);
+
+  const isFirstLoad = isLoadingGroups || isLoadingExpenses || isLoadingSettlements;
+  const hasError = !!groupsError || !!expensesError || !!settlementsError;
 
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
   const setCurrency = useUIStore((s) => s.setCurrency);
@@ -58,6 +84,7 @@ export default function ProfileScreen(): JSX.Element {
   const { mutate: signOut } = useSignOut();
   const { mutateAsync: deleteAccount } = useDeleteAccount();
   const deleteSheetRef = useRef<BottomSheetModal>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -72,7 +99,18 @@ export default function ProfileScreen(): JSX.Element {
     []
   );
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await queryClient.invalidateQueries({
+      queryKey: ["groups", "expenses", "settlements"],
+    });
+    setRefreshing(false);
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+  }, [queryClient]);
+
   const handleThemeToggle = (value: boolean) => {
+    Haptics.selectionAsync();
     setDarkMode(value);
     applyTheme(value);
     Uniwind.setTheme(value ? "dark" : "light");
@@ -86,7 +124,7 @@ export default function ProfileScreen(): JSX.Element {
   const handleShareInvite = async () => {
     try {
       await Share.share({
-        message: "Join me on Splt — the simple way to split expenses with friends!",
+        message: "Join me on Splt \u2014 the simple way to split expenses with friends!",
       });
     } catch {}
   };
@@ -95,14 +133,129 @@ export default function ProfileScreen(): JSX.Element {
     setCurrency(currency);
   };
 
+  // ── Loading State ──────────────────────────────────────────────────────────
+
+  if (isFirstLoad) {
+    return (
+      <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
+        <ThemedStatusBar />
+        <View style={{ paddingTop: insets.top + 16 }}>
+          <ScreenHeader title="Profile" />
+        </View>
+        <View style={{ flex: 1, paddingHorizontal: UI.space.page, paddingTop: 16 }}>
+          <FocusAwareView delay={0} style={{ marginBottom: 40 }}>
+            <View
+              style={{
+                backgroundColor: UI.color.surface,
+                borderRadius: UI.radius.lg,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+                padding: UI.space.page,
+              }}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
+                <Skeleton width={64} height={64} radius={22} />
+                <View style={{ marginLeft: 16, flex: 1, gap: 8 }}>
+                  <View style={{ width: "60%" }}>
+                    <Skeleton height={22} />
+                  </View>
+                  <View style={{ width: "80%" }}>
+                    <Skeleton height={14} />
+                  </View>
+                </View>
+              </View>
+              <View style={{ flexDirection: "row", gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Skeleton height={58} radius={UI.radius.md} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Skeleton height={58} radius={UI.radius.md} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Skeleton height={58} radius={UI.radius.md} />
+                </View>
+              </View>
+            </View>
+          </FocusAwareView>
+          <FocusAwareView delay={60} style={{ marginBottom: 40 }}>
+            <View style={{ marginBottom: 14, width: 120 }}>
+              <Skeleton height={14} radius={6} />
+            </View>
+            <View
+              style={{
+                backgroundColor: UI.color.surface,
+                borderRadius: UI.radius.lg,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+              }}
+            >
+              <View style={{ padding: 16, gap: 12 }}>
+                <Skeleton height={52} radius={UI.radius.md} />
+                <Skeleton height={72} radius={UI.radius.lg} />
+              </View>
+            </View>
+          </FocusAwareView>
+          <FocusAwareView delay={120} style={{ marginBottom: 40 }}>
+            <View style={{ marginBottom: 14, width: 120 }}>
+              <Skeleton height={14} radius={6} />
+            </View>
+            <View
+              style={{
+                backgroundColor: UI.color.surface,
+                borderRadius: UI.radius.lg,
+                borderWidth: 1,
+                borderColor: UI.color.border,
+              }}
+            >
+              <View style={{ padding: UI.space.page, gap: 12 }}>
+                <View style={{ width: "70%" }}>
+                  <Skeleton height={16} />
+                </View>
+                <Skeleton height={52} radius={UI.radius.pill} />
+                <Skeleton height={52} radius={UI.radius.pill} />
+                <Skeleton height={52} radius={UI.radius.pill} />
+              </View>
+            </View>
+          </FocusAwareView>
+        </View>
+      </FocusAwareView>
+    );
+  }
+
+  // ── Error State ─────────────────────────────────────────────────────────────
+
+  if (hasError) {
+    return (
+      <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
+        <ThemedStatusBar />
+        <View style={{ paddingTop: insets.top + 16 }}>
+          <ScreenHeader title="Profile" />
+        </View>
+        <View style={{ flex: 1, justifyContent: "center", paddingBottom: 80 }}>
+          <ErrorState
+            title="Couldn\u2019t load profile"
+            message="We had trouble loading your profile data. Pull down to try again."
+            onRetry={() => {
+              refetchGroups();
+              refetchExpenses();
+              refetchSettlements();
+            }}
+          />
+        </View>
+      </FocusAwareView>
+    );
+  }
+
+  // ── Content ─────────────────────────────────────────────────────────────────
+
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <ThemedStatusBar />
 
-      {/* Header */}
       <View style={{ paddingTop: insets.top + 16 }}>
         <ScreenHeader
           title="Profile"
+          onBackPress={() => router.back()}
           rightAction={
             <Pressable
               accessibilityRole="button"
@@ -132,50 +285,47 @@ export default function ProfileScreen(): JSX.Element {
         style={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.color.text} />
+        }
       >
-        {/* User Stats Card */}
-        <FocusAwareView
-          delay={100}
-          style={{
-            paddingHorizontal: UI.space.page,
-            marginBottom: 40,
-          }}
-        >
-          <View
-            style={{
-              backgroundColor: UI.color.surface,
-              borderRadius: UI.radius.lg,
-              borderWidth: 1,
-              borderColor: UI.color.border,
-              padding: UI.space.page,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
-              <AppUserAvatar user={currentUser} size="lg" />
-              <View style={{ marginLeft: 16, flex: 1 }}>
-                <Typography
-                  style={{
-                    fontSize: 24,
-                    color: UI.color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    letterSpacing: -0.5,
-                  }}
-                  numberOfLines={1}
-                >
-                  {currentUser.name}
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: UI.color.muted,
-                    fontFamily: "IBMPlexSans_500Medium",
-                  }}
-                  numberOfLines={1}
-                >
-                  {currentUser.email}
-                </Typography>
+        {/* ── Profile Card ─────────────────────────────────────────────────── */}
+
+        <FocusAwareView delay={100} style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}>
+          <Card padding={UI.space.page}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push("/profile/edit")}
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+            >
+              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
+                <AppUserAvatar user={currentUser} size="lg" />
+                <View style={{ marginLeft: 16, flex: 1 }}>
+                  <Typography
+                    style={{
+                      fontSize: 24,
+                      color: UI.color.text,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                      letterSpacing: -0.5,
+                    }}
+                    numberOfLines={1}
+                  >
+                    {currentUser.name}
+                  </Typography>
+                  <Typography
+                    style={{
+                      fontSize: 14,
+                      color: UI.color.muted,
+                      fontFamily: "IBMPlexSans_500Medium",
+                    }}
+                    numberOfLines={1}
+                  >
+                    {currentUser.email}
+                  </Typography>
+                </View>
+                <icons.ChevronRight size={20} color={UI.color.muted} strokeWidth={1.5} />
               </View>
-            </View>
+            </Pressable>
 
             <View style={{ flexDirection: "row", gap: 10 }}>
               <MetricCell label="Groups" value={String(groups.length)} />
@@ -184,31 +334,26 @@ export default function ProfileScreen(): JSX.Element {
                 value={`+${preferredCurrency.symbol}${owedToYou.toFixed(0)}`}
                 tone={owedToYou > 0 ? "success" : "neutral"}
               />
-              {youOwe > 0 && (
-                <MetricCell
-                  label="Owe"
-                  value={`-${preferredCurrency.symbol}${youOwe.toFixed(0)}`}
-                  tone="danger"
-                />
-              )}
+              <MetricCell
+                label="Owe"
+                value={
+                  youOwe > 0
+                    ? `-${preferredCurrency.symbol}${youOwe.toFixed(0)}`
+                    : `${preferredCurrency.symbol}0`
+                }
+                tone={youOwe > 0 ? "danger" : "neutral"}
+              />
             </View>
-          </View>
+          </Card>
         </FocusAwareView>
 
-        {/* Preferences */}
+        {/* ── Preferences ──────────────────────────────────────────────────── */}
+
         <FocusAwareView delay={200} style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}>
-          <Typography
-            style={{
-              fontSize: 11,
-              color: UI.color.muted,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              letterSpacing: 1.4,
-              textTransform: "uppercase",
-              marginBottom: 12,
-            }}
-          >
-            Preferences
-          </Typography>
+          <View style={{ marginBottom: 14 }}>
+            <SectionLabel>Preferences</SectionLabel>
+          </View>
+
           <View
             style={{
               backgroundColor: UI.color.surface,
@@ -224,15 +369,8 @@ export default function ProfileScreen(): JSX.Element {
               subtitle="Switch between light and dark themes"
               rightElement={<Switch isSelected={isDarkMode} onSelectedChange={handleThemeToggle} />}
             />
-            <SettingsItem
-              icon="Bell"
-              title="Notifications"
-              subtitle="Coming soon"
-              disabled
-              isLast
-              rightElement={<Switch isSelected={false} />}
-            />
           </View>
+
           <View
             style={{
               backgroundColor: UI.color.surface,
@@ -247,162 +385,90 @@ export default function ProfileScreen(): JSX.Element {
           </View>
         </FocusAwareView>
 
-        {/* Account Info */}
+        {/* ── Account ──────────────────────────────────────────────────────── */}
+
         <FocusAwareView delay={300} style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}>
-          <Typography
-            style={{
-              fontSize: 11,
-              color: UI.color.muted,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              letterSpacing: 1.4,
-              textTransform: "uppercase",
-              marginBottom: 12,
-            }}
-          >
-            Account Info
-          </Typography>
+          <View style={{ marginBottom: 14 }}>
+            <SectionLabel>Account</SectionLabel>
+          </View>
+
           <View
             style={{
               backgroundColor: UI.color.surface,
               borderRadius: UI.radius.lg,
               borderWidth: 1,
               borderColor: UI.color.border,
-              padding: UI.space.page,
             }}
           >
-            <Typography
-              style={{
-                fontSize: 14,
-                color: UI.color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
-                marginBottom: 24,
-                lineHeight: 20,
-              }}
-            >
-              {currentUser.createdAt
-                ? `Account created on ${currentUser.createdAt.toLocaleDateString()}`
-                : "Account details are synced with your profile."}
-            </Typography>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push("/profile/change-password")}
-              style={({ pressed }) => ({
-                height: 52,
-                borderRadius: UI.radius.pill,
-                backgroundColor: UI.color.control,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 12,
-                opacity: pressed ? 0.65 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 15,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  color: UI.color.text,
-                }}
-              >
-                Change Password
-              </Typography>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => signOut()}
-              style={({ pressed }) => ({
-                height: 52,
-                borderRadius: UI.radius.pill,
-                backgroundColor: UI.color.control,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.65 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  color: UI.color.danger,
-                }}
-              >
-                Log Out
-              </Typography>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={handleShareInvite}
-              style={({ pressed }) => ({
-                height: 52,
-                borderRadius: UI.radius.pill,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                backgroundColor: UI.color.control,
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 12,
-                opacity: pressed ? 0.65 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 15,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  color: UI.color.text,
-                }}
-              >
-                Tell a friend
-              </Typography>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => deleteSheetRef.current?.present()}
-              style={({ pressed }) => ({
-                marginTop: 12,
-                height: 52,
-                borderRadius: UI.radius.pill,
-                borderWidth: 1,
-                borderColor: UI.color.danger,
-                backgroundColor: UI.color.control,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.65 : 1,
-              })}
-            >
+            <View style={{ padding: UI.space.page }}>
               <Typography
                 style={{
                   fontSize: 14,
+                  color: UI.color.muted,
                   fontFamily: "IBMPlexSans_500Medium",
-                  color: UI.color.danger,
+                  marginBottom: 20,
+                  lineHeight: 20,
                 }}
               >
-                Delete Account
+                {currentUser.createdAt
+                  ? `Account created on ${currentUser.createdAt.toLocaleDateString()}`
+                  : "Account details are synced with your profile."}
               </Typography>
-            </Pressable>
+
+              <SettingsItem
+                icon="Lock"
+                title="Change Password"
+                onPress={() => router.push("/profile/change-password")}
+              />
+
+              <View style={{ height: 12 }} />
+
+              <HapticButton onPress={() => signOut()} tone="outlined" height={52}>
+                Log Out
+              </HapticButton>
+
+              <View style={{ height: 10 }} />
+
+              <HapticButton onPress={handleShareInvite} tone="outlined" height={52}>
+                Tell a Friend
+              </HapticButton>
+
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: UI.color.border,
+                  marginVertical: 16,
+                }}
+              />
+
+              <HapticButton
+                onPress={() => deleteSheetRef.current?.present()}
+                tone="danger"
+                height={52}
+              >
+                Delete Account
+              </HapticButton>
+            </View>
           </View>
         </FocusAwareView>
 
-        <View style={{ alignItems: "center", marginBottom: 32 }}>
+        {/* ── Version ──────────────────────────────────────────────────────── */}
+
+        <View style={{ alignItems: "center", marginBottom: 32, marginTop: -8 }}>
           <Typography
             style={{
-              fontSize: 13,
+              fontSize: 12,
               color: UI.color.muted,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              letterSpacing: 1,
-              opacity: 0.5,
+              fontFamily: "IBMPlexSans_500Medium",
+              opacity: 0.4,
             }}
           >
-            SPLT V1.0.0
+            SPLT v1.0.0
           </Typography>
         </View>
       </ScrollView>
+
+      {/* ── Delete Account Sheet ───────────────────────────────────────────── */}
 
       <BottomSheetModal
         ref={deleteSheetRef}
@@ -441,59 +507,29 @@ export default function ProfileScreen(): JSX.Element {
             This permanently deletes your account and all associated data. This cannot be undone.
           </Typography>
           <View style={{ flexDirection: "row", gap: 12 }}>
-            <Pressable
-              onPress={() => deleteSheetRef.current?.dismiss()}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 52,
-                borderRadius: UI.radius.pill,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                backgroundColor: UI.color.control,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.65 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: UI.color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
+            <View style={{ flex: 1 }}>
+              <HapticButton
+                onPress={() => deleteSheetRef.current?.dismiss()}
+                tone="outlined"
+                height={52}
               >
                 Cancel
-              </Typography>
-            </Pressable>
-            <Pressable
-              onPress={async () => {
-                deleteSheetRef.current?.dismiss();
-                try {
-                  await deleteAccount(currentUser.id);
-                } catch {
-                  // handled by query client
-                }
-              }}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 52,
-                borderRadius: UI.radius.pill,
-                backgroundColor: UI.color.danger,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.8 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: UI.color.textInverse,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+              </HapticButton>
+            </View>
+            <View style={{ flex: 1 }}>
+              <HapticButton
+                onPress={async () => {
+                  deleteSheetRef.current?.dismiss();
+                  try {
+                    await deleteAccount(currentUser.id);
+                  } catch {}
                 }}
+                tone="danger"
+                height={52}
               >
                 Delete
-              </Typography>
-            </Pressable>
+              </HapticButton>
+            </View>
           </View>
         </BottomSheetView>
       </BottomSheetModal>

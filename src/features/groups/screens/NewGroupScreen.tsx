@@ -24,15 +24,37 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { IconButton, PrimaryButton, SectionLabel, UI } from "@/components/ui/native-ui";
+import { useTheme } from "@/hooks/useTheme";
 
 import { GROUP_ICONS } from "@/constants/icons";
 
-const ERROR = UI.color.danger;
+const GROUP_PICKER_COLORS = [
+  "#F5E7DD",
+  "#E3ECEB",
+  "#E6E8F1",
+  "#EEE7F2",
+  "#F0ECE7",
+  "#E8E4DE",
+  "#E8F0EA",
+  "#EBE4E0",
+];
+
+const GROUP_PICKER_COLORS_DARK = [
+  "#2A2520",
+  "#202A28",
+  "#22253A",
+  "#2A2535",
+  "#2A2825",
+  "#25232A",
+  "#1E2A25",
+  "#2A2822",
+];
 
 export default function NewGroupScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
+  const { isDarkMode } = useTheme();
   const { mutateAsync: createGroup } = useCreateGroup();
   const { data: friends = [] } = useFriends(currentUser?.id);
   const { mutateAsync: addFriend } = useAddFriend();
@@ -154,7 +176,7 @@ export default function NewGroupScreen(): JSX.Element {
         enablePanDownToClose
         onClose={handleDismiss}
         backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{ backgroundColor: "#D6D2CD", width: 40 }}
+        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
         backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
       >
         <View style={{ flex: 1 }}>
@@ -183,7 +205,10 @@ export default function NewGroupScreen(): JSX.Element {
               <IconButton
                 icon={icons.X}
                 accessibilityLabel="Close create group"
-                onPress={() => bottomSheetRef.current?.close()}
+                onPress={() => {
+                  Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                  bottomSheetRef.current?.close();
+                }}
                 style={{ width: 40, height: 40 }}
               />
             </View>
@@ -241,7 +266,7 @@ export default function NewGroupScreen(): JSX.Element {
               <Typography
                 style={{
                   marginTop: 6,
-                  color: ERROR,
+                  color: UI.color.danger,
                   fontSize: 13,
                   fontFamily: "IBMPlexSans_500Medium",
                   paddingLeft: 4,
@@ -262,20 +287,11 @@ export default function NewGroupScreen(): JSX.Element {
                   const Ico = (icons as any)[i] || icons.HelpCircle;
                   const isSelected = icon === i;
 
-                  // Generate color for picker
-                  const GROUP_COLORS = [
-                    "#FCE7D0",
-                    "#E8E4F9",
-                    "#D5EFE2",
-                    "#D9EEF8",
-                    "#F9E3E3",
-                    "#E3EFF9",
-                    "#F5F0C0",
-                    "#E8D9F9",
-                  ];
                   const colorIdx =
-                    i.split("").reduce((a, c) => a + c.charCodeAt(0), 0) % GROUP_COLORS.length;
-                  const iconBg = GROUP_COLORS[colorIdx];
+                    i.split("").reduce((a, c) => a + c.charCodeAt(0), 0) %
+                    GROUP_PICKER_COLORS.length;
+                  const pickerColors = isDarkMode ? GROUP_PICKER_COLORS_DARK : GROUP_PICKER_COLORS;
+                  const iconBg = pickerColors[colorIdx];
 
                   return (
                     <Pressable
@@ -295,16 +311,35 @@ export default function NewGroupScreen(): JSX.Element {
                           alignItems: "center",
                           justifyContent: "center",
                           backgroundColor: isSelected ? UI.color.text : iconBg,
-                          borderWidth: 1,
+                          borderWidth: 2,
                           borderColor: isSelected ? UI.color.text : UI.color.border,
                         }}
                       >
                         <Ico
                           size={24}
-                          color={isSelected ? "#FFFFFF" : UI.color.textStrong}
+                          color={isSelected ? UI.color.textInverse : UI.color.textStrong}
                           strokeWidth={isSelected ? 2 : 1.5}
                         />
                       </View>
+                      {isSelected && (
+                        <View
+                          style={{
+                            position: "absolute",
+                            top: -4,
+                            right: -4,
+                            width: 20,
+                            height: 20,
+                            borderRadius: UI.radius.pill,
+                            backgroundColor: UI.color.text,
+                            alignItems: "center",
+                            justifyContent: "center",
+                            borderWidth: 2,
+                            borderColor: UI.color.bg,
+                          }}
+                        >
+                          <icons.Check size={12} color={UI.color.textInverse} strokeWidth={3} />
+                        </View>
+                      )}
                     </Pressable>
                   );
                 })}
@@ -324,7 +359,10 @@ export default function NewGroupScreen(): JSX.Element {
                 <SectionLabel>Participants</SectionLabel>
                 <Pressable
                   accessibilityRole="button"
-                  onPress={openSearchSheet}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    openSearchSheet();
+                  }}
                   style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1 })}
                 >
                   <Typography
@@ -376,41 +414,55 @@ export default function NewGroupScreen(): JSX.Element {
               </Animated.View>
 
               {/* Added members */}
-              {selectedUsers.map((user) => (
-                <Animated.View
-                  key={user.id}
-                  entering={FadeIn}
-                  exiting={FadeOut}
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingVertical: 16,
-                    borderBottomWidth: 1,
-                    borderBottomColor: UI.color.border,
-                  }}
-                >
-                  <View style={{ marginRight: 16 }}>
-                    <AppUserAvatar user={user} size="sm" />
-                  </View>
-                  <Typography
+              {selectedUsers.map((user) => {
+                const isFriend = friends.some((f) => f.id === user.id);
+                return (
+                  <Animated.View
+                    key={user.id}
+                    entering={FadeIn}
+                    exiting={FadeOut}
                     style={{
-                      flex: 1,
-                      fontSize: 16,
-                      color: UI.color.textStrong,
-                      fontFamily: "IBMPlexSans_500Medium",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      paddingVertical: 16,
+                      borderBottomWidth: 1,
+                      borderBottomColor: UI.color.border,
                     }}
                   >
-                    {user.name}
-                  </Typography>
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => handleRemoveUser(user.id)}
-                    style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
-                  >
-                    <icons.Trash2 size={20} color={UI.color.muted} strokeWidth={1.5} />
-                  </Pressable>
-                </Animated.View>
-              ))}
+                    <View style={{ marginRight: 16 }}>
+                      <AppUserAvatar user={user} size="sm" />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Typography
+                        style={{
+                          fontSize: 16,
+                          color: UI.color.textStrong,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                        }}
+                      >
+                        {user.name}
+                      </Typography>
+                      <Typography
+                        style={{
+                          fontSize: 12,
+                          color: UI.color.muted,
+                          fontFamily: "IBMPlexSans_500Medium",
+                          marginTop: 2,
+                        }}
+                      >
+                        {isFriend ? "Friend" : "Will receive invite"}
+                      </Typography>
+                    </View>
+                    <Pressable
+                      accessibilityRole="button"
+                      onPress={() => handleRemoveUser(user.id)}
+                      style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
+                    >
+                      <icons.Trash2 size={20} color={UI.color.muted} strokeWidth={1.5} />
+                    </Pressable>
+                  </Animated.View>
+                );
+              })}
             </View>
 
             {/* ── Currency ───────────────────────────────────────────── */}

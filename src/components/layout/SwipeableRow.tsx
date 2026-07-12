@@ -58,7 +58,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
           <Animated.View
             style={[
               styles.actionButton,
-              { backgroundColor: primaryColor || "#000", transform: [{ scale }], opacity },
+              { backgroundColor: primaryColor || UI.color.text, transform: [{ scale }], opacity },
             ]}
           >
             <PressableFeedback
@@ -70,7 +70,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               }}
               style={styles.actionInner}
             >
-              <icons.Bell size={24} color="white" />
+              <icons.Bell size={24} color={UI.color.textInverse} />
               <Typography type="body-xs" className="text-white font-bold mt-1">
                 Remind
               </Typography>
@@ -94,7 +94,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               }}
               style={styles.actionInner}
             >
-              <icons.CheckCircle size={24} color="white" />
+              <icons.CheckCircle size={24} color={UI.color.textInverse} />
               <Typography type="body-xs" className="text-white font-bold mt-1">
                 Settle
               </Typography>
@@ -118,7 +118,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               }}
               style={styles.actionInner}
             >
-              <icons.Trash2 size={24} color="white" />
+              <icons.Trash2 size={24} color={UI.color.textInverse} />
               <Typography type="body-xs" className="text-white font-bold mt-1">
                 Delete
               </Typography>

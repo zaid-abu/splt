@@ -1,5 +1,5 @@
 import type { ComponentType, JSX } from "react";
-import { useCallback, useMemo, useState, useEffect } from "react";
+import { useCallback, useMemo, useState, useEffect, useRef } from "react";
 import { ScrollView, View, RefreshControl, Pressable, StyleSheet } from "react-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -8,9 +8,14 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { Typography } from "heroui-native";
 import { useQueryClient } from "@tanstack/react-query";
-import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import Animated, {
+  FadeInDown,
+  useSharedValue,
+  useAnimatedStyle,
+  withSpring,
+} from "react-native-reanimated";
 
-import { FocusAwareView } from "@/components/animations/PageAnimator";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupRow } from "@/features/groups/components/GroupRow";
@@ -18,6 +23,7 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { UI, TYPO, FilterPill, IconButton } from "@/components/ui/native-ui";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { Card } from "@/components/ui/Card";
+import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton, ListRowSkeleton } from "@/components/ui/Skeleton";
 import { MoneySignal } from "@/components/ui/MoneySignal";
 import { useAuth } from "@/context/AppContext";
@@ -124,12 +130,25 @@ export default function DashboardScreen(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
-  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
+  const {
+    data: groups = [],
+    isLoading: isLoadingGroups,
+    isError: isGroupsError,
+    refetch: refetchGroups,
+  } = useGroups(currentUser?.id);
   const { data: friends = [] } = useFriends(currentUser?.id);
-  const { data: expenses = [], isLoading: isLoadingExpenses } = useUserExpenses(currentUser?.id);
-  const { data: settlements = [], isLoading: isLoadingSettlements } = useUserSettlements(
-    currentUser?.id
-  );
+  const {
+    data: expenses = [],
+    isLoading: isLoadingExpenses,
+    isError: isExpensesError,
+    refetch: refetchExpenses,
+  } = useUserExpenses(currentUser?.id);
+  const {
+    data: settlements = [],
+    isLoading: isLoadingSettlements,
+    isError: isSettlementsError,
+    refetch: refetchSettlements,
+  } = useUserSettlements(currentUser?.id);
 
   const isFirstLoad = isLoadingGroups || isLoadingExpenses || isLoadingSettlements;
 
@@ -209,6 +228,21 @@ export default function DashboardScreen(): JSX.Element {
   const [refreshing, setRefreshing] = useState(false);
   const [activityFilter, setActivityFilter] = useState<"all" | "paid" | "owe">("all");
   const queryClient = useQueryClient();
+
+  const settleSheetRef = useRef<BottomSheetModal>(null);
+
+  const renderSettleBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        pressBehavior="close"
+        opacity={0.4}
+      />
+    ),
+    []
+  );
 
   const balanceScale = useSharedValue(1);
   const balanceAnimatedStyle = useAnimatedStyle(() => ({
@@ -442,12 +476,28 @@ export default function DashboardScreen(): JSX.Element {
         </View>
       </View>
 
-      {isFirstLoad ? (
+      {isGroupsError || isExpensesError || isSettlementsError ? (
+        <View style={{ flex: 1, justifyContent: "center" }}>
+          <ErrorState
+            onRetry={() => {
+              if (isGroupsError) refetchGroups();
+              if (isExpensesError) refetchExpenses();
+              if (isSettlementsError) refetchSettlements();
+            }}
+          />
+        </View>
+      ) : isFirstLoad ? (
         <View style={{ flex: 1, paddingTop: 40, paddingHorizontal: UI.space.page }}>
-          <FocusAwareView delay={0} style={{ marginBottom: 18 }}>
+          <Animated.View
+            entering={FadeInDown.duration(350).springify()}
+            style={{ marginBottom: 18 }}
+          >
             <Skeleton height={170} radius={UI.radius.lg} />
-          </FocusAwareView>
-          <FocusAwareView delay={35} style={{ marginBottom: 24 }}>
+          </Animated.View>
+          <Animated.View
+            entering={FadeInDown.duration(350).delay(35).springify()}
+            style={{ marginBottom: 24 }}
+          >
             <View style={{ flexDirection: "row", gap: 10 }}>
               <View style={{ flex: 1 }}>
                 <Skeleton height={56} radius={999} />
@@ -456,8 +506,11 @@ export default function DashboardScreen(): JSX.Element {
                 <Skeleton height={56} radius={999} />
               </View>
             </View>
-          </FocusAwareView>
-          <FocusAwareView delay={90} style={{ marginBottom: 28 }}>
+          </Animated.View>
+          <Animated.View
+            entering={FadeInDown.duration(350).delay(70).springify()}
+            style={{ marginBottom: 28 }}
+          >
             <View style={{ marginBottom: 14 }}>
               <Skeleton height={18} width={120} radius={6} />
             </View>
@@ -472,8 +525,8 @@ export default function DashboardScreen(): JSX.Element {
               <ListRowSkeleton />
               <ListRowSkeleton />
             </View>
-          </FocusAwareView>
-          <FocusAwareView delay={100}>
+          </Animated.View>
+          <Animated.View entering={FadeInDown.duration(350).delay(105).springify()}>
             <View style={{ marginBottom: 14 }}>
               <Skeleton height={18} width={100} radius={6} />
             </View>
@@ -488,7 +541,7 @@ export default function DashboardScreen(): JSX.Element {
               <ListRowSkeleton />
               <ListRowSkeleton />
             </View>
-          </FocusAwareView>
+          </Animated.View>
         </View>
       ) : (
         <ScrollView
@@ -503,7 +556,10 @@ export default function DashboardScreen(): JSX.Element {
             />
           }
         >
-          <FocusAwareView delay={0} style={{ paddingHorizontal: UI.space.page, marginBottom: 18 }}>
+          <Animated.View
+            entering={FadeInDown.duration(350).springify()}
+            style={{ paddingHorizontal: UI.space.page, marginBottom: 18 }}
+          >
             <Animated.View
               style={[
                 {
@@ -593,7 +649,7 @@ export default function DashboardScreen(): JSX.Element {
                   />
                   <Pressable
                     accessibilityRole="button"
-                    onPress={() => router.push("/(tabs)/stats")}
+                    onPress={() => router.push("/stats")}
                     style={({ pressed }) => ({
                       flexDirection: "row",
                       alignItems: "center",
@@ -653,35 +709,42 @@ export default function DashboardScreen(): JSX.Element {
                 </>
               )}
             </Animated.View>
-          </FocusAwareView>
+          </Animated.View>
 
-          <FocusAwareView delay={35} style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+          <Animated.View
+            entering={FadeInDown.duration(350).delay(35).springify()}
+            style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
+          >
             <View style={{ flexDirection: "row", gap: 10 }}>
               <View style={{ flex: 1 }}>
-                <HapticButton tone="ink" onPress={() => router.push("/expense/new")}>
+                <HapticButton tone="brand" onPress={() => router.push("/expense/new")}>
                   + Add Expense
                 </HapticButton>
               </View>
               <View style={{ flex: 1 }}>
                 <HapticButton
                   tone="outlined"
-                  onPress={() =>
-                    owedToYou > 0
-                      ? router.push(`/settle/${owedUsers[0].id}`)
-                      : youOwe > 0
-                        ? router.push(`/settle/${oweUsers[0].id}`)
-                        : router.push("/(tabs)/friends")
-                  }
+                  onPress={() => {
+                    if (owedUsers.length > 0 && oweUsers.length > 0) {
+                      settleSheetRef.current?.present();
+                    } else if (owedToYou > 0) {
+                      router.push(`/settle/${owedUsers[0].id}`);
+                    } else if (youOwe > 0) {
+                      router.push(`/settle/${oweUsers[0].id}`);
+                    } else {
+                      router.push("/(tabs)/friends");
+                    }
+                  }}
                 >
                   Settle up
                 </HapticButton>
               </View>
             </View>
-          </FocusAwareView>
+          </Animated.View>
 
           {friends.length <= 1 && (
-            <FocusAwareView
-              delay={75}
+            <Animated.View
+              entering={FadeInDown.duration(350).delay(70).springify()}
               style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
             >
               <View
@@ -742,12 +805,12 @@ export default function DashboardScreen(): JSX.Element {
                   {friends.length === 0 ? "Add friend" : "Find friends"}
                 </HapticButton>
               </View>
-            </FocusAwareView>
+            </Animated.View>
           )}
 
           {(owedUsers.length > 0 || oweUsers.length > 0) && (
-            <FocusAwareView
-              delay={90}
+            <Animated.View
+              entering={FadeInDown.duration(350).delay(105).springify()}
               style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
             >
               <View style={{ marginBottom: 14 }}>
@@ -768,7 +831,9 @@ export default function DashboardScreen(): JSX.Element {
                   >
                     <AppUserAvatar user={user} size="sm" />
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Typography style={TYPO.semi(15)}>{user.name}</Typography>
+                      <Typography style={[TYPO.semi(15), { color: UI.color.textStrong }]}>
+                        {user.name}
+                      </Typography>
                       <Typography
                         style={[TYPO.medium(13), { color: UI.color.success, marginTop: 1 }]}
                       >
@@ -802,7 +867,9 @@ export default function DashboardScreen(): JSX.Element {
                   >
                     <AppUserAvatar user={user} size="sm" />
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Typography style={TYPO.semi(15)}>{user.name}</Typography>
+                      <Typography style={[TYPO.semi(15), { color: UI.color.textStrong }]}>
+                        {user.name}
+                      </Typography>
                       <Typography
                         style={[TYPO.medium(13), { color: UI.color.danger, marginTop: 1 }]}
                       >
@@ -823,11 +890,11 @@ export default function DashboardScreen(): JSX.Element {
                   </View>
                 ))}
               </Card>
-            </FocusAwareView>
+            </Animated.View>
           )}
 
-          <FocusAwareView
-            delay={105}
+          <Animated.View
+            entering={FadeInDown.duration(350).delay(140).springify()}
             style={{ paddingHorizontal: UI.space.page, marginBottom: 28 }}
           >
             <SectionLabel
@@ -964,10 +1031,10 @@ export default function DashboardScreen(): JSX.Element {
                 </View>
               )}
             </View>
-          </FocusAwareView>
+          </Animated.View>
 
-          <FocusAwareView
-            delay={100}
+          <Animated.View
+            entering={FadeInDown.duration(350).delay(175).springify()}
             style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
           >
             <SectionLabel
@@ -1089,9 +1156,169 @@ export default function DashboardScreen(): JSX.Element {
                 </View>
               )}
             </View>
-          </FocusAwareView>
+          </Animated.View>
         </ScrollView>
       )}
+
+      {/* ── Settle up sheet ──────────────────────────────────────────────── */}
+
+      <BottomSheetModal
+        ref={settleSheetRef}
+        index={0}
+        enableDynamicSizing
+        backdropComponent={renderSettleBackdrop}
+        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
+      >
+        <BottomSheetView
+          style={{
+            paddingHorizontal: UI.space.page,
+            paddingTop: 24,
+            paddingBottom: Math.max(insets.bottom, 24),
+          }}
+        >
+          <Typography
+            style={{
+              fontSize: 22,
+              color: UI.color.text,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              marginBottom: 20,
+            }}
+          >
+            Settle up
+          </Typography>
+
+          {owedUsers.length > 0 && (
+            <View style={{ marginBottom: 16 }}>
+              <Typography
+                style={{
+                  fontSize: 13,
+                  color: UI.color.muted,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  marginBottom: 8,
+                  textTransform: "uppercase",
+                  letterSpacing: 1.2,
+                }}
+              >
+                Collect from
+              </Typography>
+              {owedUsers.map((user) => (
+                <Pressable
+                  key={user.id}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    settleSheetRef.current?.dismiss();
+                    router.push(`/settle/${user.id}`);
+                  }}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 12,
+                    paddingHorizontal: 12,
+                    borderRadius: 12,
+                    backgroundColor: pressed ? UI.color.subtle : "transparent",
+                    marginBottom: 4,
+                  })}
+                >
+                  <AppUserAvatar user={user} size="sm" />
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Typography
+                      style={{
+                        fontSize: 15,
+                        color: UI.color.text,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
+                      {user.name}
+                    </Typography>
+                    <Typography
+                      style={{
+                        fontSize: 13,
+                        color: UI.color.success,
+                        fontFamily: "IBMPlexSans_500Medium",
+                        marginTop: 1,
+                      }}
+                    >
+                      Owes you{" "}
+                      {formatAmount(
+                        Math.abs(perUserBalances.get(user.id) ?? 0),
+                        preferredCurrency.code
+                      )}
+                    </Typography>
+                  </View>
+                  <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.75} />
+                </Pressable>
+              ))}
+            </View>
+          )}
+
+          {oweUsers.length > 0 && (
+            <View>
+              <Typography
+                style={{
+                  fontSize: 13,
+                  color: UI.color.muted,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  marginBottom: 8,
+                  textTransform: "uppercase",
+                  letterSpacing: 1.2,
+                }}
+              >
+                Pay back
+              </Typography>
+              {oweUsers.map((user) => (
+                <Pressable
+                  key={user.id}
+                  accessibilityRole="button"
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                    settleSheetRef.current?.dismiss();
+                    router.push(`/settle/${user.id}`);
+                  }}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    paddingVertical: 12,
+                    paddingHorizontal: 12,
+                    borderRadius: 12,
+                    backgroundColor: pressed ? UI.color.subtle : "transparent",
+                    marginBottom: 4,
+                  })}
+                >
+                  <AppUserAvatar user={user} size="sm" />
+                  <View style={{ flex: 1, marginLeft: 12 }}>
+                    <Typography
+                      style={{
+                        fontSize: 15,
+                        color: UI.color.text,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
+                      {user.name}
+                    </Typography>
+                    <Typography
+                      style={{
+                        fontSize: 13,
+                        color: UI.color.danger,
+                        fontFamily: "IBMPlexSans_500Medium",
+                        marginTop: 1,
+                      }}
+                    >
+                      You owe{" "}
+                      {formatAmount(
+                        Math.abs(perUserBalances.get(user.id) ?? 0),
+                        preferredCurrency.code
+                      )}
+                    </Typography>
+                  </View>
+                  <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.75} />
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </BottomSheetView>
+      </BottomSheetModal>
     </View>
   );
 }

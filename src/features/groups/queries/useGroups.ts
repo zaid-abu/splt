@@ -26,6 +26,7 @@ export function useCreateGroup() {
     mutationFn: (groupData: any) => groupsApi.createGroup(groupData),
     onSuccess: (newGroup) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.groups });
+      queryClient.setQueryData(queryKeys.groupDetails(newGroup.id), newGroup);
     },
   });
 }

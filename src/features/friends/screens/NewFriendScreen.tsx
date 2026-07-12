@@ -127,7 +127,10 @@ export default function NewFriendScreen(): JSX.Element {
 
         <Pressable
           accessibilityRole="button"
-          onPress={() => handleAddFriend(item)}
+          onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            handleAddFriend(item);
+          }}
           disabled={isDisabled}
           style={({ pressed }) => ({
             height: 44,
@@ -147,10 +150,14 @@ export default function NewFriendScreen(): JSX.Element {
           })}
         >
           {isAdding ? (
-            <Spinner size="sm" color="white" />
+            <Spinner size="sm" color={UI.color.textInverse} />
           ) : isAdded ? (
             <Typography
-              style={{ fontSize: 14, color: "white", fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{
+                fontSize: 14,
+                color: UI.color.textInverse,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
             >
               Added
             </Typography>
@@ -165,7 +172,7 @@ export default function NewFriendScreen(): JSX.Element {
               Requested
             </Typography>
           ) : (
-            <icons.UserPlus size={20} color="white" strokeWidth={1.5} />
+            <icons.UserPlus size={20} color={UI.color.textInverse} strokeWidth={1.5} />
           )}
         </Pressable>
       </View>
@@ -201,6 +208,7 @@ export default function NewFriendScreen(): JSX.Element {
           icon={icons.X}
           accessibilityLabel="Close add friend"
           onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             if (router.canGoBack()) {
               router.back();
             } else {

@@ -31,8 +31,8 @@ export function HapticButton({
         ? UI.color.danger
         : tone === "outlined"
           ? UI.color.control
-          : UI.color.text;
-  const textColor = tone === "outlined" ? UI.color.text : UI.color.textInverse;
+          : UI.color.ink;
+  const textColor = tone === "outlined" ? UI.color.textStrong : "#FFFFFF";
   const borderColor = tone === "outlined" ? UI.color.border : "transparent";
 
   return (

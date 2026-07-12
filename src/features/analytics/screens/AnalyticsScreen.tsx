@@ -4,7 +4,6 @@ import {
   ScrollView,
   Pressable,
   LayoutAnimation,
-  ActivityIndicator,
   RefreshControl,
   useWindowDimensions,
 } from "react-native";
@@ -16,6 +15,9 @@ import { LineChart } from "react-native-gifted-charts";
 import * as icons from "lucide-react-native";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { formatAmount } from "@/components/ui/AmountDisplay";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { ErrorState } from "@/components/ui/ErrorState";
+import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 
@@ -24,7 +26,8 @@ import type { AnalyticsPeriod } from "@/types";
 import { CategoryBreakdown } from "../components/CategoryBreakdown";
 import { TopExpenses } from "../components/TopExpenses";
 
-import { UI } from "@/components/ui/native-ui";
+import { Card } from "@/components/ui/Card";
+import { UI, SectionLabel, ScreenHeader } from "@/components/ui/native-ui";
 
 const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "week", label: "Week" },
@@ -33,39 +36,6 @@ const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "year", label: "Year" },
   { key: "all", label: "All Time" },
 ];
-
-function SectionLabel({ children }: { children: string }) {
-  return (
-    <Typography
-      style={{
-        fontSize: 11,
-        color: UI.color.text,
-        fontFamily: "IBMPlexSans_600SemiBold",
-        letterSpacing: 1.1,
-        textTransform: "uppercase",
-        marginBottom: 12,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-}
-
-function AnalyticsCard({ children }: { children: React.ReactNode }) {
-  return (
-    <View
-      style={{
-        backgroundColor: UI.color.surface,
-        borderRadius: UI.radius.lg,
-        borderWidth: 1,
-        borderColor: UI.color.border,
-        padding: 16,
-      }}
-    >
-      {children}
-    </View>
-  );
-}
 
 export default function AnalyticsScreen() {
   const router = useRouter();
@@ -77,15 +47,25 @@ export default function AnalyticsScreen() {
 
   const [period, setPeriod] = useState<AnalyticsPeriod>("month");
 
-  const { totalSpent, expenseCount, categoryData, trendData, topExpenses, isLoading, refetch } =
-    useAnalytics(currentUser?.id, period, preferredCurrency.code, convertCurrency);
+  const {
+    totalSpent,
+    expenseCount,
+    categoryData,
+    trendData,
+    topExpenses,
+    isLoading,
+    isError,
+    refetch,
+  } = useAnalytics(currentUser?.id, period, preferredCurrency.code, convertCurrency);
 
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     setRefreshing(true);
     try {
       await refetch();
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } finally {
       setRefreshing(false);
     }
@@ -121,13 +101,7 @@ export default function AnalyticsScreen() {
           zIndex: 10,
         }}
       >
-        <View style={{ paddingHorizontal: UI.space.page, marginBottom: 18 }}>
-          <Typography
-            style={{ fontSize: 32, fontFamily: "Sora_600SemiBold", color: UI.color.text }}
-          >
-            Analytics
-          </Typography>
-        </View>
+        <ScreenHeader title="Analytics" onBackPress={() => router.back()} />
 
         {/* Period Selector */}
         <ScrollView
@@ -141,6 +115,7 @@ export default function AnalyticsScreen() {
               <Pressable
                 key={p.key}
                 onPress={() => {
+                  Haptics.selectionAsync();
                   LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                   setPeriod(p.key);
                 }}
@@ -157,7 +132,7 @@ export default function AnalyticsScreen() {
                   style={{
                     fontSize: 13,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? "#FFFFFF" : UI.color.muted,
+                    color: isSelected ? UI.color.textInverse : UI.color.muted,
                   }}
                 >
                   {p.label}
@@ -181,13 +156,24 @@ export default function AnalyticsScreen() {
         }
       >
         {isLoading ? (
-          <View style={{ padding: 40, alignItems: "center" }}>
-            <ActivityIndicator size="large" color={UI.color.text} />
+          <View style={{ paddingHorizontal: UI.space.page, gap: 24 }}>
+            <Skeleton height={120} radius={16} />
+            <Skeleton height={200} radius={16} />
+            <Skeleton height={280} radius={16} />
+            <Skeleton height={200} radius={16} />
+          </View>
+        ) : isError ? (
+          <View style={{ paddingVertical: 40 }}>
+            <ErrorState
+              title="Couldn't load analytics"
+              message="Check your connection and try again."
+              onRetry={onRefresh}
+            />
           </View>
         ) : (
           <View style={{ paddingHorizontal: UI.space.page, gap: 24 }}>
-            <AnalyticsCard>
-              <SectionLabel>Spending summary</SectionLabel>
+            <Card padding={16}>
+              <SectionLabel style={{ marginBottom: 12 }}>Spending summary</SectionLabel>
               <Typography
                 style={{
                   fontSize: 38,
@@ -245,10 +231,10 @@ export default function AnalyticsScreen() {
                   </View>
                 ))}
               </View>
-            </AnalyticsCard>
+            </Card>
 
-            <AnalyticsCard>
-              <SectionLabel>Trend</SectionLabel>
+            <Card padding={16}>
+              <SectionLabel style={{ marginBottom: 12 }}>Trend</SectionLabel>
               {trendChartData.length > 0 && trendMax > 0 ? (
                 <View style={{ marginLeft: -10, marginTop: 2 }}>
                   <LineChart
@@ -261,8 +247,8 @@ export default function AnalyticsScreen() {
                     spacing={Math.max(34, chartWidth / Math.max(4, trendChartData.length - 1))}
                     color={UI.color.text}
                     thickness={2}
-                    startFillColor="#000000"
-                    endFillColor="#000000"
+                    startFillColor={UI.color.text}
+                    endFillColor={UI.color.text}
                     startOpacity={0.1}
                     endOpacity={0.01}
                     hideDataPoints
@@ -289,18 +275,41 @@ export default function AnalyticsScreen() {
                       marginTop: 12,
                       color: UI.color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
+                      marginBottom: 16,
                     }}
                   >
                     No spending trend for this period.
                   </Typography>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => router.push("/expense/new")}
+                    style={({ pressed }) => ({
+                      paddingHorizontal: 18,
+                      paddingVertical: 10,
+                      borderRadius: 999,
+                      backgroundColor: UI.color.text,
+                      opacity: pressed ? 0.8 : 1,
+                    })}
+                  >
+                    <Typography
+                      style={{
+                        fontSize: 14,
+                        color: UI.color.textInverse,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
+                      Log an expense
+                    </Typography>
+                  </Pressable>
                 </View>
               )}
-            </AnalyticsCard>
+            </Card>
 
             <CategoryBreakdown
               data={categoryData}
               totalSpent={totalSpent}
               currencyCode={preferredCurrency.code}
+              onLogExpense={() => router.push("/expense/new")}
             />
             <TopExpenses
               expenses={topExpenses}

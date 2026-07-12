@@ -61,22 +61,62 @@ Analytics cards should match the dashboard card system: warm surface, light bord
 ### Groups List
 
 File: src/features/groups/screens/GroupsScreen.tsx
-Last updated: 2026-07-08
+Last updated: 2026-07-12
 
-| Property         | Class / Value                                                                       |
-| ---------------- | ----------------------------------------------------------------------------------- |
-| Background       | App `#F5F0EB`; group rows and summary cards `#FFFCF8`; controls `#FFFFFF`           |
-| Border           | `1px #E8E4DF` for search, filters, summary cards, row cards, and icons              |
-| Border radius    | `16px` card radius; `18px` row icon radius; `22px` empty icon radius; `999px` pills |
-| Text - primary   | `#000000`, `CrimsonText_700Bold`                                                    |
-| Text - secondary | `#8A8782`, `CrimsonText_600SemiBold`; summary labels are uppercase/tracked          |
-| Spacing          | `24px` screen gutters; `16px` row/card padding; `10px` summary-card gap             |
-| Hover state      | Pressed opacity `0.5-0.8` depending on control weight                               |
-| Shadow           | None                                                                                |
-| Accent usage     | Debt `#E85D5D`; positive balance `#4CAF82`; active chips and primary CTAs `#000000` |
+| Property         | Class / Value                                                                                         |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| Background       | App `#F7F6F1`; cards, empty states, and summary surfaces `#FEFDFA`; controls `#FFFFFF`                |
+| Border           | `1px #E7E5DE` for search, filters, summary cards, row cards, icons, and empty-state shells            |
+| Border radius    | `16px` card/list radius; `14px` row icon/badge radius; `20px` empty icon shell; `999px` pills/buttons |
+| Text - primary   | `#1A1A1A`; screen title `Sora_600SemiBold 28px`; row/action text `IBMPlexSans_600SemiBold 16px`       |
+| Text - secondary | `#6E6D68` `IBMPlexSans_500Medium 14px`; summary labels are uppercase/tracked `11px`                   |
+| Spacing          | `24px` screen gutters; `16px` row padding; `10px` summary-card gap; `12px` card horizontal padding    |
+| Hover state      | Pressed opacity `0.65-0.72` for controls and cards; haptics on filter pills and primary actions       |
+| Shadow           | None                                                                                                  |
+| Accent usage     | Debt `#E85D5D`; credit `#4CAF82`; Net `#E85D5D`/`#4CAF82`; active pills and primary CTAs `#1A1A1A`    |
 
 **Pattern notes:**
-Groups list rows are visually one stacked card: first row owns top radius, last row owns bottom radius, and all rows keep a light bottom divider. Do not use swipe actions inside the stacked group list, because exposed actions break the card shape and can leave rows visually offset. Group row icons use the saved Lucide icon name from group creation before falling back to emoji or initials. The page should provide summary cards, search, and filter pills before the list, with empty states adapting to search/filter context.
+Groups list rows are visually one stacked card: first row owns top radius, last row owns bottom radius, and all rows keep a light bottom divider. Do not use swipe actions inside the stacked group list, because exposed actions break the card shape and can leave rows visually offset. Group row icons use the saved Lucide icon name from group creation before falling back to initials. Each row now uses a compact colored balance pill (red/green/muted background) instead of verbose text. Subtitle shows member count + relative time since last activity (e.g., "3 participants · 2d ago"). Summary metrics include Groups count, You owe, Owed, and Net balance. Empty state integrates a "Create Group" CTA inline inside the card. Staggered entrance animations (FadeInDown with per-row delay) apply on initial mount.
+
+### Group Detail
+
+File: src/features/groups/screens/GroupDetailScreen.tsx
+Last updated: 2026-07-12
+
+| Property         | Class / Value                                                                                                    |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Background       | App `#F7F6F1`; cards and list surfaces `#FEFDFA`; controls `#FFFFFF`                                             |
+| Border           | `1px #E7E5DE` for header buttons, balance card, lists, debt rows, action bar, invite card, and empty shells      |
+| Border radius    | `16px` cards/lists; `12px` inner panels; `999px` header/action buttons and member pills                          |
+| Text - primary   | `#1A1A1A`; header title `Sora_600SemiBold 24px`; section headers `IBMPlexSans_600SemiBold 16px`                  |
+| Text - secondary | `#6E6D68` `IBMPlexSans_500Medium 14px`; debt row labels `IBMPlexSans_500Medium 14px`                             |
+| Spacing          | `24px` screen gutters; `32px` section bottom margin; `16-20px` card padding; `12px` member pill gap              |
+| Hover state      | Pressed opacity `0.65` for icon buttons; background `UI.color.subtle` on debt rows; spring scale on action pills |
+| Shadow           | None                                                                                                             |
+| Accent usage     | Debt `#E85D5D`; credit `#4CAF82`; settled state `#6E6D68`; progress bar `#1A1A1A`                                |
+
+**Pattern notes:**
+Group detail uses a native-style custom header (back button, GroupIconBadge + name, settings gear), followed by a horizontal scrollable member avatars row showing each member's name and net balance in a compact pill. The BalanceCard provides you-owe / owed-to-you split with tinted inner panels and settle CTAs. Below are Group Balances (pairwise debt rows with semantic coloring and "owes" labels) and Transactions (expense list using TransactionRow with CategoryIconBadge). "Settle Up" in the bottom action bar is hidden when the group is all settled. The "Add Expense" button then becomes full-width. Styles are extracted to a module-level `StyleSheet.create` constant for reduced re-render overhead.
+
+### Balance Pill (GroupCard)
+
+File: src/features/groups/components/GroupCard.tsx
+Last updated: 2026-07-12
+
+| Property         | Class / Value                                                                        |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| Background       | Settled: `UI.color.subtle`; owe: `UI.color.dangerTint`; owed: `UI.color.successTint` |
+| Border           | None                                                                                 |
+| Border radius    | `999px` pill                                                                         |
+| Text - primary   | `IBMPlexSans_600SemiBold`, `12px`; settled: `UI.color.muted`; owe: `UI.color.danger` |
+| Text - secondary | N/A                                                                                  |
+| Spacing          | `10px` horizontal padding; `26px` height                                             |
+| Hover state      | None (inside parent card press)                                                      |
+| Shadow           | None                                                                                 |
+| Accent usage     | Red tint for negative balance, green tint for positive, neutral for settled          |
+
+**Pattern notes:**
+Compact balance indicator pill used inside GroupCard rows. Replaces verbose "You owe $X" / "Owes you $X" text with a compact tinted chip showing just the amount. Color communicates direction (red = you owe, green = you're owed). "Settled" shows as a neutral muted chip. Amount format includes currency symbol via `formatAmount`. Size constrained to ~26px height for compact row layout.
 
 ### Friends List
 
@@ -857,3 +897,26 @@ Last updated: 2026-07-11
 
 **Pattern notes:**
 Expo Router error boundary fallback component. Matches the `ErrorBoundaryProps` type expected by Expo Router's `ErrorBoundary`. Renders centered on a full-screen warm background with a card containing title, error message, and retry button. Exported as `ErrorFallback` and used as the root layout error boundary in `_layout.tsx`.
+
+### Profile Screen
+
+File: src/features/profile/screens/ProfileScreen.tsx
+Last updated: 2026-07-12
+
+| Property       | Class / Value                                                                                       |
+| -------------- | --------------------------------------------------------------------------------------------------- |
+| Background     | App background `UI.color.bg`                                                                        |
+| Card surface   | `UI.color.surface` via shared `Card` component                                                      |
+| Border         | `1px` `UI.color.border` (via Card or explicit)                                                      |
+| Border radius  | Card: `UI.radius.lg` (`16px`); pills: `UI.radius.pill` (`999px`); metric cells: `UI.radius.md`      |
+| Text - heading | User name: `24px`, `IBMPlexSans_600SemiBold`, `UI.color.text`; Section headers: `SectionLabel`      |
+| Text - body    | `IBMPlexSans_500Medium`, `14px`, `UI.color.muted` for email and metadata                            |
+| Action buttons | Shared `HapticButton` with `tone="outlined"` for secondary, `tone="danger"` for destructive actions |
+| Settings rows  | `SettingsItem` (icon + title + subtitle + right element) for toggle/row actions                     |
+| Spacing        | `24px` screen gutters; `24px` card padding; `40px` between sections; `12px` vertical between rows   |
+| Hover state    | `Pressable` opacity `0.65-0.7`; `HapticButton` handles opacity + haptic feedback                    |
+| Shadow         | None                                                                                                |
+| Accent usage   | Owed balance `+$` in `UI.color.success`; Owe balance `-$` in `UI.color.danger`                      |
+
+**Pattern notes:**
+Profile uses the same loading-first pattern as the dashboard — skeleton placeholders during `isFirstLoad`, then a `ScrollView` with `RefreshControl`. Three sections stacked vertically: (1) tappable user card with avatar, name, email, and metric cells; (2) Preferences with Dark Mode toggle and Currency picker; (3) Account section with created date, Change Password row, Log Out/Tell a Friend outlined buttons, and a visually separated Delete Account danger action. The avatar region is pressable to navigate to `/profile/edit`. All standalone pill buttons use the shared `HapticButton` for consistent haptic feedback. Bottom sheets for delete confirmation use `HapticButton` pairs (Cancel outlined + Delete danger). The edit and change-password screens use `BottomActionBar` for their save buttons.

@@ -34,25 +34,50 @@ function LoadingScreen(): React.JSX.Element {
         justifyContent: "center",
       }}
     >
+      <Animated.View
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: 6,
+          borderWidth: 1.5,
+          borderColor: UI.color.brand,
+          alignItems: "center",
+          justifyContent: "center",
+          marginBottom: 20,
+          opacity,
+          transform: [{ scale }],
+        }}
+      >
+        <Animated.Text
+          style={{
+            fontFamily: "Sora_600SemiBold",
+            fontSize: 14,
+            color: UI.color.brand,
+            letterSpacing: 1,
+            opacity,
+          }}
+        >
+          S
+        </Animated.Text>
+      </Animated.View>
       <Animated.Text
         style={{
           fontFamily: "Sora_600SemiBold",
-          fontSize: 42,
+          fontSize: 32,
           color: UI.color.textStrong,
           letterSpacing: 4,
           opacity,
-          transform: [{ scale }],
         }}
       >
         SPLT.
       </Animated.Text>
       <Animated.View
         style={{
-          width: 6,
-          height: 6,
-          borderRadius: 3,
+          width: 5,
+          height: 5,
+          borderRadius: 2.5,
           backgroundColor: UI.color.muted,
-          marginTop: 20,
+          marginTop: 16,
           opacity: dotOpacity,
         }}
       />

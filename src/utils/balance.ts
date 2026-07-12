@@ -7,7 +7,7 @@ export function getBalanceCopy(balance: number, currencyCode: string) {
       label: "Owes you",
       amount: formatAmount(balance, currencyCode),
       color: UI.color.success,
-      bg: "#F5FCF8",
+      bg: UI.color.successTint,
     };
   }
 
@@ -16,7 +16,7 @@ export function getBalanceCopy(balance: number, currencyCode: string) {
       label: "You owe",
       amount: formatAmount(Math.abs(balance), currencyCode),
       color: UI.color.danger,
-      bg: "#FFF7F5",
+      bg: UI.color.dangerTint,
     };
   }
 

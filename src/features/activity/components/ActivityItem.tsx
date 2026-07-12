@@ -1,18 +1,19 @@
-import React, { useMemo, useRef, useCallback } from "react";
+import React, { useMemo, useCallback } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
-import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 
 import { useDeleteExpense } from "@/features/expenses/queries/useExpenses";
 import { useDeleteSettlement } from "@/features/settlements/queries/useSettlements";
+import { useDeleteActivity } from "@/features/activity/queries/useActivities";
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { UI } from "@/components/ui/native-ui";
+import { SwipeableRow } from "@/components/layout/SwipeableRow";
+import { useUIStore } from "@/store/useUIStore";
 
 const TEXT_DANGER = UI.color.danger;
 const TEXT_SUCCESS = UI.color.success;
@@ -32,10 +33,9 @@ export const ActivityItem = React.memo(function ActivityItem({
   const { currentUser } = useAuth();
   const { mutateAsync: deleteExpense } = useDeleteExpense();
   const { mutateAsync: deleteSettlement } = useDeleteSettlement();
+  const { mutateAsync: deleteActivity } = useDeleteActivity();
   const router = useRouter();
-  const sheetRef = useRef<BottomSheetModal>(null);
-  const confirmSheetRef = useRef<BottomSheetModal>(null);
-  const insets = useSafeAreaInsets();
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
 
   const involvement = useMemo(() => {
     if (activity.type === "group_created") {
@@ -146,42 +146,28 @@ export const ActivityItem = React.memo(function ActivityItem({
     neutral: UI.color.text,
   };
 
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        pressBehavior="close"
-        opacity={0.4}
-      />
-    ),
-    []
-  );
+  const canDelete = activity.type === "expense" || activity.type === "settlement";
 
-  const handleTap = () => {
+  const handlePress = useCallback(() => {
     Haptics.selectionAsync();
-    sheetRef.current?.present();
-  };
-
-  const handleViewDetails = () => {
-    sheetRef.current?.dismiss();
     if (activity.expense) {
       router.push(`/expense/${activity.expense.id}`);
+    } else if (activity.settlement) {
+      if (activity.groupId) {
+        router.push(`/group/${activity.groupId}`);
+      } else {
+        const otherUserId =
+          activity.settlement.fromUserId === currentUser.id
+            ? activity.settlement.toUserId
+            : activity.settlement.fromUserId;
+        router.push(`/friend/${otherUserId}`);
+      }
     } else if (activity.groupId) {
       router.push(`/group/${activity.groupId}`);
     }
-  };
+  }, [activity, router, currentUser.id]);
 
-  const handleDeleteTap = () => {
-    sheetRef.current?.dismiss();
-    setTimeout(() => {
-      confirmSheetRef.current?.present();
-    }, 350);
-  };
-
-  const handleConfirmDelete = async () => {
-    confirmSheetRef.current?.dismiss();
+  const handleDelete = useCallback(async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     try {
       if (activity.type === "expense" && activity.expense) {
@@ -189,19 +175,18 @@ export const ActivityItem = React.memo(function ActivityItem({
       } else if (activity.type === "settlement" && activity.settlement) {
         await deleteSettlement(activity.settlement.id);
       }
+      await deleteActivity(activity.id);
     } catch {
       // handled by query client
     }
-  };
-
-  const canDelete = activity.type === "expense" || activity.type === "settlement";
+  }, [activity, deleteExpense, deleteSettlement, deleteActivity]);
 
   return (
-    <>
+    <SwipeableRow onDelete={canDelete ? handleDelete : undefined}>
       <Pressable
-        onPress={handleTap}
+        onPress={handlePress}
         accessibilityRole="button"
-        accessibilityLabel={`${activity.description}. ${involvement.text} ${involvement.showAmount ? formatAmount(involvement.amount, activity.currency || "USD") : ""}`}
+        accessibilityLabel={`${activity.description}. ${involvement.text} ${involvement.showAmount ? formatAmount(involvement.amount, activity.currency || preferredCurrency?.code || "USD") : ""}`}
         style={({ pressed }) => ({
           flexDirection: "row",
           alignItems: "center",
@@ -265,7 +250,10 @@ export const ActivityItem = React.memo(function ActivityItem({
               }}
             >
               {involvement.type === "positive" ? "+" : ""}
-              {formatAmount(involvement.amount, activity.currency || "USD")}
+              {formatAmount(
+                involvement.amount,
+                activity.currency || preferredCurrency?.code || "USD"
+              )}
             </Typography>
           ) : null}
           <Typography
@@ -288,226 +276,6 @@ export const ActivityItem = React.memo(function ActivityItem({
           style={{ marginLeft: 8 }}
         />
       </Pressable>
-
-      <BottomSheetModal
-        ref={sheetRef}
-        index={0}
-        enableDynamicSizing
-        backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
-      >
-        <BottomSheetView
-          style={{
-            paddingHorizontal: UI.space.page,
-            paddingTop: 24,
-            paddingBottom: insets.bottom + 24,
-            gap: 20,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-            <View
-              style={{
-                width: 52,
-                height: 52,
-                borderRadius: CARD_RADIUS,
-                backgroundColor: bgColors[involvement.type],
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <IconComponent size={26} color={iconColors[involvement.type]} strokeWidth={1.5} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Typography
-                style={{
-                  fontSize: 20,
-                  color: UI.color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                {activity.description}
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: UI.color.muted,
-                  fontFamily: "IBMPlexSans_500Medium",
-                  marginTop: 4,
-                }}
-              >
-                {subtitle}
-              </Typography>
-            </View>
-          </View>
-
-          {involvement.showAmount && (
-            <View style={{ alignItems: "center", paddingVertical: 8 }}>
-              <Typography
-                style={{
-                  fontSize: 36,
-                  color: textColors[involvement.type],
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  letterSpacing: -1,
-                }}
-              >
-                {involvement.type === "positive" ? "+" : ""}
-                {formatAmount(involvement.amount, activity.currency || "USD")}
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: textColors[involvement.type],
-                  fontFamily: "IBMPlexSans_500Medium",
-                  marginTop: 4,
-                }}
-              >
-                {involvement.text}
-              </Typography>
-            </View>
-          )}
-
-          <View style={{ gap: 12 }}>
-            {activity.type !== "group_created" && activity.type !== "member_joined" && (
-              <Pressable
-                onPress={handleViewDetails}
-                style={({ pressed }) => ({
-                  height: 52,
-                  borderRadius: UI.radius.pill,
-                  backgroundColor: UI.color.text,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: pressed ? 0.75 : 1,
-                })}
-              >
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: UI.color.textInverse,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  View Details
-                </Typography>
-              </Pressable>
-            )}
-            {canDelete && (
-              <Pressable
-                onPress={handleDeleteTap}
-                style={({ pressed }) => ({
-                  height: 52,
-                  borderRadius: UI.radius.pill,
-                  backgroundColor: UI.color.control,
-                  borderWidth: 1,
-                  borderColor: UI.color.danger,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  opacity: pressed ? 0.65 : 1,
-                })}
-              >
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: UI.color.danger,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  Delete
-                </Typography>
-              </Pressable>
-            )}
-          </View>
-        </BottomSheetView>
-      </BottomSheetModal>
-
-      {/* Confirmation sheet */}
-      <BottomSheetModal
-        ref={confirmSheetRef}
-        index={0}
-        enableDynamicSizing
-        backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
-      >
-        <BottomSheetView
-          style={{
-            paddingHorizontal: UI.space.page,
-            paddingTop: 24,
-            paddingBottom: insets.bottom + 24,
-          }}
-        >
-          <Typography
-            style={{
-              fontSize: 22,
-              color: UI.color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              marginBottom: 8,
-            }}
-          >
-            Delete {activity.type === "expense" ? "Expense" : "Payment"}?
-          </Typography>
-          <Typography
-            style={{
-              fontSize: 16,
-              color: UI.color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
-              marginBottom: 24,
-              lineHeight: 22,
-            }}
-          >
-            Are you sure you want to delete &ldquo;{activity.description}&rdquo;? This cannot be
-            undone.
-          </Typography>
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Pressable
-              onPress={() => confirmSheetRef.current?.dismiss()}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 52,
-                borderRadius: UI.radius.pill,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                backgroundColor: UI.color.control,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.65 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: UI.color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                Cancel
-              </Typography>
-            </Pressable>
-            <Pressable
-              onPress={handleConfirmDelete}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 52,
-                borderRadius: UI.radius.pill,
-                backgroundColor: UI.color.danger,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.8 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: "#FFFFFF",
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                Delete
-              </Typography>
-            </Pressable>
-          </View>
-        </BottomSheetView>
-      </BottomSheetModal>
-    </>
+    </SwipeableRow>
   );
 });

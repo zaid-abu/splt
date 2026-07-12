@@ -2,6 +2,7 @@ import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useCallback, useMemo, useState } from "react";
+import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import {
   Alert,
   LayoutAnimation,
@@ -15,7 +16,7 @@ import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
@@ -25,6 +26,7 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatActivityDate } from "@/utils/date";
 import { getBalanceCopy } from "@/utils/balance";
+import { ErrorState } from "@/components/ui/ErrorState";
 import {
   UI,
   ScreenHeader,
@@ -32,6 +34,7 @@ import {
   SearchField,
   FilterPill,
   EmptyState,
+  IconButton,
 } from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
@@ -49,9 +52,6 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { queryKeys } from "@/queries/keys";
 import { useUIStore } from "@/store/useUIStore";
 import type { Expense, Friendship, User, FriendFilter, FriendSectionKey } from "@/types";
-
-const TEXT_DANGER = UI.color.danger;
-const TEXT_SUCCESS = UI.color.success;
 
 type FriendListItem = {
   friend: User;
@@ -75,40 +75,6 @@ type DisplayItem =
       sectionCount: number;
     };
 
-function IconButton({
-  icon: Icon,
-  label,
-  onPress,
-}: {
-  icon: React.ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
-  label: string;
-  onPress: () => void;
-}): JSX.Element {
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityLabel={label}
-      onPress={() => {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-        onPress();
-      }}
-      style={({ pressed }) => ({
-        width: 44,
-        height: 44,
-        borderRadius: 999,
-        backgroundColor: UI.color.control,
-        borderWidth: 1,
-        borderColor: UI.color.border,
-        alignItems: "center",
-        justifyContent: "center",
-        opacity: pressed ? 0.72 : 1,
-      })}
-    >
-      <Icon size={20} color={UI.color.text} strokeWidth={2} />
-    </Pressable>
-  );
-}
-
 export default function FriendsScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -116,9 +82,22 @@ export default function FriendsScreen(): JSX.Element {
   const queryClient = useQueryClient();
   const { toast } = useAppToast();
 
-  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
-  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
-  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+  const {
+    data: groups = [],
+    isLoading: isLoadingGroups,
+    isError: isGroupsError,
+    refetch: refetchGroups,
+  } = useGroups(currentUser?.id);
+  const {
+    data: expenses = [],
+    isError: isExpensesError,
+    refetch: refetchExpenses,
+  } = useUserExpenses(currentUser?.id);
+  const {
+    data: settlements = [],
+    isError: isSettlementsError,
+    refetch: refetchSettlements,
+  } = useUserSettlements(currentUser?.id);
   const { data: friends = [], isLoading: isLoadingFriends } = useFriends(currentUser?.id);
   const { data: allFriendships = [] } = useAllFriendships(currentUser?.id);
   const { mutateAsync: acceptFriend } = useAcceptFriend();
@@ -128,7 +107,7 @@ export default function FriendsScreen(): JSX.Element {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
-  const [search, setSearch] = useState("");
+  const { search, setSearch, debouncedSearch } = useDebouncedSearch();
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FriendFilter>("all");
 
@@ -235,7 +214,7 @@ export default function FriendsScreen(): JSX.Element {
   );
 
   const searchMatchedRows = useMemo(() => {
-    const query = search.trim().toLowerCase();
+    const query = debouncedSearch.trim().toLowerCase();
     return friendRows.filter((row) => {
       if (!query) return true;
       return (
@@ -243,7 +222,7 @@ export default function FriendsScreen(): JSX.Element {
         row.friend.email.toLowerCase().includes(query)
       );
     });
-  }, [friendRows, search]);
+  }, [friendRows, debouncedSearch]);
 
   const displayRows = useMemo<DisplayItem[]>(() => {
     const sectionConfigs: { key: FriendSectionKey; title: string }[] = [
@@ -290,28 +269,27 @@ export default function FriendsScreen(): JSX.Element {
 
   const hasActiveFilters = search.trim().length > 0 || filter !== "all";
 
-  const onRefresh = useCallback(() => {
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Promise.all([
-      queryClient.invalidateQueries({ queryKey: queryKeys.friends }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.groups }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.expenses }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.settlements }),
-      queryClient.invalidateQueries({ queryKey: ["notifications"] }),
-    ])
-      .then(() => {
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      })
-      .finally(() => {
-        setRefreshing(false);
-      });
+    try {
+      await Promise.all([
+        queryClient.refetchQueries({ queryKey: queryKeys.friends }),
+        queryClient.refetchQueries({ queryKey: queryKeys.groups }),
+        queryClient.refetchQueries({ queryKey: queryKeys.expenses }),
+        queryClient.refetchQueries({ queryKey: queryKeys.settlements }),
+        queryClient.refetchQueries({ queryKey: ["notifications"] }),
+      ]);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    } finally {
+      setRefreshing(false);
+    }
   }, [queryClient]);
 
   const clearSearchAndFilter = useCallback(() => {
     setSearch("");
     setFilter("all");
-  }, []);
+  }, [setSearch]);
 
   const handleRequestAction = useCallback(
     async (friendshipId: string, action: "accept" | "reject") => {
@@ -460,7 +438,9 @@ export default function FriendsScreen(): JSX.Element {
                   letterSpacing: -0.2,
                 }}
               >
-                Needs attention
+                {pendingRequests.length > 0
+                  ? `${pendingRequests.length} ${pendingRequests.length === 1 ? "person" : "people"} want to connect`
+                  : "Needs attention"}
               </Typography>
               <Typography
                 style={{
@@ -483,87 +463,127 @@ export default function FriendsScreen(): JSX.Element {
                 paddingHorizontal: 14,
               }}
             >
-              {pendingRequests.slice(0, 2).map((request, index) => {
-                const requester = request.friendUser!;
-                const hasDivider =
-                  index < pendingRequests.slice(0, 2).length - 1 || !!topBalanceAction;
+              {(() => {
+                const visibleRequests =
+                  pendingRequests.length > 3 ? pendingRequests.slice(0, 3) : pendingRequests;
+                const remainingCount = pendingRequests.length - visibleRequests.length;
 
                 return (
-                  <View
-                    key={request.id}
-                    style={{
-                      minHeight: 68,
-                      flexDirection: "row",
-                      alignItems: "center",
-                      borderBottomWidth: hasDivider ? 1 : 0,
-                      borderBottomColor: UI.color.border,
-                      paddingVertical: 12,
-                    }}
-                  >
-                    <AppUserAvatar user={requester} size="sm" />
-                    <View style={{ flex: 1, marginLeft: 12, marginRight: 10 }}>
-                      <Typography
-                        numberOfLines={1}
-                        style={{
-                          fontSize: 15,
-                          lineHeight: 20,
-                          color: UI.color.text,
-                          fontFamily: "IBMPlexSans_600SemiBold",
-                        }}
+                  <>
+                    {visibleRequests.map((request, index) => {
+                      const requester = request.friendUser!;
+                      const hasDivider =
+                        index < visibleRequests.length - 1 ||
+                        remainingCount > 0 ||
+                        !!topBalanceAction;
+
+                      return (
+                        <View
+                          key={request.id}
+                          style={{
+                            minHeight: 68,
+                            flexDirection: "row",
+                            alignItems: "center",
+                            borderBottomWidth: hasDivider ? 1 : 0,
+                            borderBottomColor: UI.color.border,
+                            paddingVertical: 12,
+                          }}
+                        >
+                          <AppUserAvatar user={requester} size="sm" />
+                          <View style={{ flex: 1, marginLeft: 12, marginRight: 10 }}>
+                            <Typography
+                              numberOfLines={1}
+                              style={{
+                                fontSize: 15,
+                                lineHeight: 20,
+                                color: UI.color.text,
+                                fontFamily: "IBMPlexSans_600SemiBold",
+                              }}
+                            >
+                              {requester.name}
+                            </Typography>
+                            <Typography
+                              numberOfLines={1}
+                              style={{
+                                marginTop: 1,
+                                fontSize: 13,
+                                lineHeight: 17,
+                                color: UI.color.muted,
+                                fontFamily: "IBMPlexSans_500Medium",
+                              }}
+                            >
+                              Wants to connect
+                            </Typography>
+                          </View>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={`Reject ${requester.name}'s request`}
+                            onPress={() => handleRequestAction(request.id, "reject")}
+                            hitSlop={8}
+                            style={({ pressed }) => ({
+                              width: 44,
+                              height: 44,
+                              borderRadius: 999,
+                              borderWidth: 1,
+                              borderColor: UI.color.border,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              marginRight: 8,
+                              opacity: pressed ? 0.62 : 1,
+                            })}
+                          >
+                            <icons.X size={18} color={UI.color.muted} strokeWidth={2} />
+                          </Pressable>
+                          <Pressable
+                            accessibilityRole="button"
+                            accessibilityLabel={`Accept ${requester.name}'s request`}
+                            onPress={() => handleRequestAction(request.id, "accept")}
+                            style={({ pressed }) => ({
+                              width: 44,
+                              height: 44,
+                              borderRadius: 999,
+                              backgroundColor: UI.color.text,
+                              alignItems: "center",
+                              justifyContent: "center",
+                              opacity: pressed ? 0.72 : 1,
+                            })}
+                          >
+                            <icons.Check size={18} color={UI.color.textInverse} strokeWidth={2} />
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+
+                    {remainingCount > 0 && (
+                      <Pressable
+                        accessibilityRole="button"
+                        onPress={() => router.push("/notifications")}
+                        style={({ pressed }) => ({
+                          minHeight: 56,
+                          flexDirection: "row",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          paddingVertical: 12,
+                          borderBottomWidth: !!topBalanceAction ? 1 : 0,
+                          borderBottomColor: UI.color.border,
+                          opacity: pressed ? 0.62 : 1,
+                        })}
                       >
-                        {requester.name}
-                      </Typography>
-                      <Typography
-                        numberOfLines={1}
-                        style={{
-                          marginTop: 1,
-                          fontSize: 13,
-                          lineHeight: 17,
-                          color: UI.color.muted,
-                          fontFamily: "IBMPlexSans_500Medium",
-                        }}
-                      >
-                        Wants to connect
-                      </Typography>
-                    </View>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`Reject ${requester.name}'s request`}
-                      onPress={() => handleRequestAction(request.id, "reject")}
-                      hitSlop={8}
-                      style={({ pressed }) => ({
-                        width: 44,
-                        height: 44,
-                        borderRadius: 999,
-                        borderWidth: 1,
-                        borderColor: UI.color.border,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: 8,
-                        opacity: pressed ? 0.62 : 1,
-                      })}
-                    >
-                      <icons.X size={18} color={UI.color.muted} strokeWidth={2} />
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityLabel={`Accept ${requester.name}'s request`}
-                      onPress={() => handleRequestAction(request.id, "accept")}
-                      style={({ pressed }) => ({
-                        width: 44,
-                        height: 44,
-                        borderRadius: 999,
-                        backgroundColor: UI.color.text,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        opacity: pressed ? 0.72 : 1,
-                      })}
-                    >
-                      <icons.Check size={18} color={UI.color.textInverse} strokeWidth={2} />
-                    </Pressable>
-                  </View>
+                        <Typography
+                          style={{
+                            fontSize: 14,
+                            color: UI.color.text,
+                            fontFamily: "IBMPlexSans_600SemiBold",
+                          }}
+                        >
+                          View all {pendingRequests.length} requests →
+                        </Typography>
+                        <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={2} />
+                      </Pressable>
+                    )}
+                  </>
                 );
-              })}
+              })()}
 
               {topBalanceAction && (
                 <View
@@ -597,7 +617,7 @@ export default function FriendsScreen(): JSX.Element {
                         marginTop: 1,
                         fontSize: 13,
                         lineHeight: 17,
-                        color: topBalanceAction.balance > 0 ? TEXT_SUCCESS : TEXT_DANGER,
+                        color: topBalanceAction.balance > 0 ? UI.color.success : UI.color.danger,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -682,7 +702,9 @@ export default function FriendsScreen(): JSX.Element {
       handleRequestAction,
       pendingRequests,
       preferredCurrency.code,
+      router,
       search,
+      setSearch,
       topBalanceAction,
       totalIOwe,
       totalOwedToMe,
@@ -941,37 +963,63 @@ export default function FriendsScreen(): JSX.Element {
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <ThemedStatusBar />
 
-      <View style={{ paddingTop: insets.top + 16, backgroundColor: UI.color.bg }}>
+      <Animated.View
+        entering={FadeInDown.duration(350).springify()}
+        style={{ paddingTop: insets.top + 16, backgroundColor: UI.color.bg }}
+      >
         <ScreenHeader
           title="Friends"
           rightAction={
             <IconButton
               icon={icons.Plus}
-              label="Add friend"
-              onPress={() => router.push("/friend/new")}
+              accessibilityLabel="Add friend"
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+                router.push("/friend/new");
+              }}
             />
           }
         />
-      </View>
+      </Animated.View>
 
-      <Animated.FlatList
-        data={displayRows}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        keyboardShouldPersistTaps="handled"
-        ListHeaderComponent={renderHeader}
-        ListEmptyComponent={renderEmpty}
-        contentContainerStyle={{ paddingBottom: 140 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={UI.color.text}
-            progressViewOffset={10}
+      {isGroupsError || isExpensesError || isSettlementsError ? (
+        <Animated.View
+          entering={FadeInDown.duration(350).delay(50).springify()}
+          style={{ flex: 1, justifyContent: "center" }}
+        >
+          <ErrorState
+            onRetry={() => {
+              if (isGroupsError) refetchGroups();
+              if (isExpensesError) refetchExpenses();
+              if (isSettlementsError) refetchSettlements();
+            }}
           />
-        }
-      />
+        </Animated.View>
+      ) : (
+        <Animated.View
+          entering={FadeInDown.duration(350).delay(50).springify()}
+          style={{ flex: 1 }}
+        >
+          <Animated.FlatList
+            data={displayRows}
+            keyExtractor={(item) => item.id}
+            renderItem={renderItem}
+            keyboardShouldPersistTaps="handled"
+            ListHeaderComponent={renderHeader}
+            ListEmptyComponent={renderEmpty}
+            contentContainerStyle={{ paddingBottom: 140 }}
+            showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={UI.color.text}
+                progressViewOffset={10}
+              />
+            }
+          />
+        </Animated.View>
+      )}
     </FocusAwareView>
   );
 }

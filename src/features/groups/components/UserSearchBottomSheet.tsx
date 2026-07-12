@@ -20,10 +20,6 @@ interface UserSearchBottomSheetProps {
   title?: string;
 }
 
-const TEXT_PRIMARY = UI.color.textStrong;
-const TEXT_SECONDARY = UI.color.muted;
-const SEPARATOR = UI.color.border;
-
 export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBottomSheetProps>(
   ({ onSelect, excludeUserIds = [], title = "Add Member" }, ref) => {
     const insets = useSafeAreaInsets();
@@ -124,7 +120,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
 
     const displayData = isSearchingActive ? filteredSearchResults : filteredFriends;
 
-    const renderUserItem = ({ item, index }: { item: User; index: number }) => {
+    const renderUserItem = ({ item }: { item: User; index: number }) => {
       const isExcluded = excludeUserIds.includes(item.id);
       const isProcessingThis = isProcessing === item.id;
 
@@ -133,10 +129,12 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
           style={{
             flexDirection: "row",
             alignItems: "center",
-            paddingHorizontal: 24,
-            paddingVertical: 16,
-            borderBottomWidth: 1,
-            borderBottomColor: SEPARATOR,
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            backgroundColor: UI.color.surface,
+            borderWidth: 1,
+            borderColor: UI.color.border,
+            borderRadius: UI.radius.lg,
             opacity: isExcluded ? 0.5 : 1,
           }}
         >
@@ -145,7 +143,11 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
           <View style={{ flex: 1, marginLeft: 16, marginRight: 12 }}>
             <Typography
               numberOfLines={1}
-              style={{ fontSize: 16, color: TEXT_PRIMARY, fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{
+                fontSize: 16,
+                color: UI.color.textStrong,
+                fontFamily: "IBMPlexSans_600SemiBold",
+              }}
             >
               {item.name}
             </Typography>
@@ -153,7 +155,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               numberOfLines={1}
               style={{
                 fontSize: 14,
-                color: TEXT_SECONDARY,
+                color: UI.color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 marginTop: 4,
               }}
@@ -178,19 +180,19 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
             })}
           >
             {isProcessingThis ? (
-              <Spinner size="sm" color="white" />
+              <Spinner size="sm" color={UI.color.textInverse} />
             ) : isExcluded ? (
               <Typography
                 style={{
                   fontSize: 14,
-                  color: TEXT_SECONDARY,
+                  color: UI.color.muted,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
                 Added
               </Typography>
             ) : (
-              <icons.Plus size={20} color="white" strokeWidth={1.5} />
+              <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={1.5} />
             )}
           </Pressable>
         </View>
@@ -205,7 +207,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
         enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
         backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: "#D6D2CD", width: 40 }}
+        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
@@ -217,11 +219,11 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               paddingHorizontal: 24,
               paddingVertical: 16,
               borderBottomWidth: 1,
-              borderBottomColor: SEPARATOR,
+              borderBottomColor: UI.color.border,
             }}
           >
             <Typography
-              style={{ fontSize: 24, color: TEXT_PRIMARY, fontFamily: "Sora_600SemiBold" }}
+              style={{ fontSize: 24, color: UI.color.textStrong, fontFamily: "Sora_600SemiBold" }}
             >
               {title}
             </Typography>
@@ -233,7 +235,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               paddingHorizontal: 24,
               paddingVertical: 16,
               borderBottomWidth: 1,
-              borderBottomColor: SEPARATOR,
+              borderBottomColor: UI.color.border,
             }}
           >
             <View
@@ -242,36 +244,36 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
                 alignItems: "center",
                 backgroundColor: UI.color.control,
                 borderWidth: 1,
-                borderColor: SEPARATOR,
+                borderColor: UI.color.border,
                 borderRadius: UI.radius.lg,
                 height: 48,
                 paddingHorizontal: 16,
               }}
             >
-              <icons.Search size={18} color={TEXT_SECONDARY} strokeWidth={1.5} />
+              <icons.Search size={18} color={UI.color.muted} strokeWidth={1.5} />
               <BottomSheetTextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder="Search by name or email..."
-                placeholderTextColor={TEXT_SECONDARY}
+                placeholderTextColor={UI.color.muted}
                 autoCapitalize="none"
                 style={{
                   flex: 1,
                   marginLeft: 12,
                   fontFamily: "IBMPlexSans_500Medium",
-                  color: TEXT_PRIMARY,
+                  color: UI.color.textStrong,
                   fontSize: 16,
                 }}
               />
               {isSearching ? (
-                <Spinner size="sm" color={TEXT_SECONDARY} />
+                <Spinner size="sm" color={UI.color.muted} />
               ) : searchQuery.length > 0 ? (
                 <Pressable
                   accessibilityRole="button"
                   onPress={() => setSearchQuery("")}
                   hitSlop={8}
                 >
-                  <icons.XCircle size={18} color={TEXT_SECONDARY} strokeWidth={1.5} />
+                  <icons.XCircle size={18} color={UI.color.muted} strokeWidth={1.5} />
                 </Pressable>
               ) : null}
             </View>
@@ -282,7 +284,11 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
             data={displayData}
             keyExtractor={(item) => item.id}
             renderItem={renderUserItem}
-            contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 24) }}
+            ItemSeparatorComponent={() => <View style={{ height: 8 }} />}
+            contentContainerStyle={{
+              paddingHorizontal: 24,
+              paddingBottom: Math.max(insets.bottom, 24),
+            }}
             keyboardShouldPersistTaps="handled"
             ListEmptyComponent={
               <View

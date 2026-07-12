@@ -73,7 +73,7 @@ export function ExpenseFormSelectors({
               >
                 <CatIcon
                   size={18}
-                  color={isSelected ? "#FFFFFF" : UI.color.textStrong}
+                  color={isSelected ? UI.color.textInverse : UI.color.textStrong}
                   strokeWidth={isSelected ? 2 : 1.5}
                 />
                 <Typography
@@ -130,7 +130,7 @@ export function ExpenseFormSelectors({
                   style={{
                     fontSize: 15,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? "#FFFFFF" : UI.color.textStrong,
+                    color: isSelected ? UI.color.textInverse : UI.color.textStrong,
                   }}
                 >
                   {u.id === currentUserId ? "You" : u.name.split(" ")[0]}

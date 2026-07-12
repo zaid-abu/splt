@@ -5,6 +5,7 @@ import { View, Pressable } from "react-native";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { UI } from "@/components/ui/native-ui";
+import { formatActivityDate } from "@/utils/date";
 import * as icons from "lucide-react-native";
 import type { Group } from "@/types";
 
@@ -12,16 +13,74 @@ interface GroupCardProps {
   group: Group;
   balance?: number;
   currency?: string;
+  latestExpenseAt?: number;
   index?: number;
   isFirst?: boolean;
   isLast?: boolean;
   onPress?: () => void;
 }
 
+function BalancePill({ balance, currency }: { balance: number; currency: string }): JSX.Element {
+  if (Math.abs(balance) <= 0.005) {
+    return (
+      <View
+        style={{
+          paddingHorizontal: 10,
+          height: 26,
+          borderRadius: UI.radius.pill,
+          backgroundColor: UI.color.subtle,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Typography
+          style={{
+            fontSize: 11,
+            color: UI.color.muted,
+            fontFamily: "IBMPlexSans_600SemiBold",
+            letterSpacing: -0.2,
+          }}
+        >
+          Settled
+        </Typography>
+      </View>
+    );
+  }
+
+  const isNegative = balance < 0;
+  const bgColor = isNegative ? UI.color.dangerTint : UI.color.successTint;
+  const textColor = isNegative ? UI.color.danger : UI.color.success;
+
+  return (
+    <View
+      style={{
+        paddingHorizontal: 10,
+        height: 26,
+        borderRadius: UI.radius.pill,
+        backgroundColor: bgColor,
+        alignItems: "center",
+        justifyContent: "center",
+      }}
+    >
+      <Typography
+        style={{
+          fontSize: 12,
+          color: textColor,
+          fontFamily: "IBMPlexSans_600SemiBold",
+          letterSpacing: -0.2,
+        }}
+      >
+        {formatAmount(Math.abs(balance), currency)}
+      </Typography>
+    </View>
+  );
+}
+
 export const GroupCard = React.memo(function GroupCard({
   group,
   balance = 0,
   currency = "USD",
+  latestExpenseAt,
   index = 0,
   isFirst = false,
   isLast = false,
@@ -29,18 +88,11 @@ export const GroupCard = React.memo(function GroupCard({
 }: GroupCardProps): JSX.Element {
   const memberCount = group.members.length;
 
-  let subAmountText = "";
-  let subAmountColor = UI.color.muted;
-
-  if (balance < 0) {
-    subAmountText = `You owe ${formatAmount(Math.abs(balance), currency)}`;
-    subAmountColor = UI.color.danger;
-  } else if (balance > 0) {
-    subAmountText = `Owes you ${formatAmount(balance, currency)}`;
-    subAmountColor = UI.color.success;
-  } else {
-    subAmountText = "Settled up";
+  const subtitleParts = [`${memberCount} participant${memberCount !== 1 ? "s" : ""}`];
+  if (latestExpenseAt) {
+    subtitleParts.push(formatActivityDate(new Date(latestExpenseAt)));
   }
+  const subtitle = subtitleParts.join(" · ");
 
   return (
     <Pressable
@@ -61,7 +113,6 @@ export const GroupCard = React.memo(function GroupCard({
         borderTopRightRadius: isFirst ? UI.radius.lg : 0,
         borderBottomLeftRadius: isLast ? UI.radius.lg : 0,
         borderBottomRightRadius: isLast ? UI.radius.lg : 0,
-        opacity: pressed ? 0.5 : 1,
       })}
     >
       {/* Leading Icon */}
@@ -90,31 +141,15 @@ export const GroupCard = React.memo(function GroupCard({
             marginTop: 4,
           }}
         >
-          {memberCount} participant{memberCount !== 1 ? "s" : ""}
+          {subtitle}
         </Typography>
       </View>
 
-      {/* Trailing Balance */}
-      <View style={{ alignItems: "flex-end", maxWidth: 118 }}>
-        <Typography
-          numberOfLines={1}
-          adjustsFontSizeToFit
-          style={{
-            fontSize: 14,
-            color: subAmountColor,
-            fontFamily: "IBMPlexSans_600SemiBold",
-          }}
-        >
-          {subAmountText}
-        </Typography>
+      {/* Trailing Balance Pill + Chevron */}
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+        <BalancePill balance={balance} currency={currency} />
+        <icons.ChevronRight size={16} color={UI.color.muted} strokeWidth={1.75} />
       </View>
-
-      <icons.ChevronRight
-        size={16}
-        color={UI.color.muted}
-        strokeWidth={1.75}
-        style={{ marginLeft: 10 }}
-      />
     </Pressable>
   );
 });

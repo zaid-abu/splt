@@ -229,14 +229,29 @@
 | GroupSettings icon picker       | ✅     | `#FFFFFF` → `UI.color.textInverse` for selected state             |
 | CurrencySelector dark colors    | ✅     | Hardcoded `#F7F1EA`/etc. → `UI.color.subtle`                      |
 
-## Upcoming / Backlog
+## Phase 17: Haptics + Polish Pass (WIP)
 
-| Error boundaries per screen | 📋 | Global error boundary exists |
-| Pull-to-refresh on lists | 📋 | Hook exists (useRefresh) |
-| Push notifications | 📋 | Not yet implemented |
-| Real-time subscriptions | 📋 | Supabase real-time not yet used |
-| Comments on expenses | 📋 | Schema and API exist, UI pending |
-| Image upload (avatars) | 📋 | Service files exist, UI pending |
-| Exchange rates auto-refresh | 📋 | Fetch on mount, no periodic refresh |
-| Deep linking | 📋 | Setup exists, needs testing |
-| Accessibility audit | 📋 | Labels exist, needs comprehensive review |
+| Item                                         | Status | Notes                                                                                                                            |
+| -------------------------------------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| ProfileScreen loading/error states           | ✅     | Skeleton, ErrorState, pull-to-refresh, Card/HapticButton/SectionLabel                                                            |
+| edit.tsx + change-password.tsx               | ✅     | BottomActionBar, password toggle/strength, HapticButton                                                                          |
+| ActivityItem settlement routing              | ✅     | Navigates to group or friend page                                                                                                |
+| Activity API settlement query fix            | ✅     | Joined user relations on settlements                                                                                             |
+| DatePicker dark mode colors                  | ✅     | selected_label/today_label colors, today bg → UI.color.control                                                                   |
+| UserSearchBottomSheet dark mode              | ✅     | Inline UI.color.* reads, handle/spinner colors fixed                                                                             |
+| GroupDetailScreen haptics                    | ✅     | All 6 Pressables have Haptics.* calls                                                                                            |
+| ExpenseDetailScreen haptics + colors         | ✅     | Haptics on all pressables; #FFFFFF → UI.color.textInverse (6 places)                                                             |
+| FriendDetailScreen haptics + shared Skeleton | ✅     | Custom SkeletonBlock → shared Skeleton; module consts → inline; 9 haptics                                                        |
+| SettlementScreen loading + colors            | ✅     | Skeleton loading; 7 #FFF → UI.color.textInverse; 3 haptics                                                                       |
+| GroupSettingsScreen ConfirmationSheet        | ✅     | Custom ConfirmationSheet → shared; skeleton loading; TEXT_DANGER fix                                                             |
+| FriendsScreen module constants + IconButton  | ✅     | TEXT_DANGER/TEXT_SUCCESS → inline; custom IconButton → shared                                                                    |
+| AnalyticsScreen shared components            | ✅     | Custom SectionLabel/AnalyticsCard → shared; #000/#FFF fixed                                                                      |
+| NotificationsScreen pull-to-refresh          | ✅     | Added RefreshControl                                                                                                             |
+| Shared SectionLabel style prop               | ✅     | Added optional style prop for margin customization                                                                               |
+| Shared ConfirmationSheet type fix            | ✅     | sheetRef: RefObject<BottomSheetModal \| null>                                                                                    |
+| NewExpenseScreen shared components           | ✅     | SurfaceCard→Card, HeaderButton→IconButton, ERROR const→inline, SearchField→shared, Section→SectionLabel; haptics on submit/close |
+| DashboardScreen polish                       | ✅     | Already uses Card/Skeleton/ListRowSkeleton/MoneySignal/HapticButton — no further extraction needed                               |
+| Auth screens AuthFormLayout                  | ✅     | Created shared AuthFormLayout; login/register extracted; forgot-password partially shares patterns                               |
+| Shared SectionLabel style prop               | ✅     | Added optional style prop to native-ui.tsx SectionLabel                                                                          |
+| Shared ConfirmationSheet type fix            | ✅     | sheetRef: RefObject<BottomSheetModal                                                                                             | null> |
+| Auth screen line count reduction             | ✅     | -53 total lines; 3 files → 4 files with shared layout component                                                                  |

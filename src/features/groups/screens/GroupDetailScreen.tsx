@@ -6,6 +6,7 @@ import { useCallback, useState, useMemo } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { View, ScrollView, Pressable, RefreshControl, StyleSheet } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -13,15 +14,17 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { UI, SectionLabel, TYPO } from "@/components/ui/native-ui";
+import { UI, SectionLabel, TYPO, PressableScale } from "@/components/ui/native-ui";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import { Skeleton, ListRowSkeleton } from "@/components/ui/Skeleton";
 import * as icons from "lucide-react-native";
 import { useAuth } from "@/context/AppContext";
+import { useUIStore } from "@/store/useUIStore";
 import { useGroupDetailData } from "@/features/groups/hooks/useGroupDetailData";
 import { BalanceCard } from "@/features/dashboard/components/BalanceCard";
 import { queryKeys } from "@/queries/keys";
+import { ErrorState } from "@/components/ui/ErrorState";
 
 function EmptyIconShell({ icon: Icon }: { icon: any }): JSX.Element {
   return (
@@ -60,15 +63,20 @@ export default function GroupDetailScreen(): JSX.Element {
     owedToYou,
     userById,
     isLoading,
+    isError,
+    refetch,
   } = useGroupDetailData(id || "", currentUser?.id);
 
   const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
+  const isAllSettled = youOwe === 0 && owedToYou === 0;
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: queryKeys.groupDetails(id || "") });
+    await queryClient.refetchQueries({ queryKey: queryKeys.groupDetails(id || "") });
     setRefreshing(false);
   }, [queryClient, id]);
+
+  const isDark = useUIStore((s) => s.isDarkMode);
 
   const styles = useMemo(
     () =>
@@ -190,22 +198,6 @@ export default function GroupDetailScreen(): JSX.Element {
           fontFamily: "IBMPlexSans_500Medium",
           marginTop: 2,
         },
-        textLabel: {
-          fontSize: 13,
-          color: UI.color.text,
-          fontFamily: "IBMPlexSans_600SemiBold",
-          marginBottom: 16,
-        },
-        whiteButtonText: {
-          fontSize: 14,
-          color: "#FFFFFF",
-          fontFamily: "IBMPlexSans_600SemiBold",
-        },
-        actionButtonText: {
-          fontSize: 16,
-          color: "#FFFFFF",
-          fontFamily: "IBMPlexSans_600SemiBold",
-        },
         absoluteBottom: {
           position: "absolute",
           bottom: 0,
@@ -219,16 +211,6 @@ export default function GroupDetailScreen(): JSX.Element {
           backgroundColor: UI.color.control,
           borderWidth: 1,
           borderColor: UI.color.border,
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "row",
-          gap: 10,
-        },
-        actionButtonPrimary: {
-          flex: 1.5,
-          height: 56,
-          borderRadius: UI.radius.pill,
-          backgroundColor: UI.color.text,
           alignItems: "center",
           justifyContent: "center",
           flexDirection: "row",
@@ -274,14 +256,6 @@ export default function GroupDetailScreen(): JSX.Element {
           padding: 24,
           alignItems: "center",
         },
-        inviteButton: {
-          paddingHorizontal: 20,
-          minHeight: 44,
-          backgroundColor: UI.color.text,
-          borderRadius: UI.radius.pill,
-          alignItems: "center",
-          justifyContent: "center",
-        },
         transactionHeader: {
           flexDirection: "row",
           alignItems: "center",
@@ -296,9 +270,21 @@ export default function GroupDetailScreen(): JSX.Element {
           paddingVertical: 36,
           alignItems: "center",
         },
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }),
-    []
+    [isDark]
   );
+
+  const memberBalances = useMemo(() => {
+    const map = new Map<string, number>();
+    if (!group) return map;
+    group.members.forEach((m) => map.set(m.userId, 0));
+    groupDebts.forEach((debt) => {
+      map.set(debt.fromUserId, (map.get(debt.fromUserId) || 0) - debt.amount);
+      map.set(debt.toUserId, (map.get(debt.toUserId) || 0) + debt.amount);
+    });
+    return map;
+  }, [group, groupDebts]);
 
   if (isLoading) {
     return (
@@ -328,6 +314,17 @@ export default function GroupDetailScreen(): JSX.Element {
               <ListRowSkeleton />
             </View>
           </View>
+        </View>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={[styles.screen, { paddingTop: insets.top }]}>
+        <ThemedStatusBar />
+        <View style={styles.screenCenter}>
+          <ErrorState onRetry={() => refetch()} />
         </View>
       </View>
     );
@@ -380,6 +377,7 @@ export default function GroupDetailScreen(): JSX.Element {
           accessibilityRole="button"
           accessibilityLabel="Go back"
           onPress={() => {
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             if (router.canGoBack()) {
               router.back();
             } else {
@@ -401,7 +399,10 @@ export default function GroupDetailScreen(): JSX.Element {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Group settings"
-          onPress={() => router.push(`/group/${group.id}/settings`)}
+          onPress={() => {
+            Haptics.selectionAsync();
+            router.push(`/group/${group.id}/settings`);
+          }}
           style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
         >
           <icons.Settings size={20} color={UI.color.text} strokeWidth={1.8} />
@@ -421,6 +422,77 @@ export default function GroupDetailScreen(): JSX.Element {
             />
           }
         >
+          {/* Member Avatars Row */}
+          <Animated.View
+            entering={FadeInDown.duration(400).springify()}
+            style={[styles.sectionPadding, { marginBottom: 20 }]}
+          >
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{
+                paddingHorizontal: 0,
+                gap: 10,
+                minHeight: 56,
+                alignItems: "center",
+              }}
+            >
+              {group.members.map((member) => {
+                const isMe = member.userId === currentUser.id;
+                const balance = memberBalances.get(member.userId) ?? 0;
+                const hasBalance = Math.abs(balance) > 0.005;
+                return (
+                  <Pressable
+                    key={member.userId}
+                    accessibilityRole="button"
+                    accessibilityLabel={isMe ? "You" : member.user.name}
+                    onPress={() => {
+                      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                      router.push(`/friend/${member.userId}`);
+                    }}
+                    style={({ pressed }) => ({
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 10,
+                      paddingRight: 14,
+                      paddingLeft: 6,
+                      paddingVertical: 6,
+                      borderRadius: UI.radius.pill,
+                      backgroundColor: UI.color.control,
+                      borderWidth: 1,
+                      borderColor: UI.color.border,
+                      opacity: pressed ? 0.7 : 1,
+                    })}
+                  >
+                    <AppUserAvatar user={member.user} size="sm" />
+                    <Typography
+                      numberOfLines={1}
+                      style={{
+                        fontSize: 14,
+                        color: UI.color.text,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
+                      {isMe ? "You" : member.user.name.split(" ")[0]}
+                    </Typography>
+                    {hasBalance && (
+                      <Typography
+                        style={{
+                          fontSize: 12,
+                          color: balance > 0 ? UI.color.success : UI.color.danger,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                          marginLeft: -4,
+                        }}
+                      >
+                        {formatAmount(Math.abs(balance), group.currency)}
+                      </Typography>
+                    )}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </Animated.View>
+
           <Animated.View
             entering={FadeInDown.duration(400).springify()}
             style={styles.sectionPadding}
@@ -440,7 +512,16 @@ export default function GroupDetailScreen(): JSX.Element {
             entering={FadeInDown.duration(400).delay(50).springify()}
             style={[styles.sectionPadding, { marginBottom: 40 }]}
           >
-            <SectionLabel>Group Balances</SectionLabel>
+            <Typography
+              style={{
+                fontSize: 16,
+                color: UI.color.text,
+                fontFamily: "IBMPlexSans_600SemiBold",
+                marginBottom: 14,
+              }}
+            >
+              Group Balances
+            </Typography>
             <View style={styles.listCard}>
               {groupDebts.length === 0 ? (
                 <View style={styles.emptyState}>
@@ -474,7 +555,7 @@ export default function GroupDetailScreen(): JSX.Element {
                           borderBottomWidth: 1,
                           borderBottomColor: UI.color.border,
                         },
-                        pressed && { backgroundColor: UI.color.subtle },
+                        pressed && { backgroundColor: UI.color.subtle, opacity: 0.85 },
                       ]}
                     >
                       <View style={styles.debtUserRow}>
@@ -520,7 +601,10 @@ export default function GroupDetailScreen(): JSX.Element {
                 </Typography>
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => router.push(`/group/${group.id}/settings`)}
+                  onPress={() => {
+                    Haptics.selectionAsync();
+                    router.push(`/group/${group.id}/settings`);
+                  }}
                   style={({ pressed }) => ({
                     paddingHorizontal: 20,
                     minHeight: 44,
@@ -550,8 +634,22 @@ export default function GroupDetailScreen(): JSX.Element {
             style={[styles.sectionPadding, { marginBottom: 40 }]}
           >
             <View style={styles.transactionHeader}>
-              <SectionLabel>Transactions</SectionLabel>
-              <Typography style={styles.textLabel}>
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: UI.color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                Transactions
+              </Typography>
+              <Typography
+                style={{
+                  fontSize: 13,
+                  color: UI.color.muted,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
                 Total: {formatAmount(totalExpensesInGroupCurrency, group.currency)}
               </Typography>
             </View>
@@ -592,43 +690,52 @@ export default function GroupDetailScreen(): JSX.Element {
 
       <View style={styles.absoluteBottom}>
         <BottomActionBar>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Settle up"
-            onPress={() => router.push(`/group/${group.id}/settle`)}
-            style={({ pressed }) => [styles.actionButtonSecondary, pressed && styles.pressed]}
-          >
-            <icons.Handshake size={20} color={UI.color.text} strokeWidth={1.8} />
-            <Typography style={TYPO.semi(16)}>Settle Up</Typography>
-          </Pressable>
+          {!isAllSettled && (
+            <PressableScale
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.push(`/group/${group.id}/settle`);
+              }}
+              style={{ flex: 1, minHeight: 56 }}
+            >
+              <View style={styles.actionButtonSecondary}>
+                <icons.Handshake size={20} color={UI.color.ink} strokeWidth={1.8} />
+                <Typography style={{ ...TYPO.semi(16), color: UI.color.ink }}>Settle Up</Typography>
+              </View>
+            </PressableScale>
+          )}
 
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="Add expense"
-            onPress={() => router.push(`/expense/new?groupId=${group.id}`)}
-            style={({ pressed }) => ({
-              flex: 1.5,
-              height: 56,
-              borderRadius: UI.radius.pill,
-              backgroundColor: UI.color.text,
-              alignItems: "center",
-              justifyContent: "center",
-              flexDirection: "row",
-              gap: 10,
-              opacity: pressed ? 0.78 : 1,
-            })}
+          <PressableScale
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              router.push(`/expense/new?groupId=${group.id}`);
+            }}
+            style={{ flex: isAllSettled ? 1 : 1.5, minHeight: 56 }}
           >
-            <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={2.5} />
-            <Typography
+            <View
               style={{
-                fontSize: 16,
-                color: UI.color.textInverse,
-                fontFamily: "IBMPlexSans_600SemiBold",
+                flex: 1,
+                height: 56,
+                borderRadius: UI.radius.pill,
+                backgroundColor: UI.color.text,
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "row",
+                gap: 10,
               }}
             >
-              Add Expense
-            </Typography>
-          </Pressable>
+              <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={2.5} />
+              <Typography
+                style={{
+                  fontSize: 16,
+                  color: UI.color.textInverse,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                }}
+              >
+                Add Expense
+              </Typography>
+            </View>
+          </PressableScale>
         </BottomActionBar>
       </View>
     </View>
