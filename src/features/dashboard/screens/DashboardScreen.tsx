@@ -1,6 +1,6 @@
-import type { ComponentType, JSX } from "react";
-import { useCallback, useMemo, useState, useEffect, useRef } from "react";
-import { ScrollView, View, RefreshControl, Pressable, StyleSheet } from "react-native";
+import type { JSX } from "react";
+import { useCallback, useMemo, useState, useRef } from "react";
+import { ScrollView, View, RefreshControl, StyleSheet } from "react-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
@@ -8,24 +8,12 @@ import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
 import { Typography } from "heroui-native";
 import { useQueryClient } from "@tanstack/react-query";
-import Animated, {
-  FadeInDown,
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from "react-native-reanimated";
-
-import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import type { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { TransactionRow } from "@/features/expenses/components/TransactionRow";
-import { GroupRow } from "@/features/groups/components/GroupRow";
-import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { UI, TYPO, FilterPill, IconButton } from "@/components/ui/native-ui";
+import { UI, IconButton } from "@/components/ui/native-ui";
 import { HapticButton } from "@/components/ui/HapticButton";
-import { Card } from "@/components/ui/Card";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { Skeleton, ListRowSkeleton } from "@/components/ui/Skeleton";
-import { MoneySignal } from "@/components/ui/MoneySignal";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -39,92 +27,13 @@ import { useAnalytics } from "@/features/analytics/hooks/useAnalytics";
 import { getGreeting } from "@/utils/date";
 import type { User } from "@/types";
 
-function SectionLabel({
-  children,
-  rightAction,
-}: {
-  children: string;
-  rightAction?: JSX.Element;
-}): JSX.Element {
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 14,
-      }}
-    >
-      <Typography
-        style={{
-          fontSize: 18,
-          color: UI.color.text,
-          fontFamily: "IBMPlexSans_600SemiBold",
-          letterSpacing: -0.2,
-        }}
-      >
-        {children}
-      </Typography>
-      {rightAction}
-    </View>
-  );
-}
-
-type LucideIcon = ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
-
-function IconShell({ icon: Icon, tone }: { icon: LucideIcon; tone: string }): JSX.Element {
-  return (
-    <View
-      style={{
-        width: 44,
-        height: 44,
-        borderRadius: UI.radius.lg,
-        backgroundColor:
-          tone === "danger"
-            ? UI.color.dangerTint
-            : tone === "success"
-              ? UI.color.successTint
-              : UI.color.control,
-        borderWidth: 1,
-        borderColor: UI.color.border,
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <Icon
-        size={20}
-        color={
-          tone === "danger"
-            ? UI.color.danger
-            : tone === "success"
-              ? UI.color.success
-              : UI.color.muted
-        }
-        strokeWidth={2}
-      />
-    </View>
-  );
-}
-
-function EmptyIconShell({ icon: Icon }: { icon: LucideIcon }): JSX.Element {
-  return (
-    <View
-      style={{
-        width: 56,
-        height: 56,
-        borderRadius: UI.radius.lg,
-        backgroundColor: UI.color.control,
-        borderWidth: 1,
-        borderColor: UI.color.border,
-        alignItems: "center",
-        justifyContent: "center",
-        marginBottom: 16,
-      }}
-    >
-      <Icon size={24} color={UI.color.muted} strokeWidth={1.5} />
-    </View>
-  );
-}
+import { BalanceWidget } from "../components/BalanceWidget";
+import { QuickActions } from "../components/QuickActions";
+import { AttentionList } from "../components/AttentionList";
+import { DashboardGroups } from "../components/DashboardGroups";
+import { DashboardActivity } from "../components/DashboardActivity";
+import { DashboardSkeleton } from "../components/DashboardSkeleton";
+import { SettleUpSheet } from "../components/SettleUpSheet";
 
 export default function DashboardScreen(): JSX.Element {
   const router = useRouter();
@@ -159,109 +68,19 @@ export default function DashboardScreen(): JSX.Element {
   const { data: notifications = [] } = useNotifications(currentUser?.id);
   const hasNotifications = notifications.length > 0;
 
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        screen: { flex: 1, backgroundColor: UI.color.bg },
-        row: { flexDirection: "row", alignItems: "center" },
-        rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
-        surfaceCard: {
-          backgroundColor: UI.color.surface,
-          borderWidth: 1,
-          borderColor: UI.color.border,
-          borderRadius: UI.radius.lg,
-        },
-        cardPadded: {
-          backgroundColor: UI.color.surface,
-          borderWidth: 1,
-          borderColor: UI.color.border,
-          borderRadius: UI.radius.lg,
-          padding: 14,
-        },
-        textTitle: { fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
-        textSubtitle: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" },
-        textSemi: { fontFamily: "IBMPlexSans_600SemiBold", color: UI.color.text },
-        textMedium: { fontFamily: "IBMPlexSans_500Medium", color: UI.color.muted },
-        sectionPad: { paddingHorizontal: UI.space.page },
-        iconShell: {
-          width: 44,
-          height: 44,
-          borderRadius: UI.radius.lg,
-          backgroundColor: UI.color.control,
-          borderWidth: 1,
-          borderColor: UI.color.border,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        emptyIconShell: {
-          width: 56,
-          height: 56,
-          borderRadius: UI.radius.lg,
-          backgroundColor: UI.color.control,
-          borderWidth: 1,
-          borderColor: UI.color.border,
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: 16,
-        },
-        pillButton: {
-          minHeight: 44,
-          paddingHorizontal: 14,
-          borderRadius: UI.radius.pill,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        iconButton: {
-          width: 44,
-          height: 44,
-          borderRadius: UI.radius.pill,
-          backgroundColor: UI.color.control,
-          borderWidth: 1,
-          borderColor: UI.color.border,
-          alignItems: "center",
-          justifyContent: "center",
-        },
-        pressed: { opacity: 0.7 },
-      }),
-    []
-  );
-
   const [refreshing, setRefreshing] = useState(false);
   const [activityFilter, setActivityFilter] = useState<"all" | "paid" | "owe">("all");
   const queryClient = useQueryClient();
 
   const settleSheetRef = useRef<BottomSheetModal>(null);
 
-  const renderSettleBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        pressBehavior="close"
-        opacity={0.4}
-      />
-    ),
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        screen: { flex: 1, backgroundColor: UI.color.bg },
+      }),
     []
   );
-
-  const balanceScale = useSharedValue(1);
-  const balanceAnimatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: balanceScale.value }],
-  }));
-
-  useEffect(() => {
-    if (!isFirstLoad) {
-      const timer = setTimeout(() => {
-        balanceScale.value = withSpring(1.02, { damping: 10, stiffness: 120 });
-        setTimeout(() => {
-          balanceScale.value = withSpring(1, { damping: 12, stiffness: 100 });
-        }, 200);
-      }, 400);
-      return () => clearTimeout(timer);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isFirstLoad]);
 
   const { data: perUserBalances = new Map() } = useOverallBalances(
     currentUser.id,
@@ -402,6 +221,18 @@ export default function DashboardScreen(): JSX.Element {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   }, [queryClient]);
 
+  const handleSettleUp = useCallback(() => {
+    if (owedUsers.length > 0 && oweUsers.length > 0) {
+      settleSheetRef.current?.present();
+    } else if (owedToYou > 0) {
+      router.push(`/settle/${owedUsers[0].id}`);
+    } else if (youOwe > 0) {
+      router.push(`/settle/${oweUsers[0].id}`);
+    } else {
+      router.push("/(tabs)/friends");
+    }
+  }, [owedUsers, oweUsers, owedToYou, youOwe, router]);
+
   return (
     <View style={styles.screen}>
       <ThemedStatusBar />
@@ -483,62 +314,7 @@ export default function DashboardScreen(): JSX.Element {
           />
         </View>
       ) : isFirstLoad ? (
-        <View style={{ flex: 1, paddingTop: 40, paddingHorizontal: UI.space.page }}>
-          <Animated.View
-            entering={FadeInDown.duration(350).springify()}
-            style={{ marginBottom: 18 }}
-          >
-            <Skeleton height={170} radius={UI.radius.lg} />
-          </Animated.View>
-          <Animated.View
-            entering={FadeInDown.duration(350).delay(35).springify()}
-            style={{ marginBottom: 24 }}
-          >
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <View style={{ flex: 1 }}>
-                <Skeleton height={56} radius={999} />
-              </View>
-              <View style={{ flex: 1 }}>
-                <Skeleton height={56} radius={999} />
-              </View>
-            </View>
-          </Animated.View>
-          <Animated.View
-            entering={FadeInDown.duration(350).delay(70).springify()}
-            style={{ marginBottom: 28 }}
-          >
-            <View style={{ marginBottom: 14 }}>
-              <Skeleton height={18} width={120} radius={6} />
-            </View>
-            <View
-              style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-              }}
-            >
-              <ListRowSkeleton />
-              <ListRowSkeleton />
-            </View>
-          </Animated.View>
-          <Animated.View entering={FadeInDown.duration(350).delay(105).springify()}>
-            <View style={{ marginBottom: 14 }}>
-              <Skeleton height={18} width={100} radius={6} />
-            </View>
-            <View
-              style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-              }}
-            >
-              <ListRowSkeleton />
-              <ListRowSkeleton />
-            </View>
-          </Animated.View>
-        </View>
+        <DashboardSkeleton />
       ) : (
         <ScrollView
           style={{ flex: 1 }}
@@ -552,191 +328,22 @@ export default function DashboardScreen(): JSX.Element {
             />
           }
         >
-          <Animated.View
-            entering={FadeInDown.duration(350).springify()}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 18 }}
-          >
-            <Animated.View
-              style={[
-                {
-                  backgroundColor:
-                    balanceTone === "danger"
-                      ? UI.color.dangerTint
-                      : balanceTone === "success"
-                        ? UI.color.successTint
-                        : UI.color.surface,
-                  borderRadius: UI.radius.lg,
-                  borderWidth: 1,
-                  borderColor: UI.color.border,
-                  padding: 16,
-                },
-                balanceAnimatedStyle,
-              ]}
-            >
-              <View style={{ flexDirection: "row", alignItems: "flex-start", gap: 12 }}>
-                <IconShell
-                  icon={
-                    balanceTone === "danger"
-                      ? icons.ArrowUpRight
-                      : balanceTone === "success"
-                        ? icons.ArrowDownLeft
-                        : icons.Check
-                  }
-                  tone={balanceTone}
-                />
-                <View style={{ flex: 1 }}>
-                  <Typography
-                    style={{
-                      fontSize: 12,
-                      color: UI.color.muted,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                    }}
-                  >
-                    Today&apos;s money state
-                  </Typography>
-                  <Typography
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                    style={{
-                      marginTop: 4,
-                      fontSize: 24,
-                      color: UI.color.textStrong,
-                      fontFamily: "Sora_600SemiBold",
-                      letterSpacing: -0.2,
-                    }}
-                  >
-                    {balanceTitle}
-                  </Typography>
-                  <Typography
-                    style={{
-                      marginTop: 5,
-                      fontSize: 14,
-                      color: UI.color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
-                    }}
-                  >
-                    {balanceSubtitle}
-                  </Typography>
-                </View>
-              </View>
+          <BalanceWidget
+            youOwe={youOwe}
+            owedToYou={owedToYou}
+            netBalance={netBalance}
+            balanceTone={balanceTone}
+            balanceTitle={balanceTitle}
+            balanceSubtitle={balanceSubtitle}
+            totalSpent={totalSpent}
+            expenseCount={expenseCount}
+            preferredCurrency={preferredCurrency}
+          />
 
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 16 }}>
-                <MoneySignal
-                  label="You owe"
-                  value={formatAmount(youOwe, preferredCurrency.code)}
-                  tone={youOwe > 0 ? "danger" : "neutral"}
-                />
-                <MoneySignal
-                  label="Owed to you"
-                  value={formatAmount(owedToYou, preferredCurrency.code)}
-                  tone={owedToYou > 0 ? "success" : "neutral"}
-                />
-              </View>
-
-              {totalSpent > 0 && (
-                <>
-                  <View
-                    style={{
-                      height: 1,
-                      backgroundColor: UI.color.border,
-                      marginTop: 14,
-                      marginBottom: 12,
-                    }}
-                  />
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => router.push("/stats")}
-                    style={({ pressed }) => ({
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      opacity: pressed ? 0.7 : 1,
-                    })}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-                      <View
-                        style={{
-                          width: 36,
-                          height: 36,
-                          borderRadius: 10,
-                          backgroundColor: UI.color.control,
-                          borderWidth: 1,
-                          borderColor: UI.color.border,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <icons.BarChart3 size={16} color={UI.color.muted} strokeWidth={1.75} />
-                      </View>
-                      <View>
-                        <Typography
-                          style={{
-                            fontSize: 13,
-                            color: UI.color.muted,
-                            fontFamily: "IBMPlexSans_500Medium",
-                          }}
-                        >
-                          This month
-                        </Typography>
-                        <Typography
-                          style={{
-                            fontSize: 16,
-                            color: UI.color.text,
-                            fontFamily: "IBMPlexSans_600SemiBold",
-                          }}
-                        >
-                          {formatAmount(totalSpent, preferredCurrency.code)}
-                        </Typography>
-                      </View>
-                    </View>
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-                      <Typography
-                        style={{
-                          fontSize: 13,
-                          color: UI.color.muted,
-                          fontFamily: "IBMPlexSans_500Medium",
-                        }}
-                      >
-                        {expenseCount} expense{expenseCount !== 1 ? "s" : ""}
-                      </Typography>
-                      <icons.ChevronRight size={16} color={UI.color.muted} strokeWidth={1.75} />
-                    </View>
-                  </Pressable>
-                </>
-              )}
-            </Animated.View>
-          </Animated.View>
-
-          <Animated.View
-            entering={FadeInDown.duration(350).delay(35).springify()}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
-          >
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <View style={{ flex: 1 }}>
-                <HapticButton tone="brand" onPress={() => router.push("/expense/new")}>
-                  + Add Expense
-                </HapticButton>
-              </View>
-              <View style={{ flex: 1 }}>
-                <HapticButton
-                  tone="outlined"
-                  onPress={() => {
-                    if (owedUsers.length > 0 && oweUsers.length > 0) {
-                      settleSheetRef.current?.present();
-                    } else if (owedToYou > 0) {
-                      router.push(`/settle/${owedUsers[0].id}`);
-                    } else if (youOwe > 0) {
-                      router.push(`/settle/${oweUsers[0].id}`);
-                    } else {
-                      router.push("/(tabs)/friends");
-                    }
-                  }}
-                >
-                  Settle up
-                </HapticButton>
-              </View>
-            </View>
-          </Animated.View>
+          <QuickActions
+            onAddExpense={() => router.push("/expense/new")}
+            onSettleUp={handleSettleUp}
+          />
 
           {friends.length <= 1 && (
             <Animated.View
@@ -804,517 +411,45 @@ export default function DashboardScreen(): JSX.Element {
             </Animated.View>
           )}
 
-          {(owedUsers.length > 0 || oweUsers.length > 0) && (
-            <Animated.View
-              entering={FadeInDown.duration(350).delay(105).springify()}
-              style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
-            >
-              <View style={{ marginBottom: 14 }}>
-                <Typography style={TYPO.semi(18)}>Need attention</Typography>
-              </View>
-              <Card padding={0}>
-                {owedUsers.slice(0, 3).map((user) => (
-                  <View
-                    key={user.id}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      paddingVertical: 14,
-                      paddingHorizontal: 16,
-                      borderBottomWidth: 1,
-                      borderBottomColor: UI.color.border,
-                    }}
-                  >
-                    <AppUserAvatar user={user} size="sm" />
-                    <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Typography style={[TYPO.semi(15), { color: UI.color.textStrong }]}>
-                        {user.name}
-                      </Typography>
-                      <Typography
-                        style={[TYPO.medium(13), { color: UI.color.success, marginTop: 1 }]}
-                      >
-                        Owes you{" "}
-                        {formatAmount(
-                          Math.abs(perUserBalances.get(user.id) ?? 0),
-                          preferredCurrency.code
-                        )}
-                      </Typography>
-                    </View>
-                    <HapticButton
-                      tone="outlined"
-                      height={36}
-                      onPress={() => router.push(`/settle/${user.id}`)}
-                    >
-                      Remind
-                    </HapticButton>
-                  </View>
-                ))}
-                {oweUsers.slice(0, 3).map((user) => (
-                  <View
-                    key={user.id}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      paddingVertical: 14,
-                      paddingHorizontal: 16,
-                      borderBottomWidth: 1,
-                      borderBottomColor: UI.color.border,
-                    }}
-                  >
-                    <AppUserAvatar user={user} size="sm" />
-                    <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Typography style={[TYPO.semi(15), { color: UI.color.textStrong }]}>
-                        {user.name}
-                      </Typography>
-                      <Typography
-                        style={[TYPO.medium(13), { color: UI.color.danger, marginTop: 1 }]}
-                      >
-                        You owe{" "}
-                        {formatAmount(
-                          Math.abs(perUserBalances.get(user.id) ?? 0),
-                          preferredCurrency.code
-                        )}
-                      </Typography>
-                    </View>
-                    <HapticButton
-                      tone="ink"
-                      height={36}
-                      onPress={() => router.push(`/settle/${user.id}`)}
-                    >
-                      Settle
-                    </HapticButton>
-                  </View>
-                ))}
-              </Card>
-            </Animated.View>
-          )}
+          <AttentionList
+            oweUsers={oweUsers}
+            owedUsers={owedUsers}
+            perUserBalances={perUserBalances}
+            currentUserId={currentUser.id}
+            preferredCurrency={preferredCurrency}
+          />
 
-          <Animated.View
-            entering={FadeInDown.duration(350).delay(140).springify()}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 28 }}
-          >
-            <SectionLabel
-              rightAction={
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-                  <Typography
-                    style={{
-                      fontSize: 13,
-                      color: UI.color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
-                    }}
-                  >
-                    {openGroupCount} open
-                  </Typography>
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => router.push("/(tabs)/groups")}
-                    hitSlop={8}
-                    style={({ pressed }) => ({
-                      minHeight: 44,
-                      justifyContent: "center",
-                      opacity: pressed ? 0.7 : 1,
-                    })}
-                  >
-                    <Typography
-                      style={{
-                        fontSize: 14,
-                        color: UI.color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      View all
-                    </Typography>
-                  </Pressable>
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityLabel="Create group"
-                    onPress={() => router.push("/group/new")}
-                    hitSlop={8}
-                    style={({ pressed }) => ({
-                      width: 44,
-                      height: 44,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderRadius: UI.radius.pill,
-                      borderWidth: 1,
-                      borderColor: UI.color.border,
-                      backgroundColor: UI.color.control,
-                      opacity: pressed ? 0.72 : 1,
-                    })}
-                  >
-                    <icons.Plus size={22} color={UI.color.text} strokeWidth={2.5} />
-                  </Pressable>
-                </View>
-              }
-            >
-              Groups
-            </SectionLabel>
+          <DashboardGroups
+            activeGroups={activeGroups}
+            openGroupCount={openGroupCount}
+            isLoadingGroups={isLoadingGroups}
+            preferredCurrency={preferredCurrency.code}
+            onGroupPress={(id) => router.push(`/group/${id}`)}
+            onViewAllGroups={() => router.push("/(tabs)/groups")}
+            onCreateGroup={() => router.push("/group/new")}
+          />
 
-            <View
-              style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                paddingHorizontal: 14,
-              }}
-            >
-              {isLoadingGroups ? (
-                <View>
-                  <ListRowSkeleton />
-                  <ListRowSkeleton />
-                </View>
-              ) : activeGroups.length > 0 ? (
-                activeGroups.map(({ group, netBalance }, idx) => (
-                  <GroupRow
-                    key={group.id}
-                    group={group}
-                    balance={netBalance}
-                    currency={preferredCurrency.code}
-                    isLast={idx === activeGroups.length - 1}
-                    onPress={() => router.push(`/group/${group.id}`)}
-                  />
-                ))
-              ) : (
-                <View
-                  style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}
-                >
-                  <EmptyIconShell icon={icons.UsersRound} />
-                  <Typography
-                    style={{
-                      color: UI.color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                      fontSize: 17,
-                      marginBottom: 4,
-                    }}
-                  >
-                    No groups yet
-                  </Typography>
-                  <Typography
-                    style={{
-                      color: UI.color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
-                      fontSize: 14,
-                      textAlign: "center",
-                      marginBottom: 16,
-                    }}
-                  >
-                    Start a shared space for expenses.
-                  </Typography>
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => router.push("/group/new")}
-                    style={({ pressed }) => ({
-                      paddingHorizontal: 16,
-                      minHeight: 44,
-                      backgroundColor: UI.color.text,
-                      borderRadius: UI.radius.pill,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: pressed ? 0.8 : 1,
-                    })}
-                  >
-                    <Typography
-                      style={{
-                        fontSize: 14,
-                        color: UI.color.textInverse,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      Create group
-                    </Typography>
-                  </Pressable>
-                </View>
-              )}
-            </View>
-          </Animated.View>
-
-          <Animated.View
-            entering={FadeInDown.duration(350).delay(175).springify()}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
-          >
-            <SectionLabel
-              rightAction={
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => router.push("/(tabs)/activity")}
-                  hitSlop={8}
-                  style={({ pressed }) => ({
-                    minHeight: 44,
-                    justifyContent: "center",
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                >
-                  <Typography
-                    style={{
-                      fontSize: 14,
-                      color: UI.color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                    }}
-                  >
-                    View all
-                  </Typography>
-                </Pressable>
-              }
-            >
-              Recent activity
-            </SectionLabel>
-
-            <View
-              style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                padding: 14,
-              }}
-            >
-              <View style={{ flexDirection: "row", gap: 8, marginBottom: 2 }}>
-                {(["all", "paid", "owe"] as const).map((filter) => {
-                  const label =
-                    filter === "paid" ? "You paid" : filter === "owe" ? "You owe" : "All";
-                  return (
-                    <FilterPill
-                      key={filter}
-                      label={label}
-                      isActive={activityFilter === filter}
-                      onPress={() => setActivityFilter(filter)}
-                    />
-                  );
-                })}
-              </View>
-
-              {recentExpenses.length > 0 ? (
-                recentExpenses.map((expense, idx) => {
-                  const mySplit = expense.splits.find((s) => s.userId === currentUser.id);
-                  const paidByUser = userById.get(expense.paidBy);
-                  return (
-                    <TransactionRow
-                      key={expense.id}
-                      expense={expense}
-                      currentUserId={currentUser.id}
-                      paidByUser={paidByUser}
-                      myShare={mySplit?.amount ?? 0}
-                      isLast={idx === recentExpenses.length - 1}
-                      onPress={() => router.push(`/expense/${expense.id}`)}
-                    />
-                  );
-                })
-              ) : (
-                <View
-                  style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}
-                >
-                  <EmptyIconShell icon={icons.PackageOpen} />
-                  <Typography
-                    style={{
-                      fontSize: 16,
-                      color: UI.color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                      marginBottom: 4,
-                    }}
-                  >
-                    No activity yet
-                  </Typography>
-                  <Typography
-                    style={{
-                      fontSize: 14,
-                      color: UI.color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
-                      textAlign: "center",
-                      marginBottom: 16,
-                    }}
-                  >
-                    Log your first expense to get started.
-                  </Typography>
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => router.push("/expense/new")}
-                    style={({ pressed }) => ({
-                      paddingHorizontal: 20,
-                      minHeight: 44,
-                      backgroundColor: UI.color.text,
-                      borderRadius: UI.radius.pill,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: pressed ? 0.8 : 1,
-                    })}
-                  >
-                    <Typography
-                      style={{
-                        fontSize: 15,
-                        color: UI.color.textInverse,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      Log your first expense
-                    </Typography>
-                  </Pressable>
-                </View>
-              )}
-            </View>
-          </Animated.View>
+          <DashboardActivity
+            recentExpenses={recentExpenses}
+            activityFilter={activityFilter}
+            onFilterChange={setActivityFilter}
+            currentUserId={currentUser.id}
+            userById={userById}
+            preferredCurrency={preferredCurrency}
+            onExpensePress={(id) => router.push(`/expense/${id}`)}
+            onViewAllActivity={() => router.push("/(tabs)/activity")}
+            onLogFirstExpense={() => router.push("/expense/new")}
+          />
         </ScrollView>
       )}
 
-      {/* ── Settle up sheet ──────────────────────────────────────────────── */}
-
-      <BottomSheetModal
-        ref={settleSheetRef}
-        index={0}
-        enableDynamicSizing
-        backdropComponent={renderSettleBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
-      >
-        <BottomSheetView
-          style={{
-            paddingHorizontal: UI.space.page,
-            paddingTop: 24,
-            paddingBottom: Math.max(insets.bottom, 24),
-          }}
-        >
-          <Typography
-            style={{
-              fontSize: 22,
-              color: UI.color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              marginBottom: 20,
-            }}
-          >
-            Settle up
-          </Typography>
-
-          {owedUsers.length > 0 && (
-            <View style={{ marginBottom: 16 }}>
-              <Typography
-                style={{
-                  fontSize: 13,
-                  color: UI.color.muted,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  marginBottom: 8,
-                  textTransform: "uppercase",
-                  letterSpacing: 1.2,
-                }}
-              >
-                Collect from
-              </Typography>
-              {owedUsers.map((user) => (
-                <Pressable
-                  key={user.id}
-                  accessibilityRole="button"
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    settleSheetRef.current?.dismiss();
-                    router.push(`/settle/${user.id}`);
-                  }}
-                  style={({ pressed }) => ({
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingVertical: 12,
-                    paddingHorizontal: 12,
-                    borderRadius: 12,
-                    backgroundColor: pressed ? UI.color.subtle : "transparent",
-                    marginBottom: 4,
-                  })}
-                >
-                  <AppUserAvatar user={user} size="sm" />
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Typography
-                      style={{
-                        fontSize: 15,
-                        color: UI.color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      {user.name}
-                    </Typography>
-                    <Typography
-                      style={{
-                        fontSize: 13,
-                        color: UI.color.success,
-                        fontFamily: "IBMPlexSans_500Medium",
-                        marginTop: 1,
-                      }}
-                    >
-                      Owes you{" "}
-                      {formatAmount(
-                        Math.abs(perUserBalances.get(user.id) ?? 0),
-                        preferredCurrency.code
-                      )}
-                    </Typography>
-                  </View>
-                  <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.75} />
-                </Pressable>
-              ))}
-            </View>
-          )}
-
-          {oweUsers.length > 0 && (
-            <View>
-              <Typography
-                style={{
-                  fontSize: 13,
-                  color: UI.color.muted,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  marginBottom: 8,
-                  textTransform: "uppercase",
-                  letterSpacing: 1.2,
-                }}
-              >
-                Pay back
-              </Typography>
-              {oweUsers.map((user) => (
-                <Pressable
-                  key={user.id}
-                  accessibilityRole="button"
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-                    settleSheetRef.current?.dismiss();
-                    router.push(`/settle/${user.id}`);
-                  }}
-                  style={({ pressed }) => ({
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingVertical: 12,
-                    paddingHorizontal: 12,
-                    borderRadius: 12,
-                    backgroundColor: pressed ? UI.color.subtle : "transparent",
-                    marginBottom: 4,
-                  })}
-                >
-                  <AppUserAvatar user={user} size="sm" />
-                  <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Typography
-                      style={{
-                        fontSize: 15,
-                        color: UI.color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      {user.name}
-                    </Typography>
-                    <Typography
-                      style={{
-                        fontSize: 13,
-                        color: UI.color.danger,
-                        fontFamily: "IBMPlexSans_500Medium",
-                        marginTop: 1,
-                      }}
-                    >
-                      You owe{" "}
-                      {formatAmount(
-                        Math.abs(perUserBalances.get(user.id) ?? 0),
-                        preferredCurrency.code
-                      )}
-                    </Typography>
-                  </View>
-                  <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.75} />
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </BottomSheetView>
-      </BottomSheetModal>
+      <SettleUpSheet
+        sheetRef={settleSheetRef}
+        currentUserId={currentUser.id}
+        friends={friends}
+        perUserBalances={perUserBalances}
+        preferredCurrency={preferredCurrency}
+      />
     </View>
   );
 }
