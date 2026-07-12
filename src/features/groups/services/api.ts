@@ -51,8 +51,21 @@ export const groupsApi = {
     if (!data) throw new Error("Failed to create group");
 
     const memberIds = groupData.members?.map((member) => member.userId) ?? [];
-    if (memberIds.length > 0) {
-      await this.addMembers(data.id, memberIds);
+    try {
+      const uniqueIds = Array.from(new Set(memberIds));
+      const members = uniqueIds.map((id) => ({
+        group_id: data.id,
+        user_id: id,
+        balance: 0,
+      }));
+      const { error: membersError } = await supabase.from("group_members").insert(members);
+      if (membersError) {
+        await supabase.from("groups").delete().eq("id", data.id);
+        throw membersError;
+      }
+    } catch (error) {
+      await supabase.from("groups").delete().eq("id", data.id);
+      throw error;
     }
 
     return mapGroup(data);
