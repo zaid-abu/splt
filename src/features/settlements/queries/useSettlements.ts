@@ -26,13 +26,53 @@ export function useAddSettlement() {
   return useMutation({
     mutationFn: (settlementData: Partial<Settlement>) =>
       settlementsApi.addSettlement(settlementData),
-    onSuccess: (newSettlement) => {
+    onMutate: async (newSettlement) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.settlements });
+
+      const previousSettlements = queryClient.getQueryData(queryKeys.settlements);
+
+      const optimisticSettlement: Settlement = {
+        ...(newSettlement as Settlement),
+        id: `temp-${Date.now()}`,
+        date: newSettlement.date ?? new Date(),
+      };
+
+      queryClient.setQueryData(queryKeys.settlements, (old: Settlement[] = []) => [
+        optimisticSettlement,
+        ...old,
+      ]);
+
+      if (newSettlement.groupId) {
+        await queryClient.cancelQueries({
+          queryKey: queryKeys.groupSettlements(newSettlement.groupId),
+        });
+        queryClient.setQueryData(
+          queryKeys.groupSettlements(newSettlement.groupId),
+          (old: Settlement[] = []) => [optimisticSettlement, ...old]
+        );
+      }
+
+      return { previousSettlements };
+    },
+    onError: (err, newSettlement, context) => {
+      if (context?.previousSettlements) {
+        queryClient.setQueryData(queryKeys.settlements, context.previousSettlements);
+      }
       if (newSettlement.groupId) {
         queryClient.invalidateQueries({
           queryKey: queryKeys.groupSettlements(newSettlement.groupId),
         });
       }
+    },
+    onSettled: (_data, _error, newSettlement) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.settlements });
+      if (newSettlement.groupId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.groupSettlements(newSettlement.groupId),
+        });
+      }
+    },
+    onSuccess: (newSettlement) => {
       activitiesApi.logActivity({
         type: "settlement",
         settlement: { id: newSettlement.id } as Settlement,
