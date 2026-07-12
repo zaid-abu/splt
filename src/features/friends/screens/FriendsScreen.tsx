@@ -214,7 +214,11 @@ export default function FriendsScreen(): JSX.Element {
 
   const handlePrimaryFriendAction = useCallback(async (row: FriendListItem) => {
     if (row.balance > 0) {
-      await Share.share({ message: `Hey ${row.friend.name.split(" ")[0]}! Just a quick reminder that you owe me ${formatAmount(Math.abs(row.balance), preferredCurrency.code)} on Splt. Let me know when you can settle up.` });
+      try {
+        await Share.share({ message: `Hey ${row.friend.name.split(" ")[0]}! Just a quick reminder that you owe me ${formatAmount(Math.abs(row.balance), preferredCurrency.code)} on Splt. Let me know when you can settle up.` });
+      } catch (error) {
+        console.log(error);
+      }
       return;
     }
     if (row.balance < 0) { router.push({ pathname: "/settle/[id]", params: { id: row.friend.id } }); return; }
@@ -223,13 +227,33 @@ export default function FriendsScreen(): JSX.Element {
 
   const clearSearchAndFilter = useCallback(() => { setSearch(""); setFilter("all"); }, [setSearch]);
 
+  const onAcceptRequest = useCallback(
+    (id: string) => handleRequestAction(id, "accept"),
+    [handleRequestAction]
+  );
+  const onRejectRequest = useCallback(
+    (id: string) => handleRequestAction(id, "reject"),
+    [handleRequestAction]
+  );
+  const onBannerPrimaryAction = useCallback(
+    (row: { friend: User; balance: number }) =>
+      handlePrimaryFriendAction({
+        friend: row.friend,
+        balance: row.balance,
+        recentExpense: getRecentExpense(row.friend.id),
+        friendship: acceptedFriendshipsByUserId.get(row.friend.id) ?? undefined,
+      }),
+    [handlePrimaryFriendAction, getRecentExpense, acceptedFriendshipsByUserId]
+  );
+  const onSearchClear = useCallback(() => setSearch(""), [setSearch]);
+
   const ListHeaderComponent = useCallback(() => (
     <>
       <FriendsBalanceHeader totalOwedToMe={totalOwedToMe} totalIOwe={totalIOwe} preferredCurrencyCode={preferredCurrency.code} filterCounts={filterCounts} />
-      <PendingRequestsBanner pendingRequests={pendingRequests} topBalanceAction={topBalanceAction} preferredCurrencyCode={preferredCurrency.code} onAccept={(id) => handleRequestAction(id, "accept")} onReject={(id) => handleRequestAction(id, "reject")} onPrimaryAction={(row) => handlePrimaryFriendAction({ ...row, recentExpense: getRecentExpense(row.friend.id), friendship: acceptedFriendshipsByUserId.get(row.friend.id) })} />
-      <FriendsSearchBar search={search} onSearchChange={setSearch} onSearchClear={() => setSearch("")} filter={filter} onFilterChange={setFilter} filterCounts={filterCounts} />
+      <PendingRequestsBanner pendingRequests={pendingRequests} topBalanceAction={topBalanceAction} preferredCurrencyCode={preferredCurrency.code} onAccept={onAcceptRequest} onReject={onRejectRequest} onPrimaryAction={onBannerPrimaryAction} />
+      <FriendsSearchBar search={search} onSearchChange={setSearch} onSearchClear={onSearchClear} filter={filter} onFilterChange={setFilter} filterCounts={filterCounts} />
     </>
-  ), [totalOwedToMe, totalIOwe, preferredCurrency.code, filterCounts, pendingRequests, topBalanceAction, handleRequestAction, handlePrimaryFriendAction, acceptedFriendshipsByUserId, getRecentExpense, search, setSearch, filter, setFilter]);
+  ), [totalOwedToMe, totalIOwe, preferredCurrency.code, filterCounts, pendingRequests, topBalanceAction, onAcceptRequest, onRejectRequest, onBannerPrimaryAction, search, setSearch, onSearchClear, filter, setFilter]);
 
   const renderFriendRow = useCallback(
     (row: FriendListItem, sectionIndex: number, sectionCount: number) => {
