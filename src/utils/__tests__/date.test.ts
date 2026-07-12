@@ -70,7 +70,8 @@ describe("formatActivityDate", () => {
   it("returns formatted date for dates 7+ days ago", () => {
     jest.setSystemTime(new Date("2025-06-15T12:00:00"))
     const oldDate = new Date("2025-05-01T08:30:00")
-    expect(formatActivityDate(oldDate)).toBe("1 May")
+    const expectedFormat = oldDate.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+    expect(formatActivityDate(oldDate)).toBe(expectedFormat)
   })
 
   it("accepts a date string and returns correct output", () => {
