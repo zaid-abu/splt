@@ -52,14 +52,19 @@ export default function RootLayout(): JSX.Element | null {
     SystemUI.setBackgroundColorAsync(UI.color.bg);
   }, [isDarkMode]);
 
+  // Fire auth session check immediately — parallel with font loading
   useEffect(() => {
-    if (!loaded) return;
-
     supabase.auth.getSession().then(() => {
       setAuthReady(true);
-      SplashScreen.hideAsync();
     });
-  }, [loaded]);
+  }, []);
+
+  // Hide splash only when both are ready
+  useEffect(() => {
+    if (loaded && authReady) {
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, authReady]);
 
   if (!loaded || !authReady) return null;
 
