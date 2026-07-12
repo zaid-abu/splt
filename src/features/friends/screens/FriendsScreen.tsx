@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated";
+import { FlashList } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
 
 import { FocusAwareView } from "@/components/animations/PageAnimator";
@@ -1000,9 +1001,9 @@ export default function FriendsScreen(): JSX.Element {
           entering={FadeInDown.duration(350).delay(50).springify()}
           style={{ flex: 1 }}
         >
-          <Animated.FlatList
+          <FlashList
             data={displayRows}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item: DisplayItem) => item.id}
             renderItem={renderItem}
             keyboardShouldPersistTaps="handled"
             ListHeaderComponent={renderHeader}
