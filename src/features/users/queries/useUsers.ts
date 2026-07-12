@@ -4,7 +4,7 @@ import { queryKeys } from "@/queries/keys";
 
 export function useSearchUsers(query: string, currentUserId: string) {
   return useQuery({
-    queryKey: queryKeys.userSearch(query, currentUserId),
+    queryKey: queryKeys.users.search(query, currentUserId),
     queryFn: () => UsersService.searchUsers(query, currentUserId),
     enabled: !!query && query.trim().length >= 2,
     staleTime: 60 * 1000, // 1 minute cache for search results

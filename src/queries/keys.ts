@@ -7,6 +7,12 @@ export const queryKeys = {
   user: ["user"] as const,
   userProfile: (userId: string) => ["user", userId] as const,
 
+  // Session
+  session: {
+    all: ["session"] as const,
+    user: () => [...queryKeys.session.all, "user"] as const,
+  },
+
   // Groups
   groups: ["groups"] as const,
   groupDetails: (groupId: string) => ["groups", groupId] as const,
@@ -35,8 +41,12 @@ export const queryKeys = {
   allFriendships: (userId?: string) => ["friends", "list", userId, "all-friendships"] as const,
 
   // Users
-  userSearch: (query: string, currentUserId?: string) =>
-    ["users", "search", query, currentUserId] as const,
+  users: {
+    all: ["users"] as const,
+    current: () => [...queryKeys.users.all, "current"] as const,
+    search: (query: string, currentUserId?: string) =>
+      ["users", "search", query, currentUserId] as const,
+  },
 
   // Notifications
   notifications: (userId?: string) => ["notifications", userId] as const,
