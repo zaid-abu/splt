@@ -95,7 +95,7 @@ function LoginScreen(): JSX.Element {
       submitLoadingLabel="Signing in…"
       secondaryActions={
         <>
-          {isAvailable && hasStoredCredentials && (
+          {isAvailable && (
             <View style={{ marginBottom: 12 }}>
               <PressableScale onPress={handleBiometricSignIn}>
                 <View
@@ -132,6 +132,14 @@ function LoginScreen(): JSX.Element {
               </PressableScale>
             </View>
           )}
+
+          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 12 }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: UI.color.border }} />
+            <Typography style={{ marginHorizontal: 12, fontSize: 13, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" }}>
+              or use email
+            </Typography>
+            <View style={{ flex: 1, height: 1, backgroundColor: UI.color.border }} />
+          </View>
 
           <PressableScale
             onPress={async () => {
