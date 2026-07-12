@@ -91,7 +91,7 @@ export default function LoginScreen(): JSX.Element {
       onSubmit={handleSubmit(onSubmit, onInvalid)}
       isPending={isPending}
       submitLabel="Sign In"
-      submitLoadingLabel="Signing in\u2026"
+      submitLoadingLabel="Signing in…"
       secondaryActions={
         <>
           {isAvailable && hasStoredCredentials && (

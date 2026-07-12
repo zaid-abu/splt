@@ -124,7 +124,7 @@ export default function ForgotPasswordScreen(): JSX.Element {
                   textAlign: "center",
                 }}
               >
-                {isPending ? "Sending\u2026" : "Resend email"}
+                {isPending ? "Sending…" : "Resend email"}
               </Typography>
             </View>
           </PressableScale>
@@ -140,7 +140,7 @@ export default function ForgotPasswordScreen(): JSX.Element {
       onSubmit={handleSubmit(onSubmit, onInvalid)}
       isPending={isPending}
       submitLabel="Send Reset Link"
-      submitLoadingLabel="Sending\u2026"
+      submitLoadingLabel="Sending…"
     >
       <FormInput
         control={control}

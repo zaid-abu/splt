@@ -82,7 +82,7 @@ export default function RegisterScreen(): JSX.Element {
       onSubmit={handleSubmit(onSubmit, onInvalid)}
       isPending={isPending}
       submitLabel="Create Account"
-      submitLoadingLabel="Creating account\u2026"
+      submitLoadingLabel="Creating account…"
       footer={
         <>
           <Typography
