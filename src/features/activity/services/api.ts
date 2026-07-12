@@ -3,7 +3,7 @@ import type { Activity } from "@/types";
 import { mapActivity, toActivityInsert, type ActivityRow } from "@/services/api/mappers";
 
 const activitySelect =
-  "*, user:users(*), group:groups(*), expense:expenses(*), settlement:settlements(*, fromUser:users!from_user_id(*), toUser:users!to_user_id(*))";
+  "*, user:users(*), group:groups(*), expense:expenses(*, splits:expense_splits(*, user:users(*))), settlement:settlements(*, fromUser:users!from_user_id(*), toUser:users!to_user_id(*))";
 
 export const activitiesApi = {
   async fetchActivities(userId: string): Promise<Activity[]> {

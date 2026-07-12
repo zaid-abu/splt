@@ -63,12 +63,13 @@ export const expensesApi = {
   async addExpense(expenseData: Partial<Expense>): Promise<Expense> {
     const { splits, ...coreData } = expenseData;
 
-    // Insert core expense and return with joins
-    const { data: expData, error: expError } = await (supabase
+    // Insert core expense with minimal select (no joins — RLS may block reading
+    // a row with paid_by !== auth.uid() before splits exist for the policy check)
+    const { data: expData, error: expError } = await supabase
       .from("expenses")
       .insert(toExpenseInsert(coreData))
-      .select(expenseSelect)
-      .single() as unknown as { data: ExpenseRow; error: Error | null });
+      .select()
+      .single();
 
     if (expError) throw expError;
 
@@ -79,8 +80,8 @@ export const expensesApi = {
       if (splitError) throw splitError;
     }
 
-    // If splits were inserted, we need to re-fetch to get joined split data
-    return splits && splits.length > 0 ? await this.fetchExpense(expData.id) : mapExpense(expData);
+    // Fetch full expense with joins (splits now exist, so RLS can find them)
+    return await this.fetchExpense(expData.id);
   },
 
   async updateExpense(expenseId: string, updates: Partial<Expense>): Promise<Expense> {

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/queries/keys";
 import { settlementsApi } from "@/features/settlements/services/api";
 import { activitiesApi } from "@/features/activity/services/api";
+import { useAuth } from "@/context/AppContext";
 import type { Settlement } from "@/types";
 
 export function useGroupSettlements(groupId: string | undefined) {
@@ -22,6 +23,7 @@ export function useUserSettlements(userId: string | undefined) {
 
 export function useAddSettlement() {
   const queryClient = useQueryClient();
+  const { currentUser } = useAuth();
 
   return useMutation({
     mutationFn: (settlementData: Partial<Settlement>) =>
@@ -77,9 +79,9 @@ export function useAddSettlement() {
         type: "settlement",
         settlement: { id: newSettlement.id } as Settlement,
         groupId: newSettlement.groupId,
-        userId: newSettlement.fromUserId,
+        userId: currentUser.id,
         user: newSettlement.fromUser,
-        description: `Settlement of ${newSettlement.currency} ${newSettlement.amount}`,
+        description: `Settlement`,
         amount: newSettlement.amount,
         currency: newSettlement.currency,
         date: newSettlement.date,

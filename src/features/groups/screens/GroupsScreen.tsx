@@ -4,7 +4,7 @@ import type { JSX } from "react";
 import { useState, useCallback, useMemo } from "react";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { View, Pressable, RefreshControl } from "react-native";
+import { View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import * as icons from "lucide-react-native";
@@ -354,18 +354,13 @@ export default function GroupsScreen(): JSX.Element {
           <FlashList
             data={filtered}
             renderItem={renderItem}
+            keyExtractor={(item) => item.group.id}
             ListHeaderComponent={ListHeaderComponent}
             ListEmptyComponent={ListEmptyComponent}
             contentContainerStyle={{ paddingBottom: 130 }}
             showsVerticalScrollIndicator={false}
-            extraData={{ filteredLength: filtered.length }}
-            refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                tintColor={UI.color.text}
-              />
-            }
+            onRefresh={onRefresh}
+            refreshing={refreshing}
           />
         </FocusAwareView>
       )}

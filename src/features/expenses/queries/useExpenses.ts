@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/queries/keys";
 import { expensesApi } from "@/features/expenses/services/api";
 import { activitiesApi } from "@/features/activity/services/api";
+import { useAuth } from "@/context/AppContext";
 import type { Expense } from "@/types";
 
 export function useGroupExpenses(groupId: string | undefined) {
@@ -30,6 +31,7 @@ export function useExpenseDetails(expenseId: string | undefined) {
 
 export function useAddExpense() {
   const queryClient = useQueryClient();
+  const { currentUser } = useAuth();
 
   return useMutation({
     mutationFn: (expenseData: Partial<Expense>) => expensesApi.addExpense(expenseData),
@@ -79,7 +81,7 @@ export function useAddExpense() {
         type: "expense",
         expense: { id: newExpense.id } as Expense,
         groupId: newExpense.groupId,
-        userId: newExpense.paidBy,
+        userId: currentUser.id,
         user: newExpense.paidByUser,
         description: newExpense.title,
         amount: newExpense.amount,
