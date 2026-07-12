@@ -35,9 +35,18 @@ export interface UIState {
   isDarkMode: boolean;
   setDarkMode: (dark: boolean) => void;
 
+  hapticFeedback: boolean;
+  setHapticFeedback: (enabled: boolean) => void;
+
   exchangeRates: Record<string, number>;
   setExchangeRates: (rates: Record<string, number>) => void;
   fetchExchangeRates: () => Promise<void>;
+
+  preferenceTags: string[];
+  setPreferenceTags: (tags: string[]) => void;
+
+  onboardingComplete: boolean;
+  setOnboardingComplete: (complete: boolean) => void;
 
   convertCurrency: (amount: number, from: string, to: string) => number;
 }
@@ -51,11 +60,20 @@ export const useUIStore = create<UIState>()(
       isDarkMode: false,
       setDarkMode: (dark) => set({ isDarkMode: dark }),
 
+      hapticFeedback: true,
+      setHapticFeedback: (enabled) => set({ hapticFeedback: enabled }),
+
       preferredCurrency: CURRENCIES.find((c) => c.code === "USD") ?? CURRENCIES[0]!,
       setCurrency: (currency) => set({ preferredCurrency: currency }),
 
       exchangeRates: FALLBACK_RATES,
       setExchangeRates: (rates) => set({ exchangeRates: rates }),
+
+      preferenceTags: [],
+      setPreferenceTags: (tags) => set({ preferenceTags: tags }),
+
+      onboardingComplete: false,
+      setOnboardingComplete: (complete) => set({ onboardingComplete: complete }),
 
       fetchExchangeRates: async () => {
         try {
@@ -84,6 +102,7 @@ export const useUIStore = create<UIState>()(
         preferredCurrency: state.preferredCurrency,
         exchangeRates: state.exchangeRates,
         isDarkMode: state.isDarkMode,
+        preferenceTags: state.preferenceTags,
       }),
     }
   )

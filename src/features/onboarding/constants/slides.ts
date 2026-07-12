@@ -1,41 +1,37 @@
-import * as icons from "lucide-react-native";
-
 export interface OnboardingSlideData {
-  id: string;
-  title: string;
-  description: string;
-  icon: keyof typeof icons;
-  tagline: string;
+  id: string
+  title: string
+  subtitle: string
 }
 
 export const ONBOARDING_SLIDES: OnboardingSlideData[] = [
   {
-    id: "balances",
-    title: "Track\nBalances",
-    description: "See who owes what at a glance. No more awkward conversations about money.",
-    icon: "Wallet",
-    tagline: "Know where you stand",
-  },
-  {
-    id: "groups",
-    title: "Shared\nGroups",
-    description:
-      "Create groups for trips, roommates, or nights out. Every expense stays organized.",
-    icon: "UsersRound",
-    tagline: "Split with anyone",
-  },
-  {
-    id: "settle",
-    title: "Settle\nUp Fast",
-    description: "Record payments in seconds. Everyone stays in the loop.",
-    icon: "HandCoins",
-    tagline: "Pay and be paid",
+    id: "welcome",
+    title: "Split expenses,\nnot friendships",
+    subtitle: "Welcome to Splt",
   },
   {
     id: "currency",
-    title: "Your\nCurrency",
-    description: "Pick a default currency. We'll handle the conversions when you travel.",
-    icon: "Globe",
-    tagline: "Multi-currency ready",
+    title: "Choose your\ncurrency",
+    subtitle: "Set your default currency",
   },
-];
+  {
+    id: "preferences",
+    title: "What are your\nsplit styles?",
+    subtitle: "Pick all that apply",
+  },
+  {
+    id: "friends",
+    title: "Invite your\nfriends",
+    subtitle: "Import contacts or skip",
+  },
+]
+
+export const PREFERENCE_TAGS = [
+  "Trips",
+  "Roommates",
+  "Dining Out",
+  "Events",
+  "Work",
+  "Other",
+] as const

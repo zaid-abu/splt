@@ -1,108 +1,151 @@
-import React, { useRef, useState } from "react";
-import { View, Dimensions, Pressable } from "react-native";
-import { FlashList } from "@shopify/flash-list";
-import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Typography } from "heroui-native";
-import { useRouter } from "expo-router";
-import * as icons from "lucide-react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Animated, { FadeIn } from "react-native-reanimated";
-import * as Haptics from "expo-haptics";
+import { useState, useRef, useEffect } from "react"
+import { View, Dimensions, Pressable, ScrollView } from "react-native"
+import { Typography } from "heroui-native"
+import { useRouter } from "expo-router"
+import AsyncStorage from "@react-native-async-storage/async-storage"
+import Animated, {
+  FadeIn,
+  SlideInRight,
+  SlideOutLeft,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+} from "react-native-reanimated"
+import * as Haptics from "expo-haptics"
+import { useSafeAreaInsets } from "react-native-safe-area-context"
 
-import { ONBOARDING_SLIDES } from "../constants/slides";
-import { OnboardingSlide } from "../components/OnboardingSlide";
-import { CurrencySelector } from "@/components/forms/CurrencySelector";
-import { useUIStore } from "@/store/useUIStore";
-import { UI } from "@/components/ui/native-ui";
+import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar"
+import { UI } from "@/components/ui/native-ui"
+import { useUIStore } from "@/store/useUIStore"
+import { ONBOARDING_SLIDES, PREFERENCE_TAGS } from "../constants/slides"
+import { OnboardingSlide } from "../components/OnboardingSlide"
+import { CurrencyStep } from "../components/CurrencyStep"
+import { TagSelector } from "../components/TagSelector"
 
-const { width: SCREEN_WIDTH } = Dimensions.get("window");
+const { width: SCREEN_WIDTH } = Dimensions.get("window")
 
 export function OnboardingScreen() {
-  const insets = useSafeAreaInsets();
-  const router = useRouter();
-  const flatListRef = useRef<any>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const insets = useSafeAreaInsets()
+  const router = useRouter()
+  const [currentIndex, setCurrentIndex] = useState(0)
+  const scrollRef = useRef<ScrollView>(null)
 
-  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
-  const setCurrency = useUIStore((s) => s.setCurrency);
-  const isLastSlide = currentIndex === ONBOARDING_SLIDES.length - 1;
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency)
+  const setCurrency = useUIStore((s) => s.setCurrency)
+  const preferenceTags = useUIStore((s) => s.preferenceTags)
+  const setPreferenceTags = useUIStore((s) => s.setPreferenceTags)
+
+  const isFirst = currentIndex === 0
+  const isLast = currentIndex === ONBOARDING_SLIDES.length - 1
+  const totalSlides = ONBOARDING_SLIDES.length
+
+  const progress = useSharedValue(0)
+
+  useEffect(() => {
+    progress.value = withSpring((currentIndex + 1) / totalSlides, {
+      mass: 0.5,
+      stiffness: 200,
+      damping: 20,
+    })
+  }, [currentIndex, totalSlides, progress])
+
+  const progressBarStyle = useAnimatedStyle(() => ({
+    width: `${progress.value * 100}%`,
+  }))
 
   const handleComplete = async () => {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await AsyncStorage.setItem("@splt_onboarded", "true");
-    router.replace("/(tabs)");
-  };
+    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+    await AsyncStorage.setItem("@splt_onboarded", "true")
+    router.replace("/(tabs)")
+  }
 
   const handleNext = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (currentIndex < ONBOARDING_SLIDES.length - 1) {
-      flatListRef.current?.scrollToIndex({
-        index: currentIndex + 1,
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    if (currentIndex < totalSlides - 1) {
+      scrollRef.current?.scrollTo({
+        x: (currentIndex + 1) * SCREEN_WIDTH,
         animated: true,
-      });
-    } else {
-      handleComplete();
+      })
+      setCurrentIndex((prev) => prev + 1)
     }
-  };
+  }
 
   const handleBack = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     if (currentIndex > 0) {
-      flatListRef.current?.scrollToIndex({
-        index: currentIndex - 1,
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+      scrollRef.current?.scrollTo({
+        x: (currentIndex - 1) * SCREEN_WIDTH,
         animated: true,
-      });
+      })
+      setCurrentIndex((prev) => prev - 1)
     }
-  };
+  }
 
   const handleSkip = () => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    handleComplete();
-  };
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    handleComplete()
+  }
 
-  const onMomentumScrollEnd = (e: any) => {
-    const contentOffsetX = e.nativeEvent.contentOffset.x;
-    const newIndex = Math.round(contentOffsetX / SCREEN_WIDTH);
-    if (newIndex !== currentIndex) {
-      setCurrentIndex(newIndex);
+  const handleTagToggle = (tag: string) => {
+    if (preferenceTags.includes(tag)) {
+      setPreferenceTags(preferenceTags.filter((t) => t !== tag))
+    } else {
+      setPreferenceTags([...preferenceTags, tag])
     }
-  };
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <ThemedStatusBar />
 
-      {/* Top Bar - Progress + Skip */}
+      {/* Top bar */}
       <View
         style={{
           flexDirection: "row",
-          justifyContent: "space-between",
           alignItems: "center",
-          paddingHorizontal: 32,
-          paddingTop: insets.top + 20,
-          zIndex: 10,
+          paddingHorizontal: 24,
+          paddingTop: insets.top + 12,
+          paddingBottom: 8,
+          gap: 12,
         }}
       >
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-          {currentIndex > 0 && (
-            <Pressable onPress={handleBack} hitSlop={16} style={{ padding: 4, marginRight: 4 }}>
-              <icons.ChevronLeft size={24} color={UI.color.text} strokeWidth={1.5} />
-            </Pressable>
-          )}
-          {ONBOARDING_SLIDES.map((_, idx) => (
-            <View
-              key={idx}
+        {!isFirst && (
+          <Pressable onPress={handleBack} hitSlop={16} style={{ padding: 4 }}>
+            <Typography
               style={{
-                width: idx === currentIndex ? 28 : 8,
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: idx === currentIndex ? UI.color.textStrong : UI.color.muted,
+                fontSize: 15,
+                color: UI.color.text,
+                fontFamily: "IBMPlexSans_600SemiBold",
               }}
-            />
-          ))}
+            >
+              Back
+            </Typography>
+          </Pressable>
+        )}
+
+        {/* Animated progress bar */}
+        <View
+          style={{
+            flex: 1,
+            height: 4,
+            borderRadius: 2,
+            backgroundColor: UI.color.border,
+            overflow: "hidden",
+          }}
+        >
+          <Animated.View
+            style={[
+              {
+                height: "100%",
+                borderRadius: 2,
+                backgroundColor: UI.color.text,
+              },
+              progressBarStyle,
+            ]}
+          />
         </View>
-        {!isLastSlide && (
+
+        {!isLast && (
           <Pressable onPress={handleSkip} hitSlop={16} style={{ padding: 4 }}>
             <Typography
               style={{
@@ -117,36 +160,118 @@ export function OnboardingScreen() {
         )}
       </View>
 
-      <FlashList
-        ref={flatListRef}
-        data={ONBOARDING_SLIDES}
-        keyExtractor={(item: typeof ONBOARDING_SLIDES[0]) => item.id}
+      {/* Slides */}
+      <ScrollView
+        ref={scrollRef}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         bounces={false}
-        onMomentumScrollEnd={onMomentumScrollEnd}
-        renderItem={({ item, index }) => (
-          <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
-            <OnboardingSlide item={item} width={SCREEN_WIDTH} />
+        scrollEnabled={false}
+        style={{ flex: 1 }}
+      >
+        {ONBOARDING_SLIDES.map((slide, index) => (
+          <Animated.View
+            key={slide.id}
+            entering={SlideInRight.duration(350)}
+            exiting={SlideOutLeft.duration(250)}
+            style={{ width: SCREEN_WIDTH, flex: 1 }}
+          >
+            <OnboardingSlide item={slide} width={SCREEN_WIDTH} index={index} />
 
-            {index === ONBOARDING_SLIDES.length - 1 && (
-              <Animated.View
-                entering={FadeIn.delay(500).duration(400)}
-                style={{ paddingHorizontal: 32, paddingBottom: 64 }}
-              >
-                <CurrencySelector
-                  label="DEFAULT CURRENCY"
-                  value={preferredCurrency.code}
-                  onChange={setCurrency}
-                />
-              </Animated.View>
-            )}
-          </View>
-        )}
-      />
+            <View style={{ flex: 1, paddingHorizontal: 32 }}>
+              {index === 1 && (
+                <Animated.View
+                  entering={FadeIn.delay(400).duration(400)}
+                  style={{ flex: 1 }}
+                >
+                  <CurrencyStep
+                    selected={preferredCurrency}
+                    onSelect={setCurrency}
+                  />
+                </Animated.View>
+              )}
 
-      {/* Footer */}
+              {index === 2 && (
+                <Animated.View
+                  entering={FadeIn.delay(400).duration(400)}
+                  style={{ paddingTop: 8 }}
+                >
+                  <TagSelector
+                    tags={PREFERENCE_TAGS}
+                    selected={preferenceTags}
+                    onToggle={handleTagToggle}
+                  />
+                </Animated.View>
+              )}
+
+              {index === 3 && (
+                <Animated.View
+                  entering={FadeIn.delay(400).duration(400)}
+                  style={{
+                    paddingTop: 16,
+                    alignItems: "center",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: "100%",
+                      padding: 24,
+                      borderRadius: UI.radius.lg,
+                      borderWidth: 1,
+                      borderColor: UI.color.border,
+                      backgroundColor: UI.color.surface,
+                      alignItems: "center",
+                      gap: 16,
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: 20,
+                        backgroundColor: UI.color.control,
+                        borderWidth: 1,
+                        borderColor: UI.color.border,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Typography style={{ fontSize: 24, color: UI.color.text }}>
+                        👥
+                      </Typography>
+                    </View>
+                    <Typography
+                      style={{
+                        fontSize: 18,
+                        color: UI.color.text,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                        textAlign: "center",
+                      }}
+                    >
+                      Split expenses with friends
+                    </Typography>
+                    <Typography
+                      style={{
+                        fontSize: 14,
+                        color: UI.color.muted,
+                        fontFamily: "IBMPlexSans_400Regular",
+                        textAlign: "center",
+                        lineHeight: 20,
+                      }}
+                    >
+                      Invite friends from your contacts or share a link to get
+                      started together.
+                    </Typography>
+                  </View>
+                </Animated.View>
+              )}
+            </View>
+          </Animated.View>
+        ))}
+      </ScrollView>
+
+      {/* Bottom button */}
       <View
         style={{
           paddingHorizontal: 32,
@@ -156,7 +281,7 @@ export function OnboardingScreen() {
         }}
       >
         <Pressable
-          onPress={handleNext}
+          onPress={isLast ? handleComplete : handleNext}
           style={({ pressed }) => ({
             width: "100%",
             height: 56,
@@ -175,10 +300,10 @@ export function OnboardingScreen() {
               letterSpacing: 0.5,
             }}
           >
-            {isLastSlide ? "Get Started" : "Next"}
+            {isLast ? "Get Started" : "Next"}
           </Typography>
         </Pressable>
       </View>
     </View>
-  );
+  )
 }
