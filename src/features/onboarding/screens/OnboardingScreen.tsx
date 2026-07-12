@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
-import { View, FlatList, Dimensions, Pressable } from "react-native";
+import { View, Dimensions, Pressable } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Typography } from "heroui-native";
@@ -20,7 +21,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 export function OnboardingScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const flatListRef = useRef<FlatList>(null);
+  const flatListRef = useRef<any>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
@@ -116,16 +117,15 @@ export function OnboardingScreen() {
         )}
       </View>
 
-      <FlatList
+      <FlashList
         ref={flatListRef}
         data={ONBOARDING_SLIDES}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: typeof ONBOARDING_SLIDES[0]) => item.id}
         horizontal
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         bounces={false}
         onMomentumScrollEnd={onMomentumScrollEnd}
-        scrollEventThrottle={16}
         renderItem={({ item, index }) => (
           <View style={{ width: SCREEN_WIDTH, flex: 1 }}>
             <OnboardingSlide item={item} width={SCREEN_WIDTH} />

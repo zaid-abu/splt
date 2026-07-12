@@ -1,4 +1,5 @@
-import { View, FlatList, Pressable, ActivityIndicator, RefreshControl } from "react-native";
+import { View, Pressable, ActivityIndicator, RefreshControl } from "react-native";
+import { FlashList } from "@shopify/flash-list";
 import { Typography } from "heroui-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,119 +38,122 @@ export default function NotificationsScreen(): JSX.Element {
     setRefreshing(false);
   }, [refetch]);
 
-  const handleAccept = async (friendshipId: string) => {
+  const handleAccept = useCallback(async (friendshipId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await acceptFriend({ friendshipId });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  };
+  }, [acceptFriend]);
 
-  const handleReject = async (friendshipId: string) => {
+  const handleReject = useCallback(async (friendshipId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     await rejectFriend({ friendshipId });
-  };
+  }, [rejectFriend]);
 
-  const renderItem = ({ item, index }: { item: AppNotification; index: number }) => {
-    if (item.type === "friend_request" && item.data) {
-      const friendship = item.data;
-      const isWorking = isAccepting || isRejecting;
+  const renderItem = useCallback(
+    ({ item, index }: { item: AppNotification; index: number }) => {
+      if (item.type === "friend_request" && item.data) {
+        const friendship = item.data;
+        const isWorking = isAccepting || isRejecting;
 
-      return (
-        <View
-          style={{
-            padding: UI.space.page,
-            borderBottomWidth: 1,
-            borderBottomColor: UI.color.border,
-          }}
-        >
-          <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-            <AppUserAvatar user={friendship.friendUser!} size="md" />
-            <View style={{ flex: 1, marginLeft: 16 }}>
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: UI.color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
+        return (
+          <View
+            style={{
+              padding: UI.space.page,
+              borderBottomWidth: 1,
+              borderBottomColor: UI.color.border,
+            }}
+          >
+            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
+              <AppUserAvatar user={friendship.friendUser!} size="md" />
+              <View style={{ flex: 1, marginLeft: 16 }}>
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: UI.color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  {item.title}
+                </Typography>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: UI.color.muted,
+                    fontFamily: "IBMPlexSans_500Medium",
+                    marginTop: 4,
+                  }}
+                >
+                  {item.subtitle}
+                </Typography>
+              </View>
+            </View>
+            <View style={{ flexDirection: "row", gap: 12 }}>
+              <Pressable
+                onPress={() => handleAccept(friendship.id)}
+                disabled={isWorking}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  height: 48,
+                  borderRadius: UI.radius.pill,
+                  backgroundColor: UI.color.text,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed || isWorking ? 0.7 : 1,
+                })}
               >
-                {item.title}
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: UI.color.muted,
-                  fontFamily: "IBMPlexSans_500Medium",
-                  marginTop: 4,
-                }}
+                {isAccepting ? (
+                  <ActivityIndicator color={UI.color.textInverse} />
+                ) : (
+                  <Typography
+                    style={{
+                      color: UI.color.textInverse,
+                      fontSize: 14,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
+                  >
+                    Accept
+                  </Typography>
+                )}
+              </Pressable>
+
+              <Pressable
+                onPress={() => handleReject(friendship.id)}
+                disabled={isWorking}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  height: 48,
+                  borderRadius: UI.radius.pill,
+                  backgroundColor: "transparent",
+                  borderWidth: 1,
+                  borderColor: UI.color.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed || isWorking ? 0.5 : 1,
+                })}
               >
-                {item.subtitle}
-              </Typography>
+                {isRejecting ? (
+                  <ActivityIndicator color={UI.color.text} />
+                ) : (
+                  <Typography
+                    style={{
+                      color: UI.color.text,
+                      fontSize: 14,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
+                  >
+                    Reject
+                  </Typography>
+                )}
+              </Pressable>
             </View>
           </View>
-          <View style={{ flexDirection: "row", gap: 12 }}>
-            <Pressable
-              onPress={() => handleAccept(friendship.id)}
-              disabled={isWorking}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 48,
-                borderRadius: UI.radius.pill,
-                backgroundColor: UI.color.text,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed || isWorking ? 0.7 : 1,
-              })}
-            >
-              {isAccepting ? (
-                <ActivityIndicator color={UI.color.textInverse} />
-              ) : (
-                <Typography
-                  style={{
-                    color: UI.color.textInverse,
-                    fontSize: 14,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  Accept
-                </Typography>
-              )}
-            </Pressable>
+        );
+      }
 
-            <Pressable
-              onPress={() => handleReject(friendship.id)}
-              disabled={isWorking}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 48,
-                borderRadius: UI.radius.pill,
-                backgroundColor: "transparent",
-                borderWidth: 1,
-                borderColor: UI.color.border,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed || isWorking ? 0.5 : 1,
-              })}
-            >
-              {isRejecting ? (
-                <ActivityIndicator color={UI.color.text} />
-              ) : (
-                <Typography
-                  style={{
-                    color: UI.color.text,
-                    fontSize: 14,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  Reject
-                </Typography>
-              )}
-            </Pressable>
-          </View>
-        </View>
-      );
-    }
-
-    return null;
-  };
+      return null;
+    },
+    [handleAccept, handleReject, isAccepting, isRejecting]
+  );
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
@@ -165,9 +169,9 @@ export default function NotificationsScreen(): JSX.Element {
           <ErrorState onRetry={() => refetch()} />
         </View>
       ) : (
-        <FlatList
+        <FlashList
           data={notifications}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item: AppNotification) => item.id}
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 100 }}
           refreshControl={
