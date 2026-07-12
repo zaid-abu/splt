@@ -3,7 +3,7 @@ import { View, ActivityIndicator } from "react-native"
 import { UI } from "@/components/ui/native-ui"
 import { withErrorBoundary } from "@/components/feedback/withErrorBoundary"
 
-const DashboardScreen = lazy(() => import("@/features/dashboard/screens/DashboardScreen"))
+const FeedScreen = lazy(() => import("@/features/feed/screens/FeedScreen"))
 
 function FeedRoute() {
   return (
@@ -14,7 +14,7 @@ function FeedRoute() {
         </View>
       }
     >
-      <DashboardScreen />
+      <FeedScreen />
     </Suspense>
   )
 }
