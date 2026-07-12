@@ -1,5 +1,17 @@
-import NotificationsScreen from "@/features/notifications/screens/NotificationsScreen";
+import { lazy, Suspense } from "react"
+import { View, ActivityIndicator } from "react-native"
+import { UI } from "@/components/ui/native-ui"
+
+const NotificationsScreen = lazy(() => import("@/features/notifications/screens/NotificationsScreen"))
 
 export default function NotificationsRoute() {
-  return <NotificationsScreen />;
+  return (
+    <Suspense fallback={
+      <View style={{ flex: 1, backgroundColor: UI.color.bg, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" color={UI.color.text} />
+      </View>
+    }>
+      <NotificationsScreen />
+    </Suspense>
+  )
 }
