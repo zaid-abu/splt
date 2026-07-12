@@ -6,7 +6,8 @@
  */
 import type { AvatarSize } from "heroui-native";
 import type { JSX } from "react";
-import { Image, View } from "react-native";
+import { View } from "react-native";
+import { Image } from "expo-image";
 import { Typography } from "heroui-native";
 
 import { UI } from "@/components/ui/native-ui";
@@ -126,7 +127,8 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
         {user.avatar ? (
           <Image
             source={{ uri: user.avatar }}
-            resizeMode="cover"
+            contentFit="cover"
+            cachePolicy="memory-disk"
             style={{
               width: "100%",
               height: "100%",

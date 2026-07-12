@@ -5,7 +5,8 @@ import type { ExpenseRouteParams } from "@/types/navigation";
 import { useState, useRef, useCallback } from "react";
 import type { JSX } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { ScrollView, View, Pressable, TextInput, Image } from "react-native";
+import { ScrollView, View, Pressable, TextInput } from "react-native";
+import { Image } from "expo-image";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
@@ -611,12 +612,13 @@ export default function ExpenseDetailScreen(): JSX.Element {
                 >
                   <Image
                     source={{ uri: expense.receiptUrl }}
+                    contentFit="contain"
+                    cachePolicy="memory-disk"
                     style={{
                       width: "100%",
-                      height: 200,
-                      borderRadius: UI.radius.md,
+                      height: 300,
+                      borderRadius: 12,
                     }}
-                    resizeMode="contain"
                   />
                 </Pressable>
                 <Typography
