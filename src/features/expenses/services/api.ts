@@ -63,55 +63,56 @@ export const expensesApi = {
   async addExpense(expenseData: Partial<Expense>): Promise<Expense> {
     const { splits, ...coreData } = expenseData;
 
-    // 1. Insert core expense
-    const { data: expData, error: expError } = await supabase
+    // Insert core expense and return with joins
+    const { data: expData, error: expError } = await (supabase
       .from("expenses")
       .insert(toExpenseInsert(coreData))
-      .select()
-      .single();
+      .select(expenseSelect)
+      .single() as unknown as { data: ExpenseRow; error: Error | null });
 
     if (expError) throw expError;
 
-    // 2. Insert splits if provided
+    // Insert splits if provided
     if (splits && splits.length > 0) {
       const splitsToInsert = splits.map((split) => toExpenseSplitInsert(expData.id, split));
-
       const { error: splitError } = await supabase.from("expense_splits").insert(splitsToInsert);
-
       if (splitError) throw splitError;
     }
 
-    // 3. Return full expense via fetchExpense to get joined data
-    return await this.fetchExpense(expData.id);
+    // If splits were inserted, we need to re-fetch to get joined split data
+    return splits && splits.length > 0 ? await this.fetchExpense(expData.id) : mapExpense(expData);
   },
 
   async updateExpense(expenseId: string, updates: Partial<Expense>): Promise<Expense> {
     const { splits, ...coreData } = updates;
 
-    // 1. Update core expense
+    // Update core expense and return with joins
     if (Object.keys(coreData).length > 0) {
-      const { error: expError } = await supabase
+      const { data: updatedData, error: expError } = await supabase
         .from("expenses")
         .update(toExpenseUpdate(coreData))
-        .eq("id", expenseId);
+        .eq("id", expenseId)
+        .select(expenseSelect)
+        .single()
+        .returns<ExpenseRow>();
 
       if (expError) throw expError;
+
+      // If no splits to update, return immediately
+      if (!splits) return mapExpense(updatedData);
     }
 
-    // 2. Update splits if provided (simplified as delete and recreate)
+    // Update splits if provided (delete and recreate)
     if (splits) {
       await supabase.from("expense_splits").delete().eq("expense_id", expenseId);
-
       if (splits.length > 0) {
         const splitsToInsert = splits.map((split) => toExpenseSplitInsert(expenseId, split));
-
         const { error: splitError } = await supabase.from("expense_splits").insert(splitsToInsert);
-
         if (splitError) throw splitError;
       }
     }
 
-    // 3. Return updated expense
+    // Re-fetch to get joined split data
     return await this.fetchExpense(expenseId);
   },
 

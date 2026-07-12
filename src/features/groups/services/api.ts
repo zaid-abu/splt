@@ -40,12 +40,11 @@ export const groupsApi = {
   },
 
   async createGroup(groupData: Partial<Group>): Promise<Group> {
-    const { data, error } = await supabase
+    const { data, error } = await (supabase
       .from("groups")
       .insert(toGroupInsert(groupData))
-      .select()
-      .single()
-      .returns<GroupRow>();
+      .select("*, members:group_members(*, user:users(*))")
+      .single() as unknown as { data: GroupRow; error: Error | null });
 
     if (error) throw error;
 
@@ -54,7 +53,7 @@ export const groupsApi = {
       await this.addMembers(data.id, memberIds);
     }
 
-    return await this.fetchGroup(data.id);
+    return mapGroup(data);
   },
 
   async updateGroup(groupId: string, updates: Partial<Group>): Promise<Group> {
@@ -80,15 +79,13 @@ export const groupsApi = {
 
   async addMembers(groupId: string, userIds: string[]): Promise<void> {
     const uniqueIds = Array.from(new Set(userIds));
-
-    for (const id of uniqueIds) {
-      const { error } = await supabase.from("group_members").insert({
-        group_id: groupId,
-        user_id: id,
-        balance: 0,
-      });
-      if (error) throw error;
-    }
+    const members = uniqueIds.map((id) => ({
+      group_id: groupId,
+      user_id: id,
+      balance: 0,
+    }));
+    const { error } = await supabase.from("group_members").insert(members);
+    if (error) throw error;
   },
 
   async removeMember(groupId: string, userId: string): Promise<void> {
