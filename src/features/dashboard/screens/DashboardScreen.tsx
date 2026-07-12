@@ -33,6 +33,7 @@ import { useFriends } from "@/features/friends/queries/useFriends";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
+import { useOverallBalances } from "@/features/settlements/hooks/useBalances";
 import { useNotifications } from "@/features/notifications/queries/useNotifications";
 import { useAnalytics } from "@/features/analytics/hooks/useAnalytics";
 import { getGreeting } from "@/utils/date";
@@ -262,18 +263,13 @@ export default function DashboardScreen(): JSX.Element {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFirstLoad]);
 
-  const perUserBalances = useMemo(
-    () =>
-      balancesUtil.getUserBalances(
-        currentUser.id,
-        undefined,
-        groups,
-        expenses,
-        settlements,
-        preferredCurrency,
-        convertCurrency
-      ),
-    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
+  const { data: perUserBalances = new Map() } = useOverallBalances(
+    currentUser.id,
+    groups,
+    expenses,
+    settlements,
+    preferredCurrency,
+    convertCurrency
   );
 
   const owedToYou = useMemo(() => {

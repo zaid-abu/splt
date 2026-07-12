@@ -48,7 +48,7 @@ import {
 } from "@/features/friends/queries/useFriends";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
-import * as balancesUtil from "@/features/settlements/utils/balances";
+import { useOverallBalances } from "@/features/settlements/hooks/useBalances";
 import { useAppToast } from "@/hooks/useAppToast";
 import { queryKeys } from "@/queries/keys";
 import { useUIStore } from "@/store/useUIStore";
@@ -114,18 +114,13 @@ export default function FriendsScreen(): JSX.Element {
 
   const isLoading = isLoadingGroups || isLoadingFriends;
 
-  const balances = useMemo(
-    () =>
-      balancesUtil.getUserBalances(
-        currentUser.id,
-        undefined,
-        groups,
-        expenses,
-        settlements,
-        preferredCurrency,
-        convertCurrency
-      ),
-    [currentUser.id, groups, expenses, settlements, preferredCurrency, convertCurrency]
+  const { data: balances = new Map() } = useOverallBalances(
+    currentUser.id,
+    groups,
+    expenses,
+    settlements,
+    preferredCurrency,
+    convertCurrency
   );
 
   const totalOwedToMe = useMemo(() => {
