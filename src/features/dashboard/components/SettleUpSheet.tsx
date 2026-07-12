@@ -13,7 +13,7 @@ import { UI } from "@/components/ui/native-ui";
 import type { User } from "@/types";
 
 export interface SettleUpSheetProps {
-  sheetRef: React.RefObject<BottomSheetModal>;
+  sheetRef: React.RefObject<BottomSheetModal | null>;
   currentUserId: string;
   friends: User[];
   perUserBalances: Map<string, number>;

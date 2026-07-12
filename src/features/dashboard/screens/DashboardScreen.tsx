@@ -72,7 +72,7 @@ export default function DashboardScreen(): JSX.Element {
   const [activityFilter, setActivityFilter] = useState<"all" | "paid" | "owe">("all");
   const queryClient = useQueryClient();
 
-  const settleSheetRef = useRef<BottomSheetModal>(null);
+  const settleSheetRef = useRef<BottomSheetModal | null>(null);
 
   const styles = useMemo(
     () =>
