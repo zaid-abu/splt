@@ -1,3 +1,4 @@
+import { withErrorBoundary } from "@/components/feedback/withErrorBoundary"
 import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import type { JSX } from "react";
@@ -140,7 +141,7 @@ function HeroAnimation(): JSX.Element {
   );
 }
 
-export default function WelcomeScreen(): JSX.Element {
+function WelcomeScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const isDarkMode = useUIStore((s) => s.isDarkMode);
@@ -385,3 +386,5 @@ export default function WelcomeScreen(): JSX.Element {
     </View>
   );
 }
+
+export default withErrorBoundary(WelcomeScreen, "Welcome")

@@ -1,3 +1,4 @@
+import { withErrorBoundary } from "@/components/feedback/withErrorBoundary"
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
@@ -15,7 +16,7 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { UI, PressableScale } from "@/components/ui/native-ui";
 import AuthFormLayout from "@/components/layout/AuthFormLayout";
 
-export default function ForgotPasswordScreen(): JSX.Element {
+function ForgotPasswordScreen(): JSX.Element {
   const router = useRouter();
   const { toast } = useAppToast();
   const { mutateAsync: resetPassword, isPending } = useResetPassword();
@@ -157,3 +158,5 @@ export default function ForgotPasswordScreen(): JSX.Element {
     </AuthFormLayout>
   );
 }
+
+export default withErrorBoundary(ForgotPasswordScreen, "Forgot Password")

@@ -1,10 +1,11 @@
 import { lazy, Suspense } from "react"
 import { View, ActivityIndicator } from "react-native"
 import { UI } from "@/components/ui/native-ui"
+import { withErrorBoundary } from "@/components/feedback/withErrorBoundary"
 
 const AnalyticsScreen = lazy(() => import("@/features/analytics/screens/AnalyticsScreen"))
 
-export default function StatsRoute() {
+function StatsRoute() {
   return (
     <Suspense fallback={
       <View style={{ flex: 1, backgroundColor: UI.color.bg, alignItems: "center", justifyContent: "center" }}>
@@ -15,3 +16,5 @@ export default function StatsRoute() {
     </Suspense>
   )
 }
+
+export default withErrorBoundary(StatsRoute, "Analytics")

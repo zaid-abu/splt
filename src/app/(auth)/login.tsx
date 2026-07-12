@@ -1,3 +1,4 @@
+import { withErrorBoundary } from "@/components/feedback/withErrorBoundary"
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import type { JSX } from "react";
@@ -18,7 +19,7 @@ import { UI, PressableScale } from "@/components/ui/native-ui";
 import { GoogleLogo } from "@/components/ui/GoogleLogo";
 import AuthFormLayout from "@/components/layout/AuthFormLayout";
 
-export default function LoginScreen(): JSX.Element {
+function LoginScreen(): JSX.Element {
   const router = useRouter();
   const { toast } = useAppToast();
   const { mutateAsync: signIn, isPending } = useSignIn();
@@ -278,3 +279,5 @@ export default function LoginScreen(): JSX.Element {
     </AuthFormLayout>
   );
 }
+
+export default withErrorBoundary(LoginScreen, "Login")

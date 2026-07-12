@@ -1,3 +1,4 @@
+import { withErrorBoundary } from "@/components/feedback/withErrorBoundary"
 import { Typography, Switch } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import * as WebBrowser from "expo-web-browser";
@@ -18,7 +19,7 @@ import { useAppToast } from "@/hooks/useAppToast";
 import { UI } from "@/components/ui/native-ui";
 import AuthFormLayout from "@/components/layout/AuthFormLayout";
 
-export default function RegisterScreen(): JSX.Element {
+function RegisterScreen(): JSX.Element {
   const router = useRouter();
   const { toast } = useAppToast();
   const { mutateAsync: signUp, isPending } = useSignUp();
@@ -269,3 +270,5 @@ export default function RegisterScreen(): JSX.Element {
     </AuthFormLayout>
   );
 }
+
+export default withErrorBoundary(RegisterScreen, "Register")

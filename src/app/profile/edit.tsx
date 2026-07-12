@@ -1,3 +1,4 @@
+import { withErrorBoundary } from "@/components/feedback/withErrorBoundary"
 import { Typography } from "heroui-native";
 import { useRouter, useNavigation } from "expo-router";
 import type { JSX } from "react";
@@ -17,7 +18,7 @@ import { BottomActionBar } from "@/components/ui/BottomActionBar";
 
 const ERROR = UI.color.danger;
 
-export default function EditProfileScreen(): JSX.Element {
+function EditProfileScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
@@ -198,3 +199,5 @@ export default function EditProfileScreen(): JSX.Element {
     </View>
   );
 }
+
+export default withErrorBoundary(EditProfileScreen, "Edit Profile")
