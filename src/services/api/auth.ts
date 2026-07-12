@@ -114,7 +114,10 @@ export const AuthService = {
   async deleteAccount(userId: string): Promise<void> {
     const { error } = await supabase.from("users").delete().eq("id", userId);
     if (error) throw error;
-    await supabase.auth.signOut();
+    const { error: signOutError } = await supabase.auth.signOut();
+    if (signOutError) {
+      console.warn("Sign out after account deletion failed silently:", signOutError.message);
+    }
   },
 
   async getCurrentUser(): Promise<User | null> {
