@@ -424,10 +424,7 @@ export default function FeedScreen(): JSX.Element {
         preferredCurrency={preferredCurrency}
       />
 
-      <QuickAddSheet
-        sheetRef={quickAddSheetRef}
-        onSuccess={() => quickAddSheetRef.current?.dismiss()}
-      />
+      <QuickAddSheet sheetRef={quickAddSheetRef} />
     </View>
   )
 }

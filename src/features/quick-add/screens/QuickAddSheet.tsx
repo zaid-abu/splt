@@ -6,13 +6,13 @@ import {
   BottomSheetView,
 } from "@gorhom/bottom-sheet"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
+import { useRouter } from "expo-router"
 import { HapticButton } from "@/components/ui/HapticButton"
 import { UI } from "@/components/ui/native-ui"
 import * as Haptics from "expo-haptics"
 
 interface QuickAddSheetProps {
   sheetRef: React.RefObject<BottomSheetModal | null>
-  onSuccess: () => void
 }
 
 const KEY_ROWS = [
@@ -22,10 +22,10 @@ const KEY_ROWS = [
   [".", "0", "⌫"],
 ]
 
-export function QuickAddSheet({ sheetRef, onSuccess }: QuickAddSheetProps) {
+export function QuickAddSheet({ sheetRef }: QuickAddSheetProps) {
+  const router = useRouter()
   const insets = useSafeAreaInsets()
   const [amount, setAmount] = useState("")
-  const [step] = useState(0)
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -39,6 +39,11 @@ export function QuickAddSheet({ sheetRef, onSuccess }: QuickAddSheetProps) {
     ),
     [],
   )
+
+  const handleAddExpense = useCallback(() => {
+    sheetRef.current?.dismiss()
+    router.push(`/expense/new?amount=${amount}`)
+  }, [amount, router, sheetRef])
 
   return (
     <BottomSheetModal
@@ -56,20 +61,6 @@ export function QuickAddSheet({ sheetRef, onSuccess }: QuickAddSheetProps) {
           paddingBottom: Math.max(insets.bottom, 24),
         }}
       >
-        <View style={{ flexDirection: "row", justifyContent: "center", gap: 4, marginBottom: 16 }}>
-          {[0, 1, 2, 3].map((s) => (
-            <View
-              key={s}
-              style={{
-                height: 4,
-                borderRadius: 2,
-                backgroundColor: s <= step ? UI.color.ink : UI.color.border,
-                width: s <= step ? 24 : 8,
-              }}
-            />
-          ))}
-        </View>
-
         <Text
           style={{
             fontFamily: "Sora_600SemiBold",
@@ -125,7 +116,7 @@ export function QuickAddSheet({ sheetRef, onSuccess }: QuickAddSheetProps) {
         </View>
 
         <View style={{ marginTop: 24 }}>
-          <HapticButton tone="ink" onPress={onSuccess} disabled={!amount}>
+          <HapticButton tone="ink" onPress={handleAddExpense} disabled={!amount}>
             Add Expense
           </HapticButton>
         </View>
