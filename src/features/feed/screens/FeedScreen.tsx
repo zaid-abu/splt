@@ -330,7 +330,6 @@ export default function FeedScreen(): JSX.Element {
         >
           <BalanceHeader
             scrollY={scrollY}
-            netBalance={netBalance}
             balanceTone={balanceTone}
             balanceTitle={balanceTitle}
             balanceSubtitle={balanceSubtitle}

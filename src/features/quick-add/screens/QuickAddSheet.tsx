@@ -99,6 +99,7 @@ export function QuickAddSheet({ sheetRef }: QuickAddSheetProps) {
                     opacity: pressed ? 0.7 : 1,
                   })}
                   accessibilityLabel={key === "⌫" ? "Delete" : `Number ${key}`}
+                  accessibilityRole="button"
                 >
                   <Text
                     style={{

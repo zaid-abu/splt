@@ -48,7 +48,6 @@ function IconShell({ icon: Icon, tone }: { icon: LucideIcon; tone: string }): JS
 
 interface BalanceHeaderProps {
   scrollY: SharedValue<number>
-  netBalance: number
   balanceTone: "danger" | "success" | "neutral"
   balanceTitle: string
   balanceSubtitle: string
@@ -57,7 +56,6 @@ interface BalanceHeaderProps {
 
 export function BalanceHeader({
   scrollY,
-  netBalance,
   balanceTone,
   balanceTitle,
   balanceSubtitle,
