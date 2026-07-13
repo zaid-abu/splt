@@ -33,6 +33,49 @@ TextInputComponent.defaultProps = {
   maxFontSizeMultiplier: 1.3,
 };
 
+const linking = {
+  prefixes: ["splt://", "https://splt.app"],
+  config: {
+    screens: {
+      "(auth)": {
+        screens: {
+          welcome: "welcome",
+          login: "login",
+          register: "register",
+        },
+      },
+      "(tabs)": {
+        screens: {
+          feed: "feed",
+          groups: "groups",
+          friends: "friends",
+          profile: "profile",
+        },
+      },
+      "group": {
+        screens: {
+          "[id]": "group/:id",
+        },
+      },
+      "expense": {
+        screens: {
+          "[id]": "expense/:id",
+        },
+      },
+      "friend": {
+        screens: {
+          "[id]": "friend/:id",
+        },
+      },
+      "settle": {
+        screens: {
+          "[id]": "settle/:id",
+        },
+      },
+    },
+  },
+}
+
 export default function RootLayout(): JSX.Element | null {
   const [loaded] = useFonts({
     Sora_600SemiBold: require("@/assets/fonts/Sora-SemiBold.ttf"),
@@ -44,7 +87,6 @@ export default function RootLayout(): JSX.Element | null {
   const [authReady, setAuthReady] = useState(false);
   const isDarkMode = useUIStore((s) => s.isDarkMode);
 
-  // Apply theme on every render so UI.color is updated before children render
   applyTheme(isDarkMode);
   Uniwind.setTheme(isDarkMode ? "dark" : "light");
 
@@ -52,14 +94,12 @@ export default function RootLayout(): JSX.Element | null {
     SystemUI.setBackgroundColorAsync(UI.color.bg);
   }, [isDarkMode]);
 
-  // Fire auth session check immediately — parallel with font loading
   useEffect(() => {
     supabase.auth.getSession().then(() => {
       setAuthReady(true);
     });
   }, []);
 
-  // Hide splash only when both are ready
   useEffect(() => {
     if (loaded && authReady) {
       SplashScreen.hideAsync();
@@ -72,6 +112,7 @@ export default function RootLayout(): JSX.Element | null {
     <AppProvider>
       <Stack
         key={isDarkMode ? "dark" : "light"}
+        linking={linking}
         screenOptions={{
           headerShown: false,
           animation: "slide_from_right",
