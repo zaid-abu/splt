@@ -1,6 +1,6 @@
 import type { JSX } from "react"
 import { useCallback, useMemo, useState, useRef } from "react"
-import { ScrollView, View, RefreshControl, StyleSheet } from "react-native"
+import { View, RefreshControl } from "react-native"
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar"
 import { useSafeAreaInsets } from "react-native-safe-area-context"
 import * as icons from "lucide-react-native"
@@ -8,7 +8,11 @@ import * as Haptics from "expo-haptics"
 import { useRouter } from "expo-router"
 import { Typography } from "heroui-native"
 import { useQueryClient } from "@tanstack/react-query"
-import Animated, { FadeInDown } from "react-native-reanimated"
+import Animated, {
+  FadeInDown,
+  useAnimatedScrollHandler,
+  useSharedValue,
+} from "react-native-reanimated"
 import type { BottomSheetModal } from "@gorhom/bottom-sheet"
 
 import { formatAmount } from "@/components/ui/AmountDisplay"
@@ -27,7 +31,8 @@ import { useAnalytics } from "@/features/analytics/hooks/useAnalytics"
 import { getGreeting } from "@/utils/date"
 import type { User } from "@/types"
 
-import { BalanceWidget } from "@/features/dashboard/components/BalanceWidget"
+import { BalanceHeader } from "@/features/feed/components/BalanceHeader"
+import { QuickStatsRow } from "@/features/feed/components/QuickStatsRow"
 import { AttentionList } from "@/features/dashboard/components/AttentionList"
 import { DashboardGroups } from "@/features/dashboard/components/DashboardGroups"
 import { DashboardActivity } from "@/features/dashboard/components/DashboardActivity"
@@ -71,17 +76,10 @@ export default function FeedScreen(): JSX.Element {
   const [refreshing, setRefreshing] = useState(false)
   const [activityFilter, setActivityFilter] = useState<"all" | "paid" | "owe">("all")
   const queryClient = useQueryClient()
+  const scrollY = useSharedValue(0)
 
   const quickAddSheetRef = useRef<BottomSheetModal | null>(null)
   const settleSheetRef = useRef<BottomSheetModal | null>(null)
-
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        screen: { flex: 1, backgroundColor: UI.color.bg },
-      }),
-    [],
-  )
 
   const { data: perUserBalances = new Map() } = useOverallBalances(
     currentUser.id,
@@ -212,6 +210,30 @@ export default function FeedScreen(): JSX.Element {
     convertCurrency,
   )
 
+  const statsPills = useMemo(() => [
+    {
+      label: "Groups",
+      value: String(groups.length),
+      onPress: () => router.push("/(tabs)/groups"),
+    },
+    {
+      label: "Expenses",
+      value: String(expenses.length),
+      onPress: () => router.push("/stats"),
+    },
+    {
+      label: "This month",
+      value: formatAmount(totalSpent, preferredCurrency.code),
+      onPress: () => router.push("/stats"),
+    },
+  ], [groups.length, expenses.length, totalSpent, preferredCurrency.code, router])
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y
+    },
+  })
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true)
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
@@ -227,7 +249,7 @@ export default function FeedScreen(): JSX.Element {
   }, [])
 
   return (
-    <View style={styles.screen}>
+    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
       <ThemedStatusBar />
 
       <View
@@ -292,10 +314,12 @@ export default function FeedScreen(): JSX.Element {
       ) : isFirstLoad ? (
         <DashboardSkeleton />
       ) : (
-        <ScrollView
+        <Animated.ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={{ paddingBottom: 160 }}
           showsVerticalScrollIndicator={false}
+          onScroll={scrollHandler}
+          scrollEventThrottle={16}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -304,17 +328,16 @@ export default function FeedScreen(): JSX.Element {
             />
           }
         >
-          <BalanceWidget
-            youOwe={youOwe}
-            owedToYou={owedToYou}
+          <BalanceHeader
+            scrollY={scrollY}
             netBalance={netBalance}
             balanceTone={balanceTone}
             balanceTitle={balanceTitle}
             balanceSubtitle={balanceSubtitle}
-            totalSpent={totalSpent}
-            expenseCount={expenseCount}
-            preferredCurrency={preferredCurrency}
+            onAnalyticsPress={() => router.push("/stats")}
           />
+
+          <QuickStatsRow pills={statsPills} />
 
           {friends.length <= 1 && (
             <Animated.View
@@ -411,7 +434,7 @@ export default function FeedScreen(): JSX.Element {
             onViewAllActivity={() => router.push("/(tabs)/activity")}
             onLogFirstExpense={() => router.push("/expense/new")}
           />
-        </ScrollView>
+        </Animated.ScrollView>
       )}
 
       <FloatingAddButton onPress={handleQuickAdd} />

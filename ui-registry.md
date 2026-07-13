@@ -903,20 +903,97 @@ Expo Router error boundary fallback component. Matches the `ErrorBoundaryProps` 
 File: src/features/profile/screens/ProfileScreen.tsx
 Last updated: 2026-07-12
 
-| Property       | Class / Value                                                                                       |
-| -------------- | --------------------------------------------------------------------------------------------------- |
-| Background     | App background `UI.color.bg`                                                                        |
-| Card surface   | `UI.color.surface` via shared `Card` component                                                      |
-| Border         | `1px` `UI.color.border` (via Card or explicit)                                                      |
-| Border radius  | Card: `UI.radius.lg` (`16px`); pills: `UI.radius.pill` (`999px`); metric cells: `UI.radius.md`      |
-| Text - heading | User name: `24px`, `IBMPlexSans_600SemiBold`, `UI.color.text`; Section headers: `SectionLabel`      |
-| Text - body    | `IBMPlexSans_500Medium`, `14px`, `UI.color.muted` for email and metadata                            |
-| Action buttons | Shared `HapticButton` with `tone="outlined"` for secondary, `tone="danger"` for destructive actions |
-| Settings rows  | `SettingsItem` (icon + title + subtitle + right element) for toggle/row actions                     |
-| Spacing        | `24px` screen gutters; `24px` card padding; `40px` between sections; `12px` vertical between rows   |
-| Hover state    | `Pressable` opacity `0.65-0.7`; `HapticButton` handles opacity + haptic feedback                    |
-| Shadow         | None                                                                                                |
-| Accent usage   | Owed balance `+$` in `UI.color.success`; Owe balance `-$` in `UI.color.danger`                      |
+| Property       | Class / Value                                                                                                     |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Background     | App background `UI.color.bg`                                                                                      |
+| Card surface   | `UI.color.surface` via shared `Card` component                                                                    |
+| Border         | `1px` `UI.color.border` (via Card or explicit)                                                                    |
+| Border radius  | Card: `UI.radius.lg` (`16px`); pills: `UI.radius.pill` (`999px`); metric cells: `UI.radius.md` (`12px`)           |
+| Text - heading | User name: `24px`, `Sora_600SemiBold` (+ `TYPO.title(24)`); Section headers: `SectionLabel`                      |
+| Text - body    | `IBMPlexSans_500Medium`, `14px`, `UI.color.muted` for email and metadata; `TYPO.medium()` for preferences         |
+| Action buttons | Shared `HapticButton` with `tone="outlined"` for secondary, `tone="danger"` for destructive actions               |
+| Settings rows  | `SettingsItem` (icon + title + subtitle + right element) for toggle/row actions                                   |
+| Avatar         | `AppUserAvatar size="xl"` (`96px`, `28px` radius) via custom SIZE_MAP.xl in MemberAvatar                          |
+| Spacing        | `24px` screen gutters; `24px` card padding; `40px` between sections; `12px` vertical between rows                 |
+| Hover state    | `Pressable` opacity `0.65-0.7`; `HapticButton` handles opacity + haptic feedback                                  |
+| Shadow         | None                                                                                                              |
+| Accent usage   | Owed balance `+$` in `UI.color.success`; Owe balance `-$` in `UI.color.danger`; animations use reanimated spring  |
 
 **Pattern notes:**
-Profile uses the same loading-first pattern as the dashboard — skeleton placeholders during `isFirstLoad`, then a `ScrollView` with `RefreshControl`. Three sections stacked vertically: (1) tappable user card with avatar, name, email, and metric cells; (2) Preferences with Dark Mode toggle and Currency picker; (3) Account section with created date, Change Password row, Log Out/Tell a Friend outlined buttons, and a visually separated Delete Account danger action. The avatar region is pressable to navigate to `/profile/edit`. All standalone pill buttons use the shared `HapticButton` for consistent haptic feedback. Bottom sheets for delete confirmation use `HapticButton` pairs (Cancel outlined + Delete danger). The edit and change-password screens use `BottomActionBar` for their save buttons.
+Profile uses the same loading-first pattern as the dashboard — skeleton placeholders during `isFirstLoad`, then a `ScrollView` with `RefreshControl`. Three sections stacked vertically: (1) tappable user card with 96px avatar, name, email, member-since date, stats row (Groups/Friends/Expenses — each tappable navigating to tab), and balance summary; (2) Preferences with animated Dark Mode toggle (reanimated spring rotation Moon/Sun icon), custom pill Haptic toggle, and Currency picker; (3) Account section with Change Password/Sign Out rows plus Delete Account danger button; (4) About section with Version, Rate, Share, Feedback. All standalone pill buttons use the shared `HapticButton`. Bottom sheets for delete confirmation use `HapticButton` pairs (Cancel outlined + Delete danger). `TYPO` helper functions used throughout for consistent typography.
+
+### Settlement Screen
+
+File: src/features/settlements/screens/SettlementScreen.tsx
+Last updated: 2026-07-12
+
+| Property          | Class / Value                                                                                              |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| Background        | App background `UI.color.bg`                                                                               |
+| Card surface      | `UI.color.surface` for summary box, recipient cards, and controls                                          |
+| Border            | `1px` `UI.color.border` for cards, inputs, pills, buttons, summary box, sticky bar                         |
+| Border radius     | Cards/inputs: `UI.radius.lg` (`16px`); pills/buttons: `UI.radius.pill` (`999px`)                           |
+| Text - primary    | Amount: `48px` `IBMPlexSans_600SemiBold`; names: `TYPO.semi(13)`; buttons: `TYPO.semi(16)`                |
+| Text - secondary  | Labels: `TYPO.medium(14)` `UI.color.muted`; user names: `TYPO.semi(13)` `UI.color.text`                   |
+| Direction flow    | Two 80px avatar columns (AppUserAvatar size="lg") with a center swap button (ArrowRightLeft + "Swap")      |
+| Amount input      | Native TextInput with decimal-pad keyboard, 48px font, bottom border 2px, currency symbol prefix            |
+| Quick pills       | "Full" and "Half" pills showing net balance values, surfaced when `Math.abs(netBalance) > 0`               |
+| Note/Group toggle | Expandable "Add Note or Group" section with text input and horizontal group pills                          |
+| Sticky submit     | Bottom bar with summary box + full-width Record button, hides during success overlay                       |
+| Success overlay   | Full-screen FadeIn overlay with ZoomIn green circle checkmark, "Settlement Recorded!" heading, auto-dismiss |
+| Spacing           | `24px` screen gutters; `24px` section vertical padding; `32px` amount area margin; `16px` card padding     |
+| Hover state       | Pressable opacity `0.7`; haptic on swap, amount pill, selector, and submit                                |
+| Shadow            | None                                                                                                       |
+| Accent usage      | Brand `UI.color.brand` for submit button and active group pills; success green for overlay                 |
+
+**Pattern notes:**
+SettleUp is a full-screen route with a KeyboardAvoidingView, ScrollView, and sticky bottom action bar. Direction flow is the visual centerpiece: "From" avatar, animated arrow/swap button, "To" avatar. Recipient selector appears when multiple debt options exist in a group. The amount input uses a large 48px font with the currency symbol and decimal-place validation. Quick amount pills show Full/Half of the net balance. Success animation overlays the entire screen after submission with a 1.8s auto-dismiss. All typography refactored to `TYPO` helpers.
+
+### Notification Card
+
+File: src/features/notifications/screens/NotificationsScreen.tsx
+Last updated: 2026-07-12
+
+| Property          | Class / Value                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------- |
+| Background        | App background `UI.color.bg`; notification cards `UI.color.surface`                                  |
+| Border            | `1px` `UI.color.border` for cards and icon shells                                                   |
+| Border radius     | Card: `UI.radius.lg` (`16px`); icon shell: `UI.radius.lg` (`16px`); action pills: `UI.radius.pill`   |
+| Text - primary    | Title: `TYPO.semi(16)` `UI.color.text`; action buttons: `TYPO.semi(14)`                              |
+| Text - secondary  | Subtitle: `TYPO.medium(13)` `UI.color.muted`; timestamp: `TYPO.medium(11)` `UI.color.muted` 0.7      |
+| Type icons        | Friend request: `UserPlus` (#5C648F); expense: `Receipt` (#4B7772); settlement: `ArrowRightLeft` (#7B668D) |
+| Friend avatar     | `AppUserAvatar size="md"` when type is `friend_request` and data is present                          |
+| Action buttons    | Accept (filled `UI.color.text`) + Reject (outlined) for friend requests                              |
+| Date grouping     | Sections: Today, Yesterday, This Week, Older — computed via dayjs (`isToday`, `isYesterday`)          |
+| Header action     | "Mark all read" button — locally dismisses all notifications via `dismissedIds` set                  |
+| Empty state       | `EmptyState` component with `BellOff` icon, "All caught up!" title                                   |
+| Spacing           | `24px` screen gutters; `10px` gap between cards; `20px` top margin per group; `14px` section gap     |
+| Hover state       | `Pressable` opacity `0.5-0.65`; haptic on accept/reject and mark-all-read                           |
+| Shadow            | None                                                                                                 |
+| Accent usage      | Action buttons inherit ink fill and border colors; type icons use muted palette hues                 |
+
+**Pattern notes:**
+Notifications are grouped by relative date using dayjs. Each notification renders as a card with a leading icon/avatar, title/subtitle/timestamp body, and optional inline action buttons (Accept/Reject for friend requests). "Mark all read" lives in the ScreenHeader rightAction slot and uses local state for dismissal. Empty state uses the shared `EmptyState` component. No read/unread server state — all dismissal is local. Group sections use uppercase SectionLabel convention (via `TYPO.label()`).
+
+### Analytics Screen (Updated)
+
+File: src/features/analytics/screens/AnalyticsScreen.tsx
+Last updated: 2026-07-12
+
+| Property        | Class / Value                                                                                   |
+| --------------- | ----------------------------------------------------------------------------------------------- |
+| Background      | App background `UI.color.bg`                                                                    |
+| Card surface    | `UI.color.surface` via shared `Card` component (summary, chart)                                 |
+| Border          | `1px` `UI.color.border` for cards, metric panels, and period pills                             |
+| Border radius   | Card: `UI.radius.lg` (`16px`); metric panels: `UI.radius.md` (`12px`); period pills: `999px`    |
+| Text - heading  | Total amount: `TYPO.hero(38)`; section labels: `SectionLabel` (uppercase tracked `11px`)       |
+| Text - body     | Metric values: `TYPO.semi(16)`; metric labels: `TYPO.label()`                                    |
+| Period pills    | "This Week", "This Month", "This Year", "All Time" — FilterPill-style with haptic on press     |
+| Bar chart       | `BarChart` from react-native-gifted-charts (was LineChart); 18px bar width, 4px radius, animated |
+| Spacing         | `24px` screen gutters; `20px` card padding; `20px` gap between cards; `10px` metric gap        |
+| Hover state     | Period pill opacity `0.72`; chart press handled by gifted-charts                               |
+| Shadow          | None                                                                                           |
+| Accent usage    | Chart bars use `UI.color.text` (charcoal); category breakdown uses muted distinct hues         |
+
+**Pattern notes:**
+Analytics uses the same layout pattern: sticky period pill row, then scrollable card content. The spending summary card shows total, expense count, average, and top category in tappable metric cells. Spending over time changed from LineChart to BarChart for clearer per-period comparison. CategoryBreakdown and TopExpenses components are preserved as separate card surfaces. Loading state shows 4 skeleton blocks matching the card layout. Period labels changed from abbreviated ("Week", "Month") to full phrases ("This Week", "This Month") for clarity. All typography refactored to `TYPO` helpers.
