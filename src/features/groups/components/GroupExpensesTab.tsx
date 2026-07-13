@@ -1,3 +1,4 @@
+import { useCallback } from "react"
 import { View } from "react-native"
 import { FlashList } from "@shopify/flash-list"
 import { Typography } from "heroui-native"
@@ -83,6 +84,25 @@ export function GroupExpensesTab({ groupId, groupCurrency, userById }: GroupExpe
     )
   }
 
+  const renderItem = useCallback(
+    ({ item: expense, index }: { item: any; index: number }) => {
+      const mySplit = expense.splits.find((s: any) => s.userId === currentUser.id)
+      const paidByUser = userById.get(expense.paidBy)
+      return (
+        <TransactionRow
+          expense={expense}
+          currentUserId={currentUser.id}
+          paidByUser={paidByUser}
+          myShare={mySplit?.amount ?? 0}
+          isLast={index === expenses.length - 1}
+          onPress={() => router.push(`/expense/${expense.id}`)}
+          showAvatarBadge
+        />
+      )
+    },
+    [currentUser.id, userById, expenses.length, router]
+  )
+
   return (
     <View style={{ paddingHorizontal: UI.space.page, paddingTop: 16, flex: 1 }}>
       <View
@@ -98,21 +118,7 @@ export function GroupExpensesTab({ groupId, groupCurrency, userById }: GroupExpe
         <FlashList
           data={expenses}
           keyExtractor={(item) => item.id}
-          renderItem={({ item: expense, index }) => {
-            const mySplit = expense.splits.find((s) => s.userId === currentUser.id)
-            const paidByUser = userById.get(expense.paidBy)
-            return (
-              <TransactionRow
-                expense={expense}
-                currentUserId={currentUser.id}
-                paidByUser={paidByUser}
-                myShare={mySplit?.amount ?? 0}
-                isLast={index === expenses.length - 1}
-                onPress={() => router.push(`/expense/${expense.id}`)}
-                showAvatarBadge
-              />
-            )
-          }}
+          renderItem={renderItem}
         />
       </View>
     </View>
