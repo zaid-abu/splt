@@ -40,7 +40,7 @@ export function FloatingAddButton({ onPress }: FloatingAddButtonProps) {
       style={[
         {
           position: "absolute",
-          bottom: 80,
+          bottom: 24,
           alignSelf: "center",
           zIndex: 100,
         },
@@ -49,16 +49,10 @@ export function FloatingAddButton({ onPress }: FloatingAddButtonProps) {
     >
       <Pressable
         onPress={handlePress}
-        className="w-14 h-14 rounded-full bg-ink items-center justify-center"
+        className="w-14 h-14 rounded-full bg-[#1A1A1A] items-center justify-center"
         accessibilityLabel="Add expense"
         accessibilityRole="button"
-        style={{
-          shadowColor: "#000",
-          shadowOffset: { width: 0, height: 4 },
-          shadowOpacity: 0.2,
-          shadowRadius: 8,
-          elevation: 8,
-        }}
+        style={{}}
       >
         <Plus size={28} color="#FFFFFF" strokeWidth={2.5} />
       </Pressable>
