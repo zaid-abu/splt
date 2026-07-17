@@ -1,33 +1,24 @@
-import React, { useState, useCallback, useMemo } from "react";
-import {
-  View,
-  ScrollView,
-  Pressable,
-  LayoutAnimation,
-  RefreshControl,
-  useWindowDimensions,
-} from "react-native";
+import React, { useState, useCallback } from "react";
+import { View, ScrollView, Pressable, LayoutAnimation, RefreshControl } from "react-native";
 import { Typography } from "heroui-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { LineChart } from "react-native-gifted-charts";
-import * as icons from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
-import { formatAmount } from "@/components/ui/AmountDisplay";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
-import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 
 import { useAnalytics } from "../hooks/useAnalytics";
 import type { AnalyticsPeriod } from "@/types";
+import { SpendingSummaryCard } from "../components/SpendingSummaryCard";
+import { TrendChart } from "../components/TrendChart";
 import { CategoryBreakdown } from "../components/CategoryBreakdown";
 import { TopExpenses } from "../components/TopExpenses";
 
-import { Card } from "@/components/ui/Card";
-import { useUI, SectionLabel, ScreenHeader } from "@/components/ui";
+import { useUI, ScreenHeader } from "@/components/ui";
 
 const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "week", label: "Week" },
@@ -38,10 +29,9 @@ const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
 ];
 
 export default function AnalyticsScreen() {
-  const { color, radius, space, shadow } = useUI();
+  const { color, space, radius } = useUI();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { width } = useWindowDimensions();
   const { currentUser } = useAuth();
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
@@ -72,25 +62,7 @@ export default function AnalyticsScreen() {
     }
   }, [refetch]);
 
-  const averageExpense = expenseCount > 0 ? totalSpent / expenseCount : 0;
-  const biggestCategory = categoryData[0];
-  const biggestCategoryLabel = biggestCategory
-    ? biggestCategory.category.charAt(0).toUpperCase() + biggestCategory.category.slice(1)
-    : "None";
-
-  const trendChartData = useMemo(() => {
-    const labelEvery = Math.max(1, Math.ceil(trendData.length / 4));
-    return trendData.map((point, index) => ({
-      value: point.value,
-      label:
-        index === 0 || index === trendData.length - 1 || index % labelEvery === 0
-          ? point.label.replace(" ", "\n")
-          : "",
-    }));
-  }, [trendData]);
-
-  const trendMax = trendData.reduce((max, point) => Math.max(max, point.value), 0);
-  const chartWidth = Math.max(220, width - space.page * 2 - 56);
+  const handleLogExpense = () => router.push("/expense/new");
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: color.bg }}>
@@ -104,7 +76,6 @@ export default function AnalyticsScreen() {
       >
         <ScreenHeader title="Analytics" onBackPress={() => router.back()} />
 
-        {/* Period Selector */}
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -173,149 +144,23 @@ export default function AnalyticsScreen() {
           </View>
         ) : (
           <View style={{ paddingHorizontal: space.page, gap: 24 }}>
-            <Card padding={16}>
-              <SectionLabel style={{ marginBottom: 12 }}>Spending summary</SectionLabel>
-              <Typography
-                style={{
-                  fontSize: 38,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  lineHeight: 46,
-                  marginBottom: 16,
-                }}
-              >
-                {formatAmount(totalSpent, preferredCurrency.code)}
-              </Typography>
-
-              <View style={{ flexDirection: "row", gap: 10 }}>
-                {[
-                  { label: "Expenses", value: String(expenseCount) },
-                  { label: "Average", value: formatAmount(averageExpense, preferredCurrency.code) },
-                  { label: "Top category", value: biggestCategoryLabel },
-                ].map((item) => (
-                  <View
-                    key={item.label}
-                    style={{
-                      flex: 1,
-                      backgroundColor: color.control,
-                      borderRadius: 14,
-                      borderWidth: 1,
-                      borderColor: color.border,
-                      paddingHorizontal: 12,
-                      paddingVertical: 12,
-                    }}
-                  >
-                    <Typography
-                      numberOfLines={1}
-                      style={{
-                        fontSize: 11,
-                        color: color.muted,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                        textTransform: "uppercase",
-                        letterSpacing: 0.8,
-                        marginBottom: 5,
-                      }}
-                    >
-                      {item.label}
-                    </Typography>
-                    <Typography
-                      numberOfLines={1}
-                      adjustsFontSizeToFit
-                      style={{
-                        fontSize: 16,
-                        color: color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      {item.value}
-                    </Typography>
-                  </View>
-                ))}
-              </View>
-            </Card>
-
-            <Card padding={16}>
-              <SectionLabel style={{ marginBottom: 12 }}>Trend</SectionLabel>
-              {trendChartData.length > 0 && trendMax > 0 ? (
-                <View style={{ marginLeft: -10, marginTop: 2 }}>
-                  <LineChart
-                    data={trendChartData}
-                    areaChart
-                    curved
-                    isAnimated
-                    height={170}
-                    width={chartWidth}
-                    spacing={Math.max(34, chartWidth / Math.max(4, trendChartData.length - 1))}
-                    color={color.text}
-                    thickness={2}
-                    startFillColor={color.text}
-                    endFillColor={color.text}
-                    startOpacity={0.1}
-                    endOpacity={0.01}
-                    hideDataPoints
-                    hideYAxisText
-                    yAxisThickness={0}
-                    xAxisThickness={1}
-                    xAxisColor={color.border}
-                    rulesColor={color.border}
-                    rulesThickness={1}
-                    noOfSections={3}
-                    maxValue={trendMax * 1.2}
-                    xAxisLabelTextStyle={{
-                      color: color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
-                      fontSize: 10,
-                    }}
-                  />
-                </View>
-              ) : (
-                <View style={{ paddingVertical: 28, alignItems: "center" }}>
-                  <icons.LineChart size={38} color={color.muted} strokeWidth={1.25} />
-                  <Typography
-                    style={{
-                      marginTop: 12,
-                      color: color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
-                      marginBottom: 16,
-                    }}
-                  >
-                    No spending trend for this period.
-                  </Typography>
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => router.push("/expense/new")}
-                    style={({ pressed }) => ({
-                      paddingHorizontal: 18,
-                      paddingVertical: 10,
-                      borderRadius: 999,
-                      backgroundColor: color.text,
-                      opacity: pressed ? 0.8 : 1,
-                    })}
-                  >
-                    <Typography
-                      style={{
-                        fontSize: 14,
-                        color: color.textInverse,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      Log an expense
-                    </Typography>
-                  </Pressable>
-                </View>
-              )}
-            </Card>
-
+            <SpendingSummaryCard
+              totalSpent={totalSpent}
+              expenseCount={expenseCount}
+              categoryData={categoryData}
+              currencyCode={preferredCurrency.code}
+            />
+            <TrendChart trendData={trendData} onLogExpense={handleLogExpense} />
             <CategoryBreakdown
               data={categoryData}
               totalSpent={totalSpent}
               currencyCode={preferredCurrency.code}
-              onLogExpense={() => router.push("/expense/new")}
+              onLogExpense={handleLogExpense}
             />
             <TopExpenses
               expenses={topExpenses}
               currencyCode={preferredCurrency.code}
-              onLogExpense={() => router.push("/expense/new")}
+              onLogExpense={handleLogExpense}
             />
           </View>
         )}

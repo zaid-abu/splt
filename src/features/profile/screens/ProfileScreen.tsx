@@ -1,89 +1,50 @@
-import { Switch, Typography } from "heroui-native";
+import { Typography } from "heroui-native";
 import { useRouter } from "expo-router";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import type { JSX } from "react";
 import { useState, useCallback, useRef, useEffect } from "react";
 import { ScrollView, View, Pressable, RefreshControl, Share } from "react-native";
-import { useQueryClient } from "@tanstack/react-query";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
-import * as icons from "lucide-react-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { useUI, ScreenHeader, MetricCell, SectionLabel } from "@/components/ui";
+import { useUI, ScreenHeader } from "@/components/ui";
 import { Card } from "@/components/ui/Card";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { CurrencySelector } from "@/components/forms/CurrencySelector";
-import { useGroups } from "@/features/groups/queries/useGroups";
-import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
-import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
-import { useAuth } from "@/context/AppContext";
-import { useSignOut, useDeleteAccount } from "@/features/auth/hooks/useAuthMutations";
-import { useUIStore } from "@/store/useUIStore";
-import * as balancesUtil from "@/features/settlements/utils/balances";
-import type { Currency } from "@/types";
-import { SettingsItem } from "@/features/profile/components/SettingsItem";
 import { Uniwind } from "uniwind";
 
+import { useProfile } from "../hooks/useProfile";
+import { ProfileHeader } from "../components/ProfileHeader";
+import { ProfileBalance } from "../components/ProfileBalance";
+import { ProfilePreferences } from "../components/ProfilePreferences";
+import { ProfileAccount } from "../components/ProfileAccount";
+
 export default function ProfileScreen(): JSX.Element {
-  const { color, radius, space, shadow } = useUI();
+  const { color, radius, space } = useUI();
   const router = useRouter();
-  const { currentUser } = useAuth();
-
-  const {
-    data: groups = [],
-    isLoading: isLoadingGroups,
-    error: groupsError,
-    refetch: refetchGroups,
-  } = useGroups(currentUser?.id);
-  const {
-    data: expenses = [],
-    isLoading: isLoadingExpenses,
-    error: expensesError,
-    refetch: refetchExpenses,
-  } = useUserExpenses(currentUser?.id);
-  const {
-    data: settlements = [],
-    isLoading: isLoadingSettlements,
-    error: settlementsError,
-    refetch: refetchSettlements,
-  } = useUserSettlements(currentUser?.id);
-
-  const isFirstLoad = isLoadingGroups || isLoadingExpenses || isLoadingSettlements;
-  const hasError = !!groupsError || !!expensesError || !!settlementsError;
-
   const insets = useSafeAreaInsets();
-  const queryClient = useQueryClient();
-  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
-  const convertCurrency = useUIStore((s) => s.convertCurrency);
-  const setCurrency = useUIStore((s) => s.setCurrency);
-  const isDarkMode = useUIStore((s) => s.isDarkMode);
-  const setDarkMode = useUIStore((s) => s.setDarkMode);
 
-  const owedToYou = balancesUtil.getTotalOwedToMe(
-    currentUser.id,
+  const {
+    currentUser,
     groups,
-    expenses,
-    settlements,
+    owedToYou,
+    youOwe,
+    isFirstLoad,
+    hasError,
     preferredCurrency,
-    convertCurrency
-  );
-  const youOwe = Math.abs(
-    balancesUtil.getTotalIOwe(
-      currentUser.id,
-      groups,
-      expenses,
-      settlements,
-      preferredCurrency,
-      convertCurrency
-    )
-  );
+    isDarkMode,
+    signOut,
+    deleteAccount,
+    onRefresh,
+    handleThemeToggle,
+    handleCurrencyChange,
+    refetchGroups,
+    refetchExpenses,
+    refetchSettlements,
+  } = useProfile();
 
-  const { mutate: signOut } = useSignOut();
-  const { mutateAsync: deleteAccount } = useDeleteAccount();
   const deleteSheetRef = useRef<BottomSheetModal>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -100,25 +61,11 @@ export default function ProfileScreen(): JSX.Element {
     []
   );
 
-  const onRefresh = useCallback(async () => {
+  const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await queryClient.invalidateQueries({
-      queryKey: ["groups", "expenses", "settlements"],
-    });
+    await onRefresh();
     setRefreshing(false);
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-  }, [queryClient]);
-
-  const handleThemeToggle = (value: boolean) => {
-    Haptics.selectionAsync();
-    setDarkMode(value);
-    Uniwind.setTheme(value ? "dark" : "light");
-  };
-
-  useEffect(() => {
-    Uniwind.setTheme(isDarkMode ? "dark" : "light");
-  }, [isDarkMode]);
+  }, [onRefresh]);
 
   const handleShareInvite = async () => {
     try {
@@ -128,11 +75,9 @@ export default function ProfileScreen(): JSX.Element {
     } catch {}
   };
 
-  const handleCurrencyChange = (currency: Currency) => {
-    setCurrency(currency);
-  };
-
-  // ── Loading State ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    Uniwind.setTheme(isDarkMode ? "dark" : "light");
+  }, [isDarkMode]);
 
   if (isFirstLoad) {
     return (
@@ -221,8 +166,6 @@ export default function ProfileScreen(): JSX.Element {
     );
   }
 
-  // ── Error State ─────────────────────────────────────────────────────────────
-
   if (hasError) {
     return (
       <FocusAwareView style={{ flex: 1, backgroundColor: color.bg }}>
@@ -244,8 +187,6 @@ export default function ProfileScreen(): JSX.Element {
       </FocusAwareView>
     );
   }
-
-  // ── Content ─────────────────────────────────────────────────────────────────
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: color.bg }}>
@@ -285,173 +226,49 @@ export default function ProfileScreen(): JSX.Element {
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.text} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={color.text}
+          />
         }
       >
-        {/* ── Profile Card ─────────────────────────────────────────────────── */}
-
         <FocusAwareView delay={100} style={{ paddingHorizontal: space.page, marginBottom: 40 }}>
           <Card padding={space.page}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => router.push("/profile/edit")}
-              style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-            >
-              <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
-                <AppUserAvatar user={currentUser} size="lg" />
-                <View style={{ marginLeft: 16, flex: 1 }}>
-                  <Typography
-                    style={{
-                      fontSize: 24,
-                      color: color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                      letterSpacing: -0.5,
-                    }}
-                    numberOfLines={1}
-                  >
-                    {currentUser.name}
-                  </Typography>
-                  <Typography
-                    style={{
-                      fontSize: 14,
-                      color: color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
-                    }}
-                    numberOfLines={1}
-                  >
-                    {currentUser.email}
-                  </Typography>
-                </View>
-                <icons.ChevronRight size={20} color={color.muted} strokeWidth={1.5} />
-              </View>
-            </Pressable>
-
-            <View style={{ flexDirection: "row", gap: 10 }}>
-              <MetricCell label="Groups" value={String(groups.length)} />
-              <MetricCell
-                label="Owed"
-                value={`+${preferredCurrency.symbol}${owedToYou.toFixed(0)}`}
-                tone={owedToYou > 0 ? "success" : "neutral"}
-              />
-              <MetricCell
-                label="Owe"
-                value={
-                  youOwe > 0
-                    ? `-${preferredCurrency.symbol}${youOwe.toFixed(0)}`
-                    : `${preferredCurrency.symbol}0`
-                }
-                tone={youOwe > 0 ? "danger" : "neutral"}
+            <ProfileHeader
+              name={currentUser.name}
+              email={currentUser.email}
+              onEdit={() => router.push("/profile/edit")}
+            />
+            <View style={{ marginTop: 32 }}>
+              <ProfileBalance
+                groupCount={groups.length}
+                owedToYou={owedToYou}
+                youOwe={youOwe}
+                currencySymbol={preferredCurrency.symbol}
               />
             </View>
           </Card>
         </FocusAwareView>
 
-        {/* ── Preferences ──────────────────────────────────────────────────── */}
-
         <FocusAwareView delay={200} style={{ paddingHorizontal: space.page, marginBottom: 40 }}>
-          <View style={{ marginBottom: 14 }}>
-            <SectionLabel>Preferences</SectionLabel>
-          </View>
-
-          <View
-            style={{
-              backgroundColor: color.surface,
-              borderRadius: radius.lg,
-              borderWidth: 1,
-              borderColor: color.border,
-              marginBottom: 12,
-            }}
-          >
-            <SettingsItem
-              icon="Moon"
-              title="Dark Mode"
-              subtitle="Switch between light and dark themes"
-              rightElement={<Switch isSelected={isDarkMode} onSelectedChange={handleThemeToggle} />}
-            />
-          </View>
-
-          <View
-            style={{
-              backgroundColor: color.surface,
-              borderRadius: radius.lg,
-              borderWidth: 1,
-              borderColor: color.border,
-            }}
-          >
-            <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
-              <CurrencySelector value={preferredCurrency.code} onChange={handleCurrencyChange} />
-            </View>
-          </View>
+          <ProfilePreferences
+            isDarkMode={isDarkMode}
+            preferredCurrencyCode={preferredCurrency.code}
+            onThemeToggle={handleThemeToggle}
+            onCurrencyChange={handleCurrencyChange}
+          />
         </FocusAwareView>
-
-        {/* ── Account ──────────────────────────────────────────────────────── */}
 
         <FocusAwareView delay={300} style={{ paddingHorizontal: space.page, marginBottom: 40 }}>
-          <View style={{ marginBottom: 14 }}>
-            <SectionLabel>Account</SectionLabel>
-          </View>
-
-          <View
-            style={{
-              backgroundColor: color.surface,
-              borderRadius: radius.lg,
-              borderWidth: 1,
-              borderColor: color.border,
-            }}
-          >
-            <View style={{ padding: space.page }}>
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: color.muted,
-                  fontFamily: "IBMPlexSans_500Medium",
-                  marginBottom: 20,
-                  lineHeight: 20,
-                }}
-              >
-                {currentUser.createdAt
-                  ? `Account created on ${currentUser.createdAt.toLocaleDateString()}`
-                  : "Account details are synced with your profile."}
-              </Typography>
-
-              <SettingsItem
-                icon="Lock"
-                title="Change Password"
-                onPress={() => router.push("/profile/change-password")}
-              />
-
-              <View style={{ height: 12 }} />
-
-              <HapticButton onPress={() => signOut()} tone="outlined" height={52}>
-                Log Out
-              </HapticButton>
-
-              <View style={{ height: 10 }} />
-
-              <HapticButton onPress={handleShareInvite} tone="outlined" height={52}>
-                Tell a Friend
-              </HapticButton>
-
-              <View
-                style={{
-                  height: 1,
-                  backgroundColor: color.border,
-                  marginVertical: 16,
-                }}
-              />
-
-              <HapticButton
-                onPress={() => deleteSheetRef.current?.present()}
-                tone="danger"
-                height={52}
-              >
-                Delete Account
-              </HapticButton>
-            </View>
-          </View>
+          <ProfileAccount
+            createdAt={currentUser.createdAt}
+            onChangePassword={() => router.push("/profile/change-password")}
+            onShareInvite={handleShareInvite}
+            onLogOut={() => signOut()}
+            onDeleteAccount={() => deleteSheetRef.current?.present()}
+          />
         </FocusAwareView>
-
-        {/* ── Version ──────────────────────────────────────────────────────── */}
 
         <View style={{ alignItems: "center", marginBottom: 32, marginTop: -8 }}>
           <Typography
@@ -466,8 +283,6 @@ export default function ProfileScreen(): JSX.Element {
           </Typography>
         </View>
       </ScrollView>
-
-      {/* ── Delete Account Sheet ───────────────────────────────────────────── */}
 
       <BottomSheetModal
         ref={deleteSheetRef}

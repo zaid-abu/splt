@@ -2,219 +2,53 @@ import { Typography } from "heroui-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { ExpenseRouteParams } from "@/types/navigation";
-import { useState, useRef, useCallback } from "react";
+import { useCallback } from "react";
 import type { JSX } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { ScrollView, View, Pressable, TextInput, Image } from "react-native";
+import { ScrollView, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
-import { useGroups } from "@/features/groups/queries/useGroups";
-import { useUserExpenses, useDeleteExpense } from "@/features/expenses/queries/useExpenses";
-import { useExpenseComments, useAddComment } from "@/features/expenses/queries/useComments";
-
-import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
-import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useUI } from "@/components/ui";
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { useAppToast } from "@/hooks/useAppToast";
-import { EXPENSE_CATEGORIES } from "@/types";
-
-function CommentsSection({
-  expenseId,
-  currentUserId,
-}: {
-  expenseId: string;
-  currentUserId: string;
-}): JSX.Element {
-  const { color, radius, space, shadow } = useUI();
-  const { data: comments = [], isLoading, isError, refetch } = useExpenseComments(expenseId);
-  const { mutateAsync: addComment } = useAddComment();
-  const [text, setText] = useState("");
-  const [sending, setSending] = useState(false);
-
-  const handleSend = async () => {
-    if (!text.trim() || sending) return;
-    setSending(true);
-    try {
-      await addComment({ expenseId, userId: currentUserId, text: text.trim() });
-      setText("");
-    } catch {
-      /* handled by query client */
-    }
-    setSending(false);
-  };
-
-  return (
-    <View
-      style={{
-        backgroundColor: color.surface,
-        borderRadius: radius.lg,
-        borderWidth: 1,
-        borderColor: color.border,
-        overflow: "hidden",
-      }}
-    >
-      {isError ? (
-        <View style={{ paddingVertical: 24, alignItems: "center" }}>
-          <ErrorState onRetry={() => refetch()} />
-        </View>
-      ) : comments.length === 0 && !isLoading ? (
-        <View style={{ paddingVertical: 24, alignItems: "center" }}>
-          <Typography
-            style={{
-              fontSize: 14,
-              color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
-            }}
-          >
-            No comments yet
-          </Typography>
-        </View>
-      ) : (
-        comments.map((comment) => (
-          <View
-            key={comment.id}
-            style={{
-              flexDirection: "row",
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: color.border,
-            }}
-          >
-            <AppUserAvatar
-              user={
-                (comment.user as any) ?? {
-                  id: comment.user_id,
-                  name: "?",
-                  initials: "?",
-                  email: "",
-                  defaultCurrency: "USD",
-                }
-              }
-              size="sm"
-            />
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  {comment.user?.name ?? "Unknown"}
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 11,
-                    color: color.muted,
-                    fontFamily: "IBMPlexSans_500Medium",
-                  }}
-                >
-                  {new Date(comment.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </Typography>
-              </View>
-              <Typography
-                style={{
-                  marginTop: 2,
-                  fontSize: 14,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_400Regular",
-                  lineHeight: 20,
-                }}
-              >
-                {comment.text}
-              </Typography>
-            </View>
-          </View>
-        ))
-      )}
-
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 12,
-          paddingVertical: 10,
-          borderTopWidth: comments.length > 0 ? 1 : 0,
-          borderTopColor: color.border,
-        }}
-      >
-        <TextInput
-          value={text}
-          onChangeText={setText}
-          placeholder="Add a comment..."
-          placeholderTextColor={color.muted}
-          style={{
-            flex: 1,
-            fontSize: 14,
-            color: color.text,
-            fontFamily: "IBMPlexSans_400Regular",
-            paddingVertical: 8,
-            paddingHorizontal: 8,
-          }}
-        />
-        <Pressable
-          accessibilityRole="button"
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            handleSend();
-          }}
-          disabled={!text.trim() || sending}
-          hitSlop={8}
-          style={({ pressed }) => ({
-            width: 36,
-            height: 36,
-            borderRadius: radius.pill,
-            backgroundColor: text.trim() ? color.text : color.control,
-            borderWidth: 1,
-            borderColor: color.border,
-            alignItems: "center",
-            justifyContent: "center",
-            opacity: pressed ? 0.7 : 1,
-          })}
-        >
-          <icons.Send
-            size={16}
-            color={text.trim() ? color.textInverse : color.muted}
-            strokeWidth={2}
-          />
-        </Pressable>
-      </View>
-    </View>
-  );
-}
+import { useExpenseDetail } from "@/features/expenses/hooks/useExpenseDetail";
+import { ExpenseSummary } from "@/features/expenses/components/ExpenseSummary";
+import { ExpenseSplitBreakdown } from "@/features/expenses/components/ExpenseSplitBreakdown";
+import { ExpenseComments } from "@/features/expenses/components/ExpenseComments";
 
 export default function ExpenseDetailScreen(): JSX.Element {
   const { id } = useLocalSearchParams<ExpenseRouteParams>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const {
-    data: expenses = [],
-    isLoading: isExpensesLoading,
-    isError: isExpensesError,
-    refetch: refetchExpenses,
-  } = useUserExpenses(currentUser?.id);
-  const { data: groups = [] } = useGroups(currentUser?.id);
-  const { mutateAsync: deleteExpense } = useDeleteExpense();
-  const { toast } = useAppToast();
-  const { color, radius, space, shadow } = useUI();
-
+  const { color, radius, space } = useUI();
   const isAppLoading = useUIStore((s) => s.isAppLoading);
-  const deleteSheetRef = useRef<BottomSheetModal>(null);
+
+  const {
+    expense,
+    group,
+    category,
+    isExpensesLoading,
+    isExpensesError,
+    refetchExpenses,
+    formatAmt,
+    dateStr,
+    paidByMe,
+    myShare,
+    paidByLabel,
+    deleteSheetRef,
+    handleDelete,
+    handleEdit,
+    handleDeletePress,
+    handleSettle,
+    handleUserPress,
+  } = useExpenseDetail(id);
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -228,10 +62,6 @@ export default function ExpenseDetailScreen(): JSX.Element {
     ),
     []
   );
-
-  const expense = expenses.find((e) => e.id === id);
-  const group = groups.find((g) => g.id === expense?.groupId);
-  const category = EXPENSE_CATEGORIES.find((c) => c.key === expense?.category);
 
   if (!expense && isExpensesLoading) {
     return (
@@ -321,28 +151,20 @@ export default function ExpenseDetailScreen(): JSX.Element {
     );
   }
 
-  const sym = getCurrencySymbol(expense.currency);
-  const isJPY = expense.currency === "JPY" || expense.currency === "KRW";
-  const paidByMe = expense.paidBy === currentUser.id;
-  const myShare = expense.splits.find((s: any) => s.userId === currentUser.id);
-
-  const formatAmt = (n: number) =>
-    `${sym}${n.toLocaleString("en-US", {
-      minimumFractionDigits: isJPY ? 0 : 2,
-      maximumFractionDigits: isJPY ? 0 : 2,
-    })}`;
-
-  const dateStr = expense.date.toLocaleDateString("en-US", {
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  });
+  const splitMethodLabel = expense.splitMethod === "equal" ? "EQUAL" : "CUSTOM";
+  const myShareSummaryLabel = paidByMe ? "You paid" : "Your Share";
+  const myShareSummaryAmount = paidByMe
+    ? formatAmt(expense.amount)
+    : formatAmt(myShare?.amount ?? 0);
+  const settleMessage = paidByMe
+    ? `Your share is ${formatAmt(myShare?.amount ?? 0)}. The rest is owed to you.`
+    : `You owe ${expense.paidByUser.name.split(" ")[0]} to settle up.`;
+  const showSettleButton = !paidByMe && !myShare?.paid;
 
   return (
     <View style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
 
-      {/* Header */}
       <View
         style={{
           paddingTop: insets.top + 16,
@@ -377,10 +199,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
           <Pressable
             accessibilityRole="button"
-            onPress={() => {
-              Haptics.selectionAsync();
-              router.push({ pathname: "/expense/new", params: { expenseId: expense.id } });
-            }}
+            onPress={handleEdit}
             style={({ pressed }) => ({
               width: 44,
               height: 44,
@@ -398,10 +217,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
 
           <Pressable
             accessibilityRole="button"
-            onPress={() => {
-              Haptics.selectionAsync();
-              deleteSheetRef.current?.present();
-            }}
+            onPress={handleDeletePress}
             style={({ pressed }) => ({
               width: 44,
               height: 44,
@@ -424,421 +240,36 @@ export default function ExpenseDetailScreen(): JSX.Element {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 60 }}
       >
-        {/* Bill Section */}
-        <Animated.View
-          entering={FadeInDown.duration(400)}
-          style={{
-            paddingHorizontal: space.page,
-            paddingTop: 32,
-            paddingBottom: 32,
-            borderBottomWidth: 1,
-            borderBottomColor: color.border,
-          }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "flex-start",
-              marginBottom: 24,
-            }}
-          >
-            <View style={{ flex: 1 }}>
-              <Typography
-                style={{
-                  fontSize: 12,
-                  color: color.muted,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  textTransform: "uppercase",
-                  letterSpacing: 2,
-                  marginBottom: 8,
-                }}
-              >
-                {category?.label ?? "Expense"}
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 28,
-                  color: color.text,
-                  fontFamily: "Sora_600SemiBold",
-                  lineHeight: 34,
-                }}
-              >
-                {expense.title}
-              </Typography>
-            </View>
-            <CategoryIconBadge category={expense.category} size="lg" />
-          </View>
+        <ExpenseSummary
+          categoryLabel={category?.label ?? "Expense"}
+          title={expense.title}
+          category={expense.category}
+          formattedAmount={formatAmt(expense.amount)}
+          dateStr={dateStr}
+          paidByLabel={paidByLabel}
+          paidByUser={expense.paidByUser}
+          groupName={group?.name}
+          notes={expense.notes}
+          receiptUrl={expense.receiptUrl}
+        />
 
-          <View style={{ marginBottom: 24 }}>
-            <Typography
-              style={{
-                fontSize: 48,
-                lineHeight: 54,
-                color: color.textStrong,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                letterSpacing: -1.5,
-              }}
-            >
-              {formatAmt(expense.amount)}
-            </Typography>
-          </View>
+        <ExpenseSplitBreakdown
+          splits={expense.splits}
+          splitMethod={splitMethodLabel}
+          currentUserId={currentUser.id}
+          formatAmt={formatAmt}
+          paidByMe={paidByMe}
+          myShareAmount={myShare?.amount}
+          myShareSummaryLabel={myShareSummaryLabel}
+          myShareSummaryAmount={myShareSummaryAmount}
+          settleMessage={settleMessage}
+          showSettleButton={showSettleButton}
+          paidByFirstName={expense.paidByUser.name.split(" ")[0]}
+          onSettlePress={handleSettle}
+          onUserPress={handleUserPress}
+          isAppLoading={isAppLoading}
+        />
 
-          <View style={{ gap: 16 }}>
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: color.muted,
-                  fontFamily: "IBMPlexSans_500Medium",
-                }}
-              >
-                Date
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                {dateStr}
-              </Typography>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: color.muted,
-                  fontFamily: "IBMPlexSans_500Medium",
-                }}
-              >
-                Paid by
-              </Typography>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-                <AppUserAvatar user={expense.paidByUser} size="sm" />
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  {paidByMe ? "You" : expense.paidByUser.name}
-                </Typography>
-              </View>
-            </View>
-
-            {group && (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: color.muted,
-                    fontFamily: "IBMPlexSans_500Medium",
-                  }}
-                >
-                  Group
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  {group.name}
-                </Typography>
-              </View>
-            )}
-
-            {expense.notes && (
-              <View
-                style={{
-                  marginTop: 8,
-                  paddingTop: 16,
-                  borderTopWidth: 1,
-                  borderTopColor: color.border,
-                }}
-              >
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: color.muted,
-                    fontFamily: "IBMPlexSans_500Medium",
-                    lineHeight: 22,
-                  }}
-                >
-                  &quot;{expense.notes}&quot;
-                </Typography>
-              </View>
-            )}
-
-            {expense.receiptUrl && (
-              <View
-                style={{
-                  marginTop: 8,
-                  paddingTop: 16,
-                  borderTopWidth: 1,
-                  borderTopColor: color.border,
-                  alignItems: "center",
-                }}
-              >
-                <Pressable
-                  accessibilityRole="imagebutton"
-                  accessibilityLabel="View receipt"
-                  onPress={() => {
-                    // Open full-screen image — uses router or Linking
-                  }}
-                  style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
-                >
-                  <Image
-                    source={{ uri: expense.receiptUrl }}
-                    style={{
-                      width: "100%",
-                      height: 200,
-                      borderRadius: radius.md,
-                    }}
-                    resizeMode="contain"
-                  />
-                </Pressable>
-                <Typography
-                  style={{
-                    marginTop: 8,
-                    fontSize: 13,
-                    color: color.muted,
-                    fontFamily: "IBMPlexSans_500Medium",
-                  }}
-                >
-                  Receipt
-                </Typography>
-              </View>
-            )}
-          </View>
-        </Animated.View>
-
-        {/* Split Breakdown */}
-        <Animated.View
-          entering={FadeInDown.duration(400).delay(100)}
-          style={{ paddingHorizontal: space.page, paddingTop: 32 }}
-        >
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-              marginBottom: 24,
-            }}
-          >
-            <Typography
-              style={{
-                fontSize: 12,
-                color: color.muted,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                textTransform: "uppercase",
-                letterSpacing: 2,
-              }}
-            >
-              Split Breakdown
-            </Typography>
-            <View
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 4,
-                backgroundColor: "transparent",
-                borderWidth: 1,
-                borderColor: color.border,
-                borderRadius: 12,
-              }}
-            >
-              <Typography
-                style={{
-                  fontSize: 11,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                {expense.splitMethod === "equal" ? "EQUAL" : "CUSTOM"}
-              </Typography>
-            </View>
-          </View>
-
-          <View>
-            {isAppLoading ? (
-              <View style={{ paddingTop: 24 }}>
-                <AppLoader />
-              </View>
-            ) : (
-              expense.splits.map((split: any, idx: number) => {
-                const isPaid = split.paid;
-                const isMe = split.userId === currentUser.id;
-                const isPayer = split.userId === expense.paidBy;
-
-                return (
-                  <Pressable
-                    key={split.userId}
-                    onPress={() => {
-                      if (!isMe) {
-                        Haptics.selectionAsync();
-                        router.push(`/friend/${split.userId}`);
-                      }
-                    }}
-                    style={({ pressed }) => ({
-                      flexDirection: "row",
-                      alignItems: "center",
-                      paddingVertical: 16,
-                      borderBottomWidth: idx < expense.splits.length - 1 ? 1 : 0,
-                      borderBottomColor: color.border,
-                      opacity: !isMe && pressed ? 0.5 : 1,
-                    })}
-                  >
-                    <AppUserAvatar user={split.user} size="lg" />
-                    <View style={{ flex: 1, marginLeft: 16, justifyContent: "center" }}>
-                      <Typography
-                        style={{
-                          fontSize: 18,
-                          color: color.text,
-                          fontFamily: "IBMPlexSans_600SemiBold",
-                          marginBottom: 2,
-                        }}
-                      >
-                        {isMe ? "You" : split.user.name}
-                      </Typography>
-                      <Typography
-                        style={{
-                          fontSize: 14,
-                          color: color.muted,
-                          fontFamily: "IBMPlexSans_500Medium",
-                        }}
-                      >
-                        {isPaid ? (isPayer ? "Paid the bill" : "Settled") : "Owes"}
-                      </Typography>
-                    </View>
-                    <Typography
-                      style={{
-                        fontSize: 20,
-                        color: color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      {formatAmt(split.amount)}
-                    </Typography>
-                  </Pressable>
-                );
-              })
-            )}
-          </View>
-        </Animated.View>
-
-        {/* My Share Summary */}
-        {myShare && (
-          <Animated.View
-            entering={FadeInDown.duration(400).delay(200)}
-            style={{ paddingHorizontal: space.page, paddingTop: 32 }}
-          >
-            <View
-              style={{
-                paddingVertical: 24,
-                paddingHorizontal: 24,
-                backgroundColor: color.brand,
-                borderRadius: radius.lg,
-              }}
-            >
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: color.textInverse,
-                  opacity: 0.7,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  textTransform: "uppercase",
-                  letterSpacing: 1.4,
-                  marginBottom: 8,
-                }}
-              >
-                {paidByMe ? "You paid" : "Your Share"}
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 28,
-                  color: color.textInverse,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  marginBottom: 8,
-                }}
-              >
-                {paidByMe ? formatAmt(expense.amount) : formatAmt(myShare.amount)}
-              </Typography>
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: color.textInverse,
-                  opacity: 0.9,
-                  fontFamily: "IBMPlexSans_500Medium",
-                  lineHeight: 20,
-                }}
-              >
-                {paidByMe
-                  ? `Your share is ${formatAmt(myShare.amount)}. The rest is owed to you.`
-                  : `You owe ${expense.paidByUser.name.split(" ")[0]} to settle up.`}
-              </Typography>
-
-              {!paidByMe && !myShare.paid && (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => {
-                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                    router.push({
-                      pathname: `/settle/${expense.paidBy}`,
-                      params: {
-                        amount: myShare.amount.toString(),
-                        groupId: expense.groupId || undefined,
-                      },
-                    } as any);
-                  }}
-                  style={({ pressed }) => ({
-                    marginTop: 24,
-                    height: 48,
-                    backgroundColor: color.control,
-                    borderRadius: radius.pill,
-                    alignItems: "center",
-                    justifyContent: "center",
-                    opacity: pressed ? 0.8 : 1,
-                  })}
-                >
-                  <Typography
-                    style={{
-                      fontSize: 15,
-                      color: color.brand,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                    }}
-                  >
-                    Settle Your Share
-                  </Typography>
-                </Pressable>
-              )}
-            </View>
-          </Animated.View>
-        )}
-
-        {/* Comments */}
         <Animated.View
           entering={FadeInDown.duration(400).delay(200).springify()}
           style={{ paddingHorizontal: space.page, marginBottom: 40 }}
@@ -855,11 +286,10 @@ export default function ExpenseDetailScreen(): JSX.Element {
           >
             Comments
           </Typography>
-          <CommentsSection expenseId={expense.id} currentUserId={currentUser.id} />
+          <ExpenseComments expenseId={expense.id} currentUserId={currentUser.id} />
         </Animated.View>
       </ScrollView>
 
-      {/* Delete Confirmation Bottom Sheet */}
       <BottomSheetModal
         ref={deleteSheetRef}
         index={0}
@@ -924,22 +354,7 @@ export default function ExpenseDetailScreen(): JSX.Element {
               </Typography>
             </Pressable>
             <Pressable
-              onPress={async () => {
-                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-                deleteSheetRef.current?.dismiss();
-                try {
-                  await deleteExpense(expense.id);
-                  router.back();
-                } catch (err) {
-                  const msg = err instanceof Error ? err.message : "Failed to delete expense";
-                  toast.show({
-                    label: "Error",
-                    description: msg,
-                    variant: "danger",
-                    placement: "top",
-                  });
-                }
-              }}
+              onPress={handleDelete}
               style={({ pressed }) => ({
                 flex: 1,
                 height: 48,

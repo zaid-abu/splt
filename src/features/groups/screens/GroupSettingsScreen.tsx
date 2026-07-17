@@ -1,9 +1,7 @@
-import { Typography, Spinner, Switch } from "heroui-native";
+import { Typography, Spinner } from "heroui-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupSettingsRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
-import { useState, useMemo, useRef } from "react";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import {
   KeyboardAvoidingView,
@@ -11,124 +9,61 @@ import {
   ScrollView,
   View,
   Pressable,
-  TextInput,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
-import {
-  useGroups,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
-  useRemoveGroupMember,
-} from "@/features/groups/queries/useGroups";
-import { useGroupExpenses } from "@/features/expenses/queries/useExpenses";
-import { useGroupSettlements } from "@/features/settlements/queries/useSettlements";
-import { useFriends, useAddFriend } from "@/features/friends/queries/useFriends";
-import * as balancesUtil from "@/features/settlements/utils/balances";
-
-import { CurrencySelector } from "@/components/forms/CurrencySelector";
-import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
-import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
-import { useAuth } from "@/context/AppContext";
-import { useUIStore } from "@/store/useUIStore";
-import { CURRENCIES } from "@/types";
-import { useAppToast } from "@/hooks/useAppToast";
-import { GROUP_ICONS } from "@/constants/icons";
-import { useUI, IconButton, SectionLabel } from "@/components/ui";
-import { ConfirmationSheet } from "@/components/dialogs/ConfirmationSheet";
-import { Skeleton } from "@/components/ui/Skeleton";
 
-function IconShell({
-  IconComponent,
-  size = 44,
-  selected,
-}: {
-  IconComponent: any;
-  size?: number;
-  selected?: boolean;
-}): JSX.Element {
-  const { color, radius, space, shadow } = useUI();
-  return (
-    <View
-      style={{
-        width: size,
-        height: size,
-        borderRadius: radius.lg,
-        backgroundColor: selected ? color.text : color.control,
-        borderWidth: 1,
-        borderColor: selected ? color.text : color.border,
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <IconComponent
-        size={size === 44 ? 20 : 28}
-        color={selected ? color.textInverse : color.text}
-        strokeWidth={1.5}
-      />
-    </View>
-  );
-}
+import { useUI, IconButton, SectionLabel } from "@/components/ui";
+import { Skeleton } from "@/components/ui/Skeleton";
+import { ConfirmationSheet } from "@/components/dialogs/ConfirmationSheet";
+import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
+
+import { useGroupSettings } from "@/features/groups/hooks/useGroupSettings";
+import { GroupIdentitySection } from "@/features/groups/components/GroupIdentitySection";
+import { GroupFinanceSection } from "@/features/groups/components/GroupFinanceSection";
+import { GroupMembersSection } from "@/features/groups/components/GroupMembersSection";
+import { GroupDangerZone } from "@/features/groups/components/GroupDangerZone";
+import { useAuth } from "@/context/AppContext";
 
 export default function GroupSettingsScreen(): JSX.Element {
-  const { color, radius, space, shadow } = useUI();
+  const { color, radius, space } = useUI();
   const { id } = useLocalSearchParams<GroupSettingsRouteParams>();
-  const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
-  const { mutateAsync: updateGroup } = useUpdateGroup();
-  const { mutateAsync: deleteGroup } = useDeleteGroup();
-  const { mutateAsync: removeGroupMember } = useRemoveGroupMember();
-  const { mutateAsync: addGroupMembers } = useAddGroupMembers();
-
-  const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUser?.id);
-  const { data: expenses = [], isLoading: isLoadingExpenses } = useGroupExpenses(id);
-  const { data: settlements = [], isLoading: isLoadingSettlements } = useGroupSettlements(id);
-  const { data: friends = [], isLoading: isLoadingFriends } = useFriends(currentUser?.id);
-  const { mutateAsync: addFriend } = useAddFriend();
-
-  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
-  const convertCurrency = useUIStore((s) => s.convertCurrency);
-
-  const { toast } = useAppToast();
-
-  const group = groups.find((item) => item.id === id);
-
-  const [name, setName] = useState(group?.name ?? "");
-  const [nameError, setNameError] = useState("");
-  const [description, setDescription] = useState(group?.description ?? "");
-  const [icon, setIcon] = useState(group?.icon ?? "Home");
-  const [currencyCode, setCurrencyCode] = useState(group?.currency ?? "USD");
-  const [simplifyDebts, setSimplifyDebts] = useState(group?.simplifyDebts ?? false);
-  const [defaultSplitMethod, setDefaultSplitMethod] = useState<"equal" | "custom" | "percentage">(
-    (group as any)?.defaultSplitMethod ?? "equal"
-  );
-  const currency = CURRENCIES.find((c) => c.code === currencyCode) ?? CURRENCIES[0];
-
-  const [loading, setLoading] = useState(false);
-  const deleteSheetRef = useRef<BottomSheetModal>(null);
-  const leaveSheetRef = useRef<BottomSheetModal>(null);
-  const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null);
-  const removeMemberSheetRef = useRef<BottomSheetModal>(null);
-  const searchSheetRef = useRef<BottomSheetModal>(null);
-
-  const balances = useMemo(
-    () =>
-      balancesUtil.getGroupBalances(
-        id ?? "",
-        expenses,
-        settlements,
-        group,
-        preferredCurrency,
-        convertCurrency
-      ),
-    [id, expenses, settlements, group, preferredCurrency, convertCurrency]
-  );
+  const {
+    group,
+    name,
+    setName,
+    nameError,
+    setNameError,
+    description,
+    setDescription,
+    icon,
+    setIcon,
+    currencyCode,
+    setCurrencyCode,
+    simplifyDebts,
+    setSimplifyDebts,
+    defaultSplitMethod,
+    setDefaultSplitMethod,
+    loading,
+    isLoading,
+    balances,
+    deleteSheetRef,
+    leaveSheetRef,
+    removeMemberSheetRef,
+    searchSheetRef,
+    memberToRemove,
+    handleSave,
+    handleRemoveMemberClick,
+    confirmRemoveMember,
+    handleAddMember,
+    handleDeleteGroup,
+    handleLeaveGroup,
+    handleBack,
+  } = useGroupSettings(id || "");
 
   if (!group) {
     return (
@@ -181,7 +116,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               This group may have been deleted.
             </Typography>
             <Pressable
-              onPress={() => router.back()}
+              onPress={handleBack}
               style={({ pressed }) => ({
                 marginTop: 20,
                 paddingVertical: 14,
@@ -206,141 +141,6 @@ export default function GroupSettingsScreen(): JSX.Element {
       </View>
     );
   }
-
-  async function handleSave(): Promise<void> {
-    if (!name.trim()) {
-      setNameError("Group name is required");
-      return;
-    }
-    setLoading(true);
-    try {
-      await updateGroup({
-        id: group!.id,
-        updates: {
-          name: name.trim(),
-          description: description.trim() || undefined,
-          icon,
-          currency: currency.code,
-          simplifyDebts,
-          defaultSplitMethod,
-        },
-      });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
-    } catch {
-      toast.show({
-        label: "Error",
-        description: "Failed to update group.",
-        variant: "danger",
-        placement: "top",
-      });
-      setLoading(false);
-    }
-  }
-
-  function handleRemoveMemberClick(userId: string, userName: string) {
-    const memBalance = balances.get(userId) ?? 0;
-    if (Math.abs(memBalance) > 0.01) {
-      toast.show({
-        label: "Error",
-        description: "Cannot remove member with non-zero balance.",
-        variant: "danger",
-        placement: "top",
-      });
-      return;
-    }
-    setMemberToRemove({ id: userId, name: userName });
-    removeMemberSheetRef.current?.present();
-  }
-
-  async function confirmRemoveMember() {
-    if (!memberToRemove || !group) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    try {
-      await removeGroupMember({ groupId: group.id, userId: memberToRemove.id });
-      toast.show({
-        label: "Member Removed",
-        description: `${memberToRemove.name} has been removed from the group.`,
-        variant: "success",
-        placement: "top",
-      });
-    } catch {
-      toast.show({
-        label: "Error",
-        description: "Failed to remove member.",
-        variant: "danger",
-        placement: "top",
-      });
-    }
-    removeMemberSheetRef.current?.dismiss();
-  }
-
-  async function handleAddMember(user: any) {
-    if (!group) return;
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    const isFriend = friends.some((f) => f.id === user.id);
-
-    try {
-      if (isFriend) {
-        await addGroupMembers({ groupId: group.id, userIds: [user.id] });
-        toast.show({
-          label: "Member Added",
-          description: `${user.name} was added to the group.`,
-          variant: "success",
-          placement: "top",
-        });
-      } else {
-        await addFriend({ userId: currentUser.id, friendId: user.id, groupId: group.id });
-        toast.show({
-          label: "Request Sent",
-          description: `Friend request sent to ${user.name}. They will be added to the group once accepted.`,
-          variant: "success",
-          placement: "top",
-        });
-      }
-    } catch {
-      toast.show({
-        label: "Error",
-        description: "Failed to add member.",
-        variant: "danger",
-        placement: "top",
-      });
-    }
-  }
-
-  async function handleDeleteGroup() {
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-    try {
-      await deleteGroup(group!.id);
-      router.replace("/(tabs)/groups");
-    } catch {
-      toast.show({
-        label: "Error",
-        description: "Failed to delete group",
-        variant: "danger",
-        placement: "top",
-      });
-    }
-  }
-
-  const handleLeaveGroup = async () => {
-    try {
-      await removeGroupMember({ groupId: group!.id, userId: currentUser.id });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace("/(tabs)/groups");
-    } catch {
-      toast.show({
-        label: "Error",
-        description: "Failed to leave group.",
-        variant: "danger",
-        placement: "top",
-      });
-    }
-  };
-
-  const isLoading =
-    isLoadingGroups || isLoadingExpenses || isLoadingSettlements || isLoadingFriends;
 
   if (isLoading) {
     return (
@@ -393,7 +193,7 @@ export default function GroupSettingsScreen(): JSX.Element {
           <IconButton
             icon={icons.X}
             accessibilityLabel="Close settings"
-            onPress={() => router.back()}
+            onPress={handleBack}
           />
         </View>
 
@@ -407,88 +207,19 @@ export default function GroupSettingsScreen(): JSX.Element {
             entering={FadeInDown.duration(400)}
             style={{ paddingHorizontal: space.page, marginBottom: 48 }}
           >
-            <SectionLabel>Identity</SectionLabel>
-
-            <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32, gap: 16 }}>
-              <IconShell
-                IconComponent={(icons as any)[icon] || icons.HelpCircle}
-                size={64}
-                selected
-              />
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ gap: 10 }}
-              >
-                {GROUP_ICONS.map((i) => {
-                  const IconComponent = (icons as any)[i] || icons.HelpCircle;
-                  const isSelected = icon === i;
-                  if (isSelected) return null;
-                  return (
-                    <Pressable
-                      key={i}
-                      accessibilityRole="button"
-                      onPress={() => {
-                        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                        setIcon(i);
-                      }}
-                      style={({ pressed }) => ({
-                        opacity: pressed ? 0.65 : 1,
-                      })}
-                    >
-                      <IconShell IconComponent={IconComponent} />
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
-
-            <TextInput
-              value={name}
-              onChangeText={(v) => {
+            <GroupIdentitySection
+              icon={icon}
+              onIconChange={(i) => {
+                setIcon(i);
+              }}
+              name={name}
+              onNameChange={(v) => {
                 setNameError("");
                 setName(v);
               }}
-              placeholder="Group Name"
-              placeholderTextColor={color.muted}
-              autoCapitalize="words"
-              style={{
-                fontSize: 28,
-                color: color.text,
-                fontFamily: "Sora_600SemiBold",
-                borderBottomWidth: 1,
-                borderBottomColor: color.border,
-                paddingBottom: 14,
-                marginBottom: nameError ? 8 : 24,
-              }}
-            />
-            {nameError ? (
-              <Typography
-                style={{
-                  marginBottom: 16,
-                  color: color.danger,
-                  fontSize: 13,
-                  fontFamily: "IBMPlexSans_500Medium",
-                }}
-              >
-                {nameError}
-              </Typography>
-            ) : null}
-
-            <TextInput
-              value={description}
-              onChangeText={setDescription}
-              placeholder="Description (Optional)"
-              placeholderTextColor={color.muted}
-              multiline
-              style={{
-                fontSize: 16,
-                color: color.text,
-                fontFamily: "IBMPlexSans_400Regular",
-                borderBottomWidth: 1,
-                borderBottomColor: color.border,
-                paddingBottom: 14,
-              }}
+              nameError={nameError}
+              description={description}
+              onDescriptionChange={setDescription}
             />
           </Animated.View>
 
@@ -496,273 +227,35 @@ export default function GroupSettingsScreen(): JSX.Element {
             entering={FadeInDown.duration(400).delay(100)}
             style={{ paddingHorizontal: space.page, marginBottom: 48 }}
           >
-            <SectionLabel>Finance</SectionLabel>
-
-            <View
-              style={{
-                borderBottomWidth: 1,
-                borderBottomColor: color.border,
-                paddingBottom: 20,
-                marginBottom: 20,
-              }}
-            >
-              <CurrencySelector
-                label="Base Currency"
-                value={currency.code}
-                onChange={(c) => setCurrencyCode(c.code)}
-              />
-            </View>
-
-            <View
-              style={{
-                borderBottomWidth: 1,
-                borderBottomColor: color.border,
-                paddingBottom: 20,
-                marginBottom: 20,
-              }}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  marginBottom: 12,
-                }}
-              >
-                Default Split Method
-              </Typography>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                {(["equal", "custom", "percentage"] as const).map((method) => {
-                  const active = defaultSplitMethod === method;
-                  return (
-                    <Pressable
-                      key={method}
-                      onPress={() => setDefaultSplitMethod(method)}
-                      style={({ pressed }) => ({
-                        flex: 1,
-                        minHeight: 42,
-                        paddingHorizontal: 12,
-                        borderRadius: radius.pill,
-                        backgroundColor: active ? color.text : color.control,
-                        borderWidth: 1,
-                        borderColor: active ? color.text : color.border,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        opacity: pressed ? 0.72 : 1,
-                      })}
-                    >
-                      <Typography
-                        style={{
-                          fontSize: 13,
-                          fontFamily: "IBMPlexSans_600SemiBold",
-                          color: active ? color.textInverse : color.text,
-                          textTransform: "capitalize",
-                        }}
-                      >
-                        {method}
-                      </Typography>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-                paddingBottom: 20,
-              }}
-            >
-              <View style={{ flex: 1, marginRight: 24 }}>
-                <Typography
-                  style={{
-                    fontSize: 16,
-                    color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                    marginBottom: 4,
-                  }}
-                >
-                  Simplify Debts
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: color.muted,
-                    fontFamily: "IBMPlexSans_400Regular",
-                    lineHeight: 20,
-                  }}
-                >
-                  Combine debts to reduce the number of payments between members.
-                </Typography>
-              </View>
-              <Switch isSelected={simplifyDebts} onSelectedChange={setSimplifyDebts} />
-            </View>
+            <GroupFinanceSection
+              currencyCode={currencyCode}
+              onCurrencyChange={setCurrencyCode}
+              defaultSplitMethod={defaultSplitMethod}
+              onDefaultSplitMethodChange={setDefaultSplitMethod}
+              simplifyDebts={simplifyDebts}
+              onSimplifyDebtsChange={setSimplifyDebts}
+            />
           </Animated.View>
 
           <Animated.View
             entering={FadeInDown.duration(400).delay(200)}
             style={{ paddingHorizontal: space.page, marginBottom: 48 }}
           >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginBottom: 16,
-              }}
-            >
-              <SectionLabel>Members</SectionLabel>
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => searchSheetRef.current?.present()}
-                hitSlop={8}
-                style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
-              >
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  + Add Member
-                </Typography>
-              </Pressable>
-            </View>
-
-            <View
-              style={{
-                borderRadius: radius.lg,
-                borderWidth: 1,
-                borderColor: color.border,
-                backgroundColor: color.surface,
-                overflow: "hidden",
-              }}
-            >
-              {group.members.map((member, idx) => {
-                const memBalance = balances.get(member.userId) ?? 0;
-                const isLast = idx === group.members.length - 1;
-                return (
-                  <View
-                    key={member.userId}
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      paddingVertical: 14,
-                      paddingHorizontal: 16,
-                      borderBottomWidth: isLast ? 0 : 1,
-                      borderBottomColor: color.border,
-                    }}
-                  >
-                    <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
-                      <AppUserAvatar user={member.user} size="md" />
-                      <View>
-                        <Typography
-                          style={{
-                            fontSize: 16,
-                            color: color.text,
-                            fontFamily: "IBMPlexSans_600SemiBold",
-                          }}
-                        >
-                          {member.userId === currentUser.id ? "You" : member.user.name}
-                        </Typography>
-                        <Typography
-                          style={{
-                            fontSize: 14,
-                            color: color.muted,
-                            fontFamily: "IBMPlexSans_500Medium",
-                            marginTop: 2,
-                          }}
-                        >
-                          {getCurrencySymbol(currencyCode)}
-                          {Math.abs(memBalance).toLocaleString(undefined, {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2,
-                          })}
-                        </Typography>
-                      </View>
-                    </View>
-                    {member.userId !== currentUser.id && (
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityLabel={`Remove ${member.user.name}`}
-                        onPress={() => handleRemoveMemberClick(member.userId, member.user.name)}
-                        hitSlop={8}
-                        style={({ pressed }) => ({
-                          width: 44,
-                          height: 44,
-                          borderRadius: radius.pill,
-                          backgroundColor: color.control,
-                          borderWidth: 1,
-                          borderColor: color.border,
-                          alignItems: "center",
-                          justifyContent: "center",
-                          opacity: pressed ? 0.65 : 1,
-                        })}
-                      >
-                        <icons.X size={18} color={color.muted} strokeWidth={2} />
-                      </Pressable>
-                    )}
-                  </View>
-                );
-              })}
-            </View>
+            <GroupMembersSection
+              members={group.members}
+              currentUserId={currentUser.id}
+              balances={balances}
+              currencyCode={currencyCode}
+              onAddMemberPress={() => searchSheetRef.current?.present()}
+              onRemoveMember={handleRemoveMemberClick}
+            />
           </Animated.View>
 
           <View style={{ paddingHorizontal: space.page, paddingBottom: 40 }}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => deleteSheetRef.current?.present()}
-              style={({ pressed }) => ({
-                height: 56,
-                borderRadius: radius.pill,
-                borderWidth: 1,
-                borderColor: color.danger,
-                backgroundColor: color.control,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.65 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: color.danger,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                Delete Group
-              </Typography>
-            </Pressable>
-
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => leaveSheetRef.current?.present()}
-              style={({ pressed }) => ({
-                height: 56,
-                borderRadius: radius.pill,
-                borderWidth: 1,
-                borderColor: color.border,
-                backgroundColor: color.control,
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: 12,
-                opacity: pressed ? 0.65 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 16,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                Leave Group
-              </Typography>
-            </Pressable>
+            <GroupDangerZone
+              onDeletePress={() => deleteSheetRef.current?.present()}
+              onLeavePress={() => leaveSheetRef.current?.present()}
+            />
           </View>
         </ScrollView>
 
@@ -815,10 +308,7 @@ export default function GroupSettingsScreen(): JSX.Element {
           confirmLabel="Delete"
           confirmTone="danger"
           sheetRef={deleteSheetRef}
-          onConfirm={() => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-            handleDeleteGroup();
-          }}
+          onConfirm={handleDeleteGroup}
         />
 
         <ConfirmationSheet
@@ -827,10 +317,7 @@ export default function GroupSettingsScreen(): JSX.Element {
           confirmLabel="Remove"
           confirmTone="danger"
           sheetRef={removeMemberSheetRef}
-          onConfirm={() => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-            confirmRemoveMember();
-          }}
+          onConfirm={confirmRemoveMember}
         />
 
         <ConfirmationSheet
@@ -839,10 +326,7 @@ export default function GroupSettingsScreen(): JSX.Element {
           confirmLabel="Leave"
           confirmTone="brand"
           sheetRef={leaveSheetRef}
-          onConfirm={() => {
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-            handleLeaveGroup();
-          }}
+          onConfirm={handleLeaveGroup}
         />
 
         <UserSearchBottomSheet
