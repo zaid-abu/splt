@@ -5,7 +5,7 @@ import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { Section } from "@/features/expenses/components/Section";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { styles } from "@/features/expenses/utils/styles";
 import type { User, SplitMethod } from "@/types";

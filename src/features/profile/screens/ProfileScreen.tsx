@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { useUI, ScreenHeader, MetricCell, SectionLabel } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader, MetricCell, SectionLabel } from "@/components/ui";
 import { Card } from "@/components/ui/Card";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { Skeleton } from "@/components/ui/Skeleton";

@@ -12,7 +12,7 @@ import { useResetPassword } from "@/features/auth/hooks/useAuthMutations";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/validation/schemas";
 import { useAppToast } from "@/hooks/useAppToast";
 import { useUIStore } from "@/store/useUIStore";
-import { PressableScale } from "@/components/ui/native-ui";
+import { PressableScale } from "@/components/ui/PressableScale";
 import GlassAuthLayout from "@/components/glassmorphism/GlassAuthLayout";
 import { GlassFormInput } from "@/components/glassmorphism/GlassFormInput";
 import Animated, { FadeInDown } from "react-native-reanimated";

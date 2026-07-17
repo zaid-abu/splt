@@ -1,5 +1,5 @@
 import { useUIStore } from "@/store/useUIStore";
-import { useUI, DARK_COLORS } from "@/components/ui/native-ui";
+import { useUI, DARK_COLORS } from "@/components/ui";
 
 export function useTheme() {
   const isDarkMode = useUIStore((s) => s.isDarkMode);

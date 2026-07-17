@@ -1,6 +1,6 @@
 import type { JSX, ReactNode } from "react";
 import { View } from "react-native";
-import { SectionLabel } from "@/components/ui/native-ui";
+import { SectionLabel } from "@/components/ui";
 import { styles } from "@/features/expenses/utils/styles";
 
 export function Section({

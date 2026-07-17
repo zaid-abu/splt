@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 interface SettingsItemProps {
   icon?: keyof typeof icons;

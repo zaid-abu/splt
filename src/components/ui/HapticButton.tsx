@@ -3,7 +3,7 @@ import { Pressable, ActivityIndicator } from "react-native";
 import type { ViewStyle } from "react-native";
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 interface HapticButtonProps {
   children: ReactNode;

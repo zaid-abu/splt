@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { View, Animated } from "react-native";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 export function Skeleton({
   width,

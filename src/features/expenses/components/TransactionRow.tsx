@@ -5,7 +5,7 @@ import * as icons from "lucide-react-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { formatActivityDate } from "@/utils/date";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import type { Expense, User } from "@/types";
 
 interface TransactionRowProps {

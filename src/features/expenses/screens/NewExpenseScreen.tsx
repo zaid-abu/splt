@@ -17,7 +17,7 @@ import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 
 import { Card } from "@/components/ui/Card";
-import { useUI, IconButton } from "@/components/ui/native-ui";
+import { useUI, IconButton } from "@/components/ui";
 import { useAuth } from "@/context/AppContext";
 import { useExpenseForm } from "@/features/expenses/hooks/useExpenseForm";
 import {

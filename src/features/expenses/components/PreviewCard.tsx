@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { Typography } from "heroui-native";
 import { Card } from "@/components/ui/Card";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { styles } from "@/features/expenses/utils/styles";
 import type { SplitMethod } from "@/types";
 import { PreviewCell } from "@/features/expenses/components/PreviewCell";

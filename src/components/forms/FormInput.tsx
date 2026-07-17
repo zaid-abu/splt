@@ -3,7 +3,7 @@ import { Controller, FieldValues, Path } from "react-hook-form";
 import { TextField, Input } from "heroui-native";
 import { View, Text } from "react-native";
 import type { TextInputProps } from "react-native";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 export interface FormInputProps<T extends FieldValues> extends Omit<
   TextInputProps,

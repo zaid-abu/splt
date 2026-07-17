@@ -23,7 +23,7 @@ import type { Currency, User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { useUI, IconButton, PrimaryButton, SectionLabel } from "@/components/ui/native-ui";
+import { useUI, IconButton, PrimaryButton, SectionLabel } from "@/components/ui";
 import { useTheme } from "@/hooks/useTheme";
 
 import { GROUP_ICONS } from "@/constants/icons";

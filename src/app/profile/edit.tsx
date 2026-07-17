@@ -11,7 +11,7 @@ import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AppContext";
 import { useUpdateProfile } from "@/features/profile/hooks/useUpdateProfile";
 import { useAppToast } from "@/hooks/useAppToast";
-import { useUI, IconButton, SectionLabel } from "@/components/ui/native-ui";
+import { useUI, IconButton, SectionLabel } from "@/components/ui";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { BottomActionBar } from "@/components/ui/BottomActionBar";
 

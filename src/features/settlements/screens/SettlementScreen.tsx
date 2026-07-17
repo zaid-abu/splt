@@ -31,7 +31,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useAppToast } from "@/hooks/useAppToast";
-import { useUI, ScreenHeader } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader } from "@/components/ui";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 

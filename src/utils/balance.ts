@@ -1,5 +1,5 @@
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { LIGHT_COLORS } from "@/components/ui/native-ui";
+import { LIGHT_COLORS } from "@/components/ui";
 
 export function getBalanceCopy(balance: number, currencyCode: string) {
   if (balance > 0) {

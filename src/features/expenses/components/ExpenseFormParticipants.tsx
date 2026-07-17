@@ -7,7 +7,7 @@ import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { SectionLabel, useUI } from "@/components/ui/native-ui";
+import { SectionLabel, useUI } from "@/components/ui";
 import type { User, Group, SplitMethod } from "@/types";
 
 interface SelectionTabsProps {

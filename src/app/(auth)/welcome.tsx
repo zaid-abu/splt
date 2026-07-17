@@ -7,7 +7,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { PressableScale } from "@/components/ui/native-ui";
+import { PressableScale } from "@/components/ui/PressableScale";
 import { GoogleLogo } from "@/components/ui/GoogleLogo";
 import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import GlassAuthMark from "@/components/glassmorphism/GlassAuthMark";

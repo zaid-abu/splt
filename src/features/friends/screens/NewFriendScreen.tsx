@@ -14,7 +14,7 @@ import { useSearchUsers } from "@/features/users/queries/useUsers";
 import type { User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { useUI, EmptyState, IconButton, SearchField } from "@/components/ui/native-ui";
+import { useUI, EmptyState, IconButton, SearchField } from "@/components/ui";
 
 export default function NewFriendScreen(): JSX.Element {
   const { color, radius, space, shadow } = useUI();

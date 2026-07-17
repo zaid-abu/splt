@@ -6,7 +6,7 @@ import { EXPENSE_CATEGORIES, ExpenseCategory } from "@/types";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 interface Props {
   data: { category: ExpenseCategory; amount: number }[];

@@ -3,7 +3,7 @@ import type { JSX } from "react";
 import { View } from "react-native";
 import * as icons from "lucide-react-native";
 
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import type { Group } from "@/types";
 
 type GroupTone = {

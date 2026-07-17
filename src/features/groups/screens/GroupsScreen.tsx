@@ -17,7 +17,7 @@ import { GroupCard } from "@/features/groups/components/GroupCard";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { useUI, ScreenHeader, MetricCell, SearchField, FilterPill } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader, MetricCell, SearchField, FilterPill } from "@/components/ui";
 import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";

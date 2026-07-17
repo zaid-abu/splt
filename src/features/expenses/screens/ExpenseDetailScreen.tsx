@@ -20,7 +20,7 @@ import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";

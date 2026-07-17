@@ -4,7 +4,7 @@ import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 export function useConfirmationSheet() {
   const sheetRef = useRef<BottomSheetModal>(null);

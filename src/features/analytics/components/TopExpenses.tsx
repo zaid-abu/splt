@@ -6,7 +6,7 @@ import { EXPENSE_CATEGORIES } from "@/types";
 import * as icons from "lucide-react-native";
 import type { AnalyticsExpense } from "../hooks/useAnalytics";
 import dayjs from "dayjs";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 interface Props {
   expenses: AnalyticsExpense[];

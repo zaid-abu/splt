@@ -3,7 +3,7 @@ import { Pressable, View } from "react-native";
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { SPLIT_METHODS } from "@/features/expenses/constants";
 import { styles } from "@/features/expenses/utils/styles";
 import type { SplitMethod } from "@/types";

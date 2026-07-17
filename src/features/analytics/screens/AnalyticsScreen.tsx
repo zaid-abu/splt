@@ -27,7 +27,7 @@ import { CategoryBreakdown } from "../components/CategoryBreakdown";
 import { TopExpenses } from "../components/TopExpenses";
 
 import { Card } from "@/components/ui/Card";
-import { useUI, SectionLabel, ScreenHeader } from "@/components/ui/native-ui";
+import { useUI, SectionLabel, ScreenHeader } from "@/components/ui";
 
 const PERIODS: { key: AnalyticsPeriod; label: string }[] = [
   { key: "week", label: "Week" },

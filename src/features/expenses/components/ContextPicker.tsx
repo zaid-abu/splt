@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { Card } from "@/components/ui/Card";
-import { SearchField, useUI } from "@/components/ui/native-ui";
+import { SearchField, useUI } from "@/components/ui";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { SelectionMark } from "@/features/expenses/components/SelectionMark";

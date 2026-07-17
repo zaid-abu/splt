@@ -18,7 +18,7 @@ import { useMutation } from "@tanstack/react-query";
 
 import { AuthService } from "@/services/api/auth";
 import { useAppToast } from "@/hooks/useAppToast";
-import { useUI, IconButton, SectionLabel } from "@/components/ui/native-ui";
+import { useUI, IconButton, SectionLabel } from "@/components/ui";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { BottomActionBar } from "@/components/ui/BottomActionBar";
 

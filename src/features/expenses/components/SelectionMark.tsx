@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { View } from "react-native";
 import * as icons from "lucide-react-native";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { styles } from "@/features/expenses/utils/styles";
 
 export function SelectionMark({ selected }: { selected: boolean }): JSX.Element {

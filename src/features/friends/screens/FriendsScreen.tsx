@@ -35,7 +35,7 @@ import {
   FilterPill,
   EmptyState,
   IconButton,
-} from "@/components/ui/native-ui";
+} from "@/components/ui";
 import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import { useAuth } from "@/context/AppContext";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";

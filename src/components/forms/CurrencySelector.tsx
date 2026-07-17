@@ -9,7 +9,7 @@ import {
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { PressableFeedback, Typography } from "heroui-native";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { useUIStore } from "@/store/useUIStore";
 
 import type { Currency } from "@/types";

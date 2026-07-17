@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { View, LayoutAnimation, Platform, UIManager } from "react-native";
 import { Typography } from "heroui-native";
 import { evaluatePasswordStrength } from "@/utils/passwordStrength";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);

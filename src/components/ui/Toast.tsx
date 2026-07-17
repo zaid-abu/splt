@@ -3,7 +3,7 @@ import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 export function CustomToast({
   props,

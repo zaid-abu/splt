@@ -10,7 +10,7 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { Typography } from "heroui-native";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 interface AppLoaderProps {
   fullScreen?: boolean;

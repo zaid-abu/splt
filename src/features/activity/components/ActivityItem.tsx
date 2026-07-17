@@ -11,7 +11,7 @@ import { useDeleteActivity } from "@/features/activity/queries/useActivities";
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { SwipeableRow } from "@/components/layout/SwipeableRow";
 import { useUIStore } from "@/store/useUIStore";
 

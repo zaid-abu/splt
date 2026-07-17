@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import type { Group } from "@/types";
 
 interface GroupRowProps {

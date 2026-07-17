@@ -8,7 +8,7 @@ import * as icons from "lucide-react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { useUIStore } from "@/store/useUIStore";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { PressableScale } from "@/components/ui/native-ui";
+import { PressableScale } from "@/components/ui/PressableScale";
 import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import GlassSurface from "@/components/glassmorphism/GlassSurface";
 import GlassAuthMark from "@/components/glassmorphism/GlassAuthMark";

@@ -13,7 +13,7 @@ import { ONBOARDING_SLIDES } from "../constants/slides";
 import { OnboardingSlide } from "../components/OnboardingSlide";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useUIStore } from "@/store/useUIStore";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 

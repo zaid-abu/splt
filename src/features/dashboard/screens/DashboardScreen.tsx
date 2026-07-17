@@ -20,7 +20,7 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupRow } from "@/features/groups/components/GroupRow";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { useUI, TYPO, FilterPill, IconButton } from "@/components/ui/native-ui";
+import { useUI, TYPO, FilterPill, IconButton } from "@/components/ui";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { Card } from "@/components/ui/Card";
 import { ErrorState } from "@/components/ui/ErrorState";

@@ -14,7 +14,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginSchema, type LoginFormData } from "@/validation/schemas";
 import { useAppToast } from "@/hooks/useAppToast";
 import { useUIStore } from "@/store/useUIStore";
-import { PressableScale } from "@/components/ui/native-ui";
+import { PressableScale } from "@/components/ui/PressableScale";
 import { GoogleLogo } from "@/components/ui/GoogleLogo";
 import GlassAuthLayout from "@/components/glassmorphism/GlassAuthLayout";
 import { GlassFormInput } from "@/components/glassmorphism/GlassFormInput";

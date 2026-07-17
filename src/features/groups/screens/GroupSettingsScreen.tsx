@@ -38,7 +38,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { GROUP_ICONS } from "@/constants/icons";
-import { useUI, IconButton, SectionLabel } from "@/components/ui/native-ui";
+import { useUI, IconButton, SectionLabel } from "@/components/ui";
 import { ConfirmationSheet } from "@/components/dialogs/ConfirmationSheet";
 import { Skeleton } from "@/components/ui/Skeleton";
 

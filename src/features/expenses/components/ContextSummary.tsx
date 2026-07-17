@@ -5,7 +5,7 @@ import * as icons from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { AvatarStack } from "@/components/ui/MemberAvatar";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { styles } from "@/features/expenses/utils/styles";
 import type { Group, User } from "@/types";
 

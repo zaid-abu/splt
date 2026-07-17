@@ -34,7 +34,7 @@ import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { useUI, SectionLabel } from "@/components/ui/native-ui";
+import { useUI, SectionLabel } from "@/components/ui";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";

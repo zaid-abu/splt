@@ -2,7 +2,7 @@ import React from "react";
 import type { JSX } from "react";
 import { View, Text, Pressable } from "react-native";
 import type { ErrorBoundaryProps } from "expo-router";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element {
   const { color, radius, space, shadow } = useUI();

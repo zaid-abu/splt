@@ -15,7 +15,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { useUI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui";
 import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import type { Activity, ActivityFilterType } from "@/types";

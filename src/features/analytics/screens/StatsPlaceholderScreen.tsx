@@ -11,7 +11,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 export default function StatsPlaceholderScreen(): JSX.Element {
   const { color, radius, space, shadow } = useUI();

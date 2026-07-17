@@ -3,7 +3,7 @@ import { TextInput, View } from "react-native";
 import { Typography } from "heroui-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { Card } from "@/components/ui/Card";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { styles } from "@/features/expenses/utils/styles";
 import type { ExpenseCategory } from "@/types";
 

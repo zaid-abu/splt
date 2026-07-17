@@ -14,7 +14,7 @@ import { useAcceptFriend, useRejectFriend } from "@/features/friends/queries/use
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { useUI, ScreenHeader, EmptyState } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader, EmptyState } from "@/components/ui";
 
 export default function NotificationsScreen(): JSX.Element {
   const { color, radius, space, shadow } = useUI();

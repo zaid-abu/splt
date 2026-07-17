@@ -4,7 +4,7 @@ import { View, Pressable } from "react-native";
 
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { formatActivityDate } from "@/utils/date";
 import * as icons from "lucide-react-native";
 import type { Group } from "@/types";

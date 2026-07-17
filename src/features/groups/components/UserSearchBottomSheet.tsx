@@ -12,7 +12,7 @@ import { useFriends, useAllFriendships, useAddFriend } from "@/features/friends/
 import type { User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { useUI, EmptyState } from "@/components/ui/native-ui";
+import { useUI, EmptyState } from "@/components/ui";
 
 interface UserSearchBottomSheetProps {
   onSelect: (user: User) => void;

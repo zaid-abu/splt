@@ -1,7 +1,7 @@
 import type { JSX, ReactNode } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 interface ListRowProps {
   leading?: ReactNode;

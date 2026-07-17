@@ -7,7 +7,8 @@ import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator } f
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import { useUI, PressableScale, IconButton } from "@/components/ui/native-ui";
+import { useUI, IconButton } from "@/components/ui";
+import { PressableScale } from "@/components/ui/PressableScale";
 import { useUIStore } from "@/store/useUIStore";
 import { useRouter } from "expo-router";
 

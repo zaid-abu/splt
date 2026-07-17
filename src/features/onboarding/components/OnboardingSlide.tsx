@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { OnboardingSlideData } from "../constants/slides";
 
 interface OnboardingSlideProps {

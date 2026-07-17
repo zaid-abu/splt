@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { LIGHT_COLORS } from "@/components/ui/native-ui";
+import { LIGHT_COLORS } from "@/components/ui";
 import { GLASS_RADIUS } from "@/constants/glassmorphism-tokens";
 
 export let styles = createNewExpenseStyles();

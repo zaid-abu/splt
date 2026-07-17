@@ -2,7 +2,7 @@ import { Redirect } from "expo-router";
 import { View, Animated } from "react-native";
 import { useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AppContext";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 
 function LoadingScreen(): React.JSX.Element {
   const { color } = useUI();

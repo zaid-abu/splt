@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import dayjs from "dayjs";
 import DateTimePicker from "react-native-ui-datepicker";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import { styles } from "@/features/expenses/utils/styles";
 
 export function DateInlinePicker({

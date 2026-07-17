@@ -6,7 +6,7 @@ import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import GlassSurface from "@/components/glassmorphism/GlassSurface";
 import type { User } from "@/types";
 

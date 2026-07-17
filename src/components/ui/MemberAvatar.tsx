@@ -9,7 +9,7 @@ import type { JSX } from "react";
 import { Image, View } from "react-native";
 import { Typography } from "heroui-native";
 
-import { useUI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui";
 import type { User } from "@/types";
 
 type AvatarTone = {
