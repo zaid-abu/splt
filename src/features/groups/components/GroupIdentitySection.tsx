@@ -3,7 +3,7 @@ import { View, ScrollView, Pressable, TextInput } from "react-native";
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
-import { useUI, SectionLabel } from "@/components/ui";
+import { useUI, GlassSection } from "@/components/ui";
 import { GROUP_ICONS } from "@/constants/icons";
 
 function IconShell({
@@ -57,13 +57,11 @@ export function GroupIdentitySection({
   description,
   onDescriptionChange,
 }: GroupIdentitySectionProps): JSX.Element {
-  const { color, radius, space } = useUI();
+  const { color } = useUI();
   const SelectedIconComponent = (icons as any)[icon] || icons.HelpCircle;
 
   return (
-    <>
-      <SectionLabel>Identity</SectionLabel>
-
+    <GlassSection title="Identity">
       <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32, gap: 16 }}>
         <IconShell IconComponent={SelectedIconComponent} size={64} selected />
         <ScrollView
@@ -140,6 +138,6 @@ export function GroupIdentitySection({
           paddingBottom: 14,
         }}
       />
-    </>
+    </GlassSection>
   );
 }

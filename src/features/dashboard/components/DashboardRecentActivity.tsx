@@ -2,47 +2,17 @@ import type { JSX } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
-import { useUI, TYPO, FilterPill } from "@/components/ui";
-import { TransactionRow } from "@/features/expenses/components/TransactionRow";
-import type { Expense, User } from "@/types";
+import { useUI, FilterPill, GlassSection, GlassRow } from "@/components/ui";
+import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
+import { formatAmount } from "@/components/ui/AmountDisplay";
+import { formatActivityDate } from "@/utils/date";
+import type { Expense } from "@/types";
 
 type LucideIcon = React.ComponentType<{
   size?: number;
   color?: string;
   strokeWidth?: number;
 }>;
-
-function SectionLabel({
-  children,
-  rightAction,
-}: {
-  children: string;
-  rightAction?: JSX.Element;
-}): JSX.Element {
-  const { color } = useUI();
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 14,
-      }}
-    >
-      <Typography
-        style={{
-          fontSize: 18,
-          color: color.text,
-          fontFamily: "IBMPlexSans_600SemiBold",
-          letterSpacing: -0.2,
-        }}
-      >
-        {children}
-      </Typography>
-      {rightAction}
-    </View>
-  );
-}
 
 function EmptyIconShell({ icon: Icon }: { icon: LucideIcon }): JSX.Element {
   const { color, radius } = useUI();
@@ -90,68 +60,77 @@ export function DashboardRecentActivity({
 
   return (
     <View style={{ marginBottom: 24 }}>
-      <SectionLabel
-        rightAction={
-          <Pressable
-            accessibilityRole="button"
-            onPress={onViewAll}
-            hitSlop={8}
-            style={({ pressed }) => ({
-              minHeight: 44,
-              justifyContent: "center",
-              opacity: pressed ? 0.7 : 1,
-            })}
-          >
-            <Typography
-              style={{
-                fontSize: 14,
-                color: color.text,
-                fontFamily: "IBMPlexSans_600SemiBold",
-              }}
-            >
-              View all
-            </Typography>
-          </Pressable>
-        }
-      >
-        Recent activity
-      </SectionLabel>
+      <View style={{ flexDirection: "row", gap: 8, marginBottom: 14 }}>
+        {(["all", "paid", "owe"] as const).map((f) => {
+          const label = f === "paid" ? "You paid" : f === "owe" ? "You owe" : "All";
+          return (
+            <FilterPill
+              key={f}
+              label={label}
+              isActive={filter === f}
+              onPress={() => onFilterChange(f)}
+            />
+          );
+        })}
+      </View>
 
-      <View
-        style={{
-          backgroundColor: color.surface,
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: color.border,
-          padding: 14,
-        }}
-      >
-        <View style={{ flexDirection: "row", gap: 8, marginBottom: 2 }}>
-          {(["all", "paid", "owe"] as const).map((f) => {
-            const label = f === "paid" ? "You paid" : f === "owe" ? "You owe" : "All";
-            return (
-              <FilterPill
-                key={f}
-                label={label}
-                isActive={filter === f}
-                onPress={() => onFilterChange(f)}
-              />
-            );
-          })}
-        </View>
-
+      <GlassSection title="Recent activity" viewAllLabel="View all" onViewAll={onViewAll}>
         {expenses.length > 0 ? (
-          expenses.map((expense, idx) => {
+          expenses.map((expense) => {
             const mySplit = expense.splits.find((s) => s.userId === currentUserId);
+            const myShare = mySplit?.amount ?? 0;
+            const iPaid = expense.paidBy === currentUserId;
+            const paidByName = iPaid
+              ? "You"
+              : (expense.paidByUser?.name.split(" ")[0] ?? "Someone");
+
+            let subAmountText = "";
+            let subAmountColor: string = color.text;
+
+            if (iPaid) {
+              const lentAmount = expense.amount - myShare;
+              if (lentAmount > 0) {
+                subAmountText = `Lent ${formatAmount(lentAmount, expense.currency)}`;
+                subAmountColor = color.success;
+              }
+            } else if (myShare > 0) {
+              subAmountText = `You owe ${formatAmount(myShare, expense.currency)}`;
+              subAmountColor = color.danger;
+            }
+
             return (
-              <TransactionRow
+              <GlassRow
                 key={expense.id}
-                expense={expense}
-                currentUserId={currentUserId}
-                paidByUser={expense.paidByUser}
-                myShare={mySplit?.amount ?? 0}
-                isLast={idx === expenses.length - 1}
+                icon={<CategoryIconBadge category={expense.category} size="md" />}
+                title={expense.title}
+                subtitle={`${paidByName} paid - ${formatActivityDate(expense.date ?? expense.createdAt)}`}
                 onPress={() => onExpensePress(expense.id)}
+                showChevron
+                end={
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Typography
+                      style={{
+                        fontSize: 15,
+                        color: color.text,
+                        fontFamily: "IBMPlexSans_600SemiBold",
+                      }}
+                    >
+                      {formatAmount(expense.amount, expense.currency)}
+                    </Typography>
+                    {subAmountText ? (
+                      <Typography
+                        style={{
+                          fontSize: 12,
+                          color: subAmountColor,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                          marginTop: 4,
+                        }}
+                      >
+                        {subAmountText}
+                      </Typography>
+                    ) : null}
+                  </View>
+                }
               />
             );
           })
@@ -206,7 +185,7 @@ export function DashboardRecentActivity({
             </Pressable>
           </View>
         )}
-      </View>
+      </GlassSection>
     </View>
   );
 }

@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
 import { EmptyState, useUI } from "@/components/ui";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
+import GlassSurface from "@/components/glassmorphism/GlassSurface";
 
 interface FriendsEmptyProps {
   isLoading: boolean;
@@ -29,48 +30,50 @@ export function FriendsEmpty({
         </View>
       ) : (
         <View style={{ marginTop: 20 }}>
-          <EmptyState
-            icon={icons.Users}
-            title={
-              hasActiveFilters ? "No friends match this view" : "Add the people you split with"
-            }
-            subtitle={
-              hasActiveFilters
-                ? "Try a different name, email, or balance filter."
-                : "Friends and shared-group contacts will appear here with balances and recent activity."
-            }
-          />
-          <View style={{ marginTop: 16, alignItems: "center" }}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={
-                hasActiveFilters
-                  ? onClearFilters
-                  : () => router.push("/friend/new")
+          <GlassSurface borderRadius={radius.lg} padding={24}>
+            <EmptyState
+              icon={icons.Users}
+              title={
+                hasActiveFilters ? "No friends match this view" : "Add the people you split with"
               }
-              style={({ pressed }) => ({
-                minHeight: 44,
-                paddingHorizontal: 18,
-                borderRadius: radius.pill,
-                backgroundColor: hasActiveFilters ? color.control : color.text,
-                borderWidth: 1,
-                borderColor: hasActiveFilters ? color.border : color.text,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.75 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: hasActiveFilters ? color.text : color.textInverse,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
+              subtitle={
+                hasActiveFilters
+                  ? "Try a different name, email, or balance filter."
+                  : "Friends and shared-group contacts will appear here with balances and recent activity."
+              }
+            />
+            <View style={{ marginTop: 16, alignItems: "center" }}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={
+                  hasActiveFilters
+                    ? onClearFilters
+                    : () => router.push("/friend/new")
+                }
+                style={({ pressed }) => ({
+                  minHeight: 44,
+                  paddingHorizontal: 18,
+                  borderRadius: radius.pill,
+                  backgroundColor: hasActiveFilters ? color.control : color.text,
+                  borderWidth: 1,
+                  borderColor: hasActiveFilters ? color.border : color.text,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed ? 0.75 : 1,
+                })}
               >
-                {hasActiveFilters ? "Clear filters" : "Add friend"}
-              </Typography>
-            </Pressable>
-          </View>
+                <Typography
+                  style={{
+                    fontSize: 14,
+                    color: hasActiveFilters ? color.text : color.textInverse,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  {hasActiveFilters ? "Clear filters" : "Add friend"}
+                </Typography>
+              </Pressable>
+            </View>
+          </GlassSurface>
         </View>
       )}
     </View>

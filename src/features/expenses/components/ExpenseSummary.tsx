@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
-import { useUI } from "@/components/ui";
+import { useUI, GlassHeroBalance } from "@/components/ui";
 import type { Expense, User } from "@/types";
 
 interface ExpenseSummaryProps {
@@ -34,6 +34,17 @@ export function ExpenseSummary({
 }: ExpenseSummaryProps): JSX.Element {
   const { color, radius, space } = useUI();
 
+  const metrics: Array<{ label: string; value: string }> = [
+    { label: "Date", value: dateStr },
+    {
+      label: "Paid by",
+      value: paidByLabel,
+    },
+  ];
+  if (groupName) {
+    metrics.push({ label: "Group", value: groupName });
+  }
+
   return (
     <Animated.View
       entering={FadeInDown.duration(400)}
@@ -41,8 +52,6 @@ export function ExpenseSummary({
         paddingHorizontal: space.page,
         paddingTop: 32,
         paddingBottom: 32,
-        borderBottomWidth: 1,
-        borderBottomColor: color.border,
       }}
     >
       <View
@@ -50,169 +59,43 @@ export function ExpenseSummary({
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "flex-start",
-          marginBottom: 24,
+          marginBottom: 16,
         }}
       >
-        <View style={{ flex: 1 }}>
-          <Typography
-            style={{
-              fontSize: 12,
-              color: color.muted,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              textTransform: "uppercase",
-              letterSpacing: 2,
-              marginBottom: 8,
-            }}
-          >
-            {categoryLabel}
-          </Typography>
-          <Typography
-            style={{
-              fontSize: 28,
-              color: color.text,
-              fontFamily: "Sora_600SemiBold",
-              lineHeight: 34,
-            }}
-          >
-            {title}
-          </Typography>
-        </View>
+        <Typography
+          style={{
+            fontSize: 28,
+            color: color.text,
+            fontFamily: "Sora_600SemiBold",
+            lineHeight: 34,
+          }}
+        >
+          {title}
+        </Typography>
         <CategoryIconBadge category={category} size="lg" />
       </View>
 
-      <View style={{ marginBottom: 24 }}>
-        <Typography
-          style={{
-            fontSize: 48,
-            lineHeight: 54,
-            color: color.textStrong,
-            fontFamily: "IBMPlexSans_600SemiBold",
-            letterSpacing: -1.5,
-          }}
-        >
-          {formattedAmount}
-        </Typography>
-      </View>
-
-      <View style={{ gap: 16 }}>
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+      <GlassHeroBalance
+        label={categoryLabel}
+        amount={formattedAmount}
+        metrics={metrics}
+      >
+        {notes ? (
           <Typography
             style={{
-              fontSize: 16,
+              marginTop: 16,
+              fontSize: 14,
               color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
+              lineHeight: 22,
             }}
           >
-            Date
+            &quot;{notes}&quot;
           </Typography>
-          <Typography
-            style={{
-              fontSize: 16,
-              color: color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
-            }}
-          >
-            {dateStr}
-          </Typography>
-        </View>
+        ) : null}
 
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <Typography
-            style={{
-              fontSize: 16,
-              color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
-            }}
-          >
-            Paid by
-          </Typography>
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-            <AppUserAvatar user={paidByUser} size="sm" />
-            <Typography
-              style={{
-                fontSize: 16,
-                color: color.text,
-                fontFamily: "IBMPlexSans_600SemiBold",
-              }}
-            >
-              {paidByLabel}
-            </Typography>
-          </View>
-        </View>
-
-        {groupName && (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <Typography
-              style={{
-                fontSize: 16,
-                color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
-              }}
-            >
-              Group
-            </Typography>
-            <Typography
-              style={{
-                fontSize: 16,
-                color: color.text,
-                fontFamily: "IBMPlexSans_600SemiBold",
-              }}
-            >
-              {groupName}
-            </Typography>
-          </View>
-        )}
-
-        {notes && (
-          <View
-            style={{
-              marginTop: 8,
-              paddingTop: 16,
-              borderTopWidth: 1,
-              borderTopColor: color.border,
-            }}
-          >
-            <Typography
-              style={{
-                fontSize: 14,
-                color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
-                lineHeight: 22,
-              }}
-            >
-              &quot;{notes}&quot;
-            </Typography>
-          </View>
-        )}
-
-        {receiptUrl && (
-          <View
-            style={{
-              marginTop: 8,
-              paddingTop: 16,
-              borderTopWidth: 1,
-              borderTopColor: color.border,
-              alignItems: "center",
-            }}
-          >
+        {receiptUrl ? (
+          <View style={{ marginTop: 16, alignItems: "center" }}>
             <Pressable
               accessibilityRole="imagebutton"
               accessibilityLabel="View receipt"
@@ -242,8 +125,8 @@ export function ExpenseSummary({
               Receipt
             </Typography>
           </View>
-        )}
-      </View>
+        ) : null}
+      </GlassHeroBalance>
     </Animated.View>
   );
 }

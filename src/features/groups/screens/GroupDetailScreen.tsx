@@ -4,12 +4,12 @@ import type { JSX } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { View, ScrollView, Pressable, RefreshControl } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as Haptics from "expo-haptics";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
-import { Typography, Spinner } from "heroui-native";
+import { Typography } from "heroui-native";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { useUI, SectionLabel } from "@/components/ui";
+import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import { PressableScale } from "@/components/ui/PressableScale";
@@ -201,6 +201,7 @@ export default function GroupDetailScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: color.bg }}>
+      <GlassBackground />
       <ThemedStatusBar />
 
       <View
@@ -326,16 +327,6 @@ export default function GroupDetailScreen(): JSX.Element {
             entering={FadeInDown.duration(400).delay(50).springify()}
             style={{ paddingHorizontal: space.page, marginBottom: 40 }}
           >
-            <Typography
-              style={{
-                fontSize: 16,
-                color: color.text,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                marginBottom: 14,
-              }}
-            >
-              Group Balances
-            </Typography>
             <GroupBalances
               groupDebts={groupDebts}
               members={group.members}

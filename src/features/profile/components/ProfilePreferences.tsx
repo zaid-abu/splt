@@ -1,9 +1,9 @@
 import type { JSX } from "react";
 import { View } from "react-native";
 import { Switch } from "heroui-native";
-import { useUI, SectionLabel } from "@/components/ui";
+import { Moon, DollarSign } from "lucide-react-native";
+import { useUI, GlassSection, GlassRow } from "@/components/ui";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
-import { SettingsItem } from "@/features/profile/components/SettingsItem";
 import type { Currency } from "@/types";
 
 interface ProfilePreferencesProps {
@@ -19,43 +19,22 @@ export function ProfilePreferences({
   onThemeToggle,
   onCurrencyChange,
 }: ProfilePreferencesProps): JSX.Element {
-  const { color, radius } = useUI();
+  const { color } = useUI();
 
   return (
-    <>
-      <View style={{ marginBottom: 14 }}>
-        <SectionLabel>Preferences</SectionLabel>
-      </View>
-
-      <View
-        style={{
-          backgroundColor: color.surface,
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: color.border,
-          marginBottom: 12,
-        }}
-      >
-        <SettingsItem
-          icon="Moon"
-          title="Dark Mode"
-          subtitle="Switch between light and dark themes"
-          rightElement={<Switch isSelected={isDarkMode} onSelectedChange={onThemeToggle} />}
-        />
-      </View>
-
-      <View
-        style={{
-          backgroundColor: color.surface,
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: color.border,
-        }}
-      >
-        <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
-          <CurrencySelector value={preferredCurrencyCode} onChange={onCurrencyChange} />
-        </View>
-      </View>
-    </>
+    <GlassSection title="Preferences">
+      <GlassRow
+        icon={<Moon size={20} color={color.text} />}
+        title="Dark Mode"
+        subtitle="Switch between light and dark themes"
+        end={<Switch isSelected={isDarkMode} onSelectedChange={onThemeToggle} />}
+      />
+      <GlassRow
+        icon={<DollarSign size={20} color={color.text} />}
+        title="Currency"
+        subtitle={preferredCurrencyCode}
+        end={<CurrencySelector value={preferredCurrencyCode} onChange={onCurrencyChange} />}
+      />
+    </GlassSection>
   );
 }

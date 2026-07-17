@@ -24,7 +24,8 @@ export function ScreenHeader({
         alignItems: "center",
         justifyContent: "space-between",
         paddingHorizontal: space.page,
-        paddingVertical: 16,
+        paddingVertical: 12,
+        minHeight: 54,
       }}
     >
       <View style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}>
@@ -35,8 +36,9 @@ export function ScreenHeader({
           style={{
             fontFamily: "Sora_600SemiBold",
             fontSize: 28,
+            lineHeight: 30,
             color: color.textStrong,
-            letterSpacing: -0.3,
+            letterSpacing: -0.02,
           }}
           numberOfLines={1}
         >

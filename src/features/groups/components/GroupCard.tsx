@@ -1,12 +1,11 @@
 import { Typography } from "heroui-native";
 import React, { type JSX } from "react";
-import { View, Pressable } from "react-native";
+import { View } from "react-native";
 
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { useUI } from "@/components/ui";
+import { useUI, GlassRow } from "@/components/ui";
 import { formatActivityDate } from "@/utils/date";
-import * as icons from "lucide-react-native";
 import type { Group } from "@/types";
 
 interface GroupCardProps {
@@ -14,9 +13,6 @@ interface GroupCardProps {
   balance?: number;
   currency?: string;
   latestExpenseAt?: number;
-  index?: number;
-  isFirst?: boolean;
-  isLast?: boolean;
   onPress?: () => void;
 }
 
@@ -82,12 +78,8 @@ export const GroupCard = React.memo(function GroupCard({
   balance = 0,
   currency = "USD",
   latestExpenseAt,
-  index = 0,
-  isFirst = false,
-  isLast = false,
   onPress,
 }: GroupCardProps): JSX.Element {
-  const { color, radius, space, shadow } = useUI();
   const memberCount = group.members.length;
 
   const subtitleParts = [`${memberCount} participant${memberCount !== 1 ? "s" : ""}`];
@@ -97,61 +89,13 @@ export const GroupCard = React.memo(function GroupCard({
   const subtitle = subtitleParts.join(" · ");
 
   return (
-    <Pressable
-      accessibilityRole="button"
+    <GlassRow
+      icon={<GroupIconBadge group={group} size="md" />}
+      title={group.name}
+      subtitle={subtitle}
+      end={<BalancePill balance={balance} currency={currency} />}
+      showChevron
       onPress={onPress}
-      style={({ pressed }) => ({
-        flexDirection: "row",
-        alignItems: "center",
-        paddingHorizontal: 16,
-        paddingVertical: 16,
-        borderLeftWidth: 1,
-        borderRightWidth: 1,
-        borderTopWidth: isFirst ? 1 : 0,
-        borderBottomWidth: 1,
-        borderColor: color.border,
-        backgroundColor: color.surface,
-        borderTopLeftRadius: isFirst ? radius.lg : 0,
-        borderTopRightRadius: isFirst ? radius.lg : 0,
-        borderBottomLeftRadius: isLast ? radius.lg : 0,
-        borderBottomRightRadius: isLast ? radius.lg : 0,
-      })}
-    >
-      {/* Leading Icon */}
-      <View style={{ marginRight: 16, flexShrink: 0 }}>
-        <GroupIconBadge group={group} size="md" />
-      </View>
-
-      {/* Title & Subtitle */}
-      <View style={{ flex: 1, marginRight: 12 }}>
-        <Typography
-          numberOfLines={1}
-          style={{
-            fontSize: 16,
-            color: color.textStrong,
-            fontFamily: "IBMPlexSans_600SemiBold",
-            letterSpacing: -0.3,
-          }}
-        >
-          {group.name}
-        </Typography>
-        <Typography
-          style={{
-            fontSize: 14,
-            color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
-            marginTop: 4,
-          }}
-        >
-          {subtitle}
-        </Typography>
-      </View>
-
-      {/* Trailing Balance Pill + Chevron */}
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-        <BalancePill balance={balance} currency={currency} />
-        <icons.ChevronRight size={16} color={color.muted} strokeWidth={1.75} />
-      </View>
-    </Pressable>
+    />
   );
 });

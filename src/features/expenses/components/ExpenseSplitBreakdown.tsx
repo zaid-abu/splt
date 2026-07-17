@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { AppLoader } from "@/components/ui/AppLoader";
-import { useUI } from "@/components/ui";
+import { useUI, GlassSection, GlassRow } from "@/components/ui";
 import type { ExpenseSplit } from "@/types";
 
 interface ExpenseSplitBreakdownProps {
@@ -26,7 +26,7 @@ interface ExpenseSplitBreakdownProps {
 
 export function ExpenseSplitBreakdown({
   splits,
-  splitMethod,
+  splitMethod: _splitMethod,
   currentUserId,
   formatAmt,
   paidByMe,
@@ -47,107 +47,47 @@ export function ExpenseSplitBreakdown({
         entering={FadeInDown.duration(400).delay(100)}
         style={{ paddingHorizontal: space.page, paddingTop: 32 }}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 24,
-          }}
-        >
-          <Typography
-            style={{
-              fontSize: 12,
-              color: color.muted,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              textTransform: "uppercase",
-              letterSpacing: 2,
-            }}
-          >
-            Split Breakdown
-          </Typography>
-          <View
-            style={{
-              paddingHorizontal: 12,
-              paddingVertical: 4,
-              backgroundColor: "transparent",
-              borderWidth: 1,
-              borderColor: color.border,
-              borderRadius: 12,
-            }}
-          >
-            <Typography
-              style={{
-                fontSize: 11,
-                color: color.text,
-                fontFamily: "IBMPlexSans_600SemiBold",
-              }}
-            >
-              {splitMethod}
-            </Typography>
-          </View>
-        </View>
-
-        <View>
+        <GlassSection title="Split Breakdown">
           {isAppLoading ? (
-            <View style={{ paddingTop: 24 }}>
+            <View style={{ paddingVertical: 24 }}>
               <AppLoader />
             </View>
           ) : (
-            splits.map((split, idx) => {
+            splits.map((split) => {
               const isMe = split.userId === currentUserId;
               const isPayer = split.paid;
               const isSettled = split.paid && !isPayer;
 
+              let subtitle: string;
+              if (isPayer) {
+                subtitle = split.paid ? "Paid the bill" : "Owes";
+              } else {
+                subtitle = isSettled ? "Settled" : "Owes";
+              }
+
               return (
-                <Pressable
+                <GlassRow
                   key={split.userId}
-                  onPress={() => onUserPress?.(split.userId)}
-                  style={({ pressed }) => ({
-                    flexDirection: "row",
-                    alignItems: "center",
-                    paddingVertical: 16,
-                    borderBottomWidth: idx < splits.length - 1 ? 1 : 0,
-                    borderBottomColor: color.border,
-                    opacity: !isMe && pressed ? 0.5 : 1,
-                  })}
-                >
-                  <AppUserAvatar user={split.user} size="lg" />
-                  <View style={{ flex: 1, marginLeft: 16, justifyContent: "center" }}>
+                  icon={<AppUserAvatar user={split.user} size="lg" />}
+                  title={isMe ? "You" : split.user.name}
+                  subtitle={subtitle}
+                  end={
                     <Typography
                       style={{
-                        fontSize: 18,
+                        fontSize: 20,
                         color: color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
-                        marginBottom: 2,
                       }}
                     >
-                      {isMe ? "You" : split.user.name}
+                      {formatAmt(split.amount)}
                     </Typography>
-                    <Typography
-                      style={{
-                        fontSize: 14,
-                        color: color.muted,
-                        fontFamily: "IBMPlexSans_500Medium",
-                      }}
-                    >
-                      {isPayer ? (split.paid ? "Paid the bill" : "Owes") : isSettled ? "Settled" : "Owes"}
-                    </Typography>
-                  </View>
-                  <Typography
-                    style={{
-                      fontSize: 20,
-                      color: color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                    }}
-                  >
-                    {formatAmt(split.amount)}
-                  </Typography>
-                </Pressable>
+                  }
+                  onPress={() => onUserPress?.(split.userId)}
+                />
               );
             })
           )}
-        </View>
+        </GlassSection>
       </Animated.View>
 
       {myShareSummaryAmount && (

@@ -2,9 +2,10 @@ import type { JSX } from "react";
 import { View } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
-import { TransactionRow } from "@/features/expenses/components/TransactionRow";
+import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { useUI } from "@/components/ui";
+import { formatActivityDate } from "@/utils/date";
+import { useUI, GlassSection, GlassRow } from "@/components/ui";
 import type { Expense, User } from "@/types";
 
 function EmptyIconShell({ icon: Icon }: { icon: any }): JSX.Element {
@@ -45,45 +46,16 @@ export function GroupTransactions({
   currency,
   onExpensePress,
 }: GroupTransactionsProps): JSX.Element {
-  const { color, radius } = useUI();
+  const { color } = useUI();
 
   return (
-    <View>
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 4,
-        }}
-      >
-        <Typography
-          style={{
-            fontSize: 16,
-            color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
-          }}
-        >
-          Transactions
-        </Typography>
-        <Typography
-          style={{
-            fontSize: 13,
-            color: color.muted,
-            fontFamily: "IBMPlexSans_600SemiBold",
-          }}
-        >
-          Total: {formatAmount(totalExpensesInGroupCurrency, currency)}
-        </Typography>
-      </View>
-
+    <GlassSection
+      title="Transactions"
+      viewAllLabel={`Total: ${formatAmount(totalExpensesInGroupCurrency, currency)}`}
+    >
       {expenses.length === 0 ? (
         <View
           style={{
-            borderRadius: radius.lg,
-            borderWidth: 1,
-            borderColor: color.border,
-            backgroundColor: color.surface,
             paddingVertical: 36,
             alignItems: "center",
           }}
@@ -111,33 +83,34 @@ export function GroupTransactions({
           </Typography>
         </View>
       ) : (
-        <View
-          style={{
-            borderRadius: radius.lg,
-            borderWidth: 1,
-            borderColor: color.border,
-            backgroundColor: color.surface,
-            overflow: "hidden",
-          }}
-        >
-          {expenses.map((expense, idx) => {
-            const mySplit = expense.splits.find((s) => s.userId === currentUserId);
-            const paidByUser = userById.get(expense.paidBy);
-            return (
-              <TransactionRow
-                key={expense.id}
-                expense={expense}
-                currentUserId={currentUserId || ""}
-                paidByUser={paidByUser}
-                myShare={mySplit?.amount ?? 0}
-                isLast={idx === expenses.length - 1}
-                onPress={() => onExpensePress(expense.id)}
-                showAvatarBadge
-              />
-            );
-          })}
-        </View>
+        expenses.map((expense) => {
+          const paidByUser = userById.get(expense.paidBy);
+          const iPaid = expense.paidBy === currentUserId;
+          const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
+
+          return (
+            <GlassRow
+              key={expense.id}
+              icon={<CategoryIconBadge category={expense.category} size="md" />}
+              title={expense.title}
+              subtitle={`${paidByName} paid · ${formatActivityDate(expense.date ?? expense.createdAt)}`}
+              end={
+                <Typography
+                  style={{
+                    fontSize: 15,
+                    color: color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  {formatAmount(expense.amount, expense.currency)}
+                </Typography>
+              }
+              showChevron
+              onPress={() => onExpensePress(expense.id)}
+            />
+          );
+        })
       )}
-    </View>
+    </GlassSection>
   );
 }

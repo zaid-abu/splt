@@ -2,7 +2,7 @@ import { View } from "react-native";
 import { Typography } from "heroui-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { SectionLabel, useUI } from "@/components/ui";
+import { GlassSection, GlassRow, useUI } from "@/components/ui";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { EXPENSE_CATEGORIES } from "@/types";
 
@@ -24,61 +24,43 @@ export function FriendSpendingCategories({
   categorySpending,
   currencyCode,
 }: FriendSpendingCategoriesProps): React.JSX.Element {
-  const { color, radius } = useUI();
+  const { color } = useUI();
 
   return (
     <Animated.View
       entering={FadeInDown.duration(400).delay(100).springify()}
       style={{ paddingHorizontal: 24, marginBottom: 40 }}
     >
-      <SectionLabel>Spending by Category</SectionLabel>
-      <View
-        style={{
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: color.border,
-          backgroundColor: color.surface,
-          paddingVertical: 12,
-        }}
-      >
+      <GlassSection title="Spending by Category">
         {categorySpending.map((item, idx) => (
-          <View
-            key={item.cat}
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderBottomWidth: idx < categorySpending.length - 1 ? 1 : 0,
-              borderBottomColor: color.border,
-            }}
-          >
-            <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
-              <CategoryIconBadge category={item.cat as any} size="sm" />
-              <Typography
+          <View key={item.cat}>
+            {idx > 0 ? (
+              <View
                 style={{
-                  fontSize: 15,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  textTransform: "capitalize",
+                  height: 1,
+                  backgroundColor: color.borderSoft,
+                  marginHorizontal: 14,
                 }}
-              >
-                {CATEGORY_LABELS[item.cat] ?? item.cat}
-              </Typography>
-            </View>
-            <Typography
-              style={{
-                fontSize: 16,
-                color: color.text,
-                fontFamily: "IBMPlexSans_600SemiBold",
-              }}
-            >
-              {formatAmount(item.amount, currencyCode)}
-            </Typography>
+              />
+            ) : null}
+            <GlassRow
+              icon={<CategoryIconBadge category={item.cat as any} size="sm" />}
+              title={CATEGORY_LABELS[item.cat] ?? item.cat}
+              end={
+                <Typography
+                  style={{
+                    fontSize: 16,
+                    color: color.text,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                  }}
+                >
+                  {formatAmount(item.amount, currencyCode)}
+                </Typography>
+              }
+            />
           </View>
         ))}
-      </View>
+      </GlassSection>
     </Animated.View>
   );
 }

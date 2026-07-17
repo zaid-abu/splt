@@ -274,18 +274,6 @@ export default function ExpenseDetailScreen(): JSX.Element {
           entering={FadeInDown.duration(400).delay(200).springify()}
           style={{ paddingHorizontal: space.page, marginBottom: 40 }}
         >
-          <Typography
-            style={{
-              fontSize: 11,
-              letterSpacing: 1.4,
-              color: color.muted,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              textTransform: "uppercase",
-              marginBottom: 16,
-            }}
-          >
-            Comments
-          </Typography>
           <ExpenseComments expenseId={expense.id} currentUserId={currentUser.id} />
         </Animated.View>
       </ScrollView>

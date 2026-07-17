@@ -13,7 +13,7 @@ interface CardProps {
 
 export function Card({ children, style, padding = 16 }: CardProps): JSX.Element {
   const isDarkMode = useUIStore((s) => s.isDarkMode);
-  const { color, radius, space, shadow } = useUI();
+  const { color, radius } = useUI();
 
   return (
     <View
@@ -21,8 +21,6 @@ export function Card({ children, style, padding = 16 }: CardProps): JSX.Element 
         {
           borderRadius: radius.lg,
           overflow: "hidden",
-          borderWidth: 1,
-          borderColor: color.border,
         },
         style,
       ]}
@@ -32,6 +30,9 @@ export function Card({ children, style, padding = 16 }: CardProps): JSX.Element 
         tint={isDarkMode ? "dark" : "light"}
         style={{
           padding,
+          borderRadius: radius.lg,
+          borderWidth: 1,
+          borderColor: color.border,
           backgroundColor:
             Platform.OS === "android"
               ? isDarkMode

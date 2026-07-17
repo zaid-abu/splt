@@ -2,8 +2,9 @@ import type { JSX } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
-import { useUI } from "@/components/ui";
-import { GroupRow } from "@/features/groups/components/GroupRow";
+import { useUI, GlassSection, GlassRow } from "@/components/ui";
+import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
+import { formatAmount } from "@/components/ui/AmountDisplay";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import type { Group } from "@/types";
 
@@ -12,38 +13,6 @@ type LucideIcon = React.ComponentType<{
   color?: string;
   strokeWidth?: number;
 }>;
-
-function SectionLabel({
-  children,
-  rightAction,
-}: {
-  children: string;
-  rightAction?: JSX.Element;
-}): JSX.Element {
-  const { color } = useUI();
-  return (
-    <View
-      style={{
-        flexDirection: "row",
-        alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: 14,
-      }}
-    >
-      <Typography
-        style={{
-          fontSize: 18,
-          color: color.text,
-          fontFamily: "IBMPlexSans_600SemiBold",
-          letterSpacing: -0.2,
-        }}
-      >
-        {children}
-      </Typography>
-      {rightAction}
-    </View>
-  );
-}
 
 function EmptyIconShell({ icon: Icon }: { icon: LucideIcon }): JSX.Element {
   const { color, radius } = useUI();
@@ -92,88 +61,89 @@ export function DashboardGroupsPreview({
 
   return (
     <View style={{ marginBottom: 28 }}>
-      <SectionLabel
-        rightAction={
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
-            <Typography
-              style={{
-                fontSize: 13,
-                color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
-              }}
-            >
-              {openCount} open
-            </Typography>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onViewAll}
-              hitSlop={8}
-              style={({ pressed }) => ({
-                minHeight: 44,
-                justifyContent: "center",
-                opacity: pressed ? 0.7 : 1,
-              })}
-            >
-              <Typography
-                style={{
-                  fontSize: 14,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                View all
-              </Typography>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Create group"
-              onPress={onCreateGroup}
-              hitSlop={8}
-              style={({ pressed }) => ({
-                width: 44,
-                height: 44,
-                alignItems: "center",
-                justifyContent: "center",
-                borderRadius: radius.pill,
-                borderWidth: 1,
-                borderColor: color.border,
-                backgroundColor: color.control,
-                opacity: pressed ? 0.72 : 1,
-              })}
-            >
-              <icons.Plus size={22} color={color.text} strokeWidth={2.5} />
-            </Pressable>
-          </View>
-        }
-      >
-        Groups
-      </SectionLabel>
-
       <View
         style={{
-          backgroundColor: color.surface,
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: color.border,
-          paddingHorizontal: 14,
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 4,
+          paddingHorizontal: 2,
         }}
       >
+        <Typography
+          style={{
+            fontSize: 13,
+            color: color.muted,
+            fontFamily: "IBMPlexSans_500Medium",
+          }}
+        >
+          {openCount} open
+        </Typography>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Create group"
+          onPress={onCreateGroup}
+          hitSlop={8}
+          style={({ pressed }) => ({
+            width: 44,
+            height: 44,
+            alignItems: "center",
+            justifyContent: "center",
+            borderRadius: radius.pill,
+            borderWidth: 1,
+            borderColor: color.border,
+            backgroundColor: color.control,
+            opacity: pressed ? 0.72 : 1,
+          })}
+        >
+          <icons.Plus size={22} color={color.text} strokeWidth={2.5} />
+        </Pressable>
+      </View>
+
+      <GlassSection title="Groups" viewAllLabel="View all" onViewAll={onViewAll}>
         {isLoading ? (
           <View>
             <ListRowSkeleton />
             <ListRowSkeleton />
           </View>
         ) : groups.length > 0 ? (
-          groups.map(({ group, netBalance }, idx) => (
-            <GroupRow
-              key={group.id}
-              group={group}
-              balance={netBalance}
-              currency={group.currency}
-              isLast={idx === groups.length - 1}
-              onPress={() => onGroupPress(group.id)}
-            />
-          ))
+          groups.map(({ group, netBalance }) => {
+            const memberCount = group.members.length;
+            let subAmountText = "";
+            let subAmountColor: string = color.muted;
+
+            if (netBalance < 0) {
+              subAmountText = `You owe ${formatAmount(Math.abs(netBalance), group.currency)}`;
+              subAmountColor = color.danger;
+            } else if (netBalance > 0) {
+              subAmountText = `Owes you ${formatAmount(netBalance, group.currency)}`;
+              subAmountColor = color.success;
+            } else {
+              subAmountText = "Settled up";
+            }
+
+            return (
+              <GlassRow
+                key={group.id}
+                icon={<GroupIconBadge group={group} size="md" />}
+                title={group.name}
+                subtitle={`${memberCount} participants`}
+                onPress={() => onGroupPress(group.id)}
+                showChevron
+                end={
+                  <Typography
+                    style={{
+                      fontSize: 13,
+                      color: subAmountColor,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
+                  >
+                    {subAmountText}
+                  </Typography>
+                }
+              />
+            );
+          })
         ) : (
           <View
             style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}
@@ -225,7 +195,7 @@ export function DashboardGroupsPreview({
             </Pressable>
           </View>
         )}
-      </View>
+      </GlassSection>
     </View>
   );
 }

@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { useUI } from "@/components/ui";
+import { GlassRow, useUI } from "@/components/ui";
 import { getBalanceCopy } from "@/utils/balance";
 import { formatActivityDate } from "@/utils/date";
 import { SwipeableRow } from "@/components/layout/SwipeableRow";
@@ -59,11 +59,6 @@ export function FriendRow({
             router.push(`/friend/${friend.id}`);
           }}
           style={({ pressed }) => ({
-            flexDirection: "row",
-            alignItems: "center",
-            minHeight: 78,
-            paddingVertical: 12,
-            paddingHorizontal: 14,
             backgroundColor: color.surface,
             borderWidth: 1,
             borderColor: color.border,
@@ -73,103 +68,84 @@ export function FriendRow({
             borderBottomLeftRadius: isLast ? radius.lg : 0,
             borderBottomRightRadius: isLast ? radius.lg : 0,
             opacity: pressed ? 0.62 : 1,
+            overflow: "hidden",
           })}
         >
-          <AppUserAvatar user={friend} size="md" balance={balance} />
-
-          <View style={{ flex: 1, minWidth: 0, marginLeft: 12, marginRight: 10 }}>
-            <Typography
-              numberOfLines={1}
-              style={{
-                fontSize: 16,
-                lineHeight: 21,
-                color: color.text,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                letterSpacing: -0.2,
-              }}
-            >
-              {friend.name}
-            </Typography>
-            <Typography
-              numberOfLines={1}
-              style={{
-                marginTop: 2,
-                fontSize: 13,
-                lineHeight: 17,
-                color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
-              }}
-            >
-              {recentExpense
+          <GlassRow
+            icon={<AppUserAvatar user={friend} size="md" balance={balance} />}
+            title={friend.name}
+            subtitle={
+              recentExpense
                 ? `${recentExpense.title} - ${formatActivityDate(recentExpense.date)}`
                 : row.friendship
                   ? friend.email
-                  : "Shared group contact"}
-            </Typography>
-          </View>
-
-          <View style={{ alignItems: "flex-end", maxWidth: 116 }}>
-            <View
-              style={{
-                paddingHorizontal: 9,
-                paddingVertical: 5,
-                borderRadius: 999,
-                backgroundColor: balanceCopy.bg,
-                borderWidth: 1,
-                borderColor: color.border,
-              }}
-            >
-              <Typography
-                numberOfLines={1}
-                adjustsFontSizeToFit
-                style={{
-                  fontSize: 13,
-                  lineHeight: 16,
-                  color: balanceCopy.color,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                {balance === 0 ? balanceCopy.label : balanceCopy.amount}
-              </Typography>
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              onPress={(event) => {
-                event.stopPropagation();
-                onPrimaryAction(row);
-              }}
-              style={({ pressed }) => ({
-                marginTop: 7,
-                minHeight: 36,
-                paddingHorizontal: 9,
-                borderRadius: 999,
-                backgroundColor: balance === 0 ? color.control : color.text,
-                borderWidth: 1,
-                borderColor: balance === 0 ? color.border : color.text,
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 5,
-                opacity: pressed ? 0.72 : 1,
-              })}
-            >
-              <ActionIcon
-                size={13}
-                color={balance === 0 ? color.text : color.textInverse}
-                strokeWidth={2}
-              />
-              <Typography
-                style={{
-                  fontSize: 12,
-                  lineHeight: 15,
-                  color: balance === 0 ? color.text : color.textInverse,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                }}
-              >
-                {actionLabel}
-              </Typography>
-            </Pressable>
-          </View>
+                  : "Shared group contact"
+            }
+            end={
+              <View style={{ alignItems: "flex-end", maxWidth: 116 }}>
+                <View
+                  style={{
+                    paddingHorizontal: 9,
+                    paddingVertical: 5,
+                    borderRadius: 999,
+                    backgroundColor: balanceCopy.bg,
+                    borderWidth: 1,
+                    borderColor: color.border,
+                  }}
+                >
+                  <Typography
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    style={{
+                      fontSize: 13,
+                      lineHeight: 16,
+                      color: balanceCopy.color,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
+                  >
+                    {balance === 0 ? balanceCopy.label : balanceCopy.amount}
+                  </Typography>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={(event) => {
+                    event.stopPropagation();
+                    onPrimaryAction(row);
+                  }}
+                  style={({ pressed }) => ({
+                    marginTop: 7,
+                    minHeight: 36,
+                    paddingHorizontal: 9,
+                    borderRadius: 999,
+                    backgroundColor: balance === 0 ? color.control : color.text,
+                    borderWidth: 1,
+                    borderColor: balance === 0 ? color.border : color.text,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 5,
+                    opacity: pressed ? 0.72 : 1,
+                  })}
+                >
+                  <ActionIcon
+                    size={13}
+                    color={balance === 0 ? color.text : color.textInverse}
+                    strokeWidth={2}
+                  />
+                  <Typography
+                    style={{
+                      fontSize: 12,
+                      lineHeight: 15,
+                      color: balance === 0 ? color.text : color.textInverse,
+                      fontFamily: "IBMPlexSans_600SemiBold",
+                    }}
+                  >
+                    {actionLabel}
+                  </Typography>
+                </Pressable>
+              </View>
+            }
+          />
         </Pressable>
       </SwipeableRow>
     </View>

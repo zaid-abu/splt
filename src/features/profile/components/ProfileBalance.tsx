@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View } from "react-native";
-import { MetricCell } from "@/components/ui";
+import { GlassHeroBalance, useUI } from "@/components/ui";
 
 interface ProfileBalanceProps {
   groupCount: number;
@@ -15,23 +14,28 @@ export function ProfileBalance({
   youOwe,
   currencySymbol,
 }: ProfileBalanceProps): JSX.Element {
+  const { color } = useUI();
+  const netBalance = owedToYou - youOwe;
+  const formattedNet = `${netBalance >= 0 ? "+" : "-"}${currencySymbol}${Math.abs(netBalance).toFixed(0)}`;
+
   return (
-    <View style={{ flexDirection: "row", gap: 10 }}>
-      <MetricCell label="Groups" value={String(groupCount)} />
-      <MetricCell
-        label="Owed"
-        value={`+${currencySymbol}${owedToYou.toFixed(0)}`}
-        tone={owedToYou > 0 ? "success" : "neutral"}
-      />
-      <MetricCell
-        label="Owe"
-        value={
-          youOwe > 0
-            ? `-${currencySymbol}${youOwe.toFixed(0)}`
-            : `${currencySymbol}0`
-        }
-        tone={youOwe > 0 ? "danger" : "neutral"}
-      />
-    </View>
+    <GlassHeroBalance
+      label="Balance"
+      amount={formattedNet}
+      amountColor={netBalance >= 0 ? color.success : netBalance < 0 ? color.danger : color.text}
+      metrics={[
+        { label: "Groups", value: String(groupCount) },
+        {
+          label: "Owed",
+          value: `+${currencySymbol}${owedToYou.toFixed(0)}`,
+          color: owedToYou > 0 ? color.success : undefined,
+        },
+        {
+          label: "Owe",
+          value: youOwe > 0 ? `-${currencySymbol}${youOwe.toFixed(0)}` : `${currencySymbol}0`,
+          color: youOwe > 0 ? color.danger : undefined,
+        },
+      ]}
+    />
   );
 }

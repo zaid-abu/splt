@@ -13,7 +13,7 @@ import { GroupCard } from "@/features/groups/components/GroupCard";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { useUI, ScreenHeader, MetricCell, SearchField, FilterPill } from "@/components/ui";
+import { useUI, ScreenHeader, SearchField, FilterPill, GlassHeroBalance } from "@/components/ui";
 import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import type { GroupFilter } from "@/types";
 
@@ -87,8 +87,6 @@ export default function GroupsScreen(): JSX.Element {
           <FlashList
             data={filtered}
             renderItem={({ item, index }) => {
-              const isLast = index === filtered.length - 1;
-              const isFirst = index === 0;
               return (
                 <Animated.View
                   entering={FadeInDown.duration(350)
@@ -102,9 +100,6 @@ export default function GroupsScreen(): JSX.Element {
                       balance={item.netBalance}
                       currency={preferredCurrencyCode}
                       latestExpenseAt={item.latestExpenseAt}
-                      index={index}
-                      isFirst={isFirst}
-                      isLast={isLast}
                       onPress={() => handleGroupPress(item.group.id)}
                     />
                   </View>
@@ -114,30 +109,30 @@ export default function GroupsScreen(): JSX.Element {
             ListHeaderComponent={
               <View>
                 <View style={{ paddingHorizontal: space.page, marginBottom: 16 }}>
-                  <View style={{ flexDirection: "row", gap: 10 }}>
-                    <MetricCell label="Groups" value={String(activeGroups.length)} />
-                    <MetricCell
-                      label="You owe"
-                      value={formatAmount(totals.youOwe, preferredCurrencyCode)}
-                      tone={totals.youOwe > 0 ? "danger" : "neutral"}
-                    />
-                    <MetricCell
-                      label="Owed"
-                      value={formatAmount(totals.owedToYou, preferredCurrencyCode)}
-                      tone={totals.owedToYou > 0 ? "success" : "neutral"}
-                    />
-                    <MetricCell
-                      label="Net"
-                      value={formatAmount(Math.abs(totals.netTotal), preferredCurrencyCode)}
-                      tone={
-                        totals.netTotal < -0.005
-                          ? "danger"
-                          : totals.netTotal > 0.005
-                            ? "success"
-                            : "neutral"
-                      }
-                    />
-                  </View>
+                  <GlassHeroBalance
+                    label="Net Balance"
+                    amount={formatAmount(Math.abs(totals.netTotal), preferredCurrencyCode)}
+                    amountColor={
+                      totals.netTotal < -0.005
+                        ? color.danger
+                        : totals.netTotal > 0.005
+                          ? color.success
+                          : color.text
+                    }
+                    metrics={[
+                      { label: "Groups", value: String(activeGroups.length) },
+                      {
+                        label: "You owe",
+                        value: formatAmount(totals.youOwe, preferredCurrencyCode),
+                        color: totals.youOwe > 0 ? color.danger : undefined,
+                      },
+                      {
+                        label: "Owed",
+                        value: formatAmount(totals.owedToYou, preferredCurrencyCode),
+                        color: totals.owedToYou > 0 ? color.success : undefined,
+                      },
+                    ]}
+                  />
                 </View>
 
                 <View style={{ paddingHorizontal: space.page, marginBottom: 14 }}>

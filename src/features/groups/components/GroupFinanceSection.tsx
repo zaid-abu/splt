@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { View, Pressable } from "react-native";
 import { Typography, Switch } from "heroui-native";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
-import { useUI, SectionLabel } from "@/components/ui";
+import { useUI, GlassSection } from "@/components/ui";
 import { CURRENCIES } from "@/types";
 import type { SplitMethod } from "@/types";
 
@@ -27,9 +27,7 @@ export function GroupFinanceSection({
   const currency = CURRENCIES.find((c) => c.code === currencyCode) ?? CURRENCIES[0];
 
   return (
-    <>
-      <SectionLabel>Finance</SectionLabel>
-
+    <GlassSection title="Finance">
       <View
         style={{
           borderBottomWidth: 1,
@@ -131,6 +129,6 @@ export function GroupFinanceSection({
         </View>
         <Switch isSelected={simplifyDebts} onSelectedChange={onSimplifyDebtsChange} />
       </View>
-    </>
+    </GlassSection>
   );
 }

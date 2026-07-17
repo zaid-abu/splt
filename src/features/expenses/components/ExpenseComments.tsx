@@ -6,12 +6,29 @@ import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { useUI } from "@/components/ui";
+import { useUI, GlassSection, GlassRow } from "@/components/ui";
 import { useExpenseComments, useAddComment } from "@/features/expenses/queries/useComments";
 
 interface ExpenseCommentsProps {
   expenseId: string;
   currentUserId: string;
+}
+
+function fallbackUser(comment: any) {
+  return (comment.user as any) ?? {
+    id: comment.user_id,
+    name: "?",
+    initials: "?",
+    email: "",
+    defaultCurrency: "USD",
+  };
+}
+
+function commentDate(createdAt: string) {
+  return new Date(createdAt).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export function ExpenseComments({
@@ -37,15 +54,7 @@ export function ExpenseComments({
   };
 
   return (
-    <View
-      style={{
-        backgroundColor: color.surface,
-        borderRadius: radius.lg,
-        borderWidth: 1,
-        borderColor: color.border,
-        overflow: "hidden",
-      }}
-    >
+    <GlassSection title="Comments">
       {isError ? (
         <View style={{ paddingVertical: 24, alignItems: "center" }}>
           <ErrorState onRetry={() => refetch()} />
@@ -64,65 +73,23 @@ export function ExpenseComments({
         </View>
       ) : (
         comments.map((comment) => (
-          <View
+          <GlassRow
             key={comment.id}
-            style={{
-              flexDirection: "row",
-              paddingVertical: 12,
-              paddingHorizontal: 16,
-              borderBottomWidth: 1,
-              borderBottomColor: color.border,
-            }}
-          >
-            <AppUserAvatar
-              user={
-                (comment.user as any) ?? {
-                  id: comment.user_id,
-                  name: "?",
-                  initials: "?",
-                  email: "",
-                  defaultCurrency: "USD",
-                }
-              }
-              size="sm"
-            />
-            <View style={{ flex: 1, marginLeft: 12 }}>
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Typography
-                  style={{
-                    fontSize: 14,
-                    color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  {comment.user?.name ?? "Unknown"}
-                </Typography>
-                <Typography
-                  style={{
-                    fontSize: 11,
-                    color: color.muted,
-                    fontFamily: "IBMPlexSans_500Medium",
-                  }}
-                >
-                  {new Date(comment.created_at).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </Typography>
-              </View>
+            icon={<AppUserAvatar user={fallbackUser(comment)} size="sm" />}
+            title={comment.user?.name ?? "Unknown"}
+            subtitle={comment.text}
+            end={
               <Typography
                 style={{
-                  marginTop: 2,
-                  fontSize: 14,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_400Regular",
-                  lineHeight: 20,
+                  fontSize: 11,
+                  color: color.muted,
+                  fontFamily: "IBMPlexSans_500Medium",
                 }}
               >
-                {comment.text}
+                {commentDate(comment.created_at)}
               </Typography>
-            </View>
-          </View>
+            }
+          />
         ))
       )}
 
@@ -177,6 +144,6 @@ export function ExpenseComments({
           />
         </Pressable>
       </View>
-    </View>
+    </GlassSection>
   );
 }

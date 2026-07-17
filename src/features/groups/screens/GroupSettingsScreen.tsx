@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
 
-import { useUI, IconButton, SectionLabel } from "@/components/ui";
+import { useUI, IconButton } from "@/components/ui";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { ConfirmationSheet } from "@/components/dialogs/ConfirmationSheet";
 import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";

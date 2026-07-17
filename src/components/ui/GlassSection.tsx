@@ -1,26 +1,23 @@
-import { Children, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import { useUI } from "@/components/ui";
 import GlassSurface from "@/components/glassmorphism/GlassSurface";
 
-interface ListSectionProps {
-  label: string;
+interface GlassSectionProps {
+  title: string;
   viewAllLabel?: string;
   onViewAll?: () => void;
-  rightAction?: ReactNode;
   children: ReactNode;
 }
 
-export function ListSection({
-  label,
+export function GlassSection({
+  title,
   viewAllLabel,
   onViewAll,
-  rightAction,
   children,
-}: ListSectionProps): React.JSX.Element {
+}: GlassSectionProps): React.JSX.Element {
   const { color, radius } = useUI();
-  const childrenArray = Children.toArray(children);
 
   return (
     <View style={{ marginBottom: 28 }}>
@@ -35,44 +32,41 @@ export function ListSection({
         <Typography
           style={{
             fontSize: 18,
+            fontFamily: "Sora_600SemiBold",
+            letterSpacing: -0.01,
             color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
-            letterSpacing: -0.2,
           }}
         >
-          {label}
+          {title}
         </Typography>
-        {onViewAll && viewAllLabel ? (
-          <Pressable onPress={onViewAll} hitSlop={8}>
+        {viewAllLabel ? (
+          onViewAll ? (
+            <Pressable onPress={onViewAll} hitSlop={8}>
+              <Typography
+                style={{
+                  fontSize: 13,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: color.muted,
+                }}
+              >
+                {viewAllLabel}
+              </Typography>
+            </Pressable>
+          ) : (
             <Typography
               style={{
                 fontSize: 13,
-                color: color.muted,
                 fontFamily: "IBMPlexSans_600SemiBold",
+                color: color.muted,
               }}
             >
               {viewAllLabel}
             </Typography>
-          </Pressable>
-        ) : (
-          rightAction
-        )}
+          )
+        ) : null}
       </View>
       <GlassSurface borderRadius={radius.md} padding={0}>
-        {childrenArray.map((child, index) => {
-          const isLast = index === childrenArray.length - 1;
-          return (
-            <View
-              key={index}
-              style={{
-                borderBottomWidth: isLast ? 0 : 1,
-                borderBottomColor: color.borderSoft,
-              }}
-            >
-              {child}
-            </View>
-          );
-        })}
+        {children}
       </GlassSurface>
     </View>
   );

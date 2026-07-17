@@ -1,10 +1,8 @@
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
-import { useRouter } from "expo-router";
-import * as icons from "lucide-react-native";
+import { View } from "react-native";
 import * as Haptics from "expo-haptics";
+import { useRouter } from "expo-router";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { SectionLabel, useUI } from "@/components/ui";
+import { GlassSection, GlassRow, useUI } from "@/components/ui";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import type { Group, Expense } from "@/types";
 
@@ -20,7 +18,7 @@ interface FriendSharedGroupsProps {
 export function FriendSharedGroups({
   sharedGroupsWithRecentActivity,
 }: FriendSharedGroupsProps): React.JSX.Element {
-  const { color, radius } = useUI();
+  const { color } = useUI();
   const router = useRouter();
 
   return (
@@ -28,70 +26,35 @@ export function FriendSharedGroups({
       entering={FadeInDown.duration(400).delay(50).springify()}
       style={{ paddingHorizontal: 24, marginBottom: 40 }}
     >
-      <SectionLabel>Shared Groups</SectionLabel>
-      <View
-        style={{
-          borderRadius: radius.lg,
-          borderWidth: 1,
-          borderColor: color.border,
-          backgroundColor: color.surface,
-        }}
-      >
+      <GlassSection title="Shared Groups">
         {sharedGroupsWithRecentActivity.map(({ group, latestExpense }, idx) => (
-          <Pressable
-            key={group.id}
-            accessibilityRole="button"
-            onPress={() => {
-              Haptics.selectionAsync();
-              router.push(`/group/${group.id}`);
-            }}
-            style={({ pressed }) => ({
-              flexDirection: "row",
-              alignItems: "center",
-              paddingVertical: 14,
-              paddingHorizontal: 16,
-              borderBottomWidth:
-                idx < sharedGroupsWithRecentActivity.length - 1 ? 1 : 0,
-              borderBottomColor: color.border,
-              backgroundColor: pressed ? color.subtle : "transparent",
-              borderTopLeftRadius: idx === 0 ? radius.lg : 0,
-              borderTopRightRadius: idx === 0 ? radius.lg : 0,
-              borderBottomLeftRadius:
-                idx === sharedGroupsWithRecentActivity.length - 1 ? radius.lg : 0,
-              borderBottomRightRadius:
-                idx === sharedGroupsWithRecentActivity.length - 1 ? radius.lg : 0,
-            })}
-          >
-            <GroupIconBadge group={group} size="sm" />
-            <View style={{ flex: 1, minWidth: 0, marginLeft: 12, marginRight: 12 }}>
-              <Typography
-                numberOfLines={1}
+          <View key={group.id}>
+            {idx > 0 ? (
+              <View
                 style={{
-                  fontSize: 16,
-                  color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  height: 1,
+                  backgroundColor: color.borderSoft,
+                  marginHorizontal: 14,
                 }}
-              >
-                {group.name}
-              </Typography>
-              <Typography
-                numberOfLines={1}
-                style={{
-                  marginTop: 3,
-                  fontSize: 13,
-                  color: color.muted,
-                  fontFamily: "IBMPlexSans_500Medium",
-                }}
-              >
-                {latestExpense
+              />
+            ) : null}
+            <GlassRow
+              icon={<GroupIconBadge group={group} size="sm" />}
+              title={group.name}
+              subtitle={
+                latestExpense
                   ? `Latest: ${latestExpense.title}`
-                  : "No shared group expenses yet"}
-              </Typography>
-            </View>
-            <icons.ChevronRight size={18} color={color.muted} strokeWidth={1.8} />
-          </Pressable>
+                  : "No shared group expenses yet"
+              }
+              showChevron
+              onPress={() => {
+                Haptics.selectionAsync();
+                router.push(`/group/${group.id}`);
+              }}
+            />
+          </View>
         ))}
-      </View>
+      </GlassSection>
     </Animated.View>
   );
 }

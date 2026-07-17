@@ -1,8 +1,7 @@
 import { View } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
-import { ActivityItem } from "@/features/activity/components/ActivityItem";
-import { SectionLabel, useUI } from "@/components/ui";
+import { GlassSection, GlassRow, useUI } from "@/components/ui";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import type { Activity } from "@/types";
 
@@ -13,24 +12,14 @@ interface FriendRecentActivityProps {
 export function FriendRecentActivity({
   sharedActivities,
 }: FriendRecentActivityProps): React.JSX.Element {
-  const { color, radius } = useUI();
+  const { color } = useUI();
 
   return (
     <Animated.View
       entering={FadeInDown.duration(400).delay(150).springify()}
       style={{ paddingHorizontal: 24, marginBottom: 40 }}
     >
-      <SectionLabel>Recent Activity</SectionLabel>
-
-      <View
-        style={{
-          borderRadius: radius.lg,
-          borderWidth: sharedActivities.length === 0 ? 1 : 0,
-          borderColor: color.border,
-          backgroundColor:
-            sharedActivities.length === 0 ? color.surface : "transparent",
-        }}
-      >
+      <GlassSection title="Recent Activity">
         {sharedActivities.length === 0 ? (
           <View
             style={{
@@ -42,7 +31,7 @@ export function FriendRecentActivity({
               style={{
                 width: 56,
                 height: 56,
-                borderRadius: radius.pill,
+                borderRadius: 999,
                 backgroundColor: color.control,
                 alignItems: "center",
                 justifyContent: "center",
@@ -74,25 +63,28 @@ export function FriendRecentActivity({
             </Typography>
           </View>
         ) : (
-          <View
-            style={{
-              borderRadius: radius.lg,
-              borderWidth: 1,
-              borderColor: color.border,
-              backgroundColor: color.surface,
-            }}
-          >
+          <>
             {sharedActivities.map((activity, idx) => (
-              <ActivityItem
-                key={activity.id}
-                activity={activity}
-                index={idx}
-                isLast={idx === sharedActivities.length - 1}
-              />
+              <View key={activity.id}>
+                {idx > 0 ? (
+                  <View
+                    style={{
+                      height: 1,
+                      backgroundColor: color.borderSoft,
+                      marginHorizontal: 14,
+                    }}
+                  />
+                ) : null}
+                <GlassRow
+                  title={activity.expense?.title ?? "Activity"}
+                  subtitle={activity.user?.name ?? ""}
+                  showChevron
+                />
+              </View>
             ))}
-          </View>
+          </>
         )}
-      </View>
+      </GlassSection>
     </Animated.View>
   );
 }
