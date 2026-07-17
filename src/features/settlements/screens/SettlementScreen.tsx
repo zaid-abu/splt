@@ -31,11 +31,12 @@ import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useAppToast } from "@/hooks/useAppToast";
-import { ScreenHeader, UI } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader } from "@/components/ui/native-ui";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 
 export default function SettleUpScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const {
     id,
     groupId,
@@ -65,74 +66,74 @@ export default function SettleUpScreen(): JSX.Element {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        screen: { flex: 1, backgroundColor: UI.color.bg },
+        screen: { flex: 1, backgroundColor: color.bg },
         row: { flexDirection: "row", alignItems: "center" },
         center: { alignItems: "center", justifyContent: "center" },
         pillButton: {
           paddingHorizontal: 20,
           paddingVertical: 10,
-          borderRadius: UI.radius.pill,
-          backgroundColor: UI.color.surface,
+          borderRadius: radius.pill,
+          backgroundColor: color.surface,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
         },
         pillButtonText: {
           fontSize: 13,
-          color: UI.color.text,
+          color: color.text,
           fontFamily: "IBMPlexSans_600SemiBold",
         },
         surfaceCard: {
-          backgroundColor: UI.color.surface,
+          backgroundColor: color.surface,
           borderWidth: 1,
-          borderColor: UI.color.border,
-          borderRadius: UI.radius.lg,
+          borderColor: color.border,
+          borderRadius: radius.lg,
           padding: 16,
         },
         submitButton: {
-          backgroundColor: UI.color.brand,
+          backgroundColor: color.brand,
           height: 56,
-          borderRadius: UI.radius.pill,
+          borderRadius: radius.pill,
           justifyContent: "center",
           alignItems: "center",
         },
         submitButtonText: {
           fontSize: 16,
-          color: UI.color.textInverse,
+          color: color.textInverse,
           fontFamily: "IBMPlexSans_600SemiBold",
           letterSpacing: 1,
         },
         brandPill: {
           paddingHorizontal: 16,
           paddingVertical: 10,
-          borderRadius: UI.radius.pill,
+          borderRadius: radius.pill,
           borderWidth: 1,
         },
-        brandPillSelected: { backgroundColor: UI.color.brand, borderColor: UI.color.brand },
-        brandPillDeselected: { backgroundColor: UI.color.surface, borderColor: UI.color.border },
+        brandPillSelected: { backgroundColor: color.brand, borderColor: color.brand },
+        brandPillDeselected: { backgroundColor: color.surface, borderColor: color.border },
         brandPillText: { fontFamily: "IBMPlexSans_600SemiBold", fontSize: 13 },
-        brandPillTextSelected: { color: UI.color.textInverse },
-        brandPillTextDeselected: { color: UI.color.text },
+        brandPillTextSelected: { color: color.textInverse },
+        brandPillTextDeselected: { color: color.text },
         avatarShell: { alignItems: "center" },
         avatarLabel: {
           fontSize: 13,
           fontFamily: "IBMPlexSans_600SemiBold",
           marginTop: 8,
-          color: UI.color.text,
+          color: color.text,
         },
         swapButton: {
-          backgroundColor: UI.color.surface,
+          backgroundColor: color.surface,
           paddingHorizontal: 16,
           paddingVertical: 10,
-          borderRadius: UI.radius.pill,
+          borderRadius: radius.pill,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           flexDirection: "row",
           alignItems: "center",
           gap: 6,
         },
         swapText: {
           fontSize: 12,
-          color: UI.color.text,
+          color: color.text,
           fontFamily: "IBMPlexSans_600SemiBold",
           textTransform: "uppercase",
           letterSpacing: 1,
@@ -140,7 +141,7 @@ export default function SettleUpScreen(): JSX.Element {
         amountContainer: { alignItems: "center", marginVertical: 32, paddingHorizontal: 24 },
         amountLabel: {
           fontSize: 14,
-          color: UI.color.muted,
+          color: color.muted,
           fontFamily: "IBMPlexSans_500Medium",
           marginBottom: 8,
         },
@@ -149,20 +150,20 @@ export default function SettleUpScreen(): JSX.Element {
           alignItems: "center",
           justifyContent: "center",
           borderBottomWidth: 2,
-          borderBottomColor: UI.color.border,
+          borderBottomColor: color.border,
           paddingBottom: 8,
           minWidth: 200,
         },
         amountSymbol: {
           fontSize: 32,
-          color: UI.color.text,
+          color: color.text,
           fontFamily: "IBMPlexSans_500Medium",
           marginRight: 8,
         },
         amountInput: {
           fontSize: 48,
           fontFamily: "IBMPlexSans_600SemiBold",
-          color: UI.color.text,
+          color: color.text,
           letterSpacing: -2,
           textAlign: "center",
           minWidth: 120,
@@ -177,7 +178,7 @@ export default function SettleUpScreen(): JSX.Element {
         },
         flowLine: {
           height: 1,
-          backgroundColor: UI.color.border,
+          backgroundColor: color.border,
           width: "100%",
           position: "absolute",
           top: "50%",
@@ -186,7 +187,7 @@ export default function SettleUpScreen(): JSX.Element {
         recipientSelector: { paddingHorizontal: 24, paddingBottom: 16 },
         recipientLabel: {
           fontSize: 12,
-          color: UI.color.muted,
+          color: color.muted,
           fontFamily: "IBMPlexSans_500Medium",
           marginBottom: 8,
         },
@@ -194,41 +195,41 @@ export default function SettleUpScreen(): JSX.Element {
           alignItems: "center",
           padding: 12,
           borderWidth: 1,
-          borderRadius: UI.radius.lg,
+          borderRadius: radius.lg,
           width: 80,
         },
         noteInput: {
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           padding: 16,
-          borderRadius: UI.radius.lg,
+          borderRadius: radius.lg,
           fontSize: 15,
           fontFamily: "IBMPlexSans_500Medium",
-          backgroundColor: UI.color.surface,
+          backgroundColor: color.surface,
         },
         summaryBox: {
-          backgroundColor: UI.color.subtle,
+          backgroundColor: color.subtle,
           borderWidth: 1,
-          borderColor: UI.color.border,
-          borderRadius: UI.radius.lg,
+          borderColor: color.border,
+          borderRadius: radius.lg,
           paddingHorizontal: 16,
           paddingVertical: 12,
           marginBottom: 12,
         },
         summaryLabel: {
           fontSize: 13,
-          color: UI.color.muted,
+          color: color.muted,
           fontFamily: "IBMPlexSans_500Medium",
           marginBottom: 4,
         },
-        summaryText: { fontSize: 15, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+        summaryText: { fontSize: 15, color: color.text, fontFamily: "IBMPlexSans_600SemiBold" },
         stickySubmit: {
           paddingHorizontal: 24,
           paddingBottom: 24,
           paddingTop: 12,
-          backgroundColor: UI.color.bg,
+          backgroundColor: color.bg,
           borderTopWidth: 1,
-          borderTopColor: UI.color.border,
+          borderTopColor: color.border,
         },
       }),
     []
@@ -352,7 +353,7 @@ export default function SettleUpScreen(): JSX.Element {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: UI.color.bg, paddingTop: insets.top }}>
+      <View style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top }}>
         <ThemedStatusBar />
         <ScreenHeader
           title="Settle Up"
@@ -393,13 +394,13 @@ export default function SettleUpScreen(): JSX.Element {
       <View
         style={{
           flex: 1,
-          backgroundColor: UI.color.bg,
+          backgroundColor: color.bg,
           alignItems: "center",
           justifyContent: "center",
         }}
       >
         <Typography
-          style={{ fontSize: 18, color: UI.color.text, fontFamily: "IBMPlexSans_500Medium" }}
+          style={{ fontSize: 18, color: color.text, fontFamily: "IBMPlexSans_500Medium" }}
         >
           {isGroupRoute ? "All settled up!" : "Friend not found"}
         </Typography>
@@ -412,12 +413,12 @@ export default function SettleUpScreen(): JSX.Element {
             marginTop: 16,
             padding: 14,
             paddingHorizontal: 24,
-            backgroundColor: UI.color.brand,
-            borderRadius: UI.radius.pill,
+            backgroundColor: color.brand,
+            borderRadius: radius.pill,
           }}
         >
           <Typography
-            style={{ color: UI.color.textInverse, fontFamily: "IBMPlexSans_600SemiBold" }}
+            style={{ color: color.textInverse, fontFamily: "IBMPlexSans_600SemiBold" }}
           >
             Go Back
           </Typography>
@@ -527,7 +528,7 @@ export default function SettleUpScreen(): JSX.Element {
                   fontSize: 13,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   marginTop: 8,
-                  color: UI.color.text,
+                  color: color.text,
                 }}
               >
                 {leftName}
@@ -538,7 +539,7 @@ export default function SettleUpScreen(): JSX.Element {
               <View
                 style={{
                   height: 1,
-                  backgroundColor: UI.color.border,
+                  backgroundColor: color.border,
                   width: "100%",
                   position: "absolute",
                   top: "50%",
@@ -551,23 +552,23 @@ export default function SettleUpScreen(): JSX.Element {
                   setDirection((prev) => (prev === "you" ? "them" : "you"));
                 }}
                 style={({ pressed }) => ({
-                  backgroundColor: UI.color.surface,
+                  backgroundColor: color.surface,
                   paddingHorizontal: 16,
                   paddingVertical: 10,
-                  borderRadius: UI.radius.pill,
+                  borderRadius: radius.pill,
                   borderWidth: 1,
-                  borderColor: UI.color.border,
+                  borderColor: color.border,
                   opacity: pressed ? 0.7 : 1,
                   flexDirection: "row",
                   alignItems: "center",
                   gap: 6,
                 })}
               >
-                <icons.ArrowRightLeft size={16} color={UI.color.text} strokeWidth={2.5} />
+                <icons.ArrowRightLeft size={16} color={color.text} strokeWidth={2.5} />
                 <Typography
                   style={{
                     fontSize: 12,
-                    color: UI.color.text,
+                    color: color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                     textTransform: "uppercase",
                     letterSpacing: 1,
@@ -592,14 +593,14 @@ export default function SettleUpScreen(): JSX.Element {
                 >
                   <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
                     <AppUserAvatar user={rightUser} size="lg" />
-                    <icons.ChevronDown size={16} color={UI.color.text} />
+                    <icons.ChevronDown size={16} color={color.text} />
                   </View>
                   <Typography
                     style={{
                       fontSize: 13,
                       fontFamily: "IBMPlexSans_600SemiBold",
                       marginTop: 8,
-                      color: UI.color.text,
+                      color: color.text,
                     }}
                   >
                     {rightName}
@@ -613,7 +614,7 @@ export default function SettleUpScreen(): JSX.Element {
                       fontSize: 13,
                       fontFamily: "IBMPlexSans_600SemiBold",
                       marginTop: 8,
-                      color: UI.color.text,
+                      color: color.text,
                     }}
                   >
                     {rightName}
@@ -634,7 +635,7 @@ export default function SettleUpScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 12,
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 marginBottom: 8,
               }}
@@ -665,9 +666,9 @@ export default function SettleUpScreen(): JSX.Element {
                       alignItems: "center",
                       padding: 12,
                       borderWidth: 1,
-                      borderRadius: UI.radius.lg,
-                      borderColor: isSelected ? UI.color.brand : UI.color.border,
-                      backgroundColor: isSelected ? UI.color.brand : UI.color.surface,
+                      borderRadius: radius.lg,
+                      borderColor: isSelected ? color.brand : color.border,
+                      backgroundColor: isSelected ? color.brand : color.surface,
                       opacity: isSelected ? 1 : 0.7,
                       width: 80,
                     }}
@@ -678,7 +679,7 @@ export default function SettleUpScreen(): JSX.Element {
                         fontSize: 11,
                         fontFamily: "IBMPlexSans_600SemiBold",
                         marginTop: 8,
-                        color: isSelected ? UI.color.textInverse : UI.color.text,
+                        color: isSelected ? color.textInverse : color.text,
                       }}
                       numberOfLines={1}
                     >
@@ -699,7 +700,7 @@ export default function SettleUpScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 14,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginBottom: 8,
             }}
@@ -713,7 +714,7 @@ export default function SettleUpScreen(): JSX.Element {
               alignItems: "center",
               justifyContent: "center",
               borderBottomWidth: 2,
-              borderBottomColor: UI.color.border,
+              borderBottomColor: color.border,
               paddingBottom: 8,
               minWidth: 200,
             }}
@@ -721,7 +722,7 @@ export default function SettleUpScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 32,
-                color: UI.color.text,
+                color: color.text,
                 fontFamily: "IBMPlexSans_500Medium",
                 marginRight: 8,
               }}
@@ -733,11 +734,11 @@ export default function SettleUpScreen(): JSX.Element {
               onChangeText={handleAmountChange}
               keyboardType="decimal-pad"
               placeholder="0.00"
-              placeholderTextColor={UI.color.muted}
+              placeholderTextColor={color.muted}
               style={{
                 fontSize: 48,
                 fontFamily: "IBMPlexSans_600SemiBold",
-                color: amountStr ? UI.color.text : UI.color.muted,
+                color: amountStr ? color.text : color.muted,
                 letterSpacing: -2,
                 textAlign: "center",
                 minWidth: 120,
@@ -758,17 +759,17 @@ export default function SettleUpScreen(): JSX.Element {
                 style={({ pressed }) => ({
                   paddingHorizontal: 20,
                   paddingVertical: 10,
-                  backgroundColor: UI.color.surface,
+                  backgroundColor: color.surface,
                   borderWidth: 1,
-                  borderColor: UI.color.border,
-                  borderRadius: UI.radius.pill,
+                  borderColor: color.border,
+                  borderRadius: radius.pill,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <Typography
                   style={{
                     fontSize: 13,
-                    color: UI.color.text,
+                    color: color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
@@ -783,17 +784,17 @@ export default function SettleUpScreen(): JSX.Element {
                 style={({ pressed }) => ({
                   paddingHorizontal: 20,
                   paddingVertical: 10,
-                  backgroundColor: UI.color.surface,
+                  backgroundColor: color.surface,
                   borderWidth: 1,
-                  borderColor: UI.color.border,
-                  borderRadius: UI.radius.pill,
+                  borderColor: color.border,
+                  borderRadius: radius.pill,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <Typography
                   style={{
                     fontSize: 13,
-                    color: UI.color.text,
+                    color: color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
@@ -808,7 +809,7 @@ export default function SettleUpScreen(): JSX.Element {
         <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
           <Pressable onPress={() => setShowOptional(!showOptional)} style={{ padding: 8 }}>
             <Typography
-              style={{ fontSize: 13, color: UI.color.brand, fontFamily: "IBMPlexSans_500Medium" }}
+              style={{ fontSize: 13, color: color.brand, fontFamily: "IBMPlexSans_500Medium" }}
             >
               {showOptional ? "Hide Options" : "+ Add Note or Group"}
             </Typography>
@@ -822,17 +823,17 @@ export default function SettleUpScreen(): JSX.Element {
             >
               <TextInput
                 placeholder="Add a note..."
-                placeholderTextColor={UI.color.muted}
+                placeholderTextColor={color.muted}
                 value={note}
                 onChangeText={setNote}
                 style={{
                   borderWidth: 1,
-                  borderColor: UI.color.border,
+                  borderColor: color.border,
                   padding: 16,
-                  borderRadius: UI.radius.lg,
+                  borderRadius: radius.lg,
                   fontSize: 15,
                   fontFamily: "IBMPlexSans_500Medium",
-                  backgroundColor: UI.color.surface,
+                  backgroundColor: color.surface,
                 }}
               />
 
@@ -841,7 +842,7 @@ export default function SettleUpScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 12,
-                      color: UI.color.muted,
+                      color: color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                       marginBottom: 8,
                       marginLeft: 4,
@@ -860,15 +861,15 @@ export default function SettleUpScreen(): JSX.Element {
                         paddingHorizontal: 16,
                         paddingVertical: 10,
                         borderWidth: 1,
-                        borderRadius: UI.radius.pill,
-                        borderColor: !selectedGroupId ? UI.color.brand : UI.color.border,
-                        backgroundColor: !selectedGroupId ? UI.color.brand : UI.color.surface,
+                        borderRadius: radius.pill,
+                        borderColor: !selectedGroupId ? color.brand : color.border,
+                        backgroundColor: !selectedGroupId ? color.brand : color.surface,
                       }}
                     >
                       <Typography
                         style={{
                           fontSize: 13,
-                          color: !selectedGroupId ? UI.color.textInverse : UI.color.text,
+                          color: !selectedGroupId ? color.textInverse : color.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
@@ -885,15 +886,15 @@ export default function SettleUpScreen(): JSX.Element {
                             paddingHorizontal: 16,
                             paddingVertical: 10,
                             borderWidth: 1,
-                            borderRadius: UI.radius.pill,
-                            borderColor: isSelected ? UI.color.brand : UI.color.border,
-                            backgroundColor: isSelected ? UI.color.brand : UI.color.surface,
+                            borderRadius: radius.pill,
+                            borderColor: isSelected ? color.brand : color.border,
+                            backgroundColor: isSelected ? color.brand : color.surface,
                           }}
                         >
                           <Typography
                             style={{
                               fontSize: 13,
-                              color: isSelected ? UI.color.textInverse : UI.color.text,
+                              color: isSelected ? color.textInverse : color.text,
                               fontFamily: "IBMPlexSans_600SemiBold",
                             }}
                           >
@@ -918,7 +919,7 @@ export default function SettleUpScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 13,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginBottom: 4,
             }}
@@ -928,7 +929,7 @@ export default function SettleUpScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 15,
-              color: UI.color.text,
+              color: color.text,
               fontFamily: "IBMPlexSans_600SemiBold",
             }}
           >
@@ -939,21 +940,21 @@ export default function SettleUpScreen(): JSX.Element {
           onPress={handleSubmit}
           disabled={isAddingSettlement || !parsedAmount}
           style={({ pressed }) => ({
-            backgroundColor: UI.color.brand,
+            backgroundColor: color.brand,
             height: 56,
-            borderRadius: UI.radius.pill,
+            borderRadius: radius.pill,
             justifyContent: "center",
             alignItems: "center",
             opacity: pressed || isAddingSettlement || !parsedAmount ? 0.8 : 1,
           })}
         >
           {isAddingSettlement ? (
-            <Spinner color={UI.color.textInverse} size="sm" />
+            <Spinner color={color.textInverse} size="sm" />
           ) : (
             <Typography
               style={{
                 fontSize: 16,
-                color: UI.color.textInverse,
+                color: color.textInverse,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 letterSpacing: 1,
               }}

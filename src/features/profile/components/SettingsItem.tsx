@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 interface SettingsItemProps {
   icon?: keyof typeof icons;
@@ -25,6 +25,7 @@ export function SettingsItem({
   isDanger = false,
   disabled = false,
 }: SettingsItemProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const Icon = icon ? (icons as any)[icon] : null;
 
   return (
@@ -39,7 +40,7 @@ export function SettingsItem({
         paddingHorizontal: 20,
         paddingVertical: 16,
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: UI.color.border,
+        borderBottomColor: color.border,
         opacity: pressed || disabled ? 0.5 : 1,
       })}
     >
@@ -49,22 +50,22 @@ export function SettingsItem({
             style={{
               width: 40,
               height: 40,
-              borderRadius: UI.radius.lg,
-              backgroundColor: UI.color.control,
+              borderRadius: radius.lg,
+              backgroundColor: color.control,
               alignItems: "center",
               justifyContent: "center",
               borderWidth: 1,
-              borderColor: isDanger ? UI.color.danger : UI.color.border,
+              borderColor: isDanger ? color.danger : color.border,
             }}
           >
-            <Icon size={20} color={isDanger ? UI.color.danger : UI.color.text} strokeWidth={1.5} />
+            <Icon size={20} color={isDanger ? color.danger : color.text} strokeWidth={1.5} />
           </View>
         )}
         <View style={{ flex: 1 }}>
           <Typography
             style={{
               fontSize: 16,
-              color: isDanger ? UI.color.danger : UI.color.text,
+              color: isDanger ? color.danger : color.text,
               fontFamily: "IBMPlexSans_600SemiBold",
               letterSpacing: -0.3,
             }}
@@ -75,7 +76,7 @@ export function SettingsItem({
             <Typography
               style={{
                 fontSize: 13,
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 marginTop: 2,
               }}

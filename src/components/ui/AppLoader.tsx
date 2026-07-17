@@ -10,13 +10,14 @@ import Animated, {
   Easing,
 } from "react-native-reanimated";
 import { Typography } from "heroui-native";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 interface AppLoaderProps {
   fullScreen?: boolean;
 }
 
 export function AppLoader({ fullScreen = false }: AppLoaderProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const rotation = useSharedValue(0);
   const scale = useSharedValue(1);
 
@@ -48,9 +49,15 @@ export function AppLoader({ fullScreen = false }: AppLoaderProps): JSX.Element {
   });
 
   return (
-    <View style={[styles.container, fullScreen && styles.fullScreen]}>
-      <Animated.View style={[styles.box, animatedStyle]} />
-      <Typography style={styles.text}>LOADING</Typography>
+    <View style={[styles.container, fullScreen && { flex: 1, backgroundColor: color.bg }]}>
+      <Animated.View
+        style={[
+          styles.box,
+          { borderColor: color.brand },
+          animatedStyle,
+        ]}
+      />
+      <Typography style={[styles.text, { color: color.brand }]}>LOADING</Typography>
     </View>
   );
 }
@@ -61,22 +68,16 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 24,
   },
-  fullScreen: {
-    flex: 1,
-    backgroundColor: UI.color.bg,
-  },
   box: {
     width: 24,
     height: 24,
     borderWidth: 1.5,
-    borderColor: UI.color.brand,
     backgroundColor: "transparent",
     marginBottom: 16,
   },
   text: {
     fontFamily: "Sora_600SemiBold",
     fontSize: 16,
-    color: UI.color.brand,
     letterSpacing: 4,
     textTransform: "uppercase",
   },

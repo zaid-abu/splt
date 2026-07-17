@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 interface SwipeableRowProps {
   children: React.ReactNode;
@@ -22,6 +22,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
   const successColor = useThemeColor("success" as any) as unknown as string;
   const dangerColor = useThemeColor("danger" as any) as unknown as string;
   const primaryColor = useThemeColor("primary" as any) as unknown as string;
+  const { color } = useUI();
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -58,7 +59,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
           <Animated.View
             style={[
               styles.actionButton,
-              { backgroundColor: primaryColor || UI.color.text, transform: [{ scale }], opacity },
+              { backgroundColor: primaryColor || color.text, transform: [{ scale }], opacity },
             ]}
           >
             <PressableFeedback
@@ -70,7 +71,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               }}
               style={styles.actionInner}
             >
-              <icons.Bell size={24} color={UI.color.textInverse} />
+              <icons.Bell size={24} color={color.textInverse} />
               <Typography type="body-xs" className="text-white font-bold mt-1">
                 Remind
               </Typography>
@@ -94,7 +95,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               }}
               style={styles.actionInner}
             >
-              <icons.CheckCircle size={24} color={UI.color.textInverse} />
+              <icons.CheckCircle size={24} color={color.textInverse} />
               <Typography type="body-xs" className="text-white font-bold mt-1">
                 Settle
               </Typography>
@@ -118,7 +119,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               }}
               style={styles.actionInner}
             >
-              <icons.Trash2 size={24} color={UI.color.textInverse} />
+              <icons.Trash2 size={24} color={color.textInverse} />
               <Typography type="body-xs" className="text-white font-bold mt-1">
                 Delete
               </Typography>
@@ -145,8 +146,8 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
         index={0}
         enableDynamicSizing={true}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
+        backgroundStyle={{ backgroundColor: color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: color.muted, width: 40 }}
       >
         <BottomSheetView
           style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
@@ -155,7 +156,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
             style={{
               fontSize: 22,
               fontFamily: "IBMPlexSans_600SemiBold",
-              color: UI.color.textStrong,
+              color: color.textStrong,
               marginBottom: 8,
             }}
           >
@@ -165,7 +166,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
             style={{
               fontSize: 16,
               fontFamily: "IBMPlexSans_500Medium",
-              color: UI.color.muted,
+              color: color.muted,
               marginBottom: 24,
             }}
           >
@@ -179,8 +180,8 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
                 flex: 1,
                 height: 48,
                 borderWidth: 1,
-                borderColor: UI.color.border,
-                backgroundColor: UI.color.control,
+                borderColor: color.border,
+                backgroundColor: color.control,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.5 : 1,
@@ -190,7 +191,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
                 style={{
                   fontSize: 16,
                   fontFamily: "IBMPlexSans_600SemiBold",
-                  color: UI.color.textStrong,
+                  color: color.textStrong,
                 }}
               >
                 Cancel
@@ -204,7 +205,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               style={({ pressed }) => ({
                 flex: 1,
                 height: 48,
-                backgroundColor: UI.color.danger,
+                backgroundColor: color.danger,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.8 : 1,
@@ -214,7 +215,7 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
                 style={{
                   fontSize: 16,
                   fontFamily: "IBMPlexSans_600SemiBold",
-                  color: UI.color.textInverse,
+                  color: color.textInverse,
                 }}
               >
                 Delete

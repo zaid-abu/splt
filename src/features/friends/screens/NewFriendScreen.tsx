@@ -14,9 +14,10 @@ import { useSearchUsers } from "@/features/users/queries/useUsers";
 import type { User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { EmptyState, IconButton, SearchField, UI } from "@/components/ui/native-ui";
+import { useUI, EmptyState, IconButton, SearchField } from "@/components/ui/native-ui";
 
 export default function NewFriendScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
@@ -94,7 +95,7 @@ export default function NewFriendScreen(): JSX.Element {
           paddingHorizontal: 24,
           paddingVertical: 16,
           borderBottomWidth: 1,
-          borderBottomColor: UI.color.border,
+          borderBottomColor: color.border,
         }}
       >
         <View style={{ marginRight: 16 }}>
@@ -106,7 +107,7 @@ export default function NewFriendScreen(): JSX.Element {
             numberOfLines={1}
             style={{
               fontSize: 16,
-              color: UI.color.textStrong,
+              color: color.textStrong,
               fontFamily: "IBMPlexSans_600SemiBold",
             }}
           >
@@ -116,7 +117,7 @@ export default function NewFriendScreen(): JSX.Element {
             numberOfLines={1}
             style={{
               fontSize: 14,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 4,
             }}
@@ -137,25 +138,25 @@ export default function NewFriendScreen(): JSX.Element {
             paddingHorizontal: isRequested || isAdded ? 16 : 0,
             width: isRequested || isAdded ? undefined : 44,
             backgroundColor: isAdded
-              ? UI.color.success
+              ? color.success
               : isRequested
-                ? UI.color.control
-                : UI.color.text,
+                ? color.control
+                : color.text,
             borderWidth: isRequested ? 1 : 0,
-            borderColor: UI.color.border,
+            borderColor: color.border,
             alignItems: "center",
             justifyContent: "center",
-            borderRadius: UI.radius.pill,
+            borderRadius: radius.pill,
             opacity: pressed || (!!addingUserId && !isAdding) ? 0.5 : 1,
           })}
         >
           {isAdding ? (
-            <Spinner size="sm" color={UI.color.textInverse} />
+            <Spinner size="sm" color={color.textInverse} />
           ) : isAdded ? (
             <Typography
               style={{
                 fontSize: 14,
-                color: UI.color.textInverse,
+                color: color.textInverse,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -165,14 +166,14 @@ export default function NewFriendScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 14,
-                color: UI.color.textStrong,
+                color: color.textStrong,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
               Requested
             </Typography>
           ) : (
-            <icons.UserPlus size={20} color={UI.color.textInverse} strokeWidth={1.5} />
+            <icons.UserPlus size={20} color={color.textInverse} strokeWidth={1.5} />
           )}
         </Pressable>
       </View>
@@ -180,7 +181,7 @@ export default function NewFriendScreen(): JSX.Element {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <View style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
 
       {/* Header */}
@@ -198,7 +199,7 @@ export default function NewFriendScreen(): JSX.Element {
           style={{
             fontFamily: "Sora_600SemiBold",
             fontSize: 28,
-            color: UI.color.textStrong,
+            color: color.textStrong,
             lineHeight: 36,
           }}
         >
@@ -228,7 +229,7 @@ export default function NewFriendScreen(): JSX.Element {
             paddingHorizontal: 24,
             paddingBottom: 24,
             borderBottomWidth: 1,
-            borderBottomColor: UI.color.border,
+            borderBottomColor: color.border,
           }}
         >
           <SearchField
@@ -237,7 +238,7 @@ export default function NewFriendScreen(): JSX.Element {
             onClear={() => setSearchQuery("")}
             placeholder="Search by name or email..."
             autoFocus
-            rightElement={isSearching ? <Spinner size="sm" color={UI.color.muted} /> : undefined}
+            rightElement={isSearching ? <Spinner size="sm" color={color.muted} /> : undefined}
           />
         </View>
 
@@ -269,7 +270,7 @@ export default function NewFriendScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 15,
-                    color: UI.color.muted,
+                    color: color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                     textAlign: "center",
                   }}

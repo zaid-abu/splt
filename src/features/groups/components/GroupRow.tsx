@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import type { Group } from "@/types";
 
 interface GroupRowProps {
@@ -22,17 +22,18 @@ export const GroupRow = React.memo(function GroupRow({
   isLast,
   onPress,
 }: GroupRowProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const memberCount = group.members.length;
 
   let subAmountText = "";
-  let subAmountColor: string = UI.color.muted;
+  let subAmountColor: string = color.muted;
 
   if (balance < 0) {
     subAmountText = `You owe ${formatAmount(Math.abs(balance), currency)}`;
-    subAmountColor = UI.color.danger;
+    subAmountColor = color.danger;
   } else if (balance > 0) {
     subAmountText = `Owes you ${formatAmount(balance, currency)}`;
-    subAmountColor = UI.color.success;
+    subAmountColor = color.success;
   } else {
     subAmountText = "Settled up";
   }
@@ -47,7 +48,7 @@ export const GroupRow = React.memo(function GroupRow({
         paddingVertical: 14,
         minHeight: 64,
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: UI.color.border,
+        borderBottomColor: color.border,
         opacity: pressed ? 0.62 : 1,
       })}
     >
@@ -60,7 +61,7 @@ export const GroupRow = React.memo(function GroupRow({
           numberOfLines={1}
           style={{
             fontSize: 15,
-            color: UI.color.text,
+            color: color.text,
             fontFamily: "IBMPlexSans_600SemiBold",
             letterSpacing: -0.2,
           }}
@@ -70,7 +71,7 @@ export const GroupRow = React.memo(function GroupRow({
         <Typography
           style={{
             fontSize: 13,
-            color: UI.color.muted,
+            color: color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginTop: 2,
           }}
@@ -93,7 +94,7 @@ export const GroupRow = React.memo(function GroupRow({
 
       <icons.ChevronRight
         size={14}
-        color={UI.color.muted}
+        color={color.muted}
         strokeWidth={1.75}
         style={{ marginLeft: 8 }}
       />

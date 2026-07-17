@@ -10,7 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { UI, ScreenHeader, MetricCell, SectionLabel, applyTheme } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader, MetricCell, SectionLabel } from "@/components/ui/native-ui";
 import { Card } from "@/components/ui/Card";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { Skeleton } from "@/components/ui/Skeleton";
@@ -29,6 +29,7 @@ import { SettingsItem } from "@/features/profile/components/SettingsItem";
 import { Uniwind } from "uniwind";
 
 export default function ProfileScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const router = useRouter();
   const { currentUser } = useAuth();
 
@@ -112,12 +113,10 @@ export default function ProfileScreen(): JSX.Element {
   const handleThemeToggle = (value: boolean) => {
     Haptics.selectionAsync();
     setDarkMode(value);
-    applyTheme(value);
     Uniwind.setTheme(value ? "dark" : "light");
   };
 
   useEffect(() => {
-    applyTheme(isDarkMode);
     Uniwind.setTheme(isDarkMode ? "dark" : "light");
   }, [isDarkMode]);
 
@@ -137,20 +136,20 @@ export default function ProfileScreen(): JSX.Element {
 
   if (isFirstLoad) {
     return (
-      <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
+      <FocusAwareView style={{ flex: 1, backgroundColor: color.bg }}>
         <ThemedStatusBar />
         <View style={{ paddingTop: insets.top + 16 }}>
           <ScreenHeader title="Profile" />
         </View>
-        <View style={{ flex: 1, paddingHorizontal: UI.space.page, paddingTop: 16 }}>
+        <View style={{ flex: 1, paddingHorizontal: space.page, paddingTop: 16 }}>
           <FocusAwareView delay={0} style={{ marginBottom: 40 }}>
             <View
               style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
+                backgroundColor: color.surface,
+                borderRadius: radius.lg,
                 borderWidth: 1,
-                borderColor: UI.color.border,
-                padding: UI.space.page,
+                borderColor: color.border,
+                padding: space.page,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
@@ -166,13 +165,13 @@ export default function ProfileScreen(): JSX.Element {
               </View>
               <View style={{ flexDirection: "row", gap: 10 }}>
                 <View style={{ flex: 1 }}>
-                  <Skeleton height={58} radius={UI.radius.md} />
+                  <Skeleton height={58} radius={radius.md} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Skeleton height={58} radius={UI.radius.md} />
+                  <Skeleton height={58} radius={radius.md} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Skeleton height={58} radius={UI.radius.md} />
+                  <Skeleton height={58} radius={radius.md} />
                 </View>
               </View>
             </View>
@@ -183,15 +182,15 @@ export default function ProfileScreen(): JSX.Element {
             </View>
             <View
               style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
+                backgroundColor: color.surface,
+                borderRadius: radius.lg,
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
               }}
             >
               <View style={{ padding: 16, gap: 12 }}>
-                <Skeleton height={52} radius={UI.radius.md} />
-                <Skeleton height={72} radius={UI.radius.lg} />
+                <Skeleton height={52} radius={radius.md} />
+                <Skeleton height={72} radius={radius.lg} />
               </View>
             </View>
           </FocusAwareView>
@@ -201,19 +200,19 @@ export default function ProfileScreen(): JSX.Element {
             </View>
             <View
               style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
+                backgroundColor: color.surface,
+                borderRadius: radius.lg,
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
               }}
             >
-              <View style={{ padding: UI.space.page, gap: 12 }}>
+              <View style={{ padding: space.page, gap: 12 }}>
                 <View style={{ width: "70%" }}>
                   <Skeleton height={16} />
                 </View>
-                <Skeleton height={52} radius={UI.radius.pill} />
-                <Skeleton height={52} radius={UI.radius.pill} />
-                <Skeleton height={52} radius={UI.radius.pill} />
+                <Skeleton height={52} radius={radius.pill} />
+                <Skeleton height={52} radius={radius.pill} />
+                <Skeleton height={52} radius={radius.pill} />
               </View>
             </View>
           </FocusAwareView>
@@ -226,7 +225,7 @@ export default function ProfileScreen(): JSX.Element {
 
   if (hasError) {
     return (
-      <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
+      <FocusAwareView style={{ flex: 1, backgroundColor: color.bg }}>
         <ThemedStatusBar />
         <View style={{ paddingTop: insets.top + 16 }}>
           <ScreenHeader title="Profile" />
@@ -249,7 +248,7 @@ export default function ProfileScreen(): JSX.Element {
   // ── Content ─────────────────────────────────────────────────────────────────
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
 
       <View style={{ paddingTop: insets.top + 16 }}>
@@ -270,7 +269,7 @@ export default function ProfileScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 15,
-                  color: UI.color.text,
+                  color: color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
@@ -286,13 +285,13 @@ export default function ProfileScreen(): JSX.Element {
         contentContainerStyle={{ paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={UI.color.text} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.text} />
         }
       >
         {/* ── Profile Card ─────────────────────────────────────────────────── */}
 
-        <FocusAwareView delay={100} style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}>
-          <Card padding={UI.space.page}>
+        <FocusAwareView delay={100} style={{ paddingHorizontal: space.page, marginBottom: 40 }}>
+          <Card padding={space.page}>
             <Pressable
               accessibilityRole="button"
               onPress={() => router.push("/profile/edit")}
@@ -304,7 +303,7 @@ export default function ProfileScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 24,
-                      color: UI.color.text,
+                      color: color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                       letterSpacing: -0.5,
                     }}
@@ -315,7 +314,7 @@ export default function ProfileScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 14,
-                      color: UI.color.muted,
+                      color: color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                     }}
                     numberOfLines={1}
@@ -323,7 +322,7 @@ export default function ProfileScreen(): JSX.Element {
                     {currentUser.email}
                   </Typography>
                 </View>
-                <icons.ChevronRight size={20} color={UI.color.muted} strokeWidth={1.5} />
+                <icons.ChevronRight size={20} color={color.muted} strokeWidth={1.5} />
               </View>
             </Pressable>
 
@@ -349,17 +348,17 @@ export default function ProfileScreen(): JSX.Element {
 
         {/* ── Preferences ──────────────────────────────────────────────────── */}
 
-        <FocusAwareView delay={200} style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}>
+        <FocusAwareView delay={200} style={{ paddingHorizontal: space.page, marginBottom: 40 }}>
           <View style={{ marginBottom: 14 }}>
             <SectionLabel>Preferences</SectionLabel>
           </View>
 
           <View
             style={{
-              backgroundColor: UI.color.surface,
-              borderRadius: UI.radius.lg,
+              backgroundColor: color.surface,
+              borderRadius: radius.lg,
               borderWidth: 1,
-              borderColor: UI.color.border,
+              borderColor: color.border,
               marginBottom: 12,
             }}
           >
@@ -373,10 +372,10 @@ export default function ProfileScreen(): JSX.Element {
 
           <View
             style={{
-              backgroundColor: UI.color.surface,
-              borderRadius: UI.radius.lg,
+              backgroundColor: color.surface,
+              borderRadius: radius.lg,
               borderWidth: 1,
-              borderColor: UI.color.border,
+              borderColor: color.border,
             }}
           >
             <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
@@ -387,24 +386,24 @@ export default function ProfileScreen(): JSX.Element {
 
         {/* ── Account ──────────────────────────────────────────────────────── */}
 
-        <FocusAwareView delay={300} style={{ paddingHorizontal: UI.space.page, marginBottom: 40 }}>
+        <FocusAwareView delay={300} style={{ paddingHorizontal: space.page, marginBottom: 40 }}>
           <View style={{ marginBottom: 14 }}>
             <SectionLabel>Account</SectionLabel>
           </View>
 
           <View
             style={{
-              backgroundColor: UI.color.surface,
-              borderRadius: UI.radius.lg,
+              backgroundColor: color.surface,
+              borderRadius: radius.lg,
               borderWidth: 1,
-              borderColor: UI.color.border,
+              borderColor: color.border,
             }}
           >
-            <View style={{ padding: UI.space.page }}>
+            <View style={{ padding: space.page }}>
               <Typography
                 style={{
                   fontSize: 14,
-                  color: UI.color.muted,
+                  color: color.muted,
                   fontFamily: "IBMPlexSans_500Medium",
                   marginBottom: 20,
                   lineHeight: 20,
@@ -436,7 +435,7 @@ export default function ProfileScreen(): JSX.Element {
               <View
                 style={{
                   height: 1,
-                  backgroundColor: UI.color.border,
+                  backgroundColor: color.border,
                   marginVertical: 16,
                 }}
               />
@@ -458,7 +457,7 @@ export default function ProfileScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 12,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               opacity: 0.4,
             }}
@@ -475,12 +474,12 @@ export default function ProfileScreen(): JSX.Element {
         index={0}
         enableDynamicSizing
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
+        backgroundStyle={{ backgroundColor: color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: color.muted, width: 40 }}
       >
         <BottomSheetView
           style={{
-            paddingHorizontal: UI.space.page,
+            paddingHorizontal: space.page,
             paddingTop: 24,
             paddingBottom: Math.max(insets.bottom, 24),
           }}
@@ -488,7 +487,7 @@ export default function ProfileScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 22,
-              color: UI.color.text,
+              color: color.text,
               fontFamily: "IBMPlexSans_600SemiBold",
               marginBottom: 8,
             }}
@@ -498,7 +497,7 @@ export default function ProfileScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 16,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginBottom: 24,
               lineHeight: 22,

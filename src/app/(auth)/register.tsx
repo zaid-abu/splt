@@ -12,16 +12,19 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useSignUp } from "@/features/auth/hooks/useAuthMutations";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerSchema, type RegisterFormData } from "@/validation/schemas";
-import { FormInput } from "@/components/forms/FormInput";
 import { PasswordStrengthMeter } from "@/components/forms/PasswordStrengthMeter";
 import { useAppToast } from "@/hooks/useAppToast";
-import { UI } from "@/components/ui/native-ui";
-import AuthFormLayout from "@/components/layout/AuthFormLayout";
+import { useUIStore } from "@/store/useUIStore";
+import GlassAuthLayout from "@/components/glassmorphism/GlassAuthLayout";
+import { GlassFormInput } from "@/components/glassmorphism/GlassFormInput";
+import { GLASS_LIGHT, GLASS_DARK, GLASS_RADIUS } from "@/constants/glassmorphism-tokens";
 
 export default function RegisterScreen(): JSX.Element {
   const router = useRouter();
   const { toast } = useAppToast();
   const { mutateAsync: signUp, isPending } = useSignUp();
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
+  const tokens = isDarkMode ? GLASS_DARK : GLASS_LIGHT;
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -76,17 +79,18 @@ export default function RegisterScreen(): JSX.Element {
   };
 
   return (
-    <AuthFormLayout
+    <GlassAuthLayout
       title={"Create\naccount."}
       subtitle="Enter your details to get started."
       onSubmit={handleSubmit(onSubmit, onInvalid)}
       isPending={isPending}
       submitLabel="Create Account"
       submitLoadingLabel="Creating account\u2026"
+      headerTitle="Create account"
       footer={
         <>
           <Typography
-            style={{ fontSize: 16, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" }}
+            style={{ fontSize: 16, color: tokens.muted, fontFamily: "IBMPlexSans_500Medium" }}
           >
             Already have an account?
           </Typography>
@@ -103,7 +107,7 @@ export default function RegisterScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 16,
-                color: UI.color.text,
+                color: tokens.text,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -113,7 +117,7 @@ export default function RegisterScreen(): JSX.Element {
         </>
       }
     >
-      <FormInput
+      <GlassFormInput
         control={control}
         name="name"
         label="Full Name"
@@ -121,10 +125,10 @@ export default function RegisterScreen(): JSX.Element {
         autoCapitalize="words"
         autoComplete="name"
         returnKeyType="next"
-        leftElement={<icons.User size={18} color={UI.color.muted} />}
+        leftElement={<icons.User size={18} color={tokens.muted} />}
       />
 
-      <FormInput
+      <GlassFormInput
         control={control}
         name="email"
         label="Email Address"
@@ -133,20 +137,20 @@ export default function RegisterScreen(): JSX.Element {
         autoCapitalize="none"
         autoComplete="email"
         returnKeyType="next"
-        leftElement={<icons.Mail size={18} color={UI.color.muted} />}
+        leftElement={<icons.Mail size={18} color={tokens.muted} />}
       />
 
       <View>
-        <FormInput
+        <GlassFormInput
           control={control}
           name="password"
           label="Password"
-          placeholder="••••••••"
+          placeholder="At least 6 characters"
           secureTextEntry={!showPassword}
           autoComplete="new-password"
           accessibilityHint="Create a strong password"
           returnKeyType="next"
-          leftElement={<icons.Lock size={18} color={UI.color.muted} />}
+          leftElement={<icons.Lock size={18} color={tokens.muted} />}
           rightElement={
             <Pressable
               accessibilityRole="button"
@@ -159,19 +163,21 @@ export default function RegisterScreen(): JSX.Element {
               style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
             >
               {showPassword ? (
-                <icons.EyeOff size={18} color={UI.color.muted} />
+                <icons.EyeOff size={18} color={tokens.muted} />
               ) : (
-                <icons.Eye size={18} color={UI.color.muted} />
+                <icons.Eye size={18} color={tokens.muted} />
               )}
             </Pressable>
           }
         />
-        <PasswordStrengthMeter password={watchedPassword || ""} />
+        <View style={{ marginTop: -12, marginBottom: 16 }}>
+          <PasswordStrengthMeter password={watchedPassword || ""} />
+        </View>
         {watchedPassword && watchedPassword.length > 0 && watchedPassword.length < 6 && (
           <Typography
             style={{
               fontSize: 12,
-              color: UI.color.danger,
+              color: tokens.danger,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: -8,
               marginBottom: 16,
@@ -182,44 +188,48 @@ export default function RegisterScreen(): JSX.Element {
         )}
       </View>
 
-      <View>
-        <FormInput
-          control={control}
-          name="confirmPassword"
-          label="Confirm Password"
-          placeholder="••••••••"
-          secureTextEntry={!showConfirmPassword}
-          autoComplete="new-password"
-          accessibilityHint="Re-enter your password"
-          returnKeyType="done"
-          blurOnSubmit
-          leftElement={<icons.Lock size={18} color={UI.color.muted} />}
-          rightElement={
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={showConfirmPassword ? "Hide password" : "Show password"}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setShowConfirmPassword(!showConfirmPassword);
-              }}
-              hitSlop={8}
-              style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-            >
-              {showConfirmPassword ? (
-                <icons.EyeOff size={18} color={UI.color.muted} />
-              ) : (
-                <icons.Eye size={18} color={UI.color.muted} />
-              )}
-            </Pressable>
-          }
-        />
-      </View>
+      <GlassFormInput
+        control={control}
+        name="confirmPassword"
+        label="Confirm Password"
+        placeholder="Repeat password"
+        secureTextEntry={!showConfirmPassword}
+        autoComplete="new-password"
+        accessibilityHint="Re-enter your password"
+        returnKeyType="done"
+        blurOnSubmit
+        leftElement={<icons.Lock size={18} color={tokens.muted} />}
+        rightElement={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={showConfirmPassword ? "Hide password" : "Show password"}
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setShowConfirmPassword(!showConfirmPassword);
+            }}
+            hitSlop={8}
+            style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
+          >
+            {showConfirmPassword ? (
+              <icons.EyeOff size={18} color={tokens.muted} />
+            ) : (
+              <icons.Eye size={18} color={tokens.muted} />
+            )}
+          </Pressable>
+        }
+      />
 
       <View
         style={{
           flexDirection: "row",
           alignItems: "center",
           gap: 12,
+          marginTop: 8,
+          padding: 14,
+          borderRadius: GLASS_RADIUS.md,
+          backgroundColor: tokens.surface,
+          borderWidth: 1,
+          borderColor: tokens.border,
         }}
       >
         <Switch
@@ -234,7 +244,7 @@ export default function RegisterScreen(): JSX.Element {
           style={{
             flex: 1,
             fontSize: 14,
-            color: UI.color.text,
+            color: tokens.text,
             fontFamily: "IBMPlexSans_500Medium",
             lineHeight: 20,
           }}
@@ -243,7 +253,7 @@ export default function RegisterScreen(): JSX.Element {
           <Typography
             style={{
               fontFamily: "IBMPlexSans_600SemiBold",
-              color: UI.color.textStrong,
+              color: tokens.text,
               fontSize: 14,
               textDecorationLine: "underline",
             }}
@@ -255,7 +265,7 @@ export default function RegisterScreen(): JSX.Element {
           <Typography
             style={{
               fontFamily: "IBMPlexSans_600SemiBold",
-              color: UI.color.textStrong,
+              color: tokens.text,
               fontSize: 14,
               textDecorationLine: "underline",
             }}
@@ -266,6 +276,6 @@ export default function RegisterScreen(): JSX.Element {
           .
         </Typography>
       </View>
-    </AuthFormLayout>
+    </GlassAuthLayout>
   );
 }

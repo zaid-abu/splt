@@ -7,8 +7,8 @@ import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AppContext";
 import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { UI } from "@/components/ui/native-ui";
 import { useUIStore } from "@/store/useUIStore";
+import { GLASS_LIGHT, GLASS_DARK } from "@/constants/glassmorphism-tokens";
 
 const ICON_SIZE = 22;
 const ICON_STROKE_INACTIVE = 1.5;
@@ -23,6 +23,9 @@ type TabBarItemProps = {
 };
 
 function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps): JSX.Element {
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
+  const tokens = isDarkMode ? GLASS_DARK : GLASS_LIGHT;
+
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: withSpring(isFocused ? 1.1 : 1, { damping: 16, stiffness: 140 }) }],
   }));
@@ -51,7 +54,7 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
       <Animated.View style={animatedStyle}>
         <Icon
           size={ICON_SIZE}
-          color={isFocused ? UI.color.text : UI.color.muted}
+          color={isFocused ? tokens.text : tokens.muted}
           strokeWidth={isFocused ? ICON_STROKE_ACTIVE : ICON_STROKE_INACTIVE}
         />
       </Animated.View>
@@ -62,7 +65,7 @@ function TabBarItem({ isFocused, icon: Icon, label, onPress }: TabBarItemProps):
             width: 4,
             height: 4,
             borderRadius: 2,
-            backgroundColor: UI.color.text,
+            backgroundColor: tokens.text,
             marginTop: 5,
           },
         ]}
@@ -75,6 +78,7 @@ export default function TabsLayout(): JSX.Element | null {
   const insets = useSafeAreaInsets();
   const { isAuthenticated } = useAuth();
   const isDarkMode = useUIStore((s) => s.isDarkMode);
+  const tokens = isDarkMode ? GLASS_DARK : GLASS_LIGHT;
 
   if (!isAuthenticated) return <Redirect href="/(auth)/welcome" />;
 
@@ -103,19 +107,26 @@ export default function TabsLayout(): JSX.Element | null {
                 marginBottom: Math.max(insets.bottom, 12),
                 borderRadius: 24,
                 overflow: "hidden",
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: 4 },
-                shadowOpacity: 0.12,
-                shadowRadius: 16,
-                elevation: 10,
+                borderWidth: 1,
+                borderColor: tokens.border,
+                shadowColor: "rgba(79, 140, 255, 0.18)",
+                shadowOffset: { width: 0, height: 12 },
+                shadowOpacity: 1,
+                shadowRadius: 40,
+                elevation: 12,
               }}
             >
               <BlurView
-                intensity={Platform.OS === "ios" ? 85 : 90}
+                intensity={Platform.OS === "ios" ? 80 : 90}
                 tint={isDarkMode ? "dark" : "light"}
                 style={{
                   flex: 1,
-                  backgroundColor: Platform.OS === "android" ? UI.color.control : "transparent",
+                  backgroundColor:
+                    Platform.OS === "android"
+                      ? isDarkMode
+                        ? "rgba(20, 35, 55, 0.9)"
+                        : "rgba(255, 255, 255, 0.85)"
+                      : "transparent",
                   flexDirection: "row",
                   alignItems: "center",
                   paddingHorizontal: 8,

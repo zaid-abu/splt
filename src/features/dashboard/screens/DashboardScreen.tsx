@@ -20,12 +20,13 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupRow } from "@/features/groups/components/GroupRow";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { UI, TYPO, FilterPill, IconButton } from "@/components/ui/native-ui";
+import { useUI, TYPO, FilterPill, IconButton } from "@/components/ui/native-ui";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { Card } from "@/components/ui/Card";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { Skeleton, ListRowSkeleton } from "@/components/ui/Skeleton";
 import { MoneySignal } from "@/components/ui/MoneySignal";
+import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -45,6 +46,7 @@ function SectionLabel({
   children: string;
   rightAction?: JSX.Element;
 }): JSX.Element {
+  const { color } = useUI();
   return (
     <View
       style={{
@@ -57,7 +59,7 @@ function SectionLabel({
       <Typography
         style={{
           fontSize: 18,
-          color: UI.color.text,
+          color: color.text,
           fontFamily: "IBMPlexSans_600SemiBold",
           letterSpacing: -0.2,
         }}
@@ -72,20 +74,21 @@ function SectionLabel({
 type LucideIcon = ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 
 function IconShell({ icon: Icon, tone }: { icon: LucideIcon; tone: string }): JSX.Element {
+  const { color, radius } = useUI();
   return (
     <View
       style={{
         width: 44,
         height: 44,
-        borderRadius: UI.radius.lg,
+        borderRadius: radius.lg,
         backgroundColor:
           tone === "danger"
-            ? UI.color.dangerTint
+            ? color.dangerTint
             : tone === "success"
-              ? UI.color.successTint
-              : UI.color.control,
+              ? color.successTint
+              : color.control,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
         alignItems: "center",
         justifyContent: "center",
       }}
@@ -94,10 +97,10 @@ function IconShell({ icon: Icon, tone }: { icon: LucideIcon; tone: string }): JS
         size={20}
         color={
           tone === "danger"
-            ? UI.color.danger
+            ? color.danger
             : tone === "success"
-              ? UI.color.success
-              : UI.color.muted
+              ? color.success
+              : color.muted
         }
         strokeWidth={2}
       />
@@ -106,26 +109,28 @@ function IconShell({ icon: Icon, tone }: { icon: LucideIcon; tone: string }): JS
 }
 
 function EmptyIconShell({ icon: Icon }: { icon: LucideIcon }): JSX.Element {
+  const { color, radius } = useUI();
   return (
     <View
       style={{
         width: 56,
         height: 56,
-        borderRadius: UI.radius.lg,
-        backgroundColor: UI.color.control,
+        borderRadius: radius.lg,
+        backgroundColor: color.control,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
         alignItems: "center",
         justifyContent: "center",
         marginBottom: 16,
       }}
     >
-      <Icon size={24} color={UI.color.muted} strokeWidth={1.5} />
+      <Icon size={24} color={color.muted} strokeWidth={1.5} />
     </View>
   );
 }
 
 export default function DashboardScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
@@ -161,44 +166,44 @@ export default function DashboardScreen(): JSX.Element {
   const styles = useMemo(
     () =>
       StyleSheet.create({
-        screen: { flex: 1, backgroundColor: UI.color.bg },
+        screen: { flex: 1, backgroundColor: color.bg },
         row: { flexDirection: "row", alignItems: "center" },
         rowBetween: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
         surfaceCard: {
-          backgroundColor: UI.color.surface,
+          backgroundColor: color.surface,
           borderWidth: 1,
-          borderColor: UI.color.border,
-          borderRadius: UI.radius.lg,
+          borderColor: color.border,
+          borderRadius: radius.lg,
         },
         cardPadded: {
-          backgroundColor: UI.color.surface,
+          backgroundColor: color.surface,
           borderWidth: 1,
-          borderColor: UI.color.border,
-          borderRadius: UI.radius.lg,
+          borderColor: color.border,
+          borderRadius: radius.lg,
           padding: 14,
         },
-        textTitle: { fontSize: 16, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" },
-        textSubtitle: { fontSize: 14, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" },
-        textSemi: { fontFamily: "IBMPlexSans_600SemiBold", color: UI.color.text },
-        textMedium: { fontFamily: "IBMPlexSans_500Medium", color: UI.color.muted },
-        sectionPad: { paddingHorizontal: UI.space.page },
+        textTitle: { fontSize: 16, color: color.text, fontFamily: "IBMPlexSans_600SemiBold" },
+        textSubtitle: { fontSize: 14, color: color.muted, fontFamily: "IBMPlexSans_500Medium" },
+        textSemi: { fontFamily: "IBMPlexSans_600SemiBold", color: color.text },
+        textMedium: { fontFamily: "IBMPlexSans_500Medium", color: color.muted },
+        sectionPad: { paddingHorizontal: space.page },
         iconShell: {
           width: 44,
           height: 44,
-          borderRadius: UI.radius.lg,
-          backgroundColor: UI.color.control,
+          borderRadius: radius.lg,
+          backgroundColor: color.control,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           alignItems: "center",
           justifyContent: "center",
         },
         emptyIconShell: {
           width: 56,
           height: 56,
-          borderRadius: UI.radius.lg,
-          backgroundColor: UI.color.control,
+          borderRadius: radius.lg,
+          backgroundColor: color.control,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 16,
@@ -206,17 +211,17 @@ export default function DashboardScreen(): JSX.Element {
         pillButton: {
           minHeight: 44,
           paddingHorizontal: 14,
-          borderRadius: UI.radius.pill,
+          borderRadius: radius.pill,
           alignItems: "center",
           justifyContent: "center",
         },
         iconButton: {
           width: 44,
           height: 44,
-          borderRadius: UI.radius.pill,
-          backgroundColor: UI.color.control,
+          borderRadius: radius.pill,
+          backgroundColor: color.control,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           alignItems: "center",
           justifyContent: "center",
         },
@@ -408,13 +413,14 @@ export default function DashboardScreen(): JSX.Element {
 
   return (
     <View style={styles.screen}>
+      <GlassBackground />
       <ThemedStatusBar />
 
       <View
         style={{
           paddingTop: insets.top + 16,
           paddingBottom: 12,
-          paddingHorizontal: UI.space.page,
+          paddingHorizontal: space.page,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
@@ -424,7 +430,7 @@ export default function DashboardScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 14,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginBottom: 6,
             }}
@@ -435,7 +441,7 @@ export default function DashboardScreen(): JSX.Element {
             style={{
               fontFamily: "Sora_600SemiBold",
               fontSize: 30,
-              color: UI.color.textStrong,
+              color: color.textStrong,
               lineHeight: 34,
               letterSpacing: -0.3,
             }}
@@ -458,12 +464,12 @@ export default function DashboardScreen(): JSX.Element {
                   position: "absolute",
                   top: 8,
                   right: 8,
-                  backgroundColor: UI.color.danger,
+                  backgroundColor: color.danger,
                   width: 10,
                   height: 10,
                   borderRadius: 5,
                   borderWidth: 2,
-                  borderColor: UI.color.control,
+                  borderColor: color.control,
                 }}
               />
             )}
@@ -487,12 +493,12 @@ export default function DashboardScreen(): JSX.Element {
           />
         </View>
       ) : isFirstLoad ? (
-        <View style={{ flex: 1, paddingTop: 40, paddingHorizontal: UI.space.page }}>
+        <View style={{ flex: 1, paddingTop: 40, paddingHorizontal: space.page }}>
           <Animated.View
             entering={FadeInDown.duration(350).springify()}
             style={{ marginBottom: 18 }}
           >
-            <Skeleton height={170} radius={UI.radius.lg} />
+            <Skeleton height={170} radius={radius.lg} />
           </Animated.View>
           <Animated.View
             entering={FadeInDown.duration(350).delay(35).springify()}
@@ -516,10 +522,10 @@ export default function DashboardScreen(): JSX.Element {
             </View>
             <View
               style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
+                backgroundColor: color.surface,
+                borderRadius: radius.lg,
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
               }}
             >
               <ListRowSkeleton />
@@ -532,10 +538,10 @@ export default function DashboardScreen(): JSX.Element {
             </View>
             <View
               style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
+                backgroundColor: color.surface,
+                borderRadius: radius.lg,
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
               }}
             >
               <ListRowSkeleton />
@@ -552,26 +558,26 @@ export default function DashboardScreen(): JSX.Element {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={UI.color.text}
+              tintColor={color.text}
             />
           }
         >
           <Animated.View
             entering={FadeInDown.duration(350).springify()}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 18 }}
+            style={{ paddingHorizontal: space.page, marginBottom: 18 }}
           >
             <Animated.View
               style={[
                 {
                   backgroundColor:
                     balanceTone === "danger"
-                      ? UI.color.dangerTint
+                      ? color.dangerTint
                       : balanceTone === "success"
-                        ? UI.color.successTint
-                        : UI.color.surface,
-                  borderRadius: UI.radius.lg,
+                        ? color.successTint
+                        : color.surface,
+                  borderRadius: radius.lg,
                   borderWidth: 1,
-                  borderColor: UI.color.border,
+                  borderColor: color.border,
                   padding: 16,
                 },
                 balanceAnimatedStyle,
@@ -592,7 +598,7 @@ export default function DashboardScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 12,
-                      color: UI.color.muted,
+                      color: color.muted,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -604,7 +610,7 @@ export default function DashboardScreen(): JSX.Element {
                     style={{
                       marginTop: 4,
                       fontSize: 24,
-                      color: UI.color.textStrong,
+                      color: color.textStrong,
                       fontFamily: "Sora_600SemiBold",
                       letterSpacing: -0.2,
                     }}
@@ -615,7 +621,7 @@ export default function DashboardScreen(): JSX.Element {
                     style={{
                       marginTop: 5,
                       fontSize: 14,
-                      color: UI.color.muted,
+                      color: color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                     }}
                   >
@@ -642,7 +648,7 @@ export default function DashboardScreen(): JSX.Element {
                   <View
                     style={{
                       height: 1,
-                      backgroundColor: UI.color.border,
+                      backgroundColor: color.border,
                       marginTop: 14,
                       marginBottom: 12,
                     }}
@@ -663,20 +669,20 @@ export default function DashboardScreen(): JSX.Element {
                           width: 36,
                           height: 36,
                           borderRadius: 10,
-                          backgroundColor: UI.color.control,
+                          backgroundColor: color.control,
                           borderWidth: 1,
-                          borderColor: UI.color.border,
+                          borderColor: color.border,
                           alignItems: "center",
                           justifyContent: "center",
                         }}
                       >
-                        <icons.BarChart3 size={16} color={UI.color.muted} strokeWidth={1.75} />
+                        <icons.BarChart3 size={16} color={color.muted} strokeWidth={1.75} />
                       </View>
                       <View>
                         <Typography
                           style={{
                             fontSize: 13,
-                            color: UI.color.muted,
+                            color: color.muted,
                             fontFamily: "IBMPlexSans_500Medium",
                           }}
                         >
@@ -685,7 +691,7 @@ export default function DashboardScreen(): JSX.Element {
                         <Typography
                           style={{
                             fontSize: 16,
-                            color: UI.color.text,
+                            color: color.text,
                             fontFamily: "IBMPlexSans_600SemiBold",
                           }}
                         >
@@ -697,13 +703,13 @@ export default function DashboardScreen(): JSX.Element {
                       <Typography
                         style={{
                           fontSize: 13,
-                          color: UI.color.muted,
+                          color: color.muted,
                           fontFamily: "IBMPlexSans_500Medium",
                         }}
                       >
                         {expenseCount} expense{expenseCount !== 1 ? "s" : ""}
                       </Typography>
-                      <icons.ChevronRight size={16} color={UI.color.muted} strokeWidth={1.75} />
+                      <icons.ChevronRight size={16} color={color.muted} strokeWidth={1.75} />
                     </View>
                   </Pressable>
                 </>
@@ -713,7 +719,7 @@ export default function DashboardScreen(): JSX.Element {
 
           <Animated.View
             entering={FadeInDown.duration(350).delay(35).springify()}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
+            style={{ paddingHorizontal: space.page, marginBottom: 24 }}
           >
             <View style={{ flexDirection: "row", gap: 10 }}>
               <View style={{ flex: 1 }}>
@@ -745,14 +751,14 @@ export default function DashboardScreen(): JSX.Element {
           {friends.length <= 1 && (
             <Animated.View
               entering={FadeInDown.duration(350).delay(70).springify()}
-              style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
+              style={{ paddingHorizontal: space.page, marginBottom: 24 }}
             >
               <View
                 style={{
-                  backgroundColor: UI.color.surface,
-                  borderRadius: UI.radius.lg,
+                  backgroundColor: color.surface,
+                  borderRadius: radius.lg,
                   borderWidth: 1,
-                  borderColor: UI.color.border,
+                  borderColor: color.border,
                   padding: 20,
                   alignItems: "center",
                 }}
@@ -761,21 +767,21 @@ export default function DashboardScreen(): JSX.Element {
                   style={{
                     width: 48,
                     height: 48,
-                    borderRadius: UI.radius.lg,
-                    backgroundColor: UI.color.control,
+                    borderRadius: radius.lg,
+                    backgroundColor: color.control,
                     borderWidth: 1,
-                    borderColor: UI.color.border,
+                    borderColor: color.border,
                     alignItems: "center",
                     justifyContent: "center",
                     marginBottom: 12,
                   }}
                 >
-                  <icons.UserPlus size={22} color={UI.color.muted} strokeWidth={1.5} />
+                  <icons.UserPlus size={22} color={color.muted} strokeWidth={1.5} />
                 </View>
                 <Typography
                   style={{
                     fontSize: 17,
-                    color: UI.color.text,
+                    color: color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                     marginBottom: 4,
                     textAlign: "center",
@@ -786,7 +792,7 @@ export default function DashboardScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: UI.color.muted,
+                    color: color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                     textAlign: "center",
                     marginBottom: 14,
@@ -811,7 +817,7 @@ export default function DashboardScreen(): JSX.Element {
           {(owedUsers.length > 0 || oweUsers.length > 0) && (
             <Animated.View
               entering={FadeInDown.duration(350).delay(105).springify()}
-              style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
+              style={{ paddingHorizontal: space.page, marginBottom: 24 }}
             >
               <View style={{ marginBottom: 14 }}>
                 <Typography style={TYPO.semi(18)}>Need attention</Typography>
@@ -826,16 +832,16 @@ export default function DashboardScreen(): JSX.Element {
                       paddingVertical: 14,
                       paddingHorizontal: 16,
                       borderBottomWidth: 1,
-                      borderBottomColor: UI.color.border,
+                      borderBottomColor: color.border,
                     }}
                   >
                     <AppUserAvatar user={user} size="sm" />
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Typography style={[TYPO.semi(15), { color: UI.color.textStrong }]}>
+                      <Typography style={[TYPO.semi(15), { color: color.textStrong }]}>
                         {user.name}
                       </Typography>
                       <Typography
-                        style={[TYPO.medium(13), { color: UI.color.success, marginTop: 1 }]}
+                        style={[TYPO.medium(13), { color: color.success, marginTop: 1 }]}
                       >
                         Owes you{" "}
                         {formatAmount(
@@ -862,16 +868,16 @@ export default function DashboardScreen(): JSX.Element {
                       paddingVertical: 14,
                       paddingHorizontal: 16,
                       borderBottomWidth: 1,
-                      borderBottomColor: UI.color.border,
+                      borderBottomColor: color.border,
                     }}
                   >
                     <AppUserAvatar user={user} size="sm" />
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Typography style={[TYPO.semi(15), { color: UI.color.textStrong }]}>
+                      <Typography style={[TYPO.semi(15), { color: color.textStrong }]}>
                         {user.name}
                       </Typography>
                       <Typography
-                        style={[TYPO.medium(13), { color: UI.color.danger, marginTop: 1 }]}
+                        style={[TYPO.medium(13), { color: color.danger, marginTop: 1 }]}
                       >
                         You owe{" "}
                         {formatAmount(
@@ -895,7 +901,7 @@ export default function DashboardScreen(): JSX.Element {
 
           <Animated.View
             entering={FadeInDown.duration(350).delay(140).springify()}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 28 }}
+            style={{ paddingHorizontal: space.page, marginBottom: 28 }}
           >
             <SectionLabel
               rightAction={
@@ -903,7 +909,7 @@ export default function DashboardScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 13,
-                      color: UI.color.muted,
+                      color: color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                     }}
                   >
@@ -922,7 +928,7 @@ export default function DashboardScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 14,
-                        color: UI.color.text,
+                        color: color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -939,14 +945,14 @@ export default function DashboardScreen(): JSX.Element {
                       height: 44,
                       alignItems: "center",
                       justifyContent: "center",
-                      borderRadius: UI.radius.pill,
+                      borderRadius: radius.pill,
                       borderWidth: 1,
-                      borderColor: UI.color.border,
-                      backgroundColor: UI.color.control,
+                      borderColor: color.border,
+                      backgroundColor: color.control,
                       opacity: pressed ? 0.72 : 1,
                     })}
                   >
-                    <icons.Plus size={22} color={UI.color.text} strokeWidth={2.5} />
+                    <icons.Plus size={22} color={color.text} strokeWidth={2.5} />
                   </Pressable>
                 </View>
               }
@@ -956,10 +962,10 @@ export default function DashboardScreen(): JSX.Element {
 
             <View
               style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
+                backgroundColor: color.surface,
+                borderRadius: radius.lg,
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
                 paddingHorizontal: 14,
               }}
             >
@@ -986,7 +992,7 @@ export default function DashboardScreen(): JSX.Element {
                   <EmptyIconShell icon={icons.UsersRound} />
                   <Typography
                     style={{
-                      color: UI.color.text,
+                      color: color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                       fontSize: 17,
                       marginBottom: 4,
@@ -996,7 +1002,7 @@ export default function DashboardScreen(): JSX.Element {
                   </Typography>
                   <Typography
                     style={{
-                      color: UI.color.muted,
+                      color: color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                       fontSize: 14,
                       textAlign: "center",
@@ -1011,8 +1017,8 @@ export default function DashboardScreen(): JSX.Element {
                     style={({ pressed }) => ({
                       paddingHorizontal: 16,
                       minHeight: 44,
-                      backgroundColor: UI.color.text,
-                      borderRadius: UI.radius.pill,
+                      backgroundColor: color.text,
+                      borderRadius: radius.pill,
                       alignItems: "center",
                       justifyContent: "center",
                       opacity: pressed ? 0.8 : 1,
@@ -1021,7 +1027,7 @@ export default function DashboardScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 14,
-                        color: UI.color.textInverse,
+                        color: color.textInverse,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -1035,7 +1041,7 @@ export default function DashboardScreen(): JSX.Element {
 
           <Animated.View
             entering={FadeInDown.duration(350).delay(175).springify()}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}
+            style={{ paddingHorizontal: space.page, marginBottom: 24 }}
           >
             <SectionLabel
               rightAction={
@@ -1052,7 +1058,7 @@ export default function DashboardScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 14,
-                      color: UI.color.text,
+                      color: color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -1066,10 +1072,10 @@ export default function DashboardScreen(): JSX.Element {
 
             <View
               style={{
-                backgroundColor: UI.color.surface,
-                borderRadius: UI.radius.lg,
+                backgroundColor: color.surface,
+                borderRadius: radius.lg,
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
                 padding: 14,
               }}
             >
@@ -1112,7 +1118,7 @@ export default function DashboardScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 16,
-                      color: UI.color.text,
+                      color: color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                       marginBottom: 4,
                     }}
@@ -1122,7 +1128,7 @@ export default function DashboardScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 14,
-                      color: UI.color.muted,
+                      color: color.muted,
                       fontFamily: "IBMPlexSans_500Medium",
                       textAlign: "center",
                       marginBottom: 16,
@@ -1136,8 +1142,8 @@ export default function DashboardScreen(): JSX.Element {
                     style={({ pressed }) => ({
                       paddingHorizontal: 20,
                       minHeight: 44,
-                      backgroundColor: UI.color.text,
-                      borderRadius: UI.radius.pill,
+                      backgroundColor: color.text,
+                      borderRadius: radius.pill,
                       alignItems: "center",
                       justifyContent: "center",
                       opacity: pressed ? 0.8 : 1,
@@ -1146,7 +1152,7 @@ export default function DashboardScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 15,
-                        color: UI.color.textInverse,
+                        color: color.textInverse,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -1167,12 +1173,12 @@ export default function DashboardScreen(): JSX.Element {
         index={0}
         enableDynamicSizing
         backdropComponent={renderSettleBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
+        backgroundStyle={{ backgroundColor: color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: color.muted, width: 40 }}
       >
         <BottomSheetView
           style={{
-            paddingHorizontal: UI.space.page,
+            paddingHorizontal: space.page,
             paddingTop: 24,
             paddingBottom: Math.max(insets.bottom, 24),
           }}
@@ -1180,7 +1186,7 @@ export default function DashboardScreen(): JSX.Element {
           <Typography
             style={{
               fontSize: 22,
-              color: UI.color.text,
+              color: color.text,
               fontFamily: "IBMPlexSans_600SemiBold",
               marginBottom: 20,
             }}
@@ -1193,7 +1199,7 @@ export default function DashboardScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 13,
-                  color: UI.color.muted,
+                  color: color.muted,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   marginBottom: 8,
                   textTransform: "uppercase",
@@ -1217,7 +1223,7 @@ export default function DashboardScreen(): JSX.Element {
                     paddingVertical: 12,
                     paddingHorizontal: 12,
                     borderRadius: 12,
-                    backgroundColor: pressed ? UI.color.subtle : "transparent",
+                    backgroundColor: pressed ? color.subtle : "transparent",
                     marginBottom: 4,
                   })}
                 >
@@ -1226,7 +1232,7 @@ export default function DashboardScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 15,
-                        color: UI.color.text,
+                        color: color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -1235,7 +1241,7 @@ export default function DashboardScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 13,
-                        color: UI.color.success,
+                        color: color.success,
                         fontFamily: "IBMPlexSans_500Medium",
                         marginTop: 1,
                       }}
@@ -1247,7 +1253,7 @@ export default function DashboardScreen(): JSX.Element {
                       )}
                     </Typography>
                   </View>
-                  <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.75} />
+                  <icons.ChevronRight size={18} color={color.muted} strokeWidth={1.75} />
                 </Pressable>
               ))}
             </View>
@@ -1258,7 +1264,7 @@ export default function DashboardScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 13,
-                  color: UI.color.muted,
+                  color: color.muted,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   marginBottom: 8,
                   textTransform: "uppercase",
@@ -1282,7 +1288,7 @@ export default function DashboardScreen(): JSX.Element {
                     paddingVertical: 12,
                     paddingHorizontal: 12,
                     borderRadius: 12,
-                    backgroundColor: pressed ? UI.color.subtle : "transparent",
+                    backgroundColor: pressed ? color.subtle : "transparent",
                     marginBottom: 4,
                   })}
                 >
@@ -1291,7 +1297,7 @@ export default function DashboardScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 15,
-                        color: UI.color.text,
+                        color: color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -1300,7 +1306,7 @@ export default function DashboardScreen(): JSX.Element {
                     <Typography
                       style={{
                         fontSize: 13,
-                        color: UI.color.danger,
+                        color: color.danger,
                         fontFamily: "IBMPlexSans_500Medium",
                         marginTop: 1,
                       }}
@@ -1312,7 +1318,7 @@ export default function DashboardScreen(): JSX.Element {
                       )}
                     </Typography>
                   </View>
-                  <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.75} />
+                  <icons.ChevronRight size={18} color={color.muted} strokeWidth={1.75} />
                 </Pressable>
               ))}
             </View>

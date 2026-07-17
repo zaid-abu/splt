@@ -12,7 +12,7 @@ import { useFriends, useAllFriendships, useAddFriend } from "@/features/friends/
 import type { User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { EmptyState, UI } from "@/components/ui/native-ui";
+import { useUI, EmptyState } from "@/components/ui/native-ui";
 
 interface UserSearchBottomSheetProps {
   onSelect: (user: User) => void;
@@ -22,6 +22,7 @@ interface UserSearchBottomSheetProps {
 
 export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBottomSheetProps>(
   ({ onSelect, excludeUserIds = [], title = "Add Member" }, ref) => {
+    const { color, radius, space, shadow } = useUI();
     const insets = useSafeAreaInsets();
     const { currentUser } = useAuth();
     const { toast } = useAppToast();
@@ -131,10 +132,10 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
             alignItems: "center",
             paddingHorizontal: 16,
             paddingVertical: 14,
-            backgroundColor: UI.color.surface,
+            backgroundColor: color.surface,
             borderWidth: 1,
-            borderColor: UI.color.border,
-            borderRadius: UI.radius.lg,
+            borderColor: color.border,
+            borderRadius: radius.lg,
             opacity: isExcluded ? 0.5 : 1,
           }}
         >
@@ -145,7 +146,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               numberOfLines={1}
               style={{
                 fontSize: 16,
-                color: UI.color.textStrong,
+                color: color.textStrong,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -155,7 +156,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               numberOfLines={1}
               style={{
                 fontSize: 14,
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 marginTop: 4,
               }}
@@ -172,27 +173,27 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               height: 40,
               paddingHorizontal: isExcluded ? 16 : 0,
               width: isExcluded ? undefined : 40,
-              backgroundColor: isExcluded ? UI.color.subtle : UI.color.text,
+              backgroundColor: isExcluded ? color.subtle : color.text,
               alignItems: "center",
               justifyContent: "center",
-              borderRadius: UI.radius.pill,
+              borderRadius: radius.pill,
               opacity: pressed || (!!isProcessing && !isProcessingThis) ? 0.5 : 1,
             })}
           >
             {isProcessingThis ? (
-              <Spinner size="sm" color={UI.color.textInverse} />
+              <Spinner size="sm" color={color.textInverse} />
             ) : isExcluded ? (
               <Typography
                 style={{
                   fontSize: 14,
-                  color: UI.color.muted,
+                  color: color.muted,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
                 Added
               </Typography>
             ) : (
-              <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={1.5} />
+              <icons.Plus size={20} color={color.textInverse} strokeWidth={1.5} />
             )}
           </Pressable>
         </View>
@@ -206,8 +207,8 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
         snapPoints={["90%"]}
         enableDynamicSizing={false}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
+        backgroundStyle={{ backgroundColor: color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: color.muted, width: 40 }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
@@ -219,11 +220,11 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               paddingHorizontal: 24,
               paddingVertical: 16,
               borderBottomWidth: 1,
-              borderBottomColor: UI.color.border,
+              borderBottomColor: color.border,
             }}
           >
             <Typography
-              style={{ fontSize: 24, color: UI.color.textStrong, fontFamily: "Sora_600SemiBold" }}
+              style={{ fontSize: 24, color: color.textStrong, fontFamily: "Sora_600SemiBold" }}
             >
               {title}
             </Typography>
@@ -235,45 +236,45 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               paddingHorizontal: 24,
               paddingVertical: 16,
               borderBottomWidth: 1,
-              borderBottomColor: UI.color.border,
+              borderBottomColor: color.border,
             }}
           >
             <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                backgroundColor: UI.color.control,
+                backgroundColor: color.control,
                 borderWidth: 1,
-                borderColor: UI.color.border,
-                borderRadius: UI.radius.lg,
+                borderColor: color.border,
+                borderRadius: radius.lg,
                 height: 48,
                 paddingHorizontal: 16,
               }}
             >
-              <icons.Search size={18} color={UI.color.muted} strokeWidth={1.5} />
+              <icons.Search size={18} color={color.muted} strokeWidth={1.5} />
               <BottomSheetTextInput
                 value={searchQuery}
                 onChangeText={setSearchQuery}
                 placeholder="Search by name or email..."
-                placeholderTextColor={UI.color.muted}
+                placeholderTextColor={color.muted}
                 autoCapitalize="none"
                 style={{
                   flex: 1,
                   marginLeft: 12,
                   fontFamily: "IBMPlexSans_500Medium",
-                  color: UI.color.textStrong,
+                  color: color.textStrong,
                   fontSize: 16,
                 }}
               />
               {isSearching ? (
-                <Spinner size="sm" color={UI.color.muted} />
+                <Spinner size="sm" color={color.muted} />
               ) : searchQuery.length > 0 ? (
                 <Pressable
                   accessibilityRole="button"
                   onPress={() => setSearchQuery("")}
                   hitSlop={8}
                 >
-                  <icons.XCircle size={18} color={UI.color.muted} strokeWidth={1.5} />
+                  <icons.XCircle size={18} color={color.muted} strokeWidth={1.5} />
                 </Pressable>
               ) : null}
             </View>

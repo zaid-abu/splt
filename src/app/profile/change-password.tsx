@@ -18,32 +18,18 @@ import { useMutation } from "@tanstack/react-query";
 
 import { AuthService } from "@/services/api/auth";
 import { useAppToast } from "@/hooks/useAppToast";
-import { UI, IconButton, SectionLabel } from "@/components/ui/native-ui";
+import { useUI, IconButton, SectionLabel } from "@/components/ui/native-ui";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { BottomActionBar } from "@/components/ui/BottomActionBar";
-
-const ERROR = UI.color.danger;
-const WARNING = "#F5A623";
-const SUCCESS = UI.color.success;
-
-function getPasswordStrength(password: string): { label: string; color: string; width: string } {
-  if (password.length === 0) return { label: "", color: "transparent", width: "0%" };
-  if (password.length < 6) return { label: "Too short", color: ERROR, width: "25%" };
-  if (password.length < 8) return { label: "Weak", color: ERROR, width: "40%" };
-  const hasUpper = /[A-Z]/.test(password);
-  const hasLower = /[a-z]/.test(password);
-  const hasNumber = /\d/.test(password);
-  const hasSpecial = /[^A-Za-z0-9]/.test(password);
-  const score = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
-  if (score <= 1) return { label: "Fair", color: WARNING, width: "55%" };
-  if (score <= 2) return { label: "Good", color: WARNING, width: "70%" };
-  return { label: "Strong", color: SUCCESS, width: "100%" };
-}
 
 export default function ChangePasswordScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { toast } = useAppToast();
+  const { color, radius, space, shadow } = useUI();
+  const ERROR = color.danger;
+  const WARNING = "#F5A623";
+  const SUCCESS = color.success;
 
   const { mutateAsync: changePassword, isPending } = useMutation({
     mutationFn: (password: string) => AuthService.changePassword(password),
@@ -54,6 +40,20 @@ export default function ChangePasswordScreen(): JSX.Element {
   const [error, setError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+
+  function getPasswordStrength(password: string): { label: string; color: string; width: string } {
+    if (password.length === 0) return { label: "", color: "transparent", width: "0%" };
+    if (password.length < 6) return { label: "Too short", color: ERROR, width: "25%" };
+    if (password.length < 8) return { label: "Weak", color: ERROR, width: "40%" };
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /\d/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    const score = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+    if (score <= 1) return { label: "Fair", color: WARNING, width: "55%" };
+    if (score <= 2) return { label: "Good", color: WARNING, width: "70%" };
+    return { label: "Strong", color: SUCCESS, width: "100%" };
+  }
 
   const strength = getPasswordStrength(newPassword);
 
@@ -106,7 +106,7 @@ export default function ChangePasswordScreen(): JSX.Element {
           flexDirection: "row",
           alignItems: "center",
           borderBottomWidth: 1,
-          borderBottomColor: UI.color.border,
+          borderBottomColor: color.border,
           paddingBottom: 12,
         }}
       >
@@ -114,13 +114,13 @@ export default function ChangePasswordScreen(): JSX.Element {
           value={value}
           onChangeText={onChange}
           placeholder={label}
-          placeholderTextColor={UI.color.muted}
+          placeholderTextColor={color.muted}
           secureTextEntry={!show}
           autoComplete="new-password"
           style={{
             flex: 1,
             fontSize: 16,
-            color: UI.color.text,
+            color: color.text,
             fontFamily: "IBMPlexSans_500Medium",
             padding: 0,
           }}
@@ -132,14 +132,14 @@ export default function ChangePasswordScreen(): JSX.Element {
           hitSlop={8}
           style={{ marginLeft: 12 }}
         >
-          <icons.Eye size={20} color={show ? UI.color.text : UI.color.muted} strokeWidth={1.75} />
+          <icons.Eye size={20} color={show ? color.text : color.muted} strokeWidth={1.75} />
         </Pressable>
       </View>
     </View>
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <View style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
 
       <KeyboardAvoidingView
@@ -149,7 +149,7 @@ export default function ChangePasswordScreen(): JSX.Element {
         <View
           style={{
             paddingTop: insets.top + 16,
-            paddingHorizontal: UI.space.page,
+            paddingHorizontal: space.page,
             paddingBottom: 16,
             flexDirection: "row",
             alignItems: "center",
@@ -160,7 +160,7 @@ export default function ChangePasswordScreen(): JSX.Element {
             style={{
               fontFamily: "Sora_600SemiBold",
               fontSize: 24,
-              color: UI.color.text,
+              color: color.text,
             }}
           >
             Change Password
@@ -169,7 +169,7 @@ export default function ChangePasswordScreen(): JSX.Element {
         </View>
 
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: UI.space.page, paddingTop: 32, gap: 28 }}
+          contentContainerStyle={{ paddingHorizontal: space.page, paddingTop: 32, gap: 28 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -190,7 +190,7 @@ export default function ChangePasswordScreen(): JSX.Element {
                 style={{
                   height: 4,
                   borderRadius: 2,
-                  backgroundColor: UI.color.border,
+                  backgroundColor: color.border,
                   overflow: "hidden",
                 }}
               >

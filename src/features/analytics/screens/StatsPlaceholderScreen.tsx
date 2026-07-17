@@ -11,9 +11,10 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 export default function StatsPlaceholderScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <FocusAwareView style={{ flex: 1 }}>
       <SafeAreaView style={{ flex: 1 }} className="bg-background" edges={["top"]}>
@@ -29,7 +30,7 @@ export default function StatsPlaceholderScreen(): JSX.Element {
         {/* Empty state */}
         <View className="flex-1 items-center justify-center px-8 pb-24">
           <View className="w-20 h-20 rounded-none items-center justify-center mb-6 border border-border-light bg-surface-secondary">
-            <icons.BarChart2 size={36} color={UI.color.textStrong} strokeWidth={1.5} />
+            <icons.BarChart2 size={36} color={color.textStrong} strokeWidth={1.5} />
           </View>
           <Typography
             type="h3"

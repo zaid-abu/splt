@@ -1,7 +1,7 @@
 import type { JSX, ReactNode } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 interface ListRowProps {
   leading?: ReactNode;
@@ -22,6 +22,7 @@ export function ListRow({
   isLast,
   disabled,
 }: ListRowProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const content = (
     <View
       style={{
@@ -30,7 +31,7 @@ export function ListRow({
         paddingVertical: 14,
         paddingHorizontal: 16,
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: UI.color.border,
+        borderBottomColor: color.border,
         opacity: disabled ? 0.5 : 1,
       }}
     >
@@ -40,7 +41,7 @@ export function ListRow({
           numberOfLines={1}
           style={{
             fontSize: 16,
-            color: UI.color.text,
+            color: color.text,
             fontFamily: "IBMPlexSans_600SemiBold",
           }}
         >
@@ -52,7 +53,7 @@ export function ListRow({
             style={{
               marginTop: 2,
               fontSize: 13,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
             }}
           >

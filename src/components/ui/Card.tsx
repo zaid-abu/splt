@@ -1,7 +1,9 @@
 import type { JSX, ReactNode } from "react";
-import { View } from "react-native";
+import { View, Platform } from "react-native";
 import type { ViewStyle } from "react-native";
-import { UI } from "@/components/ui/native-ui";
+import { BlurView } from "expo-blur";
+import { useUI } from "@/components/ui/native-ui";
+import { useUIStore } from "@/store/useUIStore";
 
 interface CardProps {
   children: ReactNode;
@@ -10,20 +12,36 @@ interface CardProps {
 }
 
 export function Card({ children, style, padding = 16 }: CardProps): JSX.Element {
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
+  const { color, radius, space, shadow } = useUI();
+
   return (
     <View
       style={[
         {
-          backgroundColor: UI.color.surface,
-          borderRadius: UI.radius.lg,
+          borderRadius: radius.lg,
+          overflow: "hidden",
           borderWidth: 1,
-          borderColor: UI.color.border,
-          padding,
+          borderColor: color.border,
         },
         style,
       ]}
     >
-      {children}
+      <BlurView
+        intensity={Platform.OS === "ios" ? 80 : 90}
+        tint={isDarkMode ? "dark" : "light"}
+        style={{
+          padding,
+          backgroundColor:
+            Platform.OS === "android"
+              ? isDarkMode
+                ? "rgba(20, 35, 55, 0.9)"
+                : "rgba(255, 255, 255, 0.85)"
+              : "transparent",
+        }}
+      >
+        {children}
+      </BlurView>
     </View>
   );
 }

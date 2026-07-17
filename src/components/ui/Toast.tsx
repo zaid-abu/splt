@@ -3,7 +3,7 @@ import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 export function CustomToast({
   props,
@@ -12,21 +12,22 @@ export function CustomToast({
   props: { id: string; hide: (id: string) => void };
   options: { label?: string; description?: string; variant?: string };
 }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const isDanger = options.variant === "danger";
   const isSuccess = options.variant === "success";
 
   const IconComponent = isDanger ? icons.AlertCircle : isSuccess ? icons.CheckCircle : icons.Info;
-  const iconColor = isDanger ? UI.color.danger : isSuccess ? UI.color.success : UI.color.text;
+  const iconColor = isDanger ? color.danger : isSuccess ? color.success : color.text;
 
   return (
     <Animated.View
       entering={FadeInDown.duration(300).springify()}
       exiting={FadeOutUp.duration(200)}
       style={{
-        backgroundColor: UI.color.surface,
+        backgroundColor: color.surface,
         borderWidth: 1,
-        borderColor: UI.color.border,
-        borderRadius: UI.radius.lg,
+        borderColor: color.border,
+        borderRadius: radius.lg,
         paddingHorizontal: 16,
         paddingVertical: 14,
         flexDirection: "row",
@@ -47,11 +48,11 @@ export function CustomToast({
           width: 40,
           height: 40,
           borderRadius: 14,
-          backgroundColor: UI.color.control,
+          backgroundColor: color.control,
           alignItems: "center",
           justifyContent: "center",
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           marginRight: 14,
         }}
       >
@@ -63,7 +64,7 @@ export function CustomToast({
             numberOfLines={1}
             style={{
               fontSize: 15,
-              color: UI.color.text,
+              color: color.text,
               fontFamily: "IBMPlexSans_600SemiBold",
             }}
           >
@@ -75,7 +76,7 @@ export function CustomToast({
             numberOfLines={2}
             style={{
               fontSize: 13,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 2,
             }}
@@ -92,17 +93,17 @@ export function CustomToast({
         style={({ pressed }) => ({
           width: 32,
           height: 32,
-          borderRadius: UI.radius.pill,
-          backgroundColor: UI.color.control,
+          borderRadius: radius.pill,
+          backgroundColor: color.control,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           alignItems: "center",
           justifyContent: "center",
           marginLeft: 12,
           opacity: pressed ? 0.6 : 1,
         })}
       >
-        <icons.X size={14} color={UI.color.muted} strokeWidth={2} />
+        <icons.X size={14} color={color.muted} strokeWidth={2} />
       </Pressable>
     </Animated.View>
   );

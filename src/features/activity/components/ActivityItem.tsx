@@ -11,13 +11,9 @@ import { useDeleteActivity } from "@/features/activity/queries/useActivities";
 import type { Activity } from "@/types";
 import { useAuth } from "@/context/AppContext";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { SwipeableRow } from "@/components/layout/SwipeableRow";
 import { useUIStore } from "@/store/useUIStore";
-
-const TEXT_DANGER = UI.color.danger;
-const TEXT_SUCCESS = UI.color.success;
-const CARD_RADIUS = UI.radius.lg;
 
 interface ActivityItemProps {
   activity: Activity;
@@ -30,7 +26,11 @@ export const ActivityItem = React.memo(function ActivityItem({
   index,
   isLast,
 }: ActivityItemProps): React.JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const { currentUser } = useAuth();
+  const TEXT_DANGER = color.danger;
+  const TEXT_SUCCESS = color.success;
+  const CARD_RADIUS = radius.lg;
   const { mutateAsync: deleteExpense } = useDeleteExpense();
   const { mutateAsync: deleteSettlement } = useDeleteSettlement();
   const { mutateAsync: deleteActivity } = useDeleteActivity();
@@ -131,19 +131,19 @@ export const ActivityItem = React.memo(function ActivityItem({
   const bgColors: Record<string, string> = {
     positive: "#E6F4EA",
     negative: "#FCE8E8",
-    neutral: UI.color.border,
+    neutral: color.border,
   };
 
   const textColors: Record<string, string> = {
     positive: TEXT_SUCCESS,
     negative: TEXT_DANGER,
-    neutral: UI.color.text,
+    neutral: color.text,
   };
 
   const iconColors: Record<string, string> = {
     positive: TEXT_SUCCESS,
     negative: TEXT_DANGER,
-    neutral: UI.color.text,
+    neutral: color.text,
   };
 
   const canDelete = activity.type === "expense" || activity.type === "settlement";
@@ -193,8 +193,8 @@ export const ActivityItem = React.memo(function ActivityItem({
           paddingVertical: 14,
           paddingHorizontal: 16,
           borderBottomWidth: isLast ? 0 : 1,
-          borderBottomColor: UI.color.border,
-          backgroundColor: pressed ? UI.color.subtle : "transparent",
+          borderBottomColor: color.border,
+          backgroundColor: pressed ? color.subtle : "transparent",
         })}
       >
         <View
@@ -217,7 +217,7 @@ export const ActivityItem = React.memo(function ActivityItem({
             numberOfLines={1}
             style={{
               fontSize: 15,
-              color: UI.color.text,
+              color: color.text,
               fontFamily: "IBMPlexSans_600SemiBold",
               letterSpacing: -0.2,
             }}
@@ -228,7 +228,7 @@ export const ActivityItem = React.memo(function ActivityItem({
             numberOfLines={1}
             style={{
               fontSize: 13,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 3,
             }}
@@ -260,7 +260,7 @@ export const ActivityItem = React.memo(function ActivityItem({
             numberOfLines={1}
             style={{
               fontSize: 12,
-              color: involvement.showAmount ? textColors[involvement.type] : UI.color.muted,
+              color: involvement.showAmount ? textColors[involvement.type] : color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 2,
             }}
@@ -271,7 +271,7 @@ export const ActivityItem = React.memo(function ActivityItem({
 
         <icons.ChevronRight
           size={14}
-          color={UI.color.muted}
+          color={color.muted}
           strokeWidth={1.75}
           style={{ marginLeft: 8 }}
         />

@@ -17,7 +17,8 @@ import { GroupCard } from "@/features/groups/components/GroupCard";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { UI, ScreenHeader, MetricCell, SearchField, FilterPill } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader, MetricCell, SearchField, FilterPill } from "@/components/ui/native-ui";
+import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -34,6 +35,7 @@ const FILTERS: { key: GroupFilter; label: string }[] = [
 ];
 
 export default function GroupsScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
@@ -118,7 +120,7 @@ export default function GroupsScreen(): JSX.Element {
   const ListHeaderComponent = useCallback(
     () => (
       <View>
-        <View style={{ paddingHorizontal: UI.space.page, marginBottom: 16 }}>
+        <View style={{ paddingHorizontal: space.page, marginBottom: 16 }}>
           <View style={{ flexDirection: "row", gap: 10 }}>
             <MetricCell label="Groups" value={String(activeGroups.length)} />
             <MetricCell
@@ -145,7 +147,7 @@ export default function GroupsScreen(): JSX.Element {
           </View>
         </View>
 
-        <View style={{ paddingHorizontal: UI.space.page, marginBottom: 14 }}>
+        <View style={{ paddingHorizontal: space.page, marginBottom: 14 }}>
           <SearchField
             value={search}
             onChangeText={setSearch}
@@ -159,7 +161,7 @@ export default function GroupsScreen(): JSX.Element {
             flexDirection: "row",
             flexWrap: "wrap",
             gap: 8,
-            paddingHorizontal: UI.space.page,
+            paddingHorizontal: space.page,
             marginBottom: 20,
           }}
         >
@@ -179,7 +181,7 @@ export default function GroupsScreen(): JSX.Element {
 
   const ListEmptyComponent = useCallback(
     () => (
-      <View style={{ paddingHorizontal: UI.space.page }}>
+      <View style={{ paddingHorizontal: space.page }}>
         {isLoading ? (
           <View style={{ paddingTop: 20 }}>
             {[1, 2, 3].map((i) => (
@@ -192,31 +194,31 @@ export default function GroupsScreen(): JSX.Element {
               alignItems: "center",
               justifyContent: "center",
               padding: 32,
-              backgroundColor: UI.color.surface,
-              borderRadius: UI.radius.lg,
+              backgroundColor: color.surface,
+              borderRadius: radius.lg,
               borderWidth: 1,
-              borderColor: UI.color.border,
+              borderColor: color.border,
             }}
           >
             <View
               style={{
                 width: 64,
                 height: 64,
-                borderRadius: UI.radius.xl,
-                backgroundColor: UI.color.control,
+                borderRadius: radius.xl,
+                backgroundColor: color.control,
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
                 alignItems: "center",
                 justifyContent: "center",
                 marginBottom: 16,
               }}
             >
-              <icons.Users size={32} color={UI.color.text} strokeWidth={1.5} />
+              <icons.Users size={32} color={color.text} strokeWidth={1.5} />
             </View>
             <Typography
               style={{
                 fontSize: 18,
-                color: UI.color.text,
+                color: color.text,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 textAlign: "center",
                 marginBottom: 8,
@@ -227,7 +229,7 @@ export default function GroupsScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 15,
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 textAlign: "center",
                 lineHeight: 21,
@@ -247,17 +249,17 @@ export default function GroupsScreen(): JSX.Element {
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: UI.color.text,
+                  backgroundColor: color.text,
                   height: 52,
-                  borderRadius: UI.radius.pill,
+                  borderRadius: radius.pill,
                   paddingHorizontal: 28,
                   opacity: pressed ? 0.72 : 1,
                 })}
               >
-                <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={2} />
+                <icons.Plus size={20} color={color.textInverse} strokeWidth={2} />
                 <Typography
                   style={{
-                    color: UI.color.textInverse,
+                    color: color.textInverse,
                     fontSize: 16,
                     fontFamily: "IBMPlexSans_600SemiBold",
                     marginLeft: 8,
@@ -298,7 +300,7 @@ export default function GroupsScreen(): JSX.Element {
             .springify()}
           layout={LinearTransition.springify()}
         >
-          <View style={{ paddingHorizontal: UI.space.page }}>
+          <View style={{ paddingHorizontal: space.page }}>
             <GroupCard
               group={item.group}
               balance={item.netBalance}
@@ -317,7 +319,8 @@ export default function GroupsScreen(): JSX.Element {
   );
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <View style={{ flex: 1, backgroundColor: color.bg }}>
+      <GlassBackground />
       <ThemedStatusBar />
 
       <View style={{ paddingTop: insets.top + 16 }}>
@@ -332,14 +335,14 @@ export default function GroupsScreen(): JSX.Element {
                 height: 44,
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: UI.color.control,
-                borderRadius: UI.radius.pill,
+                backgroundColor: color.control,
+                borderRadius: radius.pill,
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
                 opacity: pressed ? 0.65 : 1,
               })}
             >
-              <icons.Plus size={20} color={UI.color.text} strokeWidth={1.5} />
+              <icons.Plus size={20} color={color.text} strokeWidth={1.5} />
             </Pressable>
           }
         />
@@ -363,7 +366,7 @@ export default function GroupsScreen(): JSX.Element {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor={UI.color.text}
+                tintColor={color.text}
               />
             }
           />

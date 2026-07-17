@@ -2,16 +2,17 @@ import React from "react";
 import type { JSX } from "react";
 import { View, Text, Pressable } from "react-native";
 import type { ErrorBoundaryProps } from "expo-router";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <View
       style={{
         flex: 1,
         alignItems: "center",
         justifyContent: "center",
-        backgroundColor: UI.color.bg,
+        backgroundColor: color.bg,
         padding: 24,
       }}
     >
@@ -19,17 +20,17 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
         style={{
           width: "100%",
           maxWidth: 400,
-          backgroundColor: UI.color.surface,
+          backgroundColor: color.surface,
           padding: 24,
-          borderRadius: UI.radius.lg,
+          borderRadius: radius.lg,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
         }}
       >
         <Text
           style={{
             fontSize: 24,
-            color: UI.color.text,
+            color: color.text,
             fontFamily: "Sora_600SemiBold",
             marginBottom: 12,
           }}
@@ -39,7 +40,7 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
         <Text
           style={{
             fontSize: 16,
-            color: UI.color.muted,
+            color: color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginBottom: 24,
           }}
@@ -52,13 +53,13 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
             style={{
               paddingHorizontal: 24,
               paddingVertical: 14,
-              borderRadius: UI.radius.pill,
-              backgroundColor: UI.color.text,
+              borderRadius: radius.pill,
+              backgroundColor: color.text,
             }}
           >
             <Text
               style={{
-                color: UI.color.textInverse,
+                color: color.textInverse,
                 fontSize: 16,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}

@@ -10,15 +10,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 import { useResetPassword } from "@/features/auth/hooks/useAuthMutations";
 import { forgotPasswordSchema, type ForgotPasswordFormData } from "@/validation/schemas";
-import { FormInput } from "@/components/forms/FormInput";
 import { useAppToast } from "@/hooks/useAppToast";
-import { UI, PressableScale } from "@/components/ui/native-ui";
-import AuthFormLayout from "@/components/layout/AuthFormLayout";
+import { useUIStore } from "@/store/useUIStore";
+import { PressableScale } from "@/components/ui/native-ui";
+import GlassAuthLayout from "@/components/glassmorphism/GlassAuthLayout";
+import { GlassFormInput } from "@/components/glassmorphism/GlassFormInput";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { GLASS_LIGHT, GLASS_DARK, GLASS_RADIUS } from "@/constants/glassmorphism-tokens";
 
 export default function ForgotPasswordScreen(): JSX.Element {
   const router = useRouter();
   const { toast } = useAppToast();
   const { mutateAsync: resetPassword, isPending } = useResetPassword();
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
+  const tokens = isDarkMode ? GLASS_DARK : GLASS_LIGHT;
 
   const [sent, setSent] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
@@ -76,35 +81,38 @@ export default function ForgotPasswordScreen(): JSX.Element {
 
   if (sent) {
     return (
-      <AuthFormLayout
-        title={"Check your\ninbox."}
-        subtitle={`We've sent a reset link to ${submittedEmail}.`}
+      <GlassAuthLayout
+        title="Check your\ninbox."
+        subtitle={`We've sent a reset link to ${submittedEmail}. Check spam if it does not arrive.`}
         onSubmit={() => router.push("/(auth)/login")}
         isPending={false}
         submitLabel="Back to Sign In"
-        footer={undefined}
+        headerTitle="Reset password"
       >
         <View style={{ alignItems: "center", paddingVertical: 12 }}>
-          <View
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: UI.radius.xl,
-              backgroundColor: UI.color.control,
-              borderWidth: 1,
-              borderColor: UI.color.border,
-              alignItems: "center",
-              justifyContent: "center",
-              marginBottom: 16,
-            }}
+          <Animated.View
+            entering={FadeInDown.delay(200).duration(600).springify()}
+            style={{ alignItems: "center" }}
           >
-            <icons.Mail size={32} color={UI.color.text} strokeWidth={1.5} />
-          </View>
+            <View
+              style={{
+                width: 64,
+                height: 64,
+                borderRadius: GLASS_RADIUS.authMark,
+                backgroundColor: isDarkMode ? "#E8ECF4" : "#102033",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: 16,
+              }}
+            >
+              <icons.Mail size={32} color={isDarkMode ? "#0A1628" : "#FFFFFF"} strokeWidth={1.5} />
+            </View>
+          </Animated.View>
           <Typography
             style={{
               fontFamily: "IBMPlexSans_400Regular",
               fontSize: 14,
-              color: UI.color.muted,
+              color: tokens.muted,
               lineHeight: 20,
               textAlign: "center",
             }}
@@ -115,13 +123,23 @@ export default function ForgotPasswordScreen(): JSX.Element {
 
         <View style={{ marginTop: 8 }}>
           <PressableScale onPress={handleResend}>
-            <View style={{ paddingVertical: 8 }}>
+            <View
+              style={{
+                width: "100%",
+                minHeight: 48,
+                borderRadius: GLASS_RADIUS.md,
+                backgroundColor: tokens.surface,
+                borderWidth: 1,
+                borderColor: tokens.border,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <Typography
                 style={{
                   fontSize: 15,
-                  color: UI.color.text,
+                  color: tokens.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
-                  textAlign: "center",
                 }}
               >
                 {isPending ? "Sending\u2026" : "Resend email"}
@@ -129,20 +147,21 @@ export default function ForgotPasswordScreen(): JSX.Element {
             </View>
           </PressableScale>
         </View>
-      </AuthFormLayout>
+      </GlassAuthLayout>
     );
   }
 
   return (
-    <AuthFormLayout
+    <GlassAuthLayout
       title={"Reset\npassword."}
       subtitle="We'll send a reset link to your email address."
       onSubmit={handleSubmit(onSubmit, onInvalid)}
       isPending={isPending}
       submitLabel="Send Reset Link"
       submitLoadingLabel="Sending\u2026"
+      headerTitle="Reset password"
     >
-      <FormInput
+      <GlassFormInput
         control={control}
         name="email"
         label="Email Address"
@@ -152,8 +171,8 @@ export default function ForgotPasswordScreen(): JSX.Element {
         autoComplete="email"
         returnKeyType="done"
         blurOnSubmit
-        leftElement={<icons.Mail size={18} color={UI.color.muted} />}
+        leftElement={<icons.Mail size={18} color={tokens.muted} />}
       />
-    </AuthFormLayout>
+    </GlassAuthLayout>
   );
 }

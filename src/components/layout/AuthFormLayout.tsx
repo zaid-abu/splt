@@ -7,7 +7,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator } f
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
-import { UI, PressableScale, IconButton } from "@/components/ui/native-ui";
+import { useUI, PressableScale, IconButton } from "@/components/ui/native-ui";
 import { useUIStore } from "@/store/useUIStore";
 import { useRouter } from "expo-router";
 
@@ -37,9 +37,10 @@ export default function AuthFormLayout({
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const isDarkMode = useUIStore((s) => s.isDarkMode);
+  const { color, radius } = useUI();
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <View style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
 
       <KeyboardAvoidingView
@@ -51,7 +52,7 @@ export default function AuthFormLayout({
             paddingTop: insets.top + 16,
             paddingHorizontal: 24,
             paddingBottom: 16,
-            backgroundColor: UI.color.bg,
+            backgroundColor: color.bg,
             zIndex: 10,
           }}
         >
@@ -88,7 +89,7 @@ export default function AuthFormLayout({
                 style={{
                   fontFamily: "Sora_600SemiBold",
                   fontSize: 40,
-                  color: UI.color.textStrong,
+                  color: color.textStrong,
                   lineHeight: 46,
                   letterSpacing: -0.02,
                   marginBottom: 12,
@@ -100,7 +101,7 @@ export default function AuthFormLayout({
                 style={{
                   fontFamily: "IBMPlexSans_400Regular",
                   fontSize: 17,
-                  color: UI.color.muted,
+                  color: color.muted,
                   lineHeight: 24,
                 }}
               >
@@ -111,7 +112,7 @@ export default function AuthFormLayout({
             <Animated.View
               entering={FadeInDown.delay(300).duration(600).springify()}
               style={{
-                borderRadius: UI.radius.lg,
+                borderRadius: radius.lg,
                 overflow: "hidden",
               }}
             >
@@ -121,7 +122,7 @@ export default function AuthFormLayout({
                 style={{
                   padding: 20,
                   gap: 20,
-                  backgroundColor: Platform.OS === "android" ? UI.color.control : "transparent",
+                  backgroundColor: Platform.OS === "android" ? color.control : "transparent",
                 }}
               >
                 {children}
@@ -137,8 +138,8 @@ export default function AuthFormLayout({
                   style={{
                     width: "100%",
                     height: 56,
-                    borderRadius: UI.radius.pill,
-                    backgroundColor: UI.color.text,
+                    borderRadius: radius.pill,
+                    backgroundColor: color.text,
                     alignItems: "center",
                     justifyContent: "center",
                     flexDirection: "row",
@@ -146,11 +147,11 @@ export default function AuthFormLayout({
                     opacity: isPending ? 0.7 : 1,
                   }}
                 >
-                  {isPending && <ActivityIndicator color={UI.color.textInverse} />}
+                  {isPending && <ActivityIndicator color={color.textInverse} />}
                   <Typography
                     style={{
                       fontSize: 16,
-                      color: UI.color.textInverse,
+                      color: color.textInverse,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >

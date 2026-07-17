@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { View } from "react-native";
 import { Typography } from "heroui-native";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 interface MoneySignalProps {
   label: string;
@@ -10,30 +10,31 @@ interface MoneySignalProps {
 }
 
 export function MoneySignal({ label, value, tone }: MoneySignalProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const toneColor =
-    tone === "danger" ? UI.color.danger : tone === "success" ? UI.color.success : UI.color.muted;
+    tone === "danger" ? color.danger : tone === "success" ? color.success : color.muted;
   return (
     <View
       style={{
         flex: 1,
         minWidth: 0,
         padding: 12,
-        borderRadius: UI.radius.md,
+        borderRadius: radius.md,
         backgroundColor:
           tone === "danger"
-            ? UI.color.dangerTint
+            ? color.dangerTint
             : tone === "success"
-              ? UI.color.successTint
-              : UI.color.control,
+              ? color.successTint
+              : color.control,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
       }}
     >
       <Typography
         numberOfLines={1}
         style={{
           fontSize: 12,
-          color: UI.color.muted,
+          color: color.muted,
           fontFamily: "IBMPlexSans_500Medium",
         }}
       >

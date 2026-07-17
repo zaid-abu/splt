@@ -2,9 +2,10 @@ import { Redirect } from "expo-router";
 import { View, Animated } from "react-native";
 import { useEffect, useMemo } from "react";
 import { useAuth } from "@/context/AppContext";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 function LoadingScreen(): React.JSX.Element {
+  const { color } = useUI();
   const opacity = useMemo(() => new Animated.Value(0), []);
   const scale = useMemo(() => new Animated.Value(0.95), []);
   const dotOpacity = useMemo(() => new Animated.Value(0.3), []);
@@ -29,7 +30,7 @@ function LoadingScreen(): React.JSX.Element {
     <View
       style={{
         flex: 1,
-        backgroundColor: UI.color.bg,
+        backgroundColor: color.bg,
         alignItems: "center",
         justifyContent: "center",
       }}
@@ -40,7 +41,7 @@ function LoadingScreen(): React.JSX.Element {
           height: 32,
           borderRadius: 6,
           borderWidth: 1.5,
-          borderColor: UI.color.brand,
+          borderColor: color.brand,
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 20,
@@ -52,7 +53,7 @@ function LoadingScreen(): React.JSX.Element {
           style={{
             fontFamily: "Sora_600SemiBold",
             fontSize: 14,
-            color: UI.color.brand,
+            color: color.brand,
             letterSpacing: 1,
             opacity,
           }}
@@ -64,7 +65,7 @@ function LoadingScreen(): React.JSX.Element {
         style={{
           fontFamily: "Sora_600SemiBold",
           fontSize: 32,
-          color: UI.color.textStrong,
+          color: color.textStrong,
           letterSpacing: 4,
           opacity,
         }}
@@ -76,7 +77,7 @@ function LoadingScreen(): React.JSX.Element {
           width: 5,
           height: 5,
           borderRadius: 2.5,
-          backgroundColor: UI.color.muted,
+          backgroundColor: color.muted,
           marginTop: 16,
           opacity: dotOpacity,
         }}

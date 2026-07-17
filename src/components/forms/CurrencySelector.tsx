@@ -9,7 +9,7 @@ import {
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { PressableFeedback, Typography } from "heroui-native";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { useUIStore } from "@/store/useUIStore";
 
 import type { Currency } from "@/types";
@@ -17,7 +17,11 @@ import { CURRENCIES } from "@/types";
 
 const POPULAR_CODES = ["USD", "EUR", "GBP", "INR", "JPY"];
 
-function createCurrencyStyles(_isDarkMode?: boolean) {
+function createCurrencyStyles(
+  color: ReturnType<typeof useUI>["color"],
+  radius: ReturnType<typeof useUI>["radius"],
+  _isDarkMode?: boolean
+) {
   return StyleSheet.create({
     container: {
       gap: 8,
@@ -26,7 +30,7 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
       marginLeft: 4,
       fontSize: 11,
       letterSpacing: 1.2,
-      color: UI.color.muted,
+      color: color.muted,
       fontFamily: "IBMPlexSans_600SemiBold",
       textTransform: "uppercase",
     },
@@ -34,10 +38,10 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
       minHeight: 72,
       paddingHorizontal: 16,
       paddingVertical: 14,
-      borderRadius: UI.radius.lg,
+      borderRadius: radius.lg,
       borderWidth: 1,
-      borderColor: UI.color.border,
-      backgroundColor: UI.color.surface,
+      borderColor: color.border,
+      backgroundColor: color.surface,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
@@ -53,15 +57,15 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
       width: 52,
       height: 48,
       borderRadius: 18,
-      backgroundColor: UI.color.control,
+      backgroundColor: color.control,
       borderWidth: 1,
-      borderColor: UI.color.border,
+      borderColor: color.border,
       alignItems: "center",
       justifyContent: "center",
     },
     triggerSymbolText: {
       fontSize: 16,
-      color: UI.color.text,
+      color: color.text,
       fontFamily: "IBMPlexSans_600SemiBold",
     },
     triggerTextWrap: {
@@ -70,12 +74,12 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
     },
     triggerCodeText: {
       fontSize: 16,
-      color: UI.color.text,
+      color: color.text,
       fontFamily: "IBMPlexSans_600SemiBold",
     },
     triggerNameText: {
       fontSize: 14,
-      color: UI.color.muted,
+      color: color.muted,
       fontFamily: "IBMPlexSans_500Medium",
     },
     triggerAdornment: {
@@ -85,7 +89,7 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
     },
     triggerChangeText: {
       fontSize: 13,
-      color: UI.color.brand,
+      color: color.brand,
       fontFamily: "IBMPlexSans_600SemiBold",
     },
     modalContent: {
@@ -98,24 +102,24 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
     },
     modalTitle: {
       fontSize: 24,
-      color: UI.color.text,
+      color: color.text,
       fontFamily: "Sora_600SemiBold",
     },
     modalSubtitle: {
       marginTop: 8,
       fontSize: 14,
       lineHeight: 20,
-      color: UI.color.muted,
+      color: color.muted,
       fontFamily: "IBMPlexSans_500Medium",
     },
     searchCard: {
       height: 52,
       marginBottom: 18,
       paddingHorizontal: 16,
-      borderRadius: UI.radius.pill,
+      borderRadius: radius.pill,
       borderWidth: 1,
-      borderColor: UI.color.border,
-      backgroundColor: UI.color.control,
+      borderColor: color.border,
+      backgroundColor: color.control,
       flexDirection: "row",
       alignItems: "center",
       gap: 12,
@@ -124,7 +128,7 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
       flex: 1,
       paddingVertical: 0,
       fontSize: 16,
-      color: UI.color.text,
+      color: color.text,
       fontFamily: "IBMPlexSans_500Medium",
     },
     listContent: {
@@ -135,7 +139,7 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
       marginBottom: 10,
       fontSize: 11,
       letterSpacing: 1.2,
-      color: UI.color.muted,
+      color: color.muted,
       fontFamily: "IBMPlexSans_600SemiBold",
       textTransform: "uppercase",
     },
@@ -144,21 +148,21 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
       marginBottom: 10,
       paddingHorizontal: 16,
       paddingVertical: 14,
-      borderRadius: UI.radius.lg,
+      borderRadius: radius.lg,
       borderWidth: 1,
-      borderColor: UI.color.border,
-      backgroundColor: UI.color.surface,
+      borderColor: color.border,
+      backgroundColor: color.surface,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       gap: 12,
     },
     itemCurrent: {
-      backgroundColor: UI.color.subtle,
+      backgroundColor: color.subtle,
     },
     itemSelected: {
-      borderColor: UI.color.text,
-      backgroundColor: UI.color.subtle,
+      borderColor: color.text,
+      backgroundColor: color.subtle,
     },
     itemLeft: {
       flex: 1,
@@ -170,26 +174,26 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
       width: 52,
       height: 48,
       borderRadius: 18,
-      backgroundColor: UI.color.control,
+      backgroundColor: color.control,
       borderWidth: 1,
-      borderColor: UI.color.border,
+      borderColor: color.border,
       alignItems: "center",
       justifyContent: "center",
     },
     symbolShellCurrent: {
-      backgroundColor: UI.color.subtle,
+      backgroundColor: color.subtle,
     },
     symbolShellSelected: {
-      backgroundColor: UI.color.text,
-      borderColor: UI.color.text,
+      backgroundColor: color.text,
+      borderColor: color.text,
     },
     symbolText: {
       fontSize: 16,
-      color: UI.color.text,
+      color: color.text,
       fontFamily: "IBMPlexSans_600SemiBold",
     },
     symbolTextSelected: {
-      color: UI.color.textInverse,
+      color: color.textInverse,
     },
     textContainer: {
       flex: 1,
@@ -203,26 +207,26 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
     },
     codeText: {
       fontSize: 16,
-      color: UI.color.text,
+      color: color.text,
       fontFamily: "IBMPlexSans_600SemiBold",
     },
     nameText: {
       marginTop: 3,
       fontSize: 14,
-      color: UI.color.muted,
+      color: color.muted,
       fontFamily: "IBMPlexSans_500Medium",
     },
     metaPill: {
       paddingHorizontal: 10,
       paddingVertical: 4,
-      borderRadius: UI.radius.pill,
-      backgroundColor: UI.color.control,
+      borderRadius: radius.pill,
+      backgroundColor: color.control,
       borderWidth: 1,
-      borderColor: UI.color.border,
+      borderColor: color.border,
     },
     metaPillText: {
       fontSize: 11,
-      color: UI.color.muted,
+      color: color.muted,
       fontFamily: "IBMPlexSans_600SemiBold",
       textTransform: "uppercase",
       letterSpacing: 1,
@@ -231,7 +235,7 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
       width: 28,
       height: 28,
       borderRadius: 14,
-      backgroundColor: UI.color.text,
+      backgroundColor: color.text,
       alignItems: "center",
       justifyContent: "center",
     },
@@ -239,21 +243,21 @@ function createCurrencyStyles(_isDarkMode?: boolean) {
       marginTop: 8,
       paddingHorizontal: 20,
       paddingVertical: 24,
-      borderRadius: UI.radius.lg,
+      borderRadius: radius.lg,
       borderWidth: 1,
-      borderColor: UI.color.border,
-      backgroundColor: UI.color.surface,
+      borderColor: color.border,
+      backgroundColor: color.surface,
       alignItems: "center",
     },
     emptyTitle: {
       fontSize: 16,
-      color: UI.color.text,
+      color: color.text,
       fontFamily: "IBMPlexSans_600SemiBold",
     },
     emptyText: {
       marginTop: 6,
       fontSize: 14,
-      color: UI.color.muted,
+      color: color.muted,
       fontFamily: "IBMPlexSans_500Medium",
       textAlign: "center",
     },
@@ -284,6 +288,7 @@ const CurrencyListItem = memo(
     onPress: (currency: Currency) => void;
     styles: ReturnType<typeof createCurrencyStyles>;
   }) => {
+    const { color } = useUI();
     const isCurrent = emphasis === "current";
 
     return (
@@ -334,10 +339,10 @@ const CurrencyListItem = memo(
 
           {isSelected ? (
             <View style={styles.selectedBadge}>
-              <icons.Check size={14} color={UI.color.textInverse} strokeWidth={2.4} />
+              <icons.Check size={14} color={color.textInverse} strokeWidth={2.4} />
             </View>
           ) : (
-            <icons.ChevronRight size={18} color={UI.color.muted} strokeWidth={1.75} />
+            <icons.ChevronRight size={18} color={color.muted} strokeWidth={1.75} />
           )}
         </View>
       </PressableFeedback>
@@ -359,7 +364,8 @@ export function CurrencySelector({
   const bottomSheetModalRef = useRef<BottomSheetModal>(null);
   const [search, setSearch] = useState("");
   const isDarkMode = useUIStore((s) => s.isDarkMode);
-  const styles = useMemo(() => createCurrencyStyles(isDarkMode), [isDarkMode]);
+  const { color, radius } = useUI();
+  const styles = useMemo(() => createCurrencyStyles(color, radius, isDarkMode), [color, radius, isDarkMode]);
 
   const selectedCurrency = CURRENCIES.find((currency) => currency.code === value) ?? CURRENCIES[0];
 
@@ -497,7 +503,7 @@ export function CurrencySelector({
 
           <View style={styles.triggerAdornment}>
             <Typography style={styles.triggerChangeText}>Change</Typography>
-            <icons.ChevronDown size={18} color={UI.color.muted} strokeWidth={1.75} />
+            <icons.ChevronDown size={18} color={color.muted} strokeWidth={1.75} />
           </View>
         </View>
       </PressableFeedback>
@@ -509,8 +515,8 @@ export function CurrencySelector({
         enableDynamicSizing={false}
         onChange={handleSheetChanges}
         backdropComponent={renderBackdrop}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: UI.color.border, width: 40 }}
+        backgroundStyle={{ backgroundColor: color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: color.border, width: 40 }}
         keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
         android_keyboardInputMode="adjustResize"
@@ -524,12 +530,12 @@ export function CurrencySelector({
           </View>
 
           <View style={styles.searchCard}>
-            <icons.Search size={18} color={UI.color.muted} strokeWidth={1.75} />
+            <icons.Search size={18} color={color.muted} strokeWidth={1.75} />
             <BottomSheetTextInput
               value={search}
               onChangeText={setSearch}
               placeholder="Search by code, name, or symbol"
-              placeholderTextColor={UI.color.muted}
+              placeholderTextColor={color.muted}
               autoCapitalize="none"
               autoCorrect={false}
               autoFocus
@@ -541,7 +547,7 @@ export function CurrencySelector({
                 hitSlop={8}
                 onPress={() => setSearch("")}
               >
-                <icons.XCircle size={18} color={UI.color.muted} strokeWidth={1.75} />
+                <icons.XCircle size={18} color={color.muted} strokeWidth={1.75} />
               </PressableFeedback>
             ) : null}
           </View>

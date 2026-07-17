@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { Card } from "@/components/ui/Card";
-import { SearchField, UI } from "@/components/ui/native-ui";
+import { SearchField, useUI } from "@/components/ui/native-ui";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { SelectionMark } from "@/features/expenses/components/SelectionMark";
@@ -37,13 +37,14 @@ export function ContextPicker({
   setSelectedGroupId: (value: string | ((prev: string) => string)) => void;
   selectedFriends: User[];
 }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const rows = selectionTab === "friends" ? filteredFriends : filteredGroups;
 
   return (
     <View style={styles.contextBlock}>
       <Card style={styles.contextIntro}>
         <View style={styles.contextIntroIcon}>
-          <icons.ReceiptText size={22} color={UI.color.text} strokeWidth={1.8} />
+          <icons.ReceiptText size={22} color={color.text} strokeWidth={1.8} />
         </View>
         <View style={{ flex: 1 }}>
           <Typography style={styles.contextIntroTitle}>Who is this expense with?</Typography>
@@ -78,7 +79,7 @@ export function ContextPicker({
               >
                 <AppUserAvatar user={friend} size="sm" />
                 <Typography style={styles.selectedChipText}>{friend.name.split(" ")[0]}</Typography>
-                <icons.X size={15} color={UI.color.muted} strokeWidth={1.9} />
+                <icons.X size={15} color={color.muted} strokeWidth={1.9} />
               </Pressable>
             ))}
           </View>

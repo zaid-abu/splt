@@ -11,11 +11,9 @@ import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AppContext";
 import { useUpdateProfile } from "@/features/profile/hooks/useUpdateProfile";
 import { useAppToast } from "@/hooks/useAppToast";
-import { UI, IconButton, SectionLabel } from "@/components/ui/native-ui";
+import { useUI, IconButton, SectionLabel } from "@/components/ui/native-ui";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { BottomActionBar } from "@/components/ui/BottomActionBar";
-
-const ERROR = UI.color.danger;
 
 export default function EditProfileScreen(): JSX.Element {
   const router = useRouter();
@@ -23,6 +21,8 @@ export default function EditProfileScreen(): JSX.Element {
   const { currentUser } = useAuth();
   const { toast } = useAppToast();
   const { mutateAsync: updateProfile, isPending } = useUpdateProfile();
+  const { color, radius, space, shadow } = useUI();
+  const ERROR = color.danger;
 
   const navigation = useNavigation();
   const [name, setName] = useState(currentUser.name);
@@ -82,7 +82,7 @@ export default function EditProfileScreen(): JSX.Element {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <View style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
 
       <KeyboardAvoidingView
@@ -92,7 +92,7 @@ export default function EditProfileScreen(): JSX.Element {
         <View
           style={{
             paddingTop: insets.top + 16,
-            paddingHorizontal: UI.space.page,
+            paddingHorizontal: space.page,
             paddingBottom: 16,
             flexDirection: "row",
             alignItems: "center",
@@ -103,7 +103,7 @@ export default function EditProfileScreen(): JSX.Element {
             style={{
               fontFamily: "Sora_600SemiBold",
               fontSize: 24,
-              color: UI.color.text,
+              color: color.text,
             }}
           >
             Edit Profile
@@ -112,7 +112,7 @@ export default function EditProfileScreen(): JSX.Element {
         </View>
 
         <ScrollView
-          contentContainerStyle={{ paddingHorizontal: UI.space.page, paddingTop: 32, gap: 28 }}
+          contentContainerStyle={{ paddingHorizontal: space.page, paddingTop: 32, gap: 28 }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -127,14 +127,14 @@ export default function EditProfileScreen(): JSX.Element {
                 setName(v);
               }}
               placeholder="Full Name"
-              placeholderTextColor={UI.color.muted}
+              placeholderTextColor={color.muted}
               autoCapitalize="words"
               style={{
                 fontSize: 16,
-                color: UI.color.text,
+                color: color.text,
                 fontFamily: "IBMPlexSans_500Medium",
                 borderBottomWidth: 1,
-                borderBottomColor: nameError ? ERROR : UI.color.border,
+                borderBottomColor: nameError ? ERROR : color.border,
                 paddingBottom: 12,
               }}
             />
@@ -159,11 +159,11 @@ export default function EditProfileScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 16,
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 paddingBottom: 12,
                 borderBottomWidth: 1,
-                borderBottomColor: UI.color.border,
+                borderBottomColor: color.border,
               }}
             >
               {currentUser.email}
@@ -171,7 +171,7 @@ export default function EditProfileScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 12,
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 marginTop: 6,
                 opacity: 0.6,

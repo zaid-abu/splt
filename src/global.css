@@ -26,7 +26,7 @@
   font-family: "IBMPlexSans_600SemiBold";
 }
 
-/* ─── Heading font utilities (DM Serif Display) ────────────────────────────── */
+/* ─── Heading font utilities ────────────────────────────────────────────────── */
 @utility font-heading {
   font-family: "Sora_600SemiBold";
 }
@@ -54,7 +54,6 @@
   --color-accent-pink: var(--color-accent-pink);
   --color-accent-orange: var(--color-accent-orange);
 
-  /* Legacy accent aliases kept for backwards compatibility */
   --color-accent-purple-light: var(--color-accent-purple);
   --color-accent-purple-medium: var(--color-accent-purple);
   --color-accent-blue: var(--color-accent-purple);
@@ -71,11 +70,9 @@
   --color-border-light: var(--color-border-light);
   --color-border-main: var(--color-border-main);
 
-  /* New Input variables */
   --color-input: var(--color-input);
   --color-input-foreground: var(--color-input-foreground);
 
-  /* Aliases for backwards compatibility */
   --color-foreground: var(--color-text-primary);
   --color-surface-tertiary: var(--color-border-light);
   --color-accent: var(--color-accent-red);
@@ -115,54 +112,45 @@
   --radius-pill: var(--radius-pill);
 }
 
-/* ─── Light mode (default) ─────────────────────────────────────────────────── */
+/* ─── Light mode (Glassmorphism) ────────────────────────────────────────────── */
 @layer base {
   :root {
-    /* ── Primary — dark charcoal CTA (replaces purple) */
-    --color-primary: #1a1a1a;
-    --color-primary-light: #3a3a3a;
-    --color-primary-dark: #000000;
+    --color-primary: #102033;
+    --color-primary-light: #34465f;
+    --color-primary-dark: #0a1520;
     --color-primary-foreground: #ffffff;
 
-    /* ── Secondary — soft warm off-white */
-    --color-secondary: #efeee9;
-    --color-secondary-light: #f9f6f2;
-    --color-secondary-dark: #e0d9d0;
-    --color-secondary-foreground: #1a1a1a;
+    --color-secondary: rgba(255, 255, 255, 0.74);
+    --color-secondary-light: rgba(255, 255, 255, 0.85);
+    --color-secondary-dark: rgba(255, 255, 255, 0.55);
+    --color-secondary-foreground: #102033;
 
-    /* ── Accent palette */
-    --color-accent-red: #e85d5d; /* Debt / "you owe" indicator */
-    --color-accent-green: #4caf82; /* Positive balance */
-    --color-accent-purple: #c4a8e0; /* Group icon backgrounds */
-    --color-accent-pink: #e8c4c4; /* Avatar ring accent */
-    --color-accent-orange: #f5a623; /* Warning highlights */
+    --color-accent-red: #ef4444;
+    --color-accent-green: #22c55e;
+    --color-accent-purple: #c4a8e0;
+    --color-accent-pink: #e8c4c4;
+    --color-accent-orange: #f59e0b;
 
-    /* ── Backgrounds */
-    --color-background: #f7f6f1; /* Warm cream app background */
-    --color-surface: #fefdfa; /* White cards */
-    --color-surface-secondary: #f4f3ee; /* Slightly warmer off-white (cardAlt) */
+    --color-background: #eef6ff;
+    --color-surface: rgba(255, 255, 255, 0.74);
+    --color-surface-secondary: rgba(238, 246, 255, 0.72);
 
-    /* ── Input Fields */
-    --color-input: #5d5c5a;
-    --color-input-foreground: #ffffff;
+    --color-input: #4f8cff;
+    --color-input-foreground: rgba(255, 255, 255, 0.74);
 
-    /* ── Text */
-    --color-text-primary: #1a1a1a;
-    --color-text-secondary: #6e6d68;
-    --color-text-tertiary: #9b9a94;
-    --color-text-disabled: #b7b6b0;
+    --color-text-primary: #102033;
+    --color-text-secondary: #60708a;
+    --color-text-tertiary: #8a9bb5;
+    --color-text-disabled: #b0bdd0;
     --color-text-inverse: #ffffff;
 
-    /* ── Borders */
-    --color-border-light: #edebe4; /* Warm border (subtle) */
-    --color-border-main: #e7e5de; /* Default border */
+    --color-border-light: rgba(255, 255, 255, 0.38);
+    --color-border-main: rgba(255, 255, 255, 0.64);
 
-    /* ── Semantic */
-    --color-success: #4caf82;
-    --color-danger: #e85d5d;
-    --color-warning: #f5a623;
+    --color-success: #22c55e;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
 
-    /* ── Typography */
     --font-family-heading: "Sora_600SemiBold";
     --font-family-body: "IBMPlexSans_400Regular";
 
@@ -174,70 +162,59 @@
     --text-xxl: 32px;
     --text-xxxl: 40px;
 
-    /* ── Spacing */
     --spacing-xxs: 4px;
     --spacing-xs: 8px;
     --spacing-sm: 12px;
     --spacing-md: 16px;
-    --spacing-lg: 20px; /* Section horizontal padding matches reference */
+    --spacing-lg: 20px;
     --spacing-xl: 32px;
     --spacing-xxl: 48px;
 
-    /* ── Border Radius (reduced from old 32/40 pill-style) */
-    --radius-sm: 8px;
-    --radius-md: 12px; /* buttons / inputs */
-    --radius-lg: 16px; /* cards — was 24px */
-    --radius-xl: 16px; /* was 32px */
-    --radius-xxl: 20px; /* was 40px */
+    --radius-sm: 16px;
+    --radius-md: 24px;
+    --radius-lg: 36px;
+    --radius-xl: 36px;
+    --radius-xxl: 36px;
     --radius-pill: 9999px;
   }
 
-  /* ─── Dark mode prep ─────────────────────────────────────────────────────── */
   :root.dark {
     color-scheme: dark;
 
-    /* ── Primary stays charcoal / shifts to off-white in dark */
-    --color-primary: #f5f0eb;
+    --color-primary: #e8ecf4;
     --color-primary-light: #ffffff;
-    --color-primary-dark: #e0dbd5;
-    --color-primary-foreground: #121212;
+    --color-primary-dark: #b0bccc;
+    --color-primary-foreground: #0a1628;
 
-    /* ── Secondary */
-    --color-secondary: #2a2a2a;
-    --color-secondary-light: #333333;
-    --color-secondary-dark: #1e1e1e;
-    --color-secondary-foreground: #f5f0eb;
+    --color-secondary: rgba(20, 35, 55, 0.74);
+    --color-secondary-light: rgba(20, 35, 55, 0.9);
+    --color-secondary-dark: rgba(20, 35, 55, 0.55);
+    --color-secondary-foreground: #e8ecf4;
 
-    /* ── Accents remain vibrant in dark mode */
-    --color-accent-red: #e85d5d;
-    --color-accent-green: #4caf82;
+    --color-accent-red: #f87171;
+    --color-accent-green: #4ade80;
     --color-accent-purple: #c4a8e0;
     --color-accent-pink: #e8c4c4;
-    --color-accent-orange: #f5a623;
+    --color-accent-orange: #fbbf24;
 
-    /* ── Backgrounds */
-    --color-background: #121212;
-    --color-surface: #1e1e1e;
-    --color-surface-secondary: #252525;
+    --color-background: #0a1628;
+    --color-surface: rgba(20, 35, 55, 0.74);
+    --color-surface-secondary: rgba(10, 22, 40, 0.72);
 
-    /* ── Input Fields */
-    --color-input: #9e9e9e;
-    --color-input-foreground: #1e1e1e;
+    --color-input: #5b94ff;
+    --color-input-foreground: rgba(20, 35, 55, 0.74);
 
-    /* ── Text */
-    --color-text-primary: #f5f0eb;
-    --color-text-secondary: #9e9e9e;
-    --color-text-tertiary: #6e6e6e;
-    --color-text-disabled: #555555;
-    --color-text-inverse: #1a1a1a;
+    --color-text-primary: #e8ecf4;
+    --color-text-secondary: #7a8aa8;
+    --color-text-tertiary: #5a6a88;
+    --color-text-disabled: #3a4a68;
+    --color-text-inverse: #0a1628;
 
-    /* ── Borders */
-    --color-border-light: #2e2e2e;
-    --color-border-main: #3a3a3a;
+    --color-border-light: rgba(255, 255, 255, 0.08);
+    --color-border-main: rgba(255, 255, 255, 0.12);
 
-    /* ── Semantic */
-    --color-success: #4caf82;
-    --color-danger: #e85d5d;
-    --color-warning: #f5a623;
+    --color-success: #4ade80;
+    --color-danger: #f87171;
+    --color-warning: #fbbf24;
   }
 }

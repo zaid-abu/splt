@@ -14,9 +14,10 @@ import { useAcceptFriend, useRejectFriend } from "@/features/friends/queries/use
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { UI, ScreenHeader, EmptyState } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader, EmptyState } from "@/components/ui/native-ui";
 
 export default function NotificationsScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
@@ -56,9 +57,9 @@ export default function NotificationsScreen(): JSX.Element {
       return (
         <View
           style={{
-            padding: UI.space.page,
+            padding: space.page,
             borderBottomWidth: 1,
-            borderBottomColor: UI.color.border,
+            borderBottomColor: color.border,
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
@@ -67,7 +68,7 @@ export default function NotificationsScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 16,
-                  color: UI.color.text,
+                  color: color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
@@ -76,7 +77,7 @@ export default function NotificationsScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 14,
-                  color: UI.color.muted,
+                  color: color.muted,
                   fontFamily: "IBMPlexSans_500Medium",
                   marginTop: 4,
                 }}
@@ -92,19 +93,19 @@ export default function NotificationsScreen(): JSX.Element {
               style={({ pressed }) => ({
                 flex: 1,
                 height: 48,
-                borderRadius: UI.radius.pill,
-                backgroundColor: UI.color.text,
+                borderRadius: radius.pill,
+                backgroundColor: color.text,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed || isWorking ? 0.7 : 1,
               })}
             >
               {isAccepting ? (
-                <ActivityIndicator color={UI.color.textInverse} />
+                <ActivityIndicator color={color.textInverse} />
               ) : (
                 <Typography
                   style={{
-                    color: UI.color.textInverse,
+                    color: color.textInverse,
                     fontSize: 14,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
@@ -120,21 +121,21 @@ export default function NotificationsScreen(): JSX.Element {
               style={({ pressed }) => ({
                 flex: 1,
                 height: 48,
-                borderRadius: UI.radius.pill,
+                borderRadius: radius.pill,
                 backgroundColor: "transparent",
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed || isWorking ? 0.5 : 1,
               })}
             >
               {isRejecting ? (
-                <ActivityIndicator color={UI.color.text} />
+                <ActivityIndicator color={color.text} />
               ) : (
                 <Typography
                   style={{
-                    color: UI.color.text,
+                    color: color.text,
                     fontSize: 14,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
@@ -152,7 +153,7 @@ export default function NotificationsScreen(): JSX.Element {
   };
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
 
       {/* Safe-area-aware header */}
@@ -174,13 +175,13 @@ export default function NotificationsScreen(): JSX.Element {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={UI.color.text}
+              tintColor={color.text}
             />
           }
           ListEmptyComponent={
             <View style={{ padding: 40, alignItems: "center", justifyContent: "center" }}>
               {isLoading ? (
-                <ActivityIndicator size="large" color={UI.color.text} />
+                <ActivityIndicator size="large" color={color.text} />
               ) : (
                 <EmptyState
                   icon={icons.BellOff}

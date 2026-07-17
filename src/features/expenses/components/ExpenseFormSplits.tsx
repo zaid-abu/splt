@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { SectionLabel, UI } from "@/components/ui/native-ui";
+import { SectionLabel, useUI } from "@/components/ui/native-ui";
 import type { ExpenseCategory, SplitMethod, User } from "@/types";
 import { EXPENSE_CATEGORIES } from "@/types";
 
@@ -35,6 +35,7 @@ export function ExpenseFormSelectors({
   participants,
   currentUserId,
 }: ExpenseFormSelectorsProps) {
+  const { color, radius, space, shadow } = useUI();
   return (
     <>
       {/* ── Category ───────────────────────────── */}
@@ -65,22 +66,22 @@ export function ExpenseFormSelectors({
                   paddingHorizontal: 20,
                   height: 48,
                   borderRadius: 0,
-                  backgroundColor: isSelected ? UI.color.brand : "transparent",
+                  backgroundColor: isSelected ? color.brand : "transparent",
                   borderWidth: 1,
-                  borderColor: isSelected ? UI.color.brand : UI.color.border,
+                  borderColor: isSelected ? color.brand : color.border,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <CatIcon
                   size={18}
-                  color={isSelected ? UI.color.textInverse : UI.color.textStrong}
+                  color={isSelected ? color.textInverse : color.textStrong}
                   strokeWidth={isSelected ? 2 : 1.5}
                 />
                 <Typography
                   style={{
                     fontSize: 15,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? "#FFFFFF" : UI.color.textStrong,
+                    color: isSelected ? "#FFFFFF" : color.textStrong,
                   }}
                 >
                   {cat.label}
@@ -119,9 +120,9 @@ export function ExpenseFormSelectors({
                   paddingRight: 20,
                   height: 48,
                   borderRadius: 0,
-                  backgroundColor: isSelected ? UI.color.brand : "transparent",
+                  backgroundColor: isSelected ? color.brand : "transparent",
                   borderWidth: 1,
-                  borderColor: isSelected ? UI.color.brand : UI.color.border,
+                  borderColor: isSelected ? color.brand : color.border,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
@@ -130,7 +131,7 @@ export function ExpenseFormSelectors({
                   style={{
                     fontSize: 15,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? UI.color.textInverse : UI.color.textStrong,
+                    color: isSelected ? color.textInverse : color.textStrong,
                   }}
                 >
                   {u.id === currentUserId ? "You" : u.name.split(" ")[0]}
@@ -149,7 +150,7 @@ export function ExpenseFormSelectors({
             flexDirection: "row",
             backgroundColor: "transparent",
             borderBottomWidth: 1,
-            borderBottomColor: UI.color.border,
+            borderBottomColor: color.border,
           }}
         >
           {SPLIT_METHODS.map((method) => {
@@ -167,7 +168,7 @@ export function ExpenseFormSelectors({
                   paddingVertical: 12,
                   alignItems: "center",
                   borderBottomWidth: 2,
-                  borderBottomColor: isSelected ? UI.color.brand : "transparent",
+                  borderBottomColor: isSelected ? color.brand : "transparent",
                   opacity: pressed ? 0.5 : 1,
                 })}
               >
@@ -175,7 +176,7 @@ export function ExpenseFormSelectors({
                   style={{
                     fontSize: 15,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: isSelected ? UI.color.textStrong : UI.color.muted,
+                    color: isSelected ? color.textStrong : color.muted,
                   }}
                 >
                   {method.label}

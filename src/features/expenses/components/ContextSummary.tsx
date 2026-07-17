@@ -5,7 +5,7 @@ import * as icons from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { AvatarStack } from "@/components/ui/MemberAvatar";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { styles } from "@/features/expenses/utils/styles";
 import type { Group, User } from "@/types";
 
@@ -24,6 +24,7 @@ export function ContextSummary({
   canChange: boolean;
   onChange: () => void;
 }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const title = selectedGroup
     ? selectedGroup.name
     : selectedFriends.map((friend) => friend.name.split(" ")[0]).join(", ");
@@ -41,7 +42,7 @@ export function ContextSummary({
         )}
         <View style={styles.summaryText}>
           <View style={styles.contextTypeRow}>
-            <Icon size={14} color={UI.color.muted} strokeWidth={1.8} />
+            <Icon size={14} color={color.muted} strokeWidth={1.8} />
             <Typography style={styles.contextTypeText}>
               {selectedGroup ? "Group expense" : "Friend expense"}
             </Typography>

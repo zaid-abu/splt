@@ -3,7 +3,7 @@ import { Controller, FieldValues, Path } from "react-hook-form";
 import { TextField, Input } from "heroui-native";
 import { View, Text } from "react-native";
 import type { TextInputProps } from "react-native";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 export interface FormInputProps<T extends FieldValues> extends Omit<
   TextInputProps,
@@ -21,8 +21,6 @@ export interface FormInputProps<T extends FieldValues> extends Omit<
   hideLabel?: boolean;
 }
 
-const TEXT_DANGER = UI.color.danger;
-
 export function FormInput<T extends FieldValues>({
   control,
   name,
@@ -36,7 +34,9 @@ export function FormInput<T extends FieldValues>({
   hideLabel = false,
   ...inputProps
 }: FormInputProps<T>) {
+  const { color, radius } = useUI();
   const [isFocused, setIsFocused] = useState(false);
+  const TEXT_DANGER = color.danger;
 
   return (
     <Controller
@@ -48,7 +48,7 @@ export function FormInput<T extends FieldValues>({
             <Text
               style={{
                 fontSize: 11,
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 letterSpacing: 1.4,
                 textTransform: "uppercase",
@@ -65,10 +65,10 @@ export function FormInput<T extends FieldValues>({
               flexDirection: "row",
               alignItems: "center",
               height: 52,
-              borderRadius: UI.radius.md,
+              borderRadius: radius.md,
               borderWidth: 1,
-              borderColor: error ? TEXT_DANGER : isFocused ? UI.color.text : UI.color.border,
-              backgroundColor: UI.color.control,
+              borderColor: error ? TEXT_DANGER : isFocused ? color.text : color.border,
+              backgroundColor: color.control,
             }}
           >
             {leftElement && (
@@ -96,11 +96,11 @@ export function FormInput<T extends FieldValues>({
                 borderWidth: 0,
                 fontSize: 16,
                 fontFamily: "IBMPlexSans_500Medium",
-                color: UI.color.text,
+                color: color.text,
                 paddingLeft: leftElement ? 48 : 16,
                 paddingRight: rightElement ? 48 : 16,
               }}
-              placeholderTextColor={UI.color.muted}
+              placeholderTextColor={color.muted}
               {...inputProps}
             />
 
@@ -113,7 +113,7 @@ export function FormInput<T extends FieldValues>({
             <Text
               style={{
                 marginTop: 6,
-                color: UI.color.muted,
+                color: color.muted,
                 fontSize: 13,
                 fontFamily: "IBMPlexSans_400Regular",
               }}

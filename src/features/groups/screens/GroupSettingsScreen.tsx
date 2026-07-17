@@ -38,7 +38,7 @@ import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { GROUP_ICONS } from "@/constants/icons";
-import { UI, IconButton, SectionLabel } from "@/components/ui/native-ui";
+import { useUI, IconButton, SectionLabel } from "@/components/ui/native-ui";
 import { ConfirmationSheet } from "@/components/dialogs/ConfirmationSheet";
 import { Skeleton } from "@/components/ui/Skeleton";
 
@@ -51,22 +51,23 @@ function IconShell({
   size?: number;
   selected?: boolean;
 }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <View
       style={{
         width: size,
         height: size,
-        borderRadius: UI.radius.lg,
-        backgroundColor: selected ? UI.color.text : UI.color.control,
+        borderRadius: radius.lg,
+        backgroundColor: selected ? color.text : color.control,
         borderWidth: 1,
-        borderColor: selected ? UI.color.text : UI.color.border,
+        borderColor: selected ? color.text : color.border,
         alignItems: "center",
         justifyContent: "center",
       }}
     >
       <IconComponent
         size={size === 44 ? 20 : 28}
-        color={selected ? UI.color.textInverse : UI.color.text}
+        color={selected ? color.textInverse : color.text}
         strokeWidth={1.5}
       />
     </View>
@@ -74,6 +75,7 @@ function IconShell({
 }
 
 export default function GroupSettingsScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const { id } = useLocalSearchParams<GroupSettingsRouteParams>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -130,16 +132,16 @@ export default function GroupSettingsScreen(): JSX.Element {
 
   if (!group) {
     return (
-      <View style={{ flex: 1, backgroundColor: UI.color.bg, paddingTop: insets.top }}>
+      <View style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top }}>
         <ThemedStatusBar />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
           <View
             style={{
               alignItems: "center",
-              backgroundColor: UI.color.surface,
-              borderRadius: UI.radius.lg,
+              backgroundColor: color.surface,
+              borderRadius: radius.lg,
               borderWidth: 1,
-              borderColor: UI.color.border,
+              borderColor: color.border,
               padding: 32,
             }}
           >
@@ -147,21 +149,21 @@ export default function GroupSettingsScreen(): JSX.Element {
               style={{
                 width: 56,
                 height: 56,
-                borderRadius: UI.radius.lg,
-                backgroundColor: UI.color.control,
+                borderRadius: radius.lg,
+                backgroundColor: color.control,
                 borderWidth: 1,
-                borderColor: UI.color.border,
+                borderColor: color.border,
                 alignItems: "center",
                 justifyContent: "center",
                 marginBottom: 16,
               }}
             >
-              <icons.Frown size={24} color={UI.color.text} strokeWidth={1.8} />
+              <icons.Frown size={24} color={color.text} strokeWidth={1.8} />
             </View>
             <Typography
               style={{
                 fontSize: 18,
-                color: UI.color.text,
+                color: color.text,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 marginBottom: 8,
               }}
@@ -171,7 +173,7 @@ export default function GroupSettingsScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 14,
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_500Medium",
                 textAlign: "center",
               }}
@@ -184,14 +186,14 @@ export default function GroupSettingsScreen(): JSX.Element {
                 marginTop: 20,
                 paddingVertical: 14,
                 paddingHorizontal: 24,
-                backgroundColor: UI.color.text,
-                borderRadius: UI.radius.pill,
+                backgroundColor: color.text,
+                borderRadius: radius.pill,
                 opacity: pressed ? 0.75 : 1,
               })}
             >
               <Typography
                 style={{
-                  color: UI.color.textInverse,
+                  color: color.textInverse,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   fontSize: 15,
                 }}
@@ -342,13 +344,13 @@ export default function GroupSettingsScreen(): JSX.Element {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+      <View style={{ flex: 1, backgroundColor: color.bg }}>
         <ThemedStatusBar />
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === "ios" ? "padding" : undefined}
         >
-          <View style={{ padding: UI.space.page, gap: 24, paddingTop: insets.top + 16 }}>
+          <View style={{ padding: space.page, gap: 24, paddingTop: insets.top + 16 }}>
             <Skeleton height={36} />
             <Skeleton height={48} />
             <Skeleton height={56} />
@@ -363,7 +365,7 @@ export default function GroupSettingsScreen(): JSX.Element {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <View style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -372,7 +374,7 @@ export default function GroupSettingsScreen(): JSX.Element {
         <View
           style={{
             paddingTop: insets.top + 16,
-            paddingHorizontal: UI.space.page,
+            paddingHorizontal: space.page,
             paddingBottom: 16,
             flexDirection: "row",
             alignItems: "center",
@@ -383,7 +385,7 @@ export default function GroupSettingsScreen(): JSX.Element {
             style={{
               fontFamily: "Sora_600SemiBold",
               fontSize: 32,
-              color: UI.color.text,
+              color: color.text,
             }}
           >
             Settings
@@ -403,7 +405,7 @@ export default function GroupSettingsScreen(): JSX.Element {
         >
           <Animated.View
             entering={FadeInDown.duration(400)}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 48 }}
+            style={{ paddingHorizontal: space.page, marginBottom: 48 }}
           >
             <SectionLabel>Identity</SectionLabel>
 
@@ -448,14 +450,14 @@ export default function GroupSettingsScreen(): JSX.Element {
                 setName(v);
               }}
               placeholder="Group Name"
-              placeholderTextColor={UI.color.muted}
+              placeholderTextColor={color.muted}
               autoCapitalize="words"
               style={{
                 fontSize: 28,
-                color: UI.color.text,
+                color: color.text,
                 fontFamily: "Sora_600SemiBold",
                 borderBottomWidth: 1,
-                borderBottomColor: UI.color.border,
+                borderBottomColor: color.border,
                 paddingBottom: 14,
                 marginBottom: nameError ? 8 : 24,
               }}
@@ -464,7 +466,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               <Typography
                 style={{
                   marginBottom: 16,
-                  color: UI.color.danger,
+                  color: color.danger,
                   fontSize: 13,
                   fontFamily: "IBMPlexSans_500Medium",
                 }}
@@ -477,14 +479,14 @@ export default function GroupSettingsScreen(): JSX.Element {
               value={description}
               onChangeText={setDescription}
               placeholder="Description (Optional)"
-              placeholderTextColor={UI.color.muted}
+              placeholderTextColor={color.muted}
               multiline
               style={{
                 fontSize: 16,
-                color: UI.color.text,
+                color: color.text,
                 fontFamily: "IBMPlexSans_400Regular",
                 borderBottomWidth: 1,
-                borderBottomColor: UI.color.border,
+                borderBottomColor: color.border,
                 paddingBottom: 14,
               }}
             />
@@ -492,14 +494,14 @@ export default function GroupSettingsScreen(): JSX.Element {
 
           <Animated.View
             entering={FadeInDown.duration(400).delay(100)}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 48 }}
+            style={{ paddingHorizontal: space.page, marginBottom: 48 }}
           >
             <SectionLabel>Finance</SectionLabel>
 
             <View
               style={{
                 borderBottomWidth: 1,
-                borderBottomColor: UI.color.border,
+                borderBottomColor: color.border,
                 paddingBottom: 20,
                 marginBottom: 20,
               }}
@@ -514,7 +516,7 @@ export default function GroupSettingsScreen(): JSX.Element {
             <View
               style={{
                 borderBottomWidth: 1,
-                borderBottomColor: UI.color.border,
+                borderBottomColor: color.border,
                 paddingBottom: 20,
                 marginBottom: 20,
               }}
@@ -522,7 +524,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 16,
-                  color: UI.color.text,
+                  color: color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                   marginBottom: 12,
                 }}
@@ -540,10 +542,10 @@ export default function GroupSettingsScreen(): JSX.Element {
                         flex: 1,
                         minHeight: 42,
                         paddingHorizontal: 12,
-                        borderRadius: UI.radius.pill,
-                        backgroundColor: active ? UI.color.text : UI.color.control,
+                        borderRadius: radius.pill,
+                        backgroundColor: active ? color.text : color.control,
                         borderWidth: 1,
-                        borderColor: active ? UI.color.text : UI.color.border,
+                        borderColor: active ? color.text : color.border,
                         alignItems: "center",
                         justifyContent: "center",
                         opacity: pressed ? 0.72 : 1,
@@ -553,7 +555,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                         style={{
                           fontSize: 13,
                           fontFamily: "IBMPlexSans_600SemiBold",
-                          color: active ? UI.color.textInverse : UI.color.text,
+                          color: active ? color.textInverse : color.text,
                           textTransform: "capitalize",
                         }}
                       >
@@ -577,7 +579,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 16,
-                    color: UI.color.text,
+                    color: color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                     marginBottom: 4,
                   }}
@@ -587,7 +589,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: UI.color.muted,
+                    color: color.muted,
                     fontFamily: "IBMPlexSans_400Regular",
                     lineHeight: 20,
                   }}
@@ -601,7 +603,7 @@ export default function GroupSettingsScreen(): JSX.Element {
 
           <Animated.View
             entering={FadeInDown.duration(400).delay(200)}
-            style={{ paddingHorizontal: UI.space.page, marginBottom: 48 }}
+            style={{ paddingHorizontal: space.page, marginBottom: 48 }}
           >
             <View
               style={{
@@ -621,7 +623,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                 <Typography
                   style={{
                     fontSize: 14,
-                    color: UI.color.text,
+                    color: color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
@@ -632,10 +634,10 @@ export default function GroupSettingsScreen(): JSX.Element {
 
             <View
               style={{
-                borderRadius: UI.radius.lg,
+                borderRadius: radius.lg,
                 borderWidth: 1,
-                borderColor: UI.color.border,
-                backgroundColor: UI.color.surface,
+                borderColor: color.border,
+                backgroundColor: color.surface,
                 overflow: "hidden",
               }}
             >
@@ -652,7 +654,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                       paddingVertical: 14,
                       paddingHorizontal: 16,
                       borderBottomWidth: isLast ? 0 : 1,
-                      borderBottomColor: UI.color.border,
+                      borderBottomColor: color.border,
                     }}
                   >
                     <View style={{ flexDirection: "row", alignItems: "center", gap: 14 }}>
@@ -661,7 +663,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                         <Typography
                           style={{
                             fontSize: 16,
-                            color: UI.color.text,
+                            color: color.text,
                             fontFamily: "IBMPlexSans_600SemiBold",
                           }}
                         >
@@ -670,7 +672,7 @@ export default function GroupSettingsScreen(): JSX.Element {
                         <Typography
                           style={{
                             fontSize: 14,
-                            color: UI.color.muted,
+                            color: color.muted,
                             fontFamily: "IBMPlexSans_500Medium",
                             marginTop: 2,
                           }}
@@ -692,16 +694,16 @@ export default function GroupSettingsScreen(): JSX.Element {
                         style={({ pressed }) => ({
                           width: 44,
                           height: 44,
-                          borderRadius: UI.radius.pill,
-                          backgroundColor: UI.color.control,
+                          borderRadius: radius.pill,
+                          backgroundColor: color.control,
                           borderWidth: 1,
-                          borderColor: UI.color.border,
+                          borderColor: color.border,
                           alignItems: "center",
                           justifyContent: "center",
                           opacity: pressed ? 0.65 : 1,
                         })}
                       >
-                        <icons.X size={18} color={UI.color.muted} strokeWidth={2} />
+                        <icons.X size={18} color={color.muted} strokeWidth={2} />
                       </Pressable>
                     )}
                   </View>
@@ -710,16 +712,16 @@ export default function GroupSettingsScreen(): JSX.Element {
             </View>
           </Animated.View>
 
-          <View style={{ paddingHorizontal: UI.space.page, paddingBottom: 40 }}>
+          <View style={{ paddingHorizontal: space.page, paddingBottom: 40 }}>
             <Pressable
               accessibilityRole="button"
               onPress={() => deleteSheetRef.current?.present()}
               style={({ pressed }) => ({
                 height: 56,
-                borderRadius: UI.radius.pill,
+                borderRadius: radius.pill,
                 borderWidth: 1,
-                borderColor: UI.color.danger,
-                backgroundColor: UI.color.control,
+                borderColor: color.danger,
+                backgroundColor: color.control,
                 alignItems: "center",
                 justifyContent: "center",
                 opacity: pressed ? 0.65 : 1,
@@ -728,7 +730,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 16,
-                  color: UI.color.danger,
+                  color: color.danger,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
@@ -741,10 +743,10 @@ export default function GroupSettingsScreen(): JSX.Element {
               onPress={() => leaveSheetRef.current?.present()}
               style={({ pressed }) => ({
                 height: 56,
-                borderRadius: UI.radius.pill,
+                borderRadius: radius.pill,
                 borderWidth: 1,
-                borderColor: UI.color.border,
-                backgroundColor: UI.color.control,
+                borderColor: color.border,
+                backgroundColor: color.control,
                 alignItems: "center",
                 justifyContent: "center",
                 marginTop: 12,
@@ -754,7 +756,7 @@ export default function GroupSettingsScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 16,
-                  color: UI.color.text,
+                  color: color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
@@ -770,12 +772,12 @@ export default function GroupSettingsScreen(): JSX.Element {
             bottom: 0,
             left: 0,
             right: 0,
-            paddingHorizontal: UI.space.page,
+            paddingHorizontal: space.page,
             paddingTop: 16,
             paddingBottom: Math.max(insets.bottom, 16),
-            backgroundColor: UI.color.bg,
+            backgroundColor: color.bg,
             borderTopWidth: 1,
-            borderTopColor: UI.color.border,
+            borderTopColor: color.border,
           }}
         >
           <Pressable
@@ -785,8 +787,8 @@ export default function GroupSettingsScreen(): JSX.Element {
             disabled={loading}
             style={({ pressed }) => ({
               height: 56,
-              borderRadius: UI.radius.pill,
-              backgroundColor: UI.color.text,
+              borderRadius: radius.pill,
+              backgroundColor: color.text,
               alignItems: "center",
               justifyContent: "center",
               flexDirection: "row",
@@ -794,11 +796,11 @@ export default function GroupSettingsScreen(): JSX.Element {
               opacity: pressed || loading ? 0.78 : 1,
             })}
           >
-            {loading && <Spinner color={UI.color.textInverse} size="sm" />}
+            {loading && <Spinner color={color.textInverse} size="sm" />}
             <Typography
               style={{
                 fontSize: 16,
-                color: UI.color.textInverse,
+                color: color.textInverse,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >

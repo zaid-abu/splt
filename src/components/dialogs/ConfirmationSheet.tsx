@@ -4,7 +4,7 @@ import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 export function useConfirmationSheet() {
   const sheetRef = useRef<BottomSheetModal>(null);
@@ -40,6 +40,7 @@ export function ConfirmationSheet({
   children,
 }: ConfirmationSheetProps): JSX.Element {
   const insets = useSafeAreaInsets();
+  const { color, radius, space, shadow } = useUI();
 
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -54,7 +55,7 @@ export function ConfirmationSheet({
     []
   );
 
-  const confirmColor = confirmTone === "danger" ? UI.color.danger : UI.color.brand;
+  const confirmColor = confirmTone === "danger" ? color.danger : color.brand;
 
   return (
     <BottomSheetModal
@@ -62,12 +63,12 @@ export function ConfirmationSheet({
       index={0}
       enableDynamicSizing
       backdropComponent={renderBackdrop}
-      backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-      handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
+      backgroundStyle={{ backgroundColor: color.bg, borderRadius: 0 }}
+      handleIndicatorStyle={{ backgroundColor: color.muted, width: 40 }}
     >
       <BottomSheetView
         style={{
-          paddingHorizontal: UI.space.page,
+          paddingHorizontal: space.page,
           paddingTop: 24,
           paddingBottom: insets.bottom + 24,
           gap: 20,
@@ -80,7 +81,7 @@ export function ConfirmationSheet({
                 style={{
                   fontSize: 22,
                   fontFamily: "IBMPlexSans_600SemiBold",
-                  color: UI.color.text,
+                  color: color.text,
                   marginBottom: 8,
                 }}
               >
@@ -90,7 +91,7 @@ export function ConfirmationSheet({
                 style={{
                   fontSize: 16,
                   fontFamily: "IBMPlexSans_500Medium",
-                  color: UI.color.muted,
+                  color: color.muted,
                 }}
               >
                 {description}
@@ -107,8 +108,8 @@ export function ConfirmationSheet({
                   flex: 1,
                   height: 48,
                   borderWidth: 1,
-                  borderColor: UI.color.border,
-                  borderRadius: UI.radius.pill,
+                  borderColor: color.border,
+                  borderRadius: radius.pill,
                   alignItems: "center",
                   justifyContent: "center",
                   opacity: pressed ? 0.5 : 1,
@@ -118,7 +119,7 @@ export function ConfirmationSheet({
                   style={{
                     fontSize: 16,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: UI.color.text,
+                    color: color.text,
                   }}
                 >
                   {cancelLabel}
@@ -134,7 +135,7 @@ export function ConfirmationSheet({
                   flex: 1,
                   height: 48,
                   backgroundColor: confirmColor,
-                  borderRadius: UI.radius.pill,
+                  borderRadius: radius.pill,
                   alignItems: "center",
                   justifyContent: "center",
                   opacity: pressed ? 0.8 : 1,
@@ -144,7 +145,7 @@ export function ConfirmationSheet({
                   style={{
                     fontSize: 16,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: UI.color.textInverse,
+                    color: color.textInverse,
                   }}
                 >
                   {confirmLabel}

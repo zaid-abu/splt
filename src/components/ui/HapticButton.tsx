@@ -3,7 +3,7 @@ import { Pressable, ActivityIndicator } from "react-native";
 import type { ViewStyle } from "react-native";
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 interface HapticButtonProps {
   children: ReactNode;
@@ -24,16 +24,17 @@ export function HapticButton({
   height = 56,
   style,
 }: HapticButtonProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const bgColor =
     tone === "brand"
-      ? UI.color.brand
+      ? color.brand
       : tone === "danger"
-        ? UI.color.danger
+        ? color.danger
         : tone === "outlined"
-          ? UI.color.control
-          : UI.color.ink;
-  const textColor = tone === "outlined" ? UI.color.textStrong : "#FFFFFF";
-  const borderColor = tone === "outlined" ? UI.color.border : "transparent";
+          ? color.control
+          : color.ink;
+  const textColor = tone === "outlined" ? color.textStrong : "#FFFFFF";
+  const borderColor = tone === "outlined" ? color.border : "transparent";
 
   return (
     <Pressable
@@ -45,7 +46,7 @@ export function HapticButton({
       disabled={disabled || loading}
       style={({ pressed }) => ({
         height,
-        borderRadius: UI.radius.pill,
+        borderRadius: radius.pill,
         backgroundColor: bgColor,
         borderWidth: tone === "outlined" ? 1 : 0,
         borderColor,

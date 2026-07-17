@@ -6,7 +6,7 @@ import { EXPENSE_CATEGORIES, ExpenseCategory } from "@/types";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 interface Props {
   data: { category: ExpenseCategory; amount: number }[];
@@ -29,6 +29,7 @@ const CATEGORY_COLORS: Record<ExpenseCategory, string> = {
 };
 
 export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense }: Props) {
+  const { color, radius, space, shadow } = useUI();
   const [selectedCategory, setSelectedCategory] = useState<ExpenseCategory | null>(null);
 
   if (data.length === 0) {
@@ -39,17 +40,17 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
           paddingHorizontal: 16,
           alignItems: "center",
           justifyContent: "center",
-          backgroundColor: UI.color.surface,
+          backgroundColor: color.surface,
           borderRadius: 16,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
         }}
       >
-        <icons.PieChart size={38} color={UI.color.muted} strokeWidth={1.25} />
+        <icons.PieChart size={38} color={color.muted} strokeWidth={1.25} />
         <Typography
           style={{
             marginTop: 12,
-            color: UI.color.muted,
+            color: color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginBottom: 16,
           }}
@@ -64,14 +65,14 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
               paddingHorizontal: 18,
               paddingVertical: 10,
               borderRadius: 999,
-              backgroundColor: UI.color.text,
+              backgroundColor: color.text,
               opacity: pressed ? 0.8 : 1,
             })}
           >
             <Typography
               style={{
                 fontSize: 14,
-                color: UI.color.textInverse,
+                color: color.textInverse,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -99,10 +100,10 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
   return (
     <View
       style={{
-        backgroundColor: UI.color.surface,
+        backgroundColor: color.surface,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
         padding: 16,
       }}
     >
@@ -110,7 +111,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
         style={{
           fontSize: 11,
           fontFamily: "IBMPlexSans_600SemiBold",
-          color: UI.color.text,
+          color: color.text,
           letterSpacing: 1.1,
           textTransform: "uppercase",
           marginBottom: 20,
@@ -125,7 +126,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
           donut
           innerRadius={75}
           radius={120}
-          innerCircleColor={UI.color.surface}
+          innerCircleColor={color.surface}
           focusOnPress
           onPress={(item: any) => {
             Haptics.selectionAsync();
@@ -148,7 +149,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                 <Typography
                   style={{
                     fontSize: 10,
-                    color: UI.color.muted,
+                    color: color.muted,
                     fontFamily: "IBMPlexSans_500Medium",
                     textTransform: "uppercase",
                     letterSpacing: 0.5,
@@ -163,7 +164,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                 <Typography
                   style={{
                     fontSize: 18,
-                    color: UI.color.text,
+                    color: color.text,
                     fontFamily: "IBMPlexSans_600SemiBold",
                     marginTop: 2,
                     textAlign: "center",
@@ -184,7 +185,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
         {data.map((item) => {
           const catInfo = EXPENSE_CATEGORIES.find((c) => c.key === item.category);
           const Icon = catInfo ? (icons as any)[catInfo.icon] : icons.Package;
-          const color = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.other;
+          const categoryColor = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.other;
           const percent = totalSpent > 0 ? Math.round((item.amount / totalSpent) * 100) : 0;
 
           const isSelected = selectedCategory === item.category;
@@ -208,15 +209,15 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                     width: 48,
                     height: 48,
                     borderRadius: 18,
-                    backgroundColor: UI.color.control,
+                    backgroundColor: color.control,
                     borderWidth: 1,
-                    borderColor: UI.color.border,
+                    borderColor: color.border,
                     alignItems: "center",
                     justifyContent: "center",
                     marginRight: 14,
                   }}
                 >
-                  <Icon size={16} color={color} strokeWidth={2} />
+                  <Icon size={16} color={categoryColor} strokeWidth={2} />
                 </View>
 
                 <View style={{ flex: 1, marginRight: 12 }}>
@@ -232,7 +233,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                       <Typography
                         style={{
                           fontSize: 15,
-                          color: UI.color.text,
+                          color: color.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
@@ -241,7 +242,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                       <Typography
                         style={{
                           fontSize: 12,
-                          color: UI.color.muted,
+                          color: color.muted,
                           fontFamily: "IBMPlexSans_500Medium",
                           marginTop: 2,
                         }}
@@ -252,7 +253,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                     <Typography
                       style={{
                         fontSize: 15,
-                        color: UI.color.text,
+                        color: color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -264,7 +265,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                     style={{
                       height: 6,
                       borderRadius: 999,
-                      backgroundColor: UI.color.bg,
+                      backgroundColor: color.bg,
                       overflow: "hidden",
                     }}
                   >
@@ -273,7 +274,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                         width: `${Math.min(100, percent)}%`,
                         height: "100%",
                         borderRadius: 999,
-                        backgroundColor: color,
+                        backgroundColor: categoryColor,
                       }}
                     />
                   </View>

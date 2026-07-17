@@ -5,7 +5,7 @@ import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { Section } from "@/features/expenses/components/Section";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { styles } from "@/features/expenses/utils/styles";
 import type { User, SplitMethod } from "@/types";
@@ -47,6 +47,7 @@ export function ParticipantsEditor({
   ) => void;
   currentUserId: string;
 }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const showRemaining = parsedAmount > 0 && splitMethod !== "equal";
   const remainingText =
     splitMethod === "custom"
@@ -69,7 +70,7 @@ export function ParticipantsEditor({
             <Typography
               style={[
                 styles.remainingText,
-                { color: remainingBalanced ? UI.color.success : UI.color.danger },
+                { color: remainingBalanced ? color.success : color.danger },
               ]}
             >
               {remainingText}
@@ -104,7 +105,7 @@ export function ParticipantsEditor({
                 ]}
               >
                 {isIncluded ? (
-                  <icons.Check size={15} color={UI.color.textInverse} strokeWidth={2.6} />
+                  <icons.Check size={15} color={color.textInverse} strokeWidth={2.6} />
                 ) : null}
               </Pressable>
               <AppUserAvatar user={participant} size="sm" />
@@ -133,7 +134,7 @@ export function ParticipantsEditor({
                       setCustomAmounts((prev) => ({ ...prev, [participant.id]: value }))
                     }
                     placeholder="0.00"
-                    placeholderTextColor={UI.color.muted}
+                    placeholderTextColor={color.muted}
                     keyboardType="decimal-pad"
                     style={styles.shareInput}
                   />
@@ -148,7 +149,7 @@ export function ParticipantsEditor({
                       setCustomPercentages((prev) => ({ ...prev, [participant.id]: value }))
                     }
                     placeholder="0"
-                    placeholderTextColor={UI.color.muted}
+                    placeholderTextColor={color.muted}
                     keyboardType="decimal-pad"
                     style={styles.percentInput}
                   />

@@ -14,7 +14,7 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { TransactionRow } from "@/features/expenses/components/TransactionRow";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { UI, SectionLabel, TYPO, PressableScale } from "@/components/ui/native-ui";
+import { useUI, SectionLabel, TYPO, PressableScale } from "@/components/ui/native-ui";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { BottomActionBar } from "@/components/ui/BottomActionBar";
 import { Skeleton, ListRowSkeleton } from "@/components/ui/Skeleton";
@@ -27,26 +27,28 @@ import { queryKeys } from "@/queries/keys";
 import { ErrorState } from "@/components/ui/ErrorState";
 
 function EmptyIconShell({ icon: Icon }: { icon: any }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <View
       style={{
         width: 56,
         height: 56,
-        borderRadius: UI.radius.lg,
-        backgroundColor: UI.color.control,
+        borderRadius: radius.lg,
+        backgroundColor: color.control,
         alignItems: "center",
         justifyContent: "center",
         marginBottom: 16,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
       }}
     >
-      <Icon size={24} color={UI.color.text} strokeWidth={1.8} />
+      <Icon size={24} color={color.text} strokeWidth={1.8} />
     </View>
   );
 }
 
 export default function GroupDetailScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const { id } = useLocalSearchParams<GroupRouteParams>();
   const router = useRouter();
   const insets = useSafeAreaInsets();
@@ -83,7 +85,7 @@ export default function GroupDetailScreen(): JSX.Element {
       StyleSheet.create({
         screen: {
           flex: 1,
-          backgroundColor: UI.color.bg,
+          backgroundColor: color.bg,
         },
         screenCenter: {
           flex: 1,
@@ -92,7 +94,7 @@ export default function GroupDetailScreen(): JSX.Element {
           padding: 24,
         },
         header: {
-          paddingHorizontal: UI.space.page,
+          paddingHorizontal: space.page,
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
@@ -108,17 +110,17 @@ export default function GroupDetailScreen(): JSX.Element {
         titleText: {
           fontFamily: "Sora_600SemiBold",
           fontSize: 24,
-          color: UI.color.text,
+          color: color.text,
           flexShrink: 1,
           textAlign: "center",
         },
         iconButton: {
           width: 44,
           height: 44,
-          borderRadius: UI.radius.pill,
-          backgroundColor: UI.color.control,
+          borderRadius: radius.pill,
+          backgroundColor: color.control,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           alignItems: "center",
           justifyContent: "center",
         },
@@ -126,20 +128,20 @@ export default function GroupDetailScreen(): JSX.Element {
           opacity: 0.65,
         },
         cardSurface: {
-          backgroundColor: UI.color.surface,
-          borderRadius: UI.radius.lg,
+          backgroundColor: color.surface,
+          borderRadius: radius.lg,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
         },
         sectionPadding: {
-          paddingHorizontal: UI.space.page,
+          paddingHorizontal: space.page,
           marginBottom: 32,
         },
         listCard: {
-          borderRadius: UI.radius.lg,
+          borderRadius: radius.lg,
           borderWidth: 1,
-          borderColor: UI.color.border,
-          backgroundColor: UI.color.surface,
+          borderColor: color.border,
+          backgroundColor: color.surface,
           overflow: "hidden",
         },
         emptyState: {
@@ -150,10 +152,10 @@ export default function GroupDetailScreen(): JSX.Element {
         iconShell: {
           width: 56,
           height: 56,
-          borderRadius: UI.radius.lg,
-          backgroundColor: UI.color.control,
+          borderRadius: radius.lg,
+          backgroundColor: color.control,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 16,
@@ -161,40 +163,40 @@ export default function GroupDetailScreen(): JSX.Element {
         smallIconShell: {
           width: 52,
           height: 52,
-          borderRadius: UI.radius.lg,
-          backgroundColor: UI.color.control,
+          borderRadius: radius.lg,
+          backgroundColor: color.control,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 16,
         },
         textTitleBig: {
           fontSize: 18,
-          color: UI.color.text,
+          color: color.text,
           fontFamily: "IBMPlexSans_600SemiBold",
           marginBottom: 8,
         },
         textTitle: {
           fontSize: 16,
-          color: UI.color.text,
+          color: color.text,
           fontFamily: "IBMPlexSans_600SemiBold",
           marginBottom: 4,
         },
         textSubtitleCenter: {
           fontSize: 14,
-          color: UI.color.muted,
+          color: color.muted,
           fontFamily: "IBMPlexSans_500Medium",
           textAlign: "center",
         },
         textSemi16: {
           fontSize: 16,
-          color: UI.color.text,
+          color: color.text,
           fontFamily: "IBMPlexSans_600SemiBold",
         },
         textMedium14Muted: {
           fontSize: 14,
-          color: UI.color.muted,
+          color: color.muted,
           fontFamily: "IBMPlexSans_500Medium",
           marginTop: 2,
         },
@@ -207,10 +209,10 @@ export default function GroupDetailScreen(): JSX.Element {
         actionButtonSecondary: {
           flex: 1,
           height: 56,
-          borderRadius: UI.radius.pill,
-          backgroundColor: UI.color.control,
+          borderRadius: radius.pill,
+          backgroundColor: color.control,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           alignItems: "center",
           justifyContent: "center",
           flexDirection: "row",
@@ -218,21 +220,21 @@ export default function GroupDetailScreen(): JSX.Element {
         },
         notFoundCard: {
           alignItems: "center",
-          backgroundColor: UI.color.surface,
-          borderRadius: UI.radius.lg,
+          backgroundColor: color.surface,
+          borderRadius: radius.lg,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           padding: 32,
         },
         goBackButton: {
           marginTop: 20,
           paddingVertical: 14,
           paddingHorizontal: 24,
-          backgroundColor: UI.color.text,
-          borderRadius: UI.radius.pill,
+          backgroundColor: color.text,
+          borderRadius: radius.pill,
         },
         skeletonHeaderBlock: {
-          paddingHorizontal: UI.space.page,
+          paddingHorizontal: space.page,
           paddingTop: 16,
           paddingBottom: 24,
         },
@@ -249,10 +251,10 @@ export default function GroupDetailScreen(): JSX.Element {
           gap: 14,
         },
         inviteCard: {
-          borderRadius: UI.radius.lg,
+          borderRadius: radius.lg,
           borderWidth: 1,
-          borderColor: UI.color.border,
-          backgroundColor: UI.color.surface,
+          borderColor: color.border,
+          backgroundColor: color.surface,
           padding: 24,
           alignItems: "center",
         },
@@ -263,10 +265,10 @@ export default function GroupDetailScreen(): JSX.Element {
           marginBottom: 4,
         },
         emptyExpensesCard: {
-          borderRadius: UI.radius.lg,
+          borderRadius: radius.lg,
           borderWidth: 1,
-          borderColor: UI.color.border,
-          backgroundColor: UI.color.surface,
+          borderColor: color.border,
+          backgroundColor: color.surface,
           paddingVertical: 36,
           alignItems: "center",
         },
@@ -291,10 +293,10 @@ export default function GroupDetailScreen(): JSX.Element {
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <ThemedStatusBar />
         <View style={styles.skeletonHeaderBlock}>
-          <Skeleton height={44} width={44} radius={UI.radius.pill} />
+          <Skeleton height={44} width={44} radius={radius.pill} />
         </View>
-        <View style={{ paddingHorizontal: UI.space.page, gap: 18 }}>
-          <Skeleton height={170} radius={UI.radius.lg} />
+        <View style={{ paddingHorizontal: space.page, gap: 18 }}>
+          <Skeleton height={170} radius={radius.lg} />
           <View>
             <View style={{ marginBottom: 14 }}>
               <Skeleton height={18} width={120} radius={6} />
@@ -347,15 +349,15 @@ export default function GroupDetailScreen(): JSX.Element {
                 marginTop: 20,
                 paddingVertical: 14,
                 paddingHorizontal: 24,
-                backgroundColor: UI.color.text,
-                borderRadius: UI.radius.pill,
+                backgroundColor: color.text,
+                borderRadius: radius.pill,
                 opacity: pressed ? 0.75 : 1,
               })}
             >
               <Typography
                 style={{
                   fontSize: 14,
-                  color: UI.color.textInverse,
+                  color: color.textInverse,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
@@ -386,7 +388,7 @@ export default function GroupDetailScreen(): JSX.Element {
           }}
           style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
         >
-          <icons.ArrowLeft size={20} color={UI.color.text} strokeWidth={1.8} />
+          <icons.ArrowLeft size={20} color={color.text} strokeWidth={1.8} />
         </Pressable>
 
         <View style={styles.headerCenter}>
@@ -405,7 +407,7 @@ export default function GroupDetailScreen(): JSX.Element {
           }}
           style={({ pressed }) => [styles.iconButton, pressed && styles.pressed]}
         >
-          <icons.Settings size={20} color={UI.color.text} strokeWidth={1.8} />
+          <icons.Settings size={20} color={color.text} strokeWidth={1.8} />
         </Pressable>
       </View>
 
@@ -418,7 +420,7 @@ export default function GroupDetailScreen(): JSX.Element {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={UI.color.text}
+              tintColor={color.text}
             />
           }
         >
@@ -457,10 +459,10 @@ export default function GroupDetailScreen(): JSX.Element {
                       paddingRight: 14,
                       paddingLeft: 6,
                       paddingVertical: 6,
-                      borderRadius: UI.radius.pill,
-                      backgroundColor: UI.color.control,
+                      borderRadius: radius.pill,
+                      backgroundColor: color.control,
                       borderWidth: 1,
-                      borderColor: UI.color.border,
+                      borderColor: color.border,
                       opacity: pressed ? 0.7 : 1,
                     })}
                   >
@@ -469,7 +471,7 @@ export default function GroupDetailScreen(): JSX.Element {
                       numberOfLines={1}
                       style={{
                         fontSize: 14,
-                        color: UI.color.text,
+                        color: color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                       }}
                     >
@@ -479,7 +481,7 @@ export default function GroupDetailScreen(): JSX.Element {
                       <Typography
                         style={{
                           fontSize: 12,
-                          color: balance > 0 ? UI.color.success : UI.color.danger,
+                          color: balance > 0 ? color.success : color.danger,
                           fontFamily: "IBMPlexSans_600SemiBold",
                           marginLeft: -4,
                         }}
@@ -515,7 +517,7 @@ export default function GroupDetailScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 16,
-                color: UI.color.text,
+                color: color.text,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 marginBottom: 14,
               }}
@@ -526,7 +528,7 @@ export default function GroupDetailScreen(): JSX.Element {
               {groupDebts.length === 0 ? (
                 <View style={styles.emptyState}>
                   <View style={styles.smallIconShell}>
-                    <icons.Check size={24} color={UI.color.success} strokeWidth={1.8} />
+                    <icons.Check size={24} color={color.success} strokeWidth={1.8} />
                   </View>
                   <Typography style={styles.textTitle}>All settled up!</Typography>
                   <Typography style={styles.textSubtitleCenter}>No pending balances</Typography>
@@ -540,10 +542,10 @@ export default function GroupDetailScreen(): JSX.Element {
                   const isMeOwe = fromUser.id === currentUser.id;
                   const isOweMe = toUser.id === currentUser.id;
                   const amountColor = isMeOwe
-                    ? UI.color.danger
+                    ? color.danger
                     : isOweMe
-                      ? UI.color.success
-                      : UI.color.text;
+                      ? color.success
+                      : color.text;
 
                   return (
                     <Pressable
@@ -553,9 +555,9 @@ export default function GroupDetailScreen(): JSX.Element {
                         styles.debtRow,
                         idx < groupDebts.length - 1 && {
                           borderBottomWidth: 1,
-                          borderBottomColor: UI.color.border,
+                          borderBottomColor: color.border,
                         },
-                        pressed && { backgroundColor: UI.color.subtle, opacity: 0.85 },
+                        pressed && { backgroundColor: color.subtle, opacity: 0.85 },
                       ]}
                     >
                       <View style={styles.debtUserRow}>
@@ -593,7 +595,7 @@ export default function GroupDetailScreen(): JSX.Element {
               <SectionLabel>Invite Members</SectionLabel>
               <View style={styles.inviteCard}>
                 <View style={styles.iconShell}>
-                  <icons.UserPlus size={24} color={UI.color.text} strokeWidth={1.5} />
+                  <icons.UserPlus size={24} color={color.text} strokeWidth={1.5} />
                 </View>
                 <Typography style={styles.textTitle}>Share this group</Typography>
                 <Typography style={[styles.textSubtitleCenter, { marginBottom: 16 }]}>
@@ -608,8 +610,8 @@ export default function GroupDetailScreen(): JSX.Element {
                   style={({ pressed }) => ({
                     paddingHorizontal: 20,
                     minHeight: 44,
-                    backgroundColor: UI.color.text,
-                    borderRadius: UI.radius.pill,
+                    backgroundColor: color.text,
+                    borderRadius: radius.pill,
                     alignItems: "center",
                     justifyContent: "center",
                     opacity: pressed ? 0.8 : 1,
@@ -618,7 +620,7 @@ export default function GroupDetailScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 14,
-                      color: UI.color.textInverse,
+                      color: color.textInverse,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -637,7 +639,7 @@ export default function GroupDetailScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 16,
-                  color: UI.color.text,
+                  color: color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
@@ -646,7 +648,7 @@ export default function GroupDetailScreen(): JSX.Element {
               <Typography
                 style={{
                   fontSize: 13,
-                  color: UI.color.muted,
+                  color: color.muted,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
@@ -699,8 +701,8 @@ export default function GroupDetailScreen(): JSX.Element {
               style={{ flex: 1, minHeight: 56 }}
             >
               <View style={styles.actionButtonSecondary}>
-                <icons.Handshake size={20} color={UI.color.ink} strokeWidth={1.8} />
-                <Typography style={{ ...TYPO.semi(16), color: UI.color.ink }}>Settle Up</Typography>
+                <icons.Handshake size={20} color={color.ink} strokeWidth={1.8} />
+                <Typography style={{ ...TYPO.semi(16), color: color.ink }}>Settle Up</Typography>
               </View>
             </PressableScale>
           )}
@@ -716,19 +718,19 @@ export default function GroupDetailScreen(): JSX.Element {
               style={{
                 flex: 1,
                 height: 56,
-                borderRadius: UI.radius.pill,
-                backgroundColor: UI.color.text,
+                borderRadius: radius.pill,
+                backgroundColor: color.text,
                 alignItems: "center",
                 justifyContent: "center",
                 flexDirection: "row",
                 gap: 10,
               }}
             >
-              <icons.Plus size={20} color={UI.color.textInverse} strokeWidth={2.5} />
+              <icons.Plus size={20} color={color.textInverse} strokeWidth={2.5} />
               <Typography
                 style={{
                   fontSize: 16,
-                  color: UI.color.textInverse,
+                  color: color.textInverse,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >

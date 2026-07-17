@@ -3,7 +3,7 @@ import { Pressable, View } from "react-native";
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { SPLIT_METHODS } from "@/features/expenses/constants";
 import { styles } from "@/features/expenses/utils/styles";
 import type { SplitMethod } from "@/types";
@@ -15,6 +15,7 @@ export function SplitMethodSelector({
   value: SplitMethod;
   onChange: (value: SplitMethod) => void;
 }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <View style={styles.methodGrid}>
       {SPLIT_METHODS.map((method) => {
@@ -37,7 +38,7 @@ export function SplitMethodSelector({
             <View style={[styles.methodIcon, active && styles.methodIconActive]}>
               <Icon
                 size={17}
-                color={active ? UI.color.textInverse : UI.color.text}
+                color={active ? color.textInverse : color.text}
                 strokeWidth={1.8}
               />
             </View>

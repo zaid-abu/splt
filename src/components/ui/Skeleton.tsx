@@ -1,16 +1,18 @@
 import { useEffect, useMemo } from "react";
 import { View, Animated } from "react-native";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 export function Skeleton({
   width,
   height,
-  radius = UI.radius.md,
+  radius: propRadius,
 }: {
   width?: number;
   height: number;
   radius?: number;
 }): React.JSX.Element {
+  const { color, radius, space, shadow } = useUI();
+  const effectiveRadius = propRadius ?? radius.md;
   const opacity = useMemo(() => new Animated.Value(0.3), []);
 
   useEffect(() => {
@@ -29,8 +31,8 @@ export function Skeleton({
       style={{
         width: width ?? "100%",
         height,
-        borderRadius: radius,
-        backgroundColor: UI.color.subtle,
+        borderRadius: effectiveRadius,
+        backgroundColor: color.subtle,
         opacity,
       }}
     />
@@ -38,13 +40,14 @@ export function Skeleton({
 }
 
 export function CardSkeleton(): React.JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <View
       style={{
-        backgroundColor: UI.color.surface,
-        borderRadius: UI.radius.lg,
+        backgroundColor: color.surface,
+        borderRadius: radius.lg,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
         padding: 16,
         gap: 12,
       }}
@@ -61,6 +64,7 @@ export function CardSkeleton(): React.JSX.Element {
 }
 
 export function ListRowSkeleton(): React.JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <View
       style={{
@@ -71,7 +75,7 @@ export function ListRowSkeleton(): React.JSX.Element {
         gap: 14,
       }}
     >
-      <Skeleton width={44} height={44} radius={UI.radius.lg} />
+      <Skeleton width={44} height={44} radius={radius.lg} />
       <View style={{ flex: 1, gap: 6 }}>
         <View style={{ width: "60%" }}>
           <Skeleton height={16} />

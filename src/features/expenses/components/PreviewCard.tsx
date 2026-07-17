@@ -3,7 +3,7 @@ import { View } from "react-native";
 import { Typography } from "heroui-native";
 import { Card } from "@/components/ui/Card";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { styles } from "@/features/expenses/utils/styles";
 import type { SplitMethod } from "@/types";
 import { PreviewCell } from "@/features/expenses/components/PreviewCell";
@@ -27,6 +27,7 @@ export function PreviewCard({
   remainingCustom: number;
   remainingPercent: number;
 }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const balanced =
     splitMethod === "equal" ||
     (splitMethod === "custom" && remainingCustom === 0) ||
@@ -48,7 +49,7 @@ export function PreviewCard({
           <Typography
             style={[
               styles.statusPillText,
-              { color: balanced ? UI.color.success : UI.color.danger },
+              { color: balanced ? color.success : color.danger },
             ]}
           >
             {status}

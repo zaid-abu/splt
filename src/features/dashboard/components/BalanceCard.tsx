@@ -6,16 +6,18 @@ import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
+import GlassSurface from "@/components/glassmorphism/GlassSurface";
 import type { User } from "@/types";
 
 function SectionLabel({ children }: { children: string }): JSX.Element {
+  const { color } = useUI();
   return (
     <Typography
       style={{
         fontSize: 10,
         letterSpacing: 0.8,
-        color: UI.color.muted,
+        color: color.muted,
         fontFamily: "IBMPlexSans_600SemiBold",
         textTransform: "uppercase",
         marginBottom: 6,
@@ -47,6 +49,7 @@ function HalfCard({
   onPress,
   accessibilityLabel,
 }: HalfCardProps): JSX.Element {
+  const { color } = useUI();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -85,7 +88,7 @@ function HalfCard({
             backgroundColor: panelColor,
             borderRadius: 12,
             borderWidth: 1,
-            borderColor: UI.color.border,
+            borderColor: color.border,
           },
           animatedStyle,
         ]}
@@ -110,7 +113,7 @@ function HalfCard({
           <Typography
             style={{
               fontSize: 13,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginLeft: 3,
             }}
@@ -133,7 +136,7 @@ function HalfCard({
               flex: 1,
               marginRight: 8,
               fontSize: 12,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               lineHeight: 16,
             }}
@@ -170,27 +173,21 @@ export function BalanceCard({
   onSettlePress,
   onViewBalancesPress,
 }: BalanceCardProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const isAllSettled = youOwe === 0 && owedToYou === 0;
   const netBalance = owedToYou - youOwe;
   const netBalanceLabel =
     netBalance > 0 ? "Net owed to you" : netBalance < 0 ? "Net you owe" : "Net balance";
   const netBalanceColor =
-    netBalance < 0 ? UI.color.danger : netBalance > 0 ? UI.color.success : UI.color.muted;
+    netBalance < 0 ? color.danger : netBalance > 0 ? color.success : color.muted;
   const netBalanceAmount = Math.abs(netBalance).toFixed(2);
 
   if (isAllSettled) {
     return (
-      <View
-        style={{
-          backgroundColor: UI.color.surface,
-          paddingVertical: 28,
-          paddingHorizontal: 18,
-          alignItems: "center",
-          justifyContent: "center",
-          borderRadius: 16,
-          borderWidth: 1,
-          borderColor: UI.color.border,
-        }}
+      <GlassSurface
+        borderRadius={16}
+        padding={0}
+        style={{ paddingVertical: 28, paddingHorizontal: 18, alignItems: "center", justifyContent: "center" }}
       >
         <View
           style={{
@@ -198,20 +195,20 @@ export function BalanceCard({
             height: 64,
             borderRadius: 14,
             borderWidth: 1,
-            borderColor: UI.color.border,
-            backgroundColor: UI.color.successTint,
+            borderColor: color.border,
+            backgroundColor: color.successTint,
             alignItems: "center",
             justifyContent: "center",
             marginBottom: 14,
           }}
         >
-          <icons.Check size={32} color={UI.color.success} strokeWidth={2.5} />
+          <icons.Check size={32} color={color.success} strokeWidth={2.5} />
         </View>
         <Typography
           style={{
             fontSize: 22,
             lineHeight: 28,
-            color: UI.color.text,
+            color: color.text,
             fontFamily: "IBMPlexSans_600SemiBold",
             marginBottom: 6,
             textAlign: "center",
@@ -223,7 +220,7 @@ export function BalanceCard({
           style={{
             fontSize: 15,
             lineHeight: 21,
-            color: UI.color.muted,
+            color: color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             textAlign: "center",
           }}
@@ -240,41 +237,33 @@ export function BalanceCard({
               minHeight: 44,
               borderRadius: 999,
               borderWidth: 1,
-              borderColor: UI.color.border,
-              backgroundColor: UI.color.control,
+              borderColor: color.border,
+              backgroundColor: color.control,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.75 : 1,
             })}
           >
             <Typography
-              style={{ fontSize: 14, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{ fontSize: 14, color: color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
             >
               View balances
             </Typography>
           </Pressable>
         )}
-      </View>
+      </GlassSurface>
     );
   }
 
   return (
-    <View
-      style={{
-        backgroundColor: UI.color.surface,
-        padding: 14,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: UI.color.border,
-      }}
-    >
+    <GlassSurface borderRadius={16} padding={14}>
       <View
         style={{
           flexDirection: "row",
           alignItems: "baseline",
           justifyContent: "space-between",
           borderBottomWidth: 1,
-          borderBottomColor: UI.color.border,
+          borderBottomColor: color.border,
           paddingBottom: 12,
           marginBottom: 12,
         }}
@@ -283,7 +272,7 @@ export function BalanceCard({
           style={{
             fontSize: 11,
             letterSpacing: 0.8,
-            color: UI.color.muted,
+            color: color.muted,
             fontFamily: "IBMPlexSans_600SemiBold",
             textTransform: "uppercase",
           }}
@@ -307,8 +296,8 @@ export function BalanceCard({
           label="YOU OWE"
           amount={youOwe}
           currencyCode={currencyCode}
-          amountColor={UI.color.danger}
-          panelColor={UI.color.dangerTint}
+          amountColor={color.danger}
+          panelColor={color.dangerTint}
           users={oweUsers}
           onPress={onOwePress}
           accessibilityLabel={`You owe ${youOwe} ${currencyCode}`}
@@ -318,8 +307,8 @@ export function BalanceCard({
           label="YOU ARE OWED"
           amount={owedToYou}
           currencyCode={currencyCode}
-          amountColor={UI.color.success}
-          panelColor={UI.color.successTint}
+          amountColor={color.success}
+          panelColor={color.successTint}
           users={owedUsers}
           onPress={onOwedPress}
           accessibilityLabel={`You are owed ${owedToYou} ${currencyCode}`}
@@ -335,7 +324,7 @@ export function BalanceCard({
               flex: 1,
               minHeight: 44,
               borderRadius: 999,
-              backgroundColor: UI.color.ink,
+              backgroundColor: color.ink,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.8 : 1,
@@ -362,21 +351,21 @@ export function BalanceCard({
               minHeight: 44,
               borderRadius: 999,
               borderWidth: 1,
-              borderColor: UI.color.border,
-              backgroundColor: UI.color.control,
+              borderColor: color.border,
+              backgroundColor: color.control,
               alignItems: "center",
               justifyContent: "center",
               opacity: pressed ? 0.75 : 1,
             })}
           >
             <Typography
-              style={{ fontSize: 14, color: UI.color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
+              style={{ fontSize: 14, color: color.text, fontFamily: "IBMPlexSans_600SemiBold" }}
             >
               View balances
             </Typography>
           </Pressable>
         )}
       </View>
-    </View>
+    </GlassSurface>
   );
 }

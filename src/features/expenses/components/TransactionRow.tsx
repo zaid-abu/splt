@@ -5,7 +5,7 @@ import * as icons from "lucide-react-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { formatActivityDate } from "@/utils/date";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import type { Expense, User } from "@/types";
 
 interface TransactionRowProps {
@@ -31,21 +31,22 @@ export const TransactionRow = React.memo(function TransactionRow({
   showAvatarBadge = false,
   compact = false,
 }: TransactionRowProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const iPaid = expense.paidBy === currentUserId;
   const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
 
   let subAmountText = "";
-  let subAmountColor: string = UI.color.text;
+  let subAmountColor: string = color.text;
 
   if (iPaid) {
     const lentAmount = expense.amount - myShare;
     if (lentAmount > 0) {
       subAmountText = `Lent ${formatAmount(lentAmount, expense.currency)}`;
-      subAmountColor = UI.color.success;
+      subAmountColor = color.success;
     }
   } else if (myShare > 0) {
     subAmountText = `You owe ${formatAmount(myShare, expense.currency)}`;
-    subAmountColor = UI.color.danger;
+    subAmountColor = color.danger;
   }
 
   const dateStr = expense.date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -59,10 +60,10 @@ export const TransactionRow = React.memo(function TransactionRow({
         alignItems: "center",
         paddingVertical: compact ? 14 : 16,
         paddingHorizontal: compact ? 0 : 16,
-        borderRadius: compact ? 0 : UI.radius.lg,
-        backgroundColor: compact ? "transparent" : pressed ? UI.color.subtle : "transparent",
+        borderRadius: compact ? 0 : radius.lg,
+        backgroundColor: compact ? "transparent" : pressed ? color.subtle : "transparent",
         borderBottomWidth: isLast ? 0 : 1,
-        borderBottomColor: UI.color.border,
+        borderBottomColor: color.border,
         opacity: pressed ? 0.62 : 1,
       })}
     >
@@ -76,16 +77,16 @@ export const TransactionRow = React.memo(function TransactionRow({
               right: -4,
               width: 20,
               height: 20,
-              borderRadius: UI.radius.pill,
-              backgroundColor: UI.color.bg,
+              borderRadius: radius.pill,
+              backgroundColor: color.bg,
               borderWidth: 2,
-              borderColor: UI.color.bg,
+              borderColor: color.bg,
               alignItems: "center",
               justifyContent: "center",
             }}
           >
             <Typography
-              style={{ fontSize: 10, color: UI.color.text, textAlign: "center", lineHeight: 14 }}
+              style={{ fontSize: 10, color: color.text, textAlign: "center", lineHeight: 14 }}
             >
               {paidByUser.name.charAt(0).toUpperCase()}
             </Typography>
@@ -98,7 +99,7 @@ export const TransactionRow = React.memo(function TransactionRow({
           numberOfLines={1}
           style={{
             fontSize: compact ? 15 : 16,
-            color: UI.color.text,
+            color: color.text,
             fontFamily: "IBMPlexSans_600SemiBold",
             letterSpacing: -0.2,
           }}
@@ -109,7 +110,7 @@ export const TransactionRow = React.memo(function TransactionRow({
           numberOfLines={1}
           style={{
             fontSize: compact ? 12 : 14,
-            color: UI.color.muted,
+            color: color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginTop: compact ? 1 : 4,
           }}
@@ -124,7 +125,7 @@ export const TransactionRow = React.memo(function TransactionRow({
         <Typography
           style={{
             fontSize: compact ? 15 : 16,
-            color: UI.color.text,
+            color: color.text,
             fontFamily: "IBMPlexSans_600SemiBold",
             letterSpacing: -0.2,
           }}
@@ -147,7 +148,7 @@ export const TransactionRow = React.memo(function TransactionRow({
           <Typography
             style={{
               fontSize: 14,
-              color: UI.color.muted,
+              color: color.muted,
               fontFamily: "IBMPlexSans_500Medium",
               marginTop: 4,
             }}
@@ -160,7 +161,7 @@ export const TransactionRow = React.memo(function TransactionRow({
       {compact && (
         <icons.ChevronRight
           size={14}
-          color={UI.color.muted}
+          color={color.muted}
           strokeWidth={1.75}
           style={{ marginLeft: 8 }}
         />

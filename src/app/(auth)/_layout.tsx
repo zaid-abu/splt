@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import type { JSX } from "react";
-import { UI } from "@/components/ui/native-ui";
+
 
 export default function AuthLayout(): JSX.Element {
   return (
@@ -8,7 +8,7 @@ export default function AuthLayout(): JSX.Element {
       screenOptions={{
         headerShown: false,
         animation: "slide_from_right",
-        contentStyle: { backgroundColor: UI.color.bg },
+        contentStyle: { backgroundColor: "#EEF6FF" },
       }}
     >
       <Stack.Screen name="welcome" />

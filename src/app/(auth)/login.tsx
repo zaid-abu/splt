@@ -12,15 +12,19 @@ import { useSignIn, useSignInWithGoogle } from "@/features/auth/hooks/useAuthMut
 import { useBiometricAuth } from "@/features/auth/hooks/useBiometricAuth";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loginSchema, type LoginFormData } from "@/validation/schemas";
-import { FormInput } from "@/components/forms/FormInput";
 import { useAppToast } from "@/hooks/useAppToast";
-import { UI, PressableScale } from "@/components/ui/native-ui";
+import { useUIStore } from "@/store/useUIStore";
+import { PressableScale } from "@/components/ui/native-ui";
 import { GoogleLogo } from "@/components/ui/GoogleLogo";
-import AuthFormLayout from "@/components/layout/AuthFormLayout";
+import GlassAuthLayout from "@/components/glassmorphism/GlassAuthLayout";
+import { GlassFormInput } from "@/components/glassmorphism/GlassFormInput";
+import { GLASS_LIGHT, GLASS_DARK, GLASS_RADIUS } from "@/constants/glassmorphism-tokens";
 
 export default function LoginScreen(): JSX.Element {
   const router = useRouter();
   const { toast } = useAppToast();
+  const isDarkMode = useUIStore((s) => s.isDarkMode);
+  const tokens = isDarkMode ? GLASS_DARK : GLASS_LIGHT;
   const { mutateAsync: signIn, isPending } = useSignIn();
   const { mutateAsync: signInWithGoogle, isPending: isGoogleLoading } = useSignInWithGoogle();
   const { isAvailable, hasStoredCredentials, biometricType, saveCredentials, authenticate } =
@@ -85,13 +89,14 @@ export default function LoginScreen(): JSX.Element {
   };
 
   return (
-    <AuthFormLayout
+    <GlassAuthLayout
       title={"Welcome\nback."}
       subtitle="Sign in and pick up where you left off."
       onSubmit={handleSubmit(onSubmit, onInvalid)}
       isPending={isPending}
       submitLabel="Sign In"
       submitLoadingLabel="Signing in\u2026"
+      headerTitle="Splt"
       secondaryActions={
         <>
           {isAvailable && hasStoredCredentials && (
@@ -100,11 +105,11 @@ export default function LoginScreen(): JSX.Element {
                 <View
                   style={{
                     width: "100%",
-                    height: 56,
-                    borderRadius: UI.radius.pill,
+                    minHeight: 50,
+                    borderRadius: GLASS_RADIUS.md,
+                    backgroundColor: tokens.surface,
                     borderWidth: 1,
-                    borderColor: UI.color.border,
-                    backgroundColor: UI.color.control,
+                    borderColor: tokens.border,
                     alignItems: "center",
                     justifyContent: "center",
                     flexDirection: "row",
@@ -112,15 +117,16 @@ export default function LoginScreen(): JSX.Element {
                   }}
                 >
                   {biometricLoading ? (
-                    <ActivityIndicator color={UI.color.text} />
+                    <ActivityIndicator color={tokens.text} />
                   ) : (
                     <>
-                      <icons.Fingerprint size={22} color={UI.color.text} strokeWidth={1.5} />
+                      <icons.Fingerprint size={22} color={tokens.text} strokeWidth={1.5} />
                       <Typography
                         style={{
                           fontSize: 16,
-                          color: UI.color.text,
+                          color: tokens.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
+                          letterSpacing: 0.02,
                         }}
                       >
                         Sign in with {biometricType || "Biometrics"}
@@ -132,6 +138,31 @@ export default function LoginScreen(): JSX.Element {
             </View>
           )}
 
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              gap: 10,
+              marginBottom: 14,
+            }}
+          >
+            <View
+              style={{ flex: 1, height: 1, backgroundColor: tokens.borderSoft }}
+            />
+            <Typography
+              style={{
+                fontSize: 12,
+                color: tokens.muted,
+                fontFamily: "IBMPlexSans_500Medium",
+              }}
+            >
+              or
+            </Typography>
+            <View
+              style={{ flex: 1, height: 1, backgroundColor: tokens.borderSoft }}
+            />
+          </View>
+
           <PressableScale
             onPress={async () => {
               try {
@@ -142,11 +173,11 @@ export default function LoginScreen(): JSX.Element {
             <View
               style={{
                 width: "100%",
-                height: 48,
-                borderRadius: UI.radius.pill,
+                minHeight: 48,
+                borderRadius: GLASS_RADIUS.md,
+                backgroundColor: tokens.surface,
                 borderWidth: 1,
-                borderColor: UI.color.border,
-                backgroundColor: UI.color.control,
+                borderColor: tokens.border,
                 alignItems: "center",
                 justifyContent: "center",
                 flexDirection: "row",
@@ -154,14 +185,14 @@ export default function LoginScreen(): JSX.Element {
               }}
             >
               {isGoogleLoading ? (
-                <ActivityIndicator color={UI.color.text} />
+                <ActivityIndicator color={tokens.text} />
               ) : (
                 <>
                   <GoogleLogo size={18} />
                   <Typography
                     style={{
                       fontSize: 15,
-                      color: UI.color.text,
+                      color: tokens.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -176,9 +207,9 @@ export default function LoginScreen(): JSX.Element {
       footer={
         <>
           <Typography
-            style={{ fontSize: 16, color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" }}
+            style={{ fontSize: 16, color: tokens.muted, fontFamily: "IBMPlexSans_500Medium" }}
           >
-            Don&apos;t have an account?
+            New to Splt?
           </Typography>
           <Pressable
             accessibilityRole="button"
@@ -193,7 +224,7 @@ export default function LoginScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 16,
-                color: UI.color.text,
+                color: tokens.text,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -203,7 +234,7 @@ export default function LoginScreen(): JSX.Element {
         </>
       }
     >
-      <FormInput
+      <GlassFormInput
         control={control}
         name="email"
         label="Email Address"
@@ -212,11 +243,11 @@ export default function LoginScreen(): JSX.Element {
         autoCapitalize="none"
         autoComplete="email"
         returnKeyType="next"
-        leftElement={<icons.Mail size={18} color={UI.color.muted} />}
+        leftElement={<icons.Mail size={18} color={tokens.muted} />}
       />
 
       <View>
-        <FormInput
+        <GlassFormInput
           control={control}
           name="password"
           label="Password"
@@ -226,7 +257,7 @@ export default function LoginScreen(): JSX.Element {
           accessibilityHint="Enter your password"
           returnKeyType="done"
           blurOnSubmit
-          leftElement={<icons.Lock size={18} color={UI.color.muted} />}
+          leftElement={<icons.Lock size={18} color={tokens.muted} />}
           rightElement={
             <Pressable
               accessibilityRole="button"
@@ -239,9 +270,9 @@ export default function LoginScreen(): JSX.Element {
               style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
             >
               {showPassword ? (
-                <icons.EyeOff size={18} color={UI.color.muted} />
+                <icons.EyeOff size={18} color={tokens.muted} />
               ) : (
-                <icons.Eye size={18} color={UI.color.muted} />
+                <icons.Eye size={18} color={tokens.muted} />
               )}
             </Pressable>
           }
@@ -250,7 +281,7 @@ export default function LoginScreen(): JSX.Element {
           style={{
             flexDirection: "row",
             justifyContent: "flex-end",
-            marginTop: 8,
+            marginTop: 4,
           }}
         >
           <Pressable
@@ -266,7 +297,7 @@ export default function LoginScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 13,
-                color: UI.color.text,
+                color: tokens.text,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -275,6 +306,6 @@ export default function LoginScreen(): JSX.Element {
           </Pressable>
         </View>
       </View>
-    </AuthFormLayout>
+    </GlassAuthLayout>
   );
 }

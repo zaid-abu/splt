@@ -4,7 +4,7 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import dayjs from "dayjs";
 import DateTimePicker from "react-native-ui-datepicker";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { styles } from "@/features/expenses/utils/styles";
 
 export function DateInlinePicker({
@@ -18,6 +18,7 @@ export function DateInlinePicker({
   onToggle: () => void;
   onChange: (date: Date) => void;
 }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <View style={styles.dateBlock}>
       <Pressable
@@ -26,7 +27,7 @@ export function DateInlinePicker({
         style={({ pressed }) => [styles.detailRow, pressed && styles.rowPressed]}
       >
         <View style={styles.detailIcon}>
-          <icons.Calendar size={18} color={UI.color.text} strokeWidth={1.8} />
+          <icons.Calendar size={18} color={color.text} strokeWidth={1.8} />
         </View>
         <View style={{ flex: 1 }}>
           <Typography style={styles.detailTitle}>{dayjs(value).format("MMMM D, YYYY")}</Typography>
@@ -34,7 +35,7 @@ export function DateInlinePicker({
         </View>
         <icons.ChevronDown
           size={18}
-          color={UI.color.muted}
+          color={color.muted}
           strokeWidth={1.8}
           style={{ transform: [{ rotate: visible ? "180deg" : "0deg" }] }}
         />
@@ -49,15 +50,15 @@ export function DateInlinePicker({
               if (params.date) onChange(dayjs(params.date).toDate());
             }}
             styles={{
-              selected: { backgroundColor: UI.color.text, borderRadius: 999 },
-              selected_label: { color: UI.color.textInverse },
-              today: { backgroundColor: UI.color.control, borderRadius: 999 },
-              today_label: { color: UI.color.text },
-              day_label: { color: UI.color.text, fontSize: 15 },
+              selected: { backgroundColor: color.text, borderRadius: 999 },
+              selected_label: { color: color.textInverse },
+              today: { backgroundColor: color.control, borderRadius: 999 },
+              today_label: { color: color.text },
+              day_label: { color: color.text, fontSize: 15 },
               header: { paddingBottom: 12 },
-              month_selector_label: { color: UI.color.text, fontSize: 16 },
-              year_selector_label: { color: UI.color.text, fontSize: 16 },
-              weekday_label: { color: UI.color.muted },
+              month_selector_label: { color: color.text, fontSize: 16 },
+              year_selector_label: { color: color.text, fontSize: 16 },
+              weekday_label: { color: color.muted },
             }}
           />
         </View>

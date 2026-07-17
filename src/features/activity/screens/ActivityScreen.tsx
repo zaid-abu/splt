@@ -15,11 +15,13 @@ import { useUIStore } from "@/store/useUIStore";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { UI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
+import { useUI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui/native-ui";
+import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import type { Activity, ActivityFilterType } from "@/types";
 
 export default function ActivityScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
 
@@ -118,7 +120,7 @@ export default function ActivityScreen(): JSX.Element {
   const ListEmptyComponent = useCallback(() => {
     if (isAppLoading) return null;
     return (
-      <View style={{ paddingHorizontal: UI.space.page, marginTop: 24 }}>
+      <View style={{ paddingHorizontal: space.page, marginTop: 24 }}>
         <EmptyState
           icon={icons.Activity}
           title="No activity found"
@@ -133,7 +135,8 @@ export default function ActivityScreen(): JSX.Element {
   }, [isAppLoading, searchQuery, activeFilter]);
 
   return (
-    <FocusAwareView style={{ flex: 1, backgroundColor: UI.color.bg, paddingTop: insets.top }}>
+    <FocusAwareView style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top }}>
+      <GlassBackground />
       <ThemedStatusBar />
       <Animated.View entering={FadeInDown.duration(350).springify()}>
         <ScreenHeader title="Activity" />
@@ -142,9 +145,9 @@ export default function ActivityScreen(): JSX.Element {
       {/* Search + filters — outside FlatList so the input never unmounts on data change */}
       <Animated.View
         entering={FadeInDown.duration(350).delay(40).springify()}
-        style={{ backgroundColor: UI.color.bg }}
+        style={{ backgroundColor: color.bg }}
       >
-        <View style={{ paddingHorizontal: UI.space.page, paddingBottom: 20 }}>
+        <View style={{ paddingHorizontal: space.page, paddingBottom: 20 }}>
           <SearchField
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -155,7 +158,7 @@ export default function ActivityScreen(): JSX.Element {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingHorizontal: UI.space.page, gap: 8, paddingBottom: 20 }}
+          contentContainerStyle={{ paddingHorizontal: space.page, gap: 8, paddingBottom: 20 }}
         >
           {FILTERS.map((filter) => (
             <FilterPill
@@ -174,7 +177,7 @@ export default function ActivityScreen(): JSX.Element {
             <ErrorState onRetry={() => refetch()} />
           </View>
         ) : isAppLoading && groupedActivities.length === 0 ? (
-          <View style={{ paddingHorizontal: UI.space.page, gap: 0 }}>
+          <View style={{ paddingHorizontal: space.page, gap: 0 }}>
             {[1, 2, 3].map((i) => (
               <ListRowSkeleton key={i} />
             ))}
@@ -188,17 +191,17 @@ export default function ActivityScreen(): JSX.Element {
               <RefreshControl
                 refreshing={refreshing}
                 onRefresh={onRefresh}
-                tintColor={UI.color.text}
+                tintColor={color.text}
               />
             }
             renderItem={({ item: section }: { item: { title: string; data: Activity[] } }) => (
-              <View style={{ paddingHorizontal: UI.space.page, marginBottom: 24 }}>
+              <View style={{ paddingHorizontal: space.page, marginBottom: 24 }}>
                 {/* Month header */}
                 <Typography
                   style={{
                     fontSize: 11,
                     fontFamily: "IBMPlexSans_600SemiBold",
-                    color: UI.color.muted,
+                    color: color.muted,
                     textTransform: "uppercase",
                     letterSpacing: 1.4,
                     marginBottom: 10,
@@ -211,10 +214,10 @@ export default function ActivityScreen(): JSX.Element {
                 {/* Card container */}
                 <View
                   style={{
-                    backgroundColor: UI.color.surface,
-                    borderRadius: UI.radius.lg,
+                    backgroundColor: color.surface,
+                    borderRadius: radius.lg,
                     borderWidth: 1,
-                    borderColor: UI.color.border,
+                    borderColor: color.border,
                     overflow: "hidden",
                   }}
                 >

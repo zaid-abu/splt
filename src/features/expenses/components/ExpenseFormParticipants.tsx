@@ -7,7 +7,7 @@ import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
-import { SectionLabel, UI } from "@/components/ui/native-ui";
+import { SectionLabel, useUI } from "@/components/ui/native-ui";
 import type { User, Group, SplitMethod } from "@/types";
 
 interface SelectionTabsProps {
@@ -41,6 +41,7 @@ export function ExpenseSelectionTabs({
   uniqueFriends,
   groups,
 }: SelectionTabsProps) {
+  const { color, radius, space, shadow } = useUI();
   return (
     <Animated.View entering={FadeInDown.duration(300)}>
       <View style={{ marginBottom: 24 }}>
@@ -51,30 +52,30 @@ export function ExpenseSelectionTabs({
             flexDirection: "row",
             alignItems: "center",
             paddingHorizontal: 16,
-            borderRadius: UI.radius.pill,
+            borderRadius: radius.pill,
             borderWidth: 1,
-            borderColor: UI.color.border,
-            backgroundColor: UI.color.control,
+            borderColor: color.border,
+            backgroundColor: color.control,
             gap: 12,
           }}
         >
-          <icons.Search size={18} color={UI.color.muted} strokeWidth={1.8} />
+          <icons.Search size={18} color={color.muted} strokeWidth={1.8} />
           <TextInput
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholder="Search friends or groups..."
-            placeholderTextColor={UI.color.muted}
+            placeholderTextColor={color.muted}
             style={{
               flex: 1,
               fontFamily: "IBMPlexSans_500Medium",
-              color: UI.color.text,
+              color: color.text,
               fontSize: 16,
               padding: 0,
             }}
           />
           {searchQuery.length > 0 && (
             <Pressable accessibilityRole="button" onPress={() => setSearchQuery("")} hitSlop={8}>
-              <icons.XCircle size={18} color={UI.color.muted} strokeWidth={1.8} />
+              <icons.XCircle size={18} color={color.muted} strokeWidth={1.8} />
             </Pressable>
           )}
         </View>
@@ -85,10 +86,10 @@ export function ExpenseSelectionTabs({
         <View
           style={{
             flexDirection: "row",
-            backgroundColor: UI.color.control,
+            backgroundColor: color.control,
             borderWidth: 1,
-            borderColor: UI.color.border,
-            borderRadius: UI.radius.pill,
+            borderColor: color.border,
+            borderRadius: radius.pill,
             padding: 4,
             gap: 4,
           }}
@@ -103,16 +104,16 @@ export function ExpenseSelectionTabs({
                 style={({ pressed }) => ({
                   flex: 1,
                   height: 40,
-                  borderRadius: UI.radius.pill,
+                  borderRadius: radius.pill,
                   alignItems: "center",
                   justifyContent: "center",
-                  backgroundColor: active ? UI.color.text : "transparent",
+                  backgroundColor: active ? color.text : "transparent",
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <Typography
                   style={{
-                    color: active ? UI.color.textInverse : UI.color.text,
+                    color: active ? color.textInverse : color.text,
                     fontSize: 14,
                     textTransform: "capitalize",
                     fontFamily: "IBMPlexSans_600SemiBold",
@@ -145,10 +146,10 @@ export function ExpenseSelectionTabs({
                     alignItems: "center",
                     height: 42,
                     paddingHorizontal: 14,
-                    borderRadius: UI.radius.pill,
+                    borderRadius: radius.pill,
                     borderWidth: 1,
-                    borderColor: UI.color.border,
-                    backgroundColor: UI.color.control,
+                    borderColor: color.border,
+                    backgroundColor: color.control,
                     gap: 8,
                     opacity: pressed ? 0.7 : 1,
                   })}
@@ -157,13 +158,13 @@ export function ExpenseSelectionTabs({
                   <Typography
                     style={{
                       fontSize: 14,
-                      color: UI.color.text,
+                      color: color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
                     {f.name.split(" ")[0]}
                   </Typography>
-                  <icons.X size={16} color={UI.color.muted} strokeWidth={1.8} />
+                  <icons.X size={16} color={color.muted} strokeWidth={1.8} />
                 </Pressable>
               ))}
             </View>
@@ -179,24 +180,24 @@ export function ExpenseSelectionTabs({
           <View
             style={{
               padding: 24,
-              borderRadius: UI.radius.lg,
+              borderRadius: radius.lg,
               borderWidth: 1,
-              borderColor: UI.color.border,
-              backgroundColor: UI.color.surface,
+              borderColor: color.border,
+              backgroundColor: color.surface,
               alignItems: "center",
             }}
           >
-            <Typography style={{ color: UI.color.muted, fontFamily: "IBMPlexSans_500Medium" }}>
+            <Typography style={{ color: color.muted, fontFamily: "IBMPlexSans_500Medium" }}>
               No matching {selectionTab} found.
             </Typography>
           </View>
         ) : (
           <View
             style={{
-              borderRadius: UI.radius.lg,
+              borderRadius: radius.lg,
               borderWidth: 1,
-              borderColor: UI.color.border,
-              backgroundColor: UI.color.surface,
+              borderColor: color.border,
+              backgroundColor: color.surface,
             }}
           >
             {selectionTab === "friends" &&
@@ -219,7 +220,7 @@ export function ExpenseSelectionTabs({
                       paddingVertical: 14,
                       paddingHorizontal: 16,
                       borderBottomWidth: idx < filteredFriends.length - 1 ? 1 : 0,
-                      borderBottomColor: UI.color.border,
+                      borderBottomColor: color.border,
                       backgroundColor: pressed ? "#FBF7F2" : "transparent",
                     })}
                   >
@@ -228,7 +229,7 @@ export function ExpenseSelectionTabs({
                       <Typography
                         style={{
                           fontSize: 15,
-                          color: UI.color.text,
+                          color: color.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
@@ -237,7 +238,7 @@ export function ExpenseSelectionTabs({
                       <Typography
                         style={{
                           fontSize: 13,
-                          color: UI.color.muted,
+                          color: color.muted,
                           fontFamily: "IBMPlexSans_500Medium",
                           marginTop: 2,
                         }}
@@ -251,14 +252,14 @@ export function ExpenseSelectionTabs({
                         height: 22,
                         borderRadius: 999,
                         borderWidth: isSelected ? 0 : 1,
-                        borderColor: UI.color.border,
-                        backgroundColor: isSelected ? UI.color.brand : "transparent",
+                        borderColor: color.border,
+                        backgroundColor: isSelected ? color.brand : "transparent",
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
                       {isSelected && (
-                        <icons.Check size={13} color={UI.color.textInverse} strokeWidth={3} />
+                        <icons.Check size={13} color={color.textInverse} strokeWidth={3} />
                       )}
                     </View>
                   </Pressable>
@@ -284,7 +285,7 @@ export function ExpenseSelectionTabs({
                       paddingVertical: 14,
                       paddingHorizontal: 16,
                       borderBottomWidth: idx < filteredGroups.length - 1 ? 1 : 0,
-                      borderBottomColor: UI.color.border,
+                      borderBottomColor: color.border,
                       backgroundColor: pressed ? "#FBF7F2" : "transparent",
                     })}
                   >
@@ -293,20 +294,20 @@ export function ExpenseSelectionTabs({
                         width: 44,
                         height: 44,
                         borderRadius: 14,
-                        backgroundColor: UI.color.control,
+                        backgroundColor: color.control,
                         borderWidth: 1,
-                        borderColor: UI.color.border,
+                        borderColor: color.border,
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      <GroupIcon size={18} color={UI.color.text} strokeWidth={1.8} />
+                      <GroupIcon size={18} color={color.text} strokeWidth={1.8} />
                     </View>
                     <View style={{ flex: 1, marginLeft: 12 }}>
                       <Typography
                         style={{
                           fontSize: 15,
-                          color: UI.color.text,
+                          color: color.text,
                           fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
@@ -315,7 +316,7 @@ export function ExpenseSelectionTabs({
                       <Typography
                         style={{
                           fontSize: 13,
-                          color: UI.color.muted,
+                          color: color.muted,
                           fontFamily: "IBMPlexSans_500Medium",
                           marginTop: 2,
                         }}
@@ -329,14 +330,14 @@ export function ExpenseSelectionTabs({
                         height: 22,
                         borderRadius: 999,
                         borderWidth: isSelected ? 0 : 1,
-                        borderColor: UI.color.border,
-                        backgroundColor: isSelected ? UI.color.brand : "transparent",
+                        borderColor: color.border,
+                        backgroundColor: isSelected ? color.brand : "transparent",
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
                       {isSelected && (
-                        <icons.Check size={13} color={UI.color.textInverse} strokeWidth={3} />
+                        <icons.Check size={13} color={color.textInverse} strokeWidth={3} />
                       )}
                     </View>
                   </Pressable>
@@ -388,6 +389,7 @@ export function ExpenseFormParticipants({
   setCustomPercentages,
   currentUserId,
 }: ExpenseParticipantsProps) {
+  const { color, radius, space, shadow } = useUI();
   return (
     <View style={{ marginBottom: 32 }}>
       <View
@@ -402,7 +404,7 @@ export function ExpenseFormParticipants({
           style={{
             fontSize: 11,
             letterSpacing: 1.2,
-            color: UI.color.muted,
+            color: color.muted,
             fontFamily: "IBMPlexSans_600SemiBold",
             textTransform: "uppercase",
           }}
@@ -415,7 +417,7 @@ export function ExpenseFormParticipants({
             style={{
               fontSize: 12,
               fontFamily: "IBMPlexSans_600SemiBold",
-              color: remainingCustom === 0 ? UI.color.success : UI.color.danger,
+              color: remainingCustom === 0 ? color.success : color.danger,
             }}
           >
             Remaining: {formatAmount(remainingCustom, expenseCurrency)}
@@ -426,7 +428,7 @@ export function ExpenseFormParticipants({
             style={{
               fontSize: 12,
               fontFamily: "IBMPlexSans_600SemiBold",
-              color: remainingPercent === 0 ? UI.color.success : UI.color.danger,
+              color: remainingPercent === 0 ? color.success : color.danger,
             }}
           >
             Remaining: {remainingPercent.toFixed(1)}%
@@ -436,10 +438,10 @@ export function ExpenseFormParticipants({
 
       <View
         style={{
-          borderRadius: UI.radius.lg,
+          borderRadius: radius.lg,
           borderWidth: 1,
-          borderColor: UI.color.border,
-          backgroundColor: UI.color.surface,
+          borderColor: color.border,
+          backgroundColor: color.surface,
         }}
       >
         {participants.map((u, idx) => {
@@ -453,7 +455,7 @@ export function ExpenseFormParticipants({
                 paddingVertical: 14,
                 paddingHorizontal: 16,
                 borderBottomWidth: idx < participants.length - 1 ? 1 : 0,
-                borderBottomColor: UI.color.border,
+                borderBottomColor: color.border,
                 opacity: isIncluded ? 1 : 0.5,
               }}
             >
@@ -475,7 +477,7 @@ export function ExpenseFormParticipants({
                   flex: 1,
                   marginLeft: 12,
                   fontSize: 15,
-                  color: UI.color.text,
+                  color: color.text,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
               >
@@ -485,18 +487,18 @@ export function ExpenseFormParticipants({
               {splitMethod === "equal" && isIncluded && parsedAmount > 0 && (
                 <View
                   style={{
-                    backgroundColor: UI.color.control,
+                    backgroundColor: color.control,
                     borderWidth: 1,
-                    borderColor: UI.color.border,
+                    borderColor: color.border,
                     paddingHorizontal: 10,
                     paddingVertical: 4,
-                    borderRadius: UI.radius.pill,
+                    borderRadius: radius.pill,
                   }}
                 >
                   <Typography
                     style={{
                       fontSize: 13,
-                      color: UI.color.text,
+                      color: color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -509,19 +511,19 @@ export function ExpenseFormParticipants({
                 <View style={{ width: 100 }}>
                   <TextInput
                     placeholder="0.00"
-                    placeholderTextColor={UI.color.muted}
+                    placeholderTextColor={color.muted}
                     value={customAmounts[u.id] ?? ""}
                     onChangeText={(v) => setCustomAmounts((prev) => ({ ...prev, [u.id]: v }))}
                     keyboardType="decimal-pad"
                     style={{
-                      backgroundColor: UI.color.control,
+                      backgroundColor: color.control,
                       height: 42,
                       borderRadius: 12,
                       paddingHorizontal: 12,
                       borderWidth: 1,
-                      borderColor: UI.color.border,
+                      borderColor: color.border,
                       fontSize: 15,
-                      color: UI.color.text,
+                      color: color.text,
                       fontFamily: "IBMPlexSans_600SemiBold",
                       textAlign: "right",
                     }}
@@ -534,19 +536,19 @@ export function ExpenseFormParticipants({
                   <View style={{ width: 70 }}>
                     <TextInput
                       placeholder="0"
-                      placeholderTextColor={UI.color.muted}
+                      placeholderTextColor={color.muted}
                       value={customPercentages[u.id] ?? ""}
                       onChangeText={(v) => setCustomPercentages((prev) => ({ ...prev, [u.id]: v }))}
                       keyboardType="decimal-pad"
                       style={{
-                        backgroundColor: UI.color.control,
+                        backgroundColor: color.control,
                         height: 42,
                         borderRadius: 12,
                         paddingHorizontal: 12,
                         borderWidth: 1,
-                        borderColor: UI.color.border,
+                        borderColor: color.border,
                         fontSize: 15,
-                        color: UI.color.text,
+                        color: color.text,
                         fontFamily: "IBMPlexSans_600SemiBold",
                         textAlign: "right",
                       }}
@@ -555,7 +557,7 @@ export function ExpenseFormParticipants({
                   <Typography
                     style={{
                       fontSize: 14,
-                      color: UI.color.muted,
+                      color: color.muted,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >

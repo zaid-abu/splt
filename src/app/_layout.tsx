@@ -8,7 +8,7 @@ import { supabase } from "@/services/supabase/client";
 import * as SystemUI from "expo-system-ui";
 import { AppProvider } from "@/providers/AppProvider";
 import { useUIStore } from "@/store/useUIStore";
-import { UI, applyTheme } from "@/components/ui/native-ui";
+
 import { Uniwind } from "uniwind";
 import "../global.css";
 
@@ -44,12 +44,10 @@ export default function RootLayout(): JSX.Element | null {
   const [authReady, setAuthReady] = useState(false);
   const isDarkMode = useUIStore((s) => s.isDarkMode);
 
-  // Apply theme on every render so UI.color is updated before children render
-  applyTheme(isDarkMode);
   Uniwind.setTheme(isDarkMode ? "dark" : "light");
 
   useEffect(() => {
-    SystemUI.setBackgroundColorAsync(UI.color.bg);
+    SystemUI.setBackgroundColorAsync(isDarkMode ? "#0A1628" : "#EEF6FF");
   }, [isDarkMode]);
 
   useEffect(() => {
@@ -70,7 +68,7 @@ export default function RootLayout(): JSX.Element | null {
         screenOptions={{
           headerShown: false,
           animation: "slide_from_right",
-          contentStyle: { backgroundColor: UI.color.bg },
+          contentStyle: { backgroundColor: isDarkMode ? "#0A1628" : "#EEF6FF" },
         }}
       >
         <Stack.Screen name="(auth)" />

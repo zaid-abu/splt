@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 interface ErrorStateProps {
   title?: string;
@@ -15,37 +15,38 @@ export function ErrorState({
   message = "An unexpected error occurred.",
   onRetry,
 }: ErrorStateProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <View
       style={{
         alignItems: "center",
-        backgroundColor: UI.color.surface,
-        borderRadius: UI.radius.lg,
+        backgroundColor: color.surface,
+        borderRadius: radius.lg,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
         padding: 32,
-        marginHorizontal: UI.space.page,
+        marginHorizontal: space.page,
       }}
     >
       <View
         style={{
           width: 56,
           height: 56,
-          borderRadius: UI.radius.lg,
-          backgroundColor: UI.color.dangerTint,
+          borderRadius: radius.lg,
+          backgroundColor: color.dangerTint,
           borderWidth: 1,
-          borderColor: UI.color.border,
+          borderColor: color.border,
           alignItems: "center",
           justifyContent: "center",
           marginBottom: 16,
         }}
       >
-        <icons.AlertCircle size={24} color={UI.color.danger} strokeWidth={1.5} />
+        <icons.AlertCircle size={24} color={color.danger} strokeWidth={1.5} />
       </View>
       <Typography
         style={{
           fontSize: 17,
-          color: UI.color.text,
+          color: color.text,
           fontFamily: "IBMPlexSans_600SemiBold",
           textAlign: "center",
           marginBottom: 8,
@@ -56,7 +57,7 @@ export function ErrorState({
       <Typography
         style={{
           fontSize: 14,
-          color: UI.color.muted,
+          color: color.muted,
           fontFamily: "IBMPlexSans_500Medium",
           textAlign: "center",
           lineHeight: 20,
@@ -71,15 +72,15 @@ export function ErrorState({
           style={({ pressed }) => ({
             paddingHorizontal: 24,
             paddingVertical: 12,
-            borderRadius: UI.radius.pill,
-            backgroundColor: UI.color.text,
+            borderRadius: radius.pill,
+            backgroundColor: color.text,
             opacity: pressed ? 0.75 : 1,
           })}
         >
           <Typography
             style={{
               fontSize: 15,
-              color: UI.color.textInverse,
+              color: color.textInverse,
               fontFamily: "IBMPlexSans_600SemiBold",
             }}
           >

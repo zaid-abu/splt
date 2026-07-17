@@ -13,11 +13,12 @@ import { ONBOARDING_SLIDES } from "../constants/slides";
 import { OnboardingSlide } from "../components/OnboardingSlide";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useUIStore } from "@/store/useUIStore";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
 export function OnboardingScreen() {
+  const { color, radius, space, shadow } = useUI();
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const flatListRef = useRef<FlatList>(null);
@@ -69,7 +70,7 @@ export function OnboardingScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <View style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
 
       {/* Top Bar - Progress + Skip */}
@@ -86,7 +87,7 @@ export function OnboardingScreen() {
         <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
           {currentIndex > 0 && (
             <Pressable onPress={handleBack} hitSlop={16} style={{ padding: 4, marginRight: 4 }}>
-              <icons.ChevronLeft size={24} color={UI.color.text} strokeWidth={1.5} />
+              <icons.ChevronLeft size={24} color={color.text} strokeWidth={1.5} />
             </Pressable>
           )}
           {ONBOARDING_SLIDES.map((_, idx) => (
@@ -96,7 +97,7 @@ export function OnboardingScreen() {
                 width: idx === currentIndex ? 28 : 8,
                 height: 4,
                 borderRadius: 2,
-                backgroundColor: idx === currentIndex ? UI.color.textStrong : UI.color.muted,
+                backgroundColor: idx === currentIndex ? color.textStrong : color.muted,
               }}
             />
           ))}
@@ -106,7 +107,7 @@ export function OnboardingScreen() {
             <Typography
               style={{
                 fontSize: 15,
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -152,7 +153,7 @@ export function OnboardingScreen() {
           paddingHorizontal: 32,
           paddingTop: 8,
           paddingBottom: Math.max(insets.bottom, 24),
-          backgroundColor: UI.color.bg,
+          backgroundColor: color.bg,
         }}
       >
         <Pressable
@@ -161,7 +162,7 @@ export function OnboardingScreen() {
             width: "100%",
             height: 56,
             borderRadius: 28,
-            backgroundColor: UI.color.textStrong,
+            backgroundColor: color.textStrong,
             alignItems: "center",
             justifyContent: "center",
             opacity: pressed ? 0.75 : 1,
@@ -170,7 +171,7 @@ export function OnboardingScreen() {
           <Typography
             style={{
               fontSize: 16,
-              color: UI.color.textInverse,
+              color: color.textInverse,
               fontFamily: "IBMPlexSans_600SemiBold",
               letterSpacing: 0.5,
             }}

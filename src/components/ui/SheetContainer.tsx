@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRef, forwardRef, useImperativeHandle } from "react";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 interface SheetContainerProps {
   children: ReactNode;
@@ -29,6 +29,7 @@ export const SheetContainer = forwardRef<SheetContainerHandle, SheetContainerPro
   ({ children, snapPoints, enableDynamicSizing = true }, ref) => {
     const insets = useSafeAreaInsets();
     const sheetRef = useRef<BottomSheetModal>(null);
+    const { color, radius, space, shadow } = useUI();
 
     useImperativeHandle(ref, () => ({
       present: () => sheetRef.current?.present(),
@@ -42,12 +43,12 @@ export const SheetContainer = forwardRef<SheetContainerHandle, SheetContainerPro
         snapPoints={snapPoints}
         enableDynamicSizing={enableDynamicSizing}
         backdropComponent={SHEET_BACKDROP}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
-        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
+        backgroundStyle={{ backgroundColor: color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: color.muted, width: 40 }}
       >
         <BottomSheetView
           style={{
-            paddingHorizontal: UI.space.page,
+            paddingHorizontal: space.page,
             paddingTop: 24,
             paddingBottom: Math.max(insets.bottom, 24),
             gap: 20,

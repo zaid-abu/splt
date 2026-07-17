@@ -4,7 +4,7 @@ import { View, Pressable } from "react-native";
 
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { formatActivityDate } from "@/utils/date";
 import * as icons from "lucide-react-native";
 import type { Group } from "@/types";
@@ -21,14 +21,15 @@ interface GroupCardProps {
 }
 
 function BalancePill({ balance, currency }: { balance: number; currency: string }): JSX.Element {
+  const { color, radius } = useUI();
   if (Math.abs(balance) <= 0.005) {
     return (
       <View
         style={{
           paddingHorizontal: 10,
           height: 26,
-          borderRadius: UI.radius.pill,
-          backgroundColor: UI.color.subtle,
+          borderRadius: radius.pill,
+          backgroundColor: color.subtle,
           alignItems: "center",
           justifyContent: "center",
         }}
@@ -36,7 +37,7 @@ function BalancePill({ balance, currency }: { balance: number; currency: string 
         <Typography
           style={{
             fontSize: 11,
-            color: UI.color.muted,
+            color: color.muted,
             fontFamily: "IBMPlexSans_600SemiBold",
             letterSpacing: -0.2,
           }}
@@ -48,15 +49,15 @@ function BalancePill({ balance, currency }: { balance: number; currency: string 
   }
 
   const isNegative = balance < 0;
-  const bgColor = isNegative ? UI.color.dangerTint : UI.color.successTint;
-  const textColor = isNegative ? UI.color.danger : UI.color.success;
+  const bgColor = isNegative ? color.dangerTint : color.successTint;
+  const textColor = isNegative ? color.danger : color.success;
 
   return (
     <View
       style={{
         paddingHorizontal: 10,
         height: 26,
-        borderRadius: UI.radius.pill,
+        borderRadius: radius.pill,
         backgroundColor: bgColor,
         alignItems: "center",
         justifyContent: "center",
@@ -86,6 +87,7 @@ export const GroupCard = React.memo(function GroupCard({
   isLast = false,
   onPress,
 }: GroupCardProps): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const memberCount = group.members.length;
 
   const subtitleParts = [`${memberCount} participant${memberCount !== 1 ? "s" : ""}`];
@@ -107,12 +109,12 @@ export const GroupCard = React.memo(function GroupCard({
         borderRightWidth: 1,
         borderTopWidth: isFirst ? 1 : 0,
         borderBottomWidth: 1,
-        borderColor: UI.color.border,
-        backgroundColor: UI.color.surface,
-        borderTopLeftRadius: isFirst ? UI.radius.lg : 0,
-        borderTopRightRadius: isFirst ? UI.radius.lg : 0,
-        borderBottomLeftRadius: isLast ? UI.radius.lg : 0,
-        borderBottomRightRadius: isLast ? UI.radius.lg : 0,
+        borderColor: color.border,
+        backgroundColor: color.surface,
+        borderTopLeftRadius: isFirst ? radius.lg : 0,
+        borderTopRightRadius: isFirst ? radius.lg : 0,
+        borderBottomLeftRadius: isLast ? radius.lg : 0,
+        borderBottomRightRadius: isLast ? radius.lg : 0,
       })}
     >
       {/* Leading Icon */}
@@ -126,7 +128,7 @@ export const GroupCard = React.memo(function GroupCard({
           numberOfLines={1}
           style={{
             fontSize: 16,
-            color: UI.color.textStrong,
+            color: color.textStrong,
             fontFamily: "IBMPlexSans_600SemiBold",
             letterSpacing: -0.3,
           }}
@@ -136,7 +138,7 @@ export const GroupCard = React.memo(function GroupCard({
         <Typography
           style={{
             fontSize: 14,
-            color: UI.color.muted,
+            color: color.muted,
             fontFamily: "IBMPlexSans_500Medium",
             marginTop: 4,
           }}
@@ -148,7 +150,7 @@ export const GroupCard = React.memo(function GroupCard({
       {/* Trailing Balance Pill + Chevron */}
       <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
         <BalancePill balance={balance} currency={currency} />
-        <icons.ChevronRight size={16} color={UI.color.muted} strokeWidth={1.75} />
+        <icons.ChevronRight size={16} color={color.muted} strokeWidth={1.75} />
       </View>
     </Pressable>
   );

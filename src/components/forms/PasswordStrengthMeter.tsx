@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { View, LayoutAnimation, Platform, UIManager } from "react-native";
 import { Typography } from "heroui-native";
 import { evaluatePasswordStrength } from "@/utils/passwordStrength";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -12,14 +12,14 @@ interface PasswordStrengthMeterProps {
   password: string;
 }
 
-const FILL_COLORS = [UI.color.border, UI.color.muted, UI.color.muted, UI.color.text];
-
-const LABEL_COLORS = [UI.color.muted, UI.color.muted, UI.color.muted, UI.color.text];
-
 export function PasswordStrengthMeter({
   password,
 }: PasswordStrengthMeterProps): React.JSX.Element | null {
+  const { color } = useUI();
   const result = useMemo(() => evaluatePasswordStrength(password), [password]);
+
+  const FILL_COLORS = [color.border, color.muted, color.muted, color.text];
+  const LABEL_COLORS = [color.muted, color.muted, color.muted, color.text];
 
   const showMeter = password.length > 0;
 
@@ -37,7 +37,7 @@ export function PasswordStrengthMeter({
               flex: 1,
               height: 4,
               borderRadius: 2,
-              backgroundColor: index < result.score ? FILL_COLORS[result.score] : UI.color.border,
+              backgroundColor: index < result.score ? FILL_COLORS[result.score] : color.border,
             }}
           />
         ))}

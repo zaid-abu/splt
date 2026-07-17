@@ -3,7 +3,7 @@ import type { JSX } from "react";
 import { View } from "react-native";
 import * as icons from "lucide-react-native";
 
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import type { Group } from "@/types";
 
 type GroupTone = {
@@ -59,6 +59,7 @@ export function GroupIconBadge({
   const GroupIconComp = (icons as any)[group.icon] as
     React.ComponentType<{ size: number; color: string; strokeWidth: number }> | undefined;
   const contentRadius = Math.max(dims.radius - dims.inset, 10);
+  const { color, radius, space, shadow } = useUI();
 
   return (
     <View
@@ -66,9 +67,9 @@ export function GroupIconBadge({
         width: dims.size,
         height: dims.size,
         borderRadius: dims.radius,
-        backgroundColor: UI.color.control,
+        backgroundColor: color.control,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
         padding: dims.inset,
       }}
     >

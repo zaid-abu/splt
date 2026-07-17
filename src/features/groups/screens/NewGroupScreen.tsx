@@ -23,7 +23,7 @@ import type { Currency, User } from "@/types";
 import { useAppToast } from "@/hooks/useAppToast";
 import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { IconButton, PrimaryButton, SectionLabel, UI } from "@/components/ui/native-ui";
+import { useUI, IconButton, PrimaryButton, SectionLabel } from "@/components/ui/native-ui";
 import { useTheme } from "@/hooks/useTheme";
 
 import { GROUP_ICONS } from "@/constants/icons";
@@ -51,6 +51,7 @@ const GROUP_PICKER_COLORS_DARK = [
 ];
 
 export default function NewGroupScreen(): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
@@ -166,7 +167,7 @@ export default function NewGroupScreen(): JSX.Element {
   const IconComponent = (icons as any)[icon] || icons.HelpCircle;
 
   return (
-    <View style={{ flex: 1, backgroundColor: UI.color.bg }}>
+    <View style={{ flex: 1, backgroundColor: color.bg }}>
       <ThemedStatusBar />
       <BottomSheet
         ref={bottomSheetRef}
@@ -176,8 +177,8 @@ export default function NewGroupScreen(): JSX.Element {
         enablePanDownToClose
         onClose={handleDismiss}
         backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{ backgroundColor: UI.color.muted, width: 40 }}
-        backgroundStyle={{ backgroundColor: UI.color.bg, borderRadius: 0 }}
+        handleIndicatorStyle={{ backgroundColor: color.muted, width: 40 }}
+        backgroundStyle={{ backgroundColor: color.bg, borderRadius: 0 }}
       >
         <View style={{ flex: 1 }}>
           {/* ── Top Bar ────────────────────────────────────────────── */}
@@ -188,14 +189,14 @@ export default function NewGroupScreen(): JSX.Element {
               paddingHorizontal: 24,
               paddingBottom: 16,
               borderBottomWidth: 1,
-              borderBottomColor: UI.color.border,
+              borderBottomColor: color.border,
             }}
           >
             <View style={{ flex: 1 }} />
             <Typography
               style={{
                 fontSize: 16,
-                color: UI.color.textStrong,
+                color: color.textStrong,
                 fontFamily: "IBMPlexSans_600SemiBold",
               }}
             >
@@ -227,20 +228,20 @@ export default function NewGroupScreen(): JSX.Element {
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
-                  backgroundColor: UI.color.control,
+                  backgroundColor: color.control,
                   paddingVertical: 12,
                   paddingHorizontal: 16,
                   borderWidth: 1,
-                  borderColor: UI.color.border,
-                  borderRadius: UI.radius.lg,
+                  borderColor: color.border,
+                  borderRadius: radius.lg,
                 }}
               >
-                <IconComponent size={24} color={UI.color.textStrong} strokeWidth={1.5} />
+                <IconComponent size={24} color={color.textStrong} strokeWidth={1.5} />
                 <View
                   style={{
                     width: 1,
                     height: 24,
-                    backgroundColor: UI.color.border,
+                    backgroundColor: color.border,
                     marginHorizontal: 16,
                   }}
                 />
@@ -248,11 +249,11 @@ export default function NewGroupScreen(): JSX.Element {
                   style={{
                     flex: 1,
                     fontSize: 20,
-                    color: UI.color.textStrong,
+                    color: color.textStrong,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                   placeholder="e.g. Day trip to Warsaw"
-                  placeholderTextColor={UI.color.muted}
+                  placeholderTextColor={color.muted}
                   value={name}
                   onChangeText={(v) => {
                     setNameError("");
@@ -266,7 +267,7 @@ export default function NewGroupScreen(): JSX.Element {
               <Typography
                 style={{
                   marginTop: 6,
-                  color: UI.color.danger,
+                  color: color.danger,
                   fontSize: 13,
                   fontFamily: "IBMPlexSans_500Medium",
                   paddingLeft: 4,
@@ -307,17 +308,17 @@ export default function NewGroupScreen(): JSX.Element {
                         style={{
                           width: 56,
                           height: 56,
-                          borderRadius: UI.radius.lg,
+                          borderRadius: radius.lg,
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor: isSelected ? UI.color.text : iconBg,
+                          backgroundColor: isSelected ? color.text : iconBg,
                           borderWidth: 2,
-                          borderColor: isSelected ? UI.color.text : UI.color.border,
+                          borderColor: isSelected ? color.text : color.border,
                         }}
                       >
                         <Ico
                           size={24}
-                          color={isSelected ? UI.color.textInverse : UI.color.textStrong}
+                          color={isSelected ? color.textInverse : color.textStrong}
                           strokeWidth={isSelected ? 2 : 1.5}
                         />
                       </View>
@@ -329,15 +330,15 @@ export default function NewGroupScreen(): JSX.Element {
                             right: -4,
                             width: 20,
                             height: 20,
-                            borderRadius: UI.radius.pill,
-                            backgroundColor: UI.color.text,
+                            borderRadius: radius.pill,
+                            backgroundColor: color.text,
                             alignItems: "center",
                             justifyContent: "center",
                             borderWidth: 2,
-                            borderColor: UI.color.bg,
+                            borderColor: color.bg,
                           }}
                         >
-                          <icons.Check size={12} color={UI.color.textInverse} strokeWidth={3} />
+                          <icons.Check size={12} color={color.textInverse} strokeWidth={3} />
                         </View>
                       )}
                     </Pressable>
@@ -368,7 +369,7 @@ export default function NewGroupScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 15,
-                      color: UI.color.textStrong,
+                      color: color.textStrong,
                       fontFamily: "IBMPlexSans_600SemiBold",
                     }}
                   >
@@ -384,28 +385,28 @@ export default function NewGroupScreen(): JSX.Element {
                   alignItems: "center",
                   paddingVertical: 16,
                   borderBottomWidth: 1,
-                  borderBottomColor: UI.color.border,
+                  borderBottomColor: color.border,
                 }}
               >
                 <View
                   style={{
                     width: 40,
                     height: 40,
-                    borderRadius: UI.radius.md,
-                    backgroundColor: UI.color.control,
+                    borderRadius: radius.md,
+                    backgroundColor: color.control,
                     borderWidth: 1,
-                    borderColor: UI.color.border,
+                    borderColor: color.border,
                     alignItems: "center",
                     justifyContent: "center",
                     marginRight: 16,
                   }}
                 >
-                  <icons.User size={20} color={UI.color.textStrong} strokeWidth={1.5} />
+                  <icons.User size={20} color={color.textStrong} strokeWidth={1.5} />
                 </View>
                 <Typography
                   style={{
                     fontSize: 16,
-                    color: UI.color.textStrong,
+                    color: color.textStrong,
                     fontFamily: "IBMPlexSans_600SemiBold",
                   }}
                 >
@@ -426,7 +427,7 @@ export default function NewGroupScreen(): JSX.Element {
                       alignItems: "center",
                       paddingVertical: 16,
                       borderBottomWidth: 1,
-                      borderBottomColor: UI.color.border,
+                      borderBottomColor: color.border,
                     }}
                   >
                     <View style={{ marginRight: 16 }}>
@@ -436,7 +437,7 @@ export default function NewGroupScreen(): JSX.Element {
                       <Typography
                         style={{
                           fontSize: 16,
-                          color: UI.color.textStrong,
+                          color: color.textStrong,
                           fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
@@ -445,7 +446,7 @@ export default function NewGroupScreen(): JSX.Element {
                       <Typography
                         style={{
                           fontSize: 12,
-                          color: UI.color.muted,
+                          color: color.muted,
                           fontFamily: "IBMPlexSans_500Medium",
                           marginTop: 2,
                         }}
@@ -458,7 +459,7 @@ export default function NewGroupScreen(): JSX.Element {
                       onPress={() => handleRemoveUser(user.id)}
                       style={({ pressed }) => ({ padding: 8, opacity: pressed ? 0.5 : 1 })}
                     >
-                      <icons.Trash2 size={20} color={UI.color.muted} strokeWidth={1.5} />
+                      <icons.Trash2 size={20} color={color.muted} strokeWidth={1.5} />
                     </Pressable>
                   </Animated.View>
                 );
@@ -473,7 +474,7 @@ export default function NewGroupScreen(): JSX.Element {
               <View
                 style={{
                   borderBottomWidth: 1,
-                  borderBottomColor: UI.color.border,
+                  borderBottomColor: color.border,
                   paddingBottom: 8,
                 }}
               >
@@ -488,7 +489,7 @@ export default function NewGroupScreen(): JSX.Element {
               paddingHorizontal: 24,
               paddingTop: 16,
               paddingBottom: Math.max(insets.bottom, 16),
-              backgroundColor: UI.color.bg,
+              backgroundColor: color.bg,
             }}
           >
             <PrimaryButton
@@ -500,7 +501,7 @@ export default function NewGroupScreen(): JSX.Element {
               {loading && <Spinner color="white" size="sm" style={{ marginRight: 8 }} />}
               <Typography
                 style={{
-                  color: UI.color.textInverse,
+                  color: color.textInverse,
                   fontSize: 16,
                   fontFamily: "IBMPlexSans_600SemiBold",
                 }}
@@ -511,7 +512,7 @@ export default function NewGroupScreen(): JSX.Element {
             <Typography
               style={{
                 fontSize: 13,
-                color: UI.color.muted,
+                color: color.muted,
                 textAlign: "center",
                 fontFamily: "IBMPlexSans_500Medium",
               }}

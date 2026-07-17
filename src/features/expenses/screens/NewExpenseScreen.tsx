@@ -17,7 +17,7 @@ import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 
 import { Card } from "@/components/ui/Card";
-import { UI, IconButton } from "@/components/ui/native-ui";
+import { useUI, IconButton } from "@/components/ui/native-ui";
 import { useAuth } from "@/context/AppContext";
 import { useExpenseForm } from "@/features/expenses/hooks/useExpenseForm";
 import {
@@ -70,6 +70,7 @@ export default function NewExpenseScreen(): JSX.Element {
     return s;
   }, [isDarkMode]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { color, radius, space, shadow } = useUI();
 
   const { state, actions } = useExpenseForm({
     currentUser,
@@ -129,7 +130,7 @@ export default function NewExpenseScreen(): JSX.Element {
     return (
       <View style={styles.loadingScreen}>
         <ThemedStatusBar />
-        <ActivityIndicator color={UI.color.text} />
+        <ActivityIndicator color={color.text} />
       </View>
     );
   }
@@ -202,9 +203,9 @@ export default function NewExpenseScreen(): JSX.Element {
               {(state.errors.members || state.errors.split) && (
                 <View
                   style={{
-                    backgroundColor: UI.color.dangerTint,
+                    backgroundColor: color.dangerTint,
                     borderWidth: 1,
-                    borderColor: UI.color.danger,
+                    borderColor: color.danger,
                     borderRadius: 12,
                     padding: 14,
                     marginBottom: 12,
@@ -213,7 +214,7 @@ export default function NewExpenseScreen(): JSX.Element {
                   <Typography
                     style={{
                       fontSize: 13,
-                      color: UI.color.danger,
+                      color: color.danger,
                       fontFamily: "IBMPlexSans_500Medium",
                       lineHeight: 18,
                     }}
@@ -330,7 +331,7 @@ export default function NewExpenseScreen(): JSX.Element {
             ]}
           >
             {state.loading || isSubmitting ? (
-              <ActivityIndicator color={UI.color.textInverse} style={{ marginRight: 8 }} />
+              <ActivityIndicator color={color.textInverse} style={{ marginRight: 8 }} />
             ) : null}
             <Typography
               style={[styles.primaryButtonText, !hasSelection && styles.primaryButtonTextDisabled]}

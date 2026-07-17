@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { View } from "react-native";
 import * as icons from "lucide-react-native";
 
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { EXPENSE_CATEGORIES } from "@/types";
 import type { ExpenseCategory } from "@/types";
 
@@ -52,6 +52,7 @@ export function CategoryIconBadge({
   const iconName = getCategoryIconName(category || "other");
   const IconComp = (icons as any)[iconName] || icons.Package;
   const contentRadius = Math.max(dims.radius - dims.inset, 10);
+  const { color, radius, space, shadow } = useUI();
 
   return (
     <View
@@ -59,9 +60,9 @@ export function CategoryIconBadge({
         width: dims.size,
         height: dims.size,
         borderRadius: dims.radius,
-        backgroundColor: UI.color.control,
+        backgroundColor: color.control,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
         padding: dims.inset,
       }}
     >

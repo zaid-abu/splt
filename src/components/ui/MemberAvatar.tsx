@@ -9,7 +9,7 @@ import type { JSX } from "react";
 import { Image, View } from "react-native";
 import { Typography } from "heroui-native";
 
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import type { User } from "@/types";
 
 type AvatarTone = {
@@ -47,7 +47,7 @@ function getPaletteIndex(seed: string): number {
   return Math.abs(hash) % AVATAR_PALETTE.length;
 }
 
-function getTone(user: User, balance?: number): AvatarTone {
+function getTone(user: User, mutedColor: string, balance?: number): AvatarTone {
   if (balance !== undefined) {
     if (balance > 0) {
       return {
@@ -65,7 +65,7 @@ function getTone(user: User, balance?: number): AvatarTone {
 
     return {
       fill: "#F0ECE7",
-      text: UI.color.muted,
+      text: mutedColor,
     };
   }
 
@@ -97,7 +97,8 @@ function AvatarFallback({
 
 export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps): JSX.Element {
   const dims = getSize(size);
-  const tone = getTone(user, balance);
+  const { color, radius: ru, space, shadow } = useUI();
+  const tone = getTone(user, color.muted, balance);
   const contentRadius = Math.max(dims.radius - dims.inset, 10);
 
   return (
@@ -106,9 +107,9 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
         width: dims.size,
         height: dims.size,
         borderRadius: dims.radius,
-        backgroundColor: UI.color.control,
+        backgroundColor: color.control,
         borderWidth: 1,
-        borderColor: UI.color.border,
+        borderColor: color.border,
         padding: dims.inset,
         overflow: "hidden",
       }}
@@ -151,6 +152,7 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
   const visible = users.slice(0, max);
   const overflow = users.length - max;
   const dims = getSize("sm");
+  const { color, radius: ru, space, shadow } = useUI();
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -162,7 +164,7 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
             zIndex: visible.length - idx,
             borderRadius: dims.radius + 2,
             borderWidth: 2,
-            borderColor: UI.color.bg,
+            borderColor: color.bg,
           }}
         >
           <AppUserAvatar user={user} size="sm" />
@@ -177,8 +179,8 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
             marginLeft: -10,
             borderRadius: dims.radius + 2,
             borderWidth: 2,
-            borderColor: UI.color.bg,
-            backgroundColor: UI.color.control,
+            borderColor: color.bg,
+            backgroundColor: color.control,
             padding: 2,
           }}
         >
@@ -193,7 +195,7 @@ export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number })
           >
             <Typography
               style={{
-                color: UI.color.muted,
+                color: color.muted,
                 fontFamily: "IBMPlexSans_600SemiBold",
                 fontSize: 11,
               }}

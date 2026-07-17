@@ -3,7 +3,7 @@ import { TextInput, View } from "react-native";
 import { Typography } from "heroui-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { Card } from "@/components/ui/Card";
-import { UI } from "@/components/ui/native-ui";
+import { useUI } from "@/components/ui/native-ui";
 import { styles } from "@/features/expenses/utils/styles";
 import type { ExpenseCategory } from "@/types";
 
@@ -26,6 +26,7 @@ export function AmountCard({
   amountError?: string;
   titleError?: string;
 }): JSX.Element {
+  const { color, radius, space, shadow } = useUI();
   return (
     <Card style={styles.amountCard}>
       <View style={styles.amountHeader}>
@@ -42,17 +43,17 @@ export function AmountCard({
           value={amount}
           onChangeText={onAmountChange}
           placeholder="0.00"
-          placeholderTextColor={UI.color.muted}
+          placeholderTextColor={color.muted}
           keyboardType="decimal-pad"
           returnKeyType="done"
-          style={[styles.amountInput, amountError ? { borderColor: UI.color.danger } : undefined]}
+          style={[styles.amountInput, amountError ? { borderColor: color.danger } : undefined]}
         />
       </View>
       {amountError && (
         <Typography
           style={{
             marginTop: 4,
-            color: UI.color.danger,
+            color: color.danger,
             fontSize: 13,
             fontFamily: "IBMPlexSans_500Medium",
           }}
@@ -65,16 +66,16 @@ export function AmountCard({
         value={title}
         onChangeText={onTitleChange}
         placeholder="What was it for?"
-        placeholderTextColor={UI.color.muted}
+        placeholderTextColor={color.muted}
         autoCapitalize="sentences"
         returnKeyType="done"
-        style={[styles.titleInput, titleError ? { borderColor: UI.color.danger } : undefined]}
+        style={[styles.titleInput, titleError ? { borderColor: color.danger } : undefined]}
       />
       {titleError && (
         <Typography
           style={{
             marginTop: 4,
-            color: UI.color.danger,
+            color: color.danger,
             fontSize: 13,
             fontFamily: "IBMPlexSans_500Medium",
           }}
