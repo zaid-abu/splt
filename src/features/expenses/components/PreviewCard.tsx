@@ -47,10 +47,7 @@ export function PreviewCard({
           style={[styles.statusPill, balanced ? styles.statusPillSuccess : styles.statusPillDanger]}
         >
           <Typography
-            style={[
-              styles.statusPillText,
-              { color: balanced ? color.success : color.danger },
-            ]}
+            style={[styles.statusPillText, { color: balanced ? color.success : color.danger }]}
           >
             {status}
           </Typography>

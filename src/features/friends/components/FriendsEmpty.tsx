@@ -4,7 +4,6 @@ import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
 import { EmptyState, useUI } from "@/components/ui";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
-import GlassSurface from "@/components/glassmorphism/GlassSurface";
 
 interface FriendsEmptyProps {
   isLoading: boolean;
@@ -30,7 +29,15 @@ export function FriendsEmpty({
         </View>
       ) : (
         <View style={{ marginTop: 20 }}>
-          <GlassSurface borderRadius={radius.lg} padding={24}>
+          <View
+            style={{
+              borderRadius: radius.lg,
+              padding: 24,
+              backgroundColor: color.surface,
+              borderWidth: 1,
+              borderColor: color.border,
+            }}
+          >
             <EmptyState
               icon={icons.Users}
               title={
@@ -45,11 +52,7 @@ export function FriendsEmpty({
             <View style={{ marginTop: 16, alignItems: "center" }}>
               <Pressable
                 accessibilityRole="button"
-                onPress={
-                  hasActiveFilters
-                    ? onClearFilters
-                    : () => router.push("/friend/new")
-                }
+                onPress={hasActiveFilters ? onClearFilters : () => router.push("/friend/new")}
                 style={({ pressed }) => ({
                   minHeight: 44,
                   paddingHorizontal: 18,
@@ -73,7 +76,7 @@ export function FriendsEmpty({
                 </Typography>
               </Pressable>
             </View>
-          </GlassSurface>
+          </View>
         </View>
       )}
     </View>

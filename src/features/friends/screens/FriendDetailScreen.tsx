@@ -4,13 +4,7 @@ import type { FriendRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { useMemo, useCallback } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import {
-  View,
-  ScrollView,
-  Pressable,
-  RefreshControl,
-  StyleSheet,
-} from "react-native";
+import { View, ScrollView, Pressable, RefreshControl, StyleSheet } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
@@ -57,19 +51,19 @@ function LoadingState({ topInset }: { topInset: number }): JSX.Element {
       <View style={{ paddingHorizontal: 24, gap: 32 }}>
         <View
           style={{
+            borderRadius: radius.lg,
             padding: 24,
             backgroundColor: color.surface,
             borderWidth: 1,
             borderColor: color.border,
-            borderRadius: radius.lg,
-            alignItems: "center",
-            gap: 14,
           }}
         >
-          <Skeleton width={120} height={14} />
-          <Skeleton width={188} height={42} />
-          <View style={{ width: "72%" }}>
-            <Skeleton height={16} />
+          <View style={{ alignItems: "center", gap: 14 }}>
+            <Skeleton width={120} height={14} />
+            <Skeleton width={188} height={42} />
+            <View style={{ width: "72%" }}>
+              <Skeleton height={16} />
+            </View>
           </View>
         </View>
         <View style={{ gap: 12 }}>
@@ -106,9 +100,7 @@ function NotFoundState({ onGoBack }: { onGoBack: () => void }): JSX.Element {
             borderRadius: radius.pill,
           }}
         >
-          <Typography
-            style={{ color: color.textInverse, fontFamily: "IBMPlexSans_600SemiBold" }}
-          >
+          <Typography style={{ color: color.textInverse, fontFamily: "IBMPlexSans_600SemiBold" }}>
             Go back
           </Typography>
         </Pressable>
@@ -208,7 +200,7 @@ export default function FriendDetailScreen(): JSX.Element {
             if (router.canGoBack()) {
               router.back();
             } else {
-              router.replace("/(tabs)");
+              router.replace("/people");
             }
           }}
           style={({ pressed }) => ({
@@ -291,11 +283,7 @@ export default function FriendDetailScreen(): JSX.Element {
           contentContainerStyle={{ paddingBottom: 140 }}
           showsVerticalScrollIndicator={false}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={color.text}
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.text} />
           }
         >
           <FriendBalanceCard
@@ -308,9 +296,7 @@ export default function FriendDetailScreen(): JSX.Element {
           />
 
           {sharedGroupsWithRecentActivity.length > 0 && (
-            <FriendSharedGroups
-              sharedGroupsWithRecentActivity={sharedGroupsWithRecentActivity}
-            />
+            <FriendSharedGroups sharedGroupsWithRecentActivity={sharedGroupsWithRecentActivity} />
           )}
 
           {categorySpending.length > 0 && (

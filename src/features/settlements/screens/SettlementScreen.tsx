@@ -14,7 +14,10 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { useSettlement } from "../hooks/useSettlement";
 import { SettlementParties } from "../components/SettlementParties";
 import { SettlementAmount } from "../components/SettlementAmount";
-import { SettlementConfirmation, SettlementStickySubmit } from "../components/SettlementConfirmation";
+import {
+  SettlementConfirmation,
+  SettlementStickySubmit,
+} from "../components/SettlementConfirmation";
 
 export default function SettleUpScreen(): JSX.Element {
   const { color, radius } = useUI();
@@ -119,12 +122,16 @@ export default function SettleUpScreen(): JSX.Element {
           {isGroupRoute ? "All settled up!" : "Friend not found"}
         </Typography>
         <View
-          style={{ marginTop: 16, padding: 14, paddingHorizontal: 24, backgroundColor: color.brand, borderRadius: radius.pill }}
+          style={{
+            marginTop: 16,
+            padding: 14,
+            paddingHorizontal: 24,
+            backgroundColor: color.brand,
+            borderRadius: radius.pill,
+          }}
           onTouchEnd={handleBack}
         >
-          <Typography
-            style={{ color: color.textInverse, fontFamily: "IBMPlexSans_600SemiBold" }}
-          >
+          <Typography style={{ color: color.textInverse, fontFamily: "IBMPlexSans_600SemiBold" }}>
             Go Back
           </Typography>
         </View>

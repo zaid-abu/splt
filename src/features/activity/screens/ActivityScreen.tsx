@@ -9,7 +9,7 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useUI, ScreenHeader, SearchField, FilterPill, EmptyState } from "@/components/ui";
-import GlassBackground from "@/components/glassmorphism/GlassBackground";
+
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import { ActivitySection } from "@/features/activity/components/ActivitySection";
 import { useActivity, ACTIVITY_FILTERS } from "@/features/activity/hooks/useActivity";
@@ -51,7 +51,6 @@ export default function ActivityScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: color.bg, paddingTop: insets.top }}>
-      <GlassBackground />
       <ThemedStatusBar />
       <Animated.View entering={FadeInDown.duration(350).springify()}>
         <ScreenHeader title="Activity" />

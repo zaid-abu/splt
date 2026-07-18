@@ -4,7 +4,13 @@ import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
-import { useGroups, useUpdateGroup, useDeleteGroup, useAddGroupMembers, useRemoveGroupMember } from "@/features/groups/queries/useGroups";
+import {
+  useGroups,
+  useUpdateGroup,
+  useDeleteGroup,
+  useAddGroupMembers,
+  useRemoveGroupMember,
+} from "@/features/groups/queries/useGroups";
 import { useGroupExpenses } from "@/features/expenses/queries/useExpenses";
 import { useGroupSettlements } from "@/features/settlements/queries/useSettlements";
 import { useFriends, useAddFriend } from "@/features/friends/queries/useFriends";
@@ -74,7 +80,7 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
   const [currencyCode, setCurrencyCode] = useState(group?.currency ?? "USD");
   const [simplifyDebts, setSimplifyDebts] = useState(group?.simplifyDebts ?? false);
   const [defaultSplitMethod, setDefaultSplitMethod] = useState<SplitMethod>(
-    (group as any)?.defaultSplitMethod ?? "equal",
+    (group as any)?.defaultSplitMethod ?? "equal"
   );
 
   const [loading, setLoading] = useState(false);
@@ -92,9 +98,9 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
         settlements,
         group,
         preferredCurrency,
-        convertCurrency,
+        convertCurrency
       ),
-    [groupId, expenses, settlements, group, preferredCurrency, convertCurrency],
+    [groupId, expenses, settlements, group, preferredCurrency, convertCurrency]
   );
 
   const isLoading = isLoadingExpenses || isLoadingSettlements || isLoadingFriends;
@@ -128,7 +134,18 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
       });
       setLoading(false);
     }
-  }, [name, description, icon, currencyCode, simplifyDebts, defaultSplitMethod, group, updateGroup, router, toast]);
+  }, [
+    name,
+    description,
+    icon,
+    currencyCode,
+    simplifyDebts,
+    defaultSplitMethod,
+    group,
+    updateGroup,
+    router,
+    toast,
+  ]);
 
   const handleRemoveMemberClick = useCallback(
     (userId: string, userName: string) => {
@@ -145,7 +162,7 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
       setMemberToRemove({ id: userId, name: userName });
       removeMemberSheetRef.current?.present();
     },
-    [balances, toast],
+    [balances, toast]
   );
 
   const confirmRemoveMember = useCallback(async () => {
@@ -204,14 +221,14 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
         });
       }
     },
-    [group, friends, addGroupMembers, addFriend, currentUser.id, toast],
+    [group, friends, addGroupMembers, addFriend, currentUser.id, toast]
   );
 
   const handleDeleteGroup = useCallback(async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     try {
       await deleteGroup(group!.id);
-      router.replace("/(tabs)/groups");
+      router.replace("/home");
     } catch {
       toast.show({
         label: "Error",
@@ -226,7 +243,7 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
     try {
       await removeGroupMember({ groupId: group!.id, userId: currentUser.id });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace("/(tabs)/groups");
+      router.replace("/home");
     } catch {
       toast.show({
         label: "Error",

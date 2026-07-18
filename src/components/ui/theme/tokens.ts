@@ -1,45 +1,51 @@
-export const LIGHT_COLORS = {
-  bg: "#EEF6FF",
-  surface: "rgba(255, 255, 255, 0.74)",
-  control: "rgba(255, 255, 255, 0.74)",
-  text: "#102033",
-  textStrong: "#102033",
-  textInverse: "#FFFFFF",
-  muted: "#60708A",
-  border: "rgba(255, 255, 255, 0.64)",
-  borderSoft: "rgba(255, 255, 255, 0.38)",
-  brand: "#4F8CFF",
-  ink: "#102033",
-  danger: "#EF4444",
-  success: "#22C55E",
-  subtle: "rgba(238, 246, 255, 0.72)",
-  dangerTint: "rgba(239, 68, 68, 0.08)",
-  successTint: "rgba(34, 197, 94, 0.08)",
-};
+import { CORAL_COLORS } from "@/components/coral/theme";
 
-export const DARK_COLORS = {
-  bg: "#0A1628",
-  surface: "rgba(20, 35, 55, 0.74)",
-  control: "rgba(20, 35, 55, 0.74)",
-  text: "#E8ECF4",
-  textStrong: "#E8ECF4",
-  textInverse: "#0A1628",
-  muted: "#7A8AA8",
-  border: "rgba(255, 255, 255, 0.12)",
-  borderSoft: "rgba(255, 255, 255, 0.08)",
-  brand: "#5B94FF",
-  ink: "#E8ECF4",
-  danger: "#F87171",
-  success: "#4ADE80",
-  subtle: "rgba(10, 22, 40, 0.72)",
-  dangerTint: "rgba(248, 113, 113, 0.08)",
-  successTint: "rgba(74, 222, 128, 0.08)",
-};
+type CoralPalette = (typeof CORAL_COLORS)[keyof typeof CORAL_COLORS];
 
-export const RADIUS = { sm: 16, md: 24, lg: 36, xl: 36, pill: 999 };
-export const SPACE = { page: 24 };
+const createLegacyColors = (colors: CoralPalette) => ({
+  bg: colors.bg,
+  surface: colors.surface,
+  control: colors.surface,
+  text: colors.foreground,
+  textStrong: colors.foreground,
+  textInverse: colors.inkOnAccent,
+  muted: colors.muted,
+  border: colors.border,
+  borderSoft: colors.border,
+  brand: colors.accent,
+  ink: colors.foreground,
+  danger: colors.negative,
+  success: colors.positive,
+  subtle: colors.accentSoft,
+  dangerTint: colors.negativeSoft,
+  successTint: colors.positiveSoft,
+});
+
+export const LIGHT_COLORS = createLegacyColors(CORAL_COLORS.light);
+export const DARK_COLORS = createLegacyColors(CORAL_COLORS.dark);
+
+export const RADIUS = { sm: 12, md: 14, lg: 16, xl: 24, pill: 999 } as const;
+export const SPACE = { page: 24 } as const;
 export const SHADOW = {
-  sm: { shadowColor: "#fff", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 1 },
-  md: { shadowColor: "#fff", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 2 },
-  lg: { shadowColor: "rgba(79, 140, 255, 0.18)", shadowOffset: { width: 0, height: 12 }, shadowOpacity: 1, shadowRadius: 40, elevation: 12 },
+  sm: {
+    shadowColor: CORAL_COLORS.light.foreground,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  md: {
+    shadowColor: CORAL_COLORS.light.foreground,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  lg: {
+    shadowColor: CORAL_COLORS.light.foreground,
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
+    elevation: 8,
+  },
 } as const;

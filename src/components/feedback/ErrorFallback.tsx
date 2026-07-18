@@ -20,9 +20,9 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
         style={{
           width: "100%",
           maxWidth: 400,
-          backgroundColor: color.surface,
-          padding: 24,
           borderRadius: radius.lg,
+          padding: 24,
+          backgroundColor: color.surface,
           borderWidth: 1,
           borderColor: color.border,
         }}

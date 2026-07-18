@@ -26,6 +26,7 @@
 ### Task 1.1: Create theme tokens file
 
 **Files:**
+
 - Create: `src/components/ui/theme/tokens.ts`
 
 - [ ] Extract `LIGHT_COLORS`, `DARK_COLORS`, `RADIUS`, `SPACE`, `SHADOW` from `src/components/ui/native-ui.tsx` into `src/components/ui/theme/tokens.ts`. These are the exact same values currently defined — no changes:
@@ -70,9 +71,27 @@ export const DARK_COLORS = {
 export const RADIUS = { sm: 16, md: 24, lg: 36, xl: 36, pill: 999 };
 export const SPACE = { page: 24 };
 export const SHADOW = {
-  sm: { shadowColor: "#fff", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.08, shadowRadius: 4, elevation: 1 },
-  md: { shadowColor: "#fff", shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.16, shadowRadius: 8, elevation: 2 },
-  lg: { shadowColor: "rgba(79, 140, 255, 0.18)", shadowOffset: { width: 0, height: 12 }, shadowOpacity: 1, shadowRadius: 40, elevation: 12 },
+  sm: {
+    shadowColor: "#fff",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 1,
+  },
+  md: {
+    shadowColor: "#fff",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  lg: {
+    shadowColor: "rgba(79, 140, 255, 0.18)",
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 1,
+    shadowRadius: 40,
+    elevation: 12,
+  },
 } as const;
 ```
 
@@ -81,16 +100,25 @@ export const SHADOW = {
 ### Task 1.2: Create typography themes
 
 **Files:**
+
 - Create: `src/components/ui/theme/typography.ts`
 
 ```typescript
 export const TYPO = {
-  hero: (size = 32) => ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.02 }) as const,
-  title: (size = 24) => ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.01 }) as const,
+  hero: (size = 32) =>
+    ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.02 }) as const,
+  title: (size = 24) =>
+    ({ fontFamily: "Sora_600SemiBold", fontSize: size, letterSpacing: -0.01 }) as const,
   body: (size = 17) => ({ fontFamily: "IBMPlexSans_400Regular", fontSize: size }) as const,
   medium: (size = 16) => ({ fontFamily: "IBMPlexSans_500Medium", fontSize: size }) as const,
   semi: (size = 16) => ({ fontFamily: "IBMPlexSans_600SemiBold", fontSize: size }) as const,
-  label: () => ({ fontFamily: "IBMPlexSans_600SemiBold", fontSize: 11, letterSpacing: 1.2, textTransform: "uppercase" }) as const,
+  label: () =>
+    ({
+      fontFamily: "IBMPlexSans_600SemiBold",
+      fontSize: 11,
+      letterSpacing: 1.2,
+      textTransform: "uppercase",
+    }) as const,
 };
 ```
 
@@ -99,6 +127,7 @@ export const TYPO = {
 ### Task 1.3: Create useUI hook
 
 **Files:**
+
 - Create: `src/components/ui/hooks/useUI.ts`
 
 ```typescript
@@ -115,7 +144,7 @@ export function useUI() {
       space: SPACE,
       shadow: SHADOW,
     }),
-    [isDark],
+    [isDark]
   );
 }
 ```
@@ -125,6 +154,7 @@ export function useUI() {
 ### Task 1.4: Create barrel index
 
 **Files:**
+
 - Create: `src/components/ui/index.ts`
 
 ```typescript
@@ -138,9 +168,11 @@ export { TYPO } from "./theme/typography";
 ### Task 1.5: Update native-ui.tsx to re-export from new theme
 
 **Files:**
+
 - Modify: `src/components/ui/native-ui.tsx`
 
 - [ ] Replace the `useUI`, `LIGHT_COLORS`, `DARK_COLORS` definitions with re-exports from the new files. Replace:
+
 ```typescript
 // Remove LIGHT_COLORS, DARK_COLORS, RADIUS, SPACE, SHADOW definitions
 // Remove useUI function definition
@@ -149,6 +181,7 @@ export { useUI } from "@/components/ui/hooks/useUI";
 export { LIGHT_COLORS, DARK_COLORS } from "@/components/ui/theme/tokens";
 export { TYPO } from "@/components/ui/theme/typography";
 ```
+
 Also update all component functions in native-ui.tsx to import `useUI` from `@/components/ui` instead of calling it locally (they currently call `useUI()` directly, keep that — they just need the import path updated).
 
 - [ ] In each component function, change `const { color, radius, space, shadow } = useUI();` to use the hook as-is (self-reference is fine since it's re-exported from the same file path pattern). Actually, since `useUI` is now re-exported and the components are in the same file, just ensure they call `useUI()` directly. No import needed for same-file functions.
@@ -171,6 +204,7 @@ For each component below, create a new file, move the component definition from 
 ### Task 2.1: PressableScale
 
 **Files:**
+
 - Create: `src/components/ui/PressableScale.tsx`
 - Modify: `src/components/ui/native-ui.tsx` — remove PressableScale definition
 
@@ -207,6 +241,7 @@ export function PressableScale({ children, onPress, disabled, scaleTo = 0.97, st
 ### Task 2.2: IconButton
 
 **Files:**
+
 - Create: `src/components/ui/IconButton.tsx`
 
 ```typescript
@@ -268,9 +303,11 @@ For each: copy the exact component from native-ui.tsx, change `useUI()` import p
 ### Task 2.4: Barrel index — add all new component exports
 
 **Files:**
+
 - Modify: `src/components/ui/index.ts`
 
 - [ ] Add exports:
+
 ```typescript
 export { PressableScale } from "./PressableScale";
 export { IconButton } from "./IconButton";
@@ -293,6 +330,7 @@ export { EmptyState } from "./EmptyState";
 - [ ] Replace all `import { ... } from "@/components/ui/native-ui"` with `import { ... } from "@/components/ui"`
 
 This is a bulk find-and-replace. Use sed:
+
 ```bash
 find src -name "*.tsx" -o -name "*.ts" | xargs sed -i '' 's|@/components/ui/native-ui|@/components/ui|g'
 ```
@@ -312,6 +350,7 @@ find src -name "*.tsx" -o -name "*.ts" | xargs sed -i '' 's|@/components/ui/nati
 ### Task 2.7: Delete native-ui.tsx
 
 **Files:**
+
 - Delete: `src/components/ui/native-ui.tsx`
 
 - [ ] Verify nothing imports from this file anymore: `grep -r "native-ui" src --include="*.tsx" --include="*.ts" | grep -v node_modules`
@@ -332,12 +371,14 @@ git commit -m "refactor: split native-ui.tsx into individual component files"
 ### Task 3.1: Create useDashboard hook
 
 **Files:**
+
 - Create: `src/features/dashboard/hooks/useDashboard.ts`
 - Modify: `src/features/dashboard/screens/DashboardScreen.tsx` — will use this hook in Task 3.2
 
 - [ ] Extract from DashboardScreen.tsx all data fetching, computed values, and action callbacks into `useDashboard.ts`:
 
 The hook should:
+
 - Import and call: `useGroups`, `useFriends`, `useUserExpenses`, `useUserSettlements`, `useNotifications`, `useAnalytics` from their respective query files
 - Import `useAuth` for currentUser
 - Import `useUIStore` for currency/preferredCurrency
@@ -352,39 +393,39 @@ The hook should:
 export interface DashboardData {
   currentUser: User | null;
   preferredCurrency: Currency;
-  
+
   // Balance
   balanceTone: "danger" | "success" | "surface";
   perUserBalances: Record<string, number>;
   owedToYou: number;
   youOwe: number;
-  
+
   // Lists
   oweUsers: Array<{ user: User; amount: number }>;
   owedUsers: Array<{ user: User; amount: number }>;
   recentExpenses: Expense[];
   activeGroups: Group[];
-  
+
   // State
   openGroupCount: number;
   activeExpenseFilter: ExpenseFilterType;
   isLoading: boolean;
   isError: boolean;
   refreshing: boolean;
-  
-  // Actions  
+
+  // Actions
   setActiveExpenseFilter: (f: ExpenseFilterType) => void;
   onRefresh: () => void;
   handleAddExpense: () => void;
   handleSettleUp: () => void;
   handleViewAllGroups: () => void;
   handleFriendAction: (user: User, type: "remind" | "settle") => void;
-  
+
   // Settle sheet
   settleSheetRef: React.RefObject<BottomSheetModal>;
   openSettleSheet: () => void;
   closeSettleSheet: () => void;
-  
+
   // Loading
   groupsLoading: boolean;
   friendsLoading: boolean;
@@ -399,6 +440,7 @@ Extract the exact logic from DashboardScreen.tsx lines 75-408 into this file.
 ### Task 3.2: Rewrite DashboardScreen as thin composition
 
 **Files:**
+
 - Modify: `src/features/dashboard/screens/DashboardScreen.tsx`
 
 - [ ] Replace the entire screen content with a thin composition layer (target ~80 lines):
@@ -418,9 +460,9 @@ import { useUI } from "@/components/ui";
 export default function DashboardScreen(): JSX.Element {
   const dashboard = useDashboard();
   const { color } = useUI();
-  
+
   if (dashboard.isLoading) return <DashboardSkeleton />;
-  
+
   return (
     <View style={{ flex: 1, backgroundColor: color.bg }}>
       <GlassBackground />
@@ -453,6 +495,7 @@ export default function DashboardScreen(): JSX.Element {
 ### Task 3.3: Create DashboardBalance component
 
 **Files:**
+
 - Create: `src/features/dashboard/components/DashboardBalance.tsx`
 - Extract from: `src/features/dashboard/screens/DashboardScreen.tsx` (the inline hero balance card, lines ~563-800ish)
 
@@ -478,9 +521,11 @@ interface DashboardBalanceProps {
 ### Task 3.4: Create DashboardActions, DashboardAttention, DashboardGroupsPreview, DashboardRecentActivity components
 
 **Files:**
+
 - Create each as a new file under `src/features/dashboard/components/`
 
 Each extracts the corresponding section from DashboardScreen:
+
 - `DashboardActions.tsx` — the "Add Expense" + "Settle up" button row (lines ~820-850)
 - `DashboardAttention.tsx` — the "Need attention" section with oweUsers/owedUsers lists and Remind/Settle actions (lines ~860-960)
 - `DashboardGroupsPreview.tsx` — the top 4 groups section with "View all" and "+" buttons (lines ~970-1070)
@@ -492,6 +537,7 @@ Each extracts the corresponding section from DashboardScreen:
 ### Task 3.5: Create DashboardSettleSheet component
 
 **Files:**
+
 - Create: `src/features/dashboard/components/DashboardSettleSheet.tsx`
 - Extract from: DashboardScreen's settle-up bottom sheet (~lines 200-350)
 
@@ -503,6 +549,7 @@ Each extracts the corresponding section from DashboardScreen:
 ### Task 3.6: Create DashboardSkeleton component
 
 **Files:**
+
 - Create: `src/features/dashboard/components/DashboardSkeleton.tsx`
 
 - [ ] Extract the skeleton loading state from DashboardScreen (~lines 460-540)
@@ -521,6 +568,7 @@ git commit -m "refactor: split DashboardScreen into hooks + components (1330 →
 ```bash
 wc -l src/features/dashboard/screens/DashboardScreen.tsx
 ```
+
 - [ ] Should be under 100 lines
 
 ---
@@ -530,6 +578,7 @@ wc -l src/features/dashboard/screens/DashboardScreen.tsx
 ### Task 4.1: Create useGroupDetail hook
 
 **Files:**
+
 - Create: `src/features/groups/hooks/useGroupDetail.ts`
 - Extract from: `src/features/groups/screens/GroupDetailScreen.tsx` (745 lines)
 
@@ -562,6 +611,7 @@ interface GroupDetailData {
 ### Task 4.2: Rewrite GroupDetailScreen as thin composition
 
 **Files:**
+
 - Modify: `src/features/groups/screens/GroupDetailScreen.tsx`
 
 - [ ] Replace content with composition of extracted components using data from `useGroupDetail()`. Target ~80 lines.
@@ -580,6 +630,7 @@ interface GroupDetailData {
 ### Task 4.4: Create useGroupSettings hook
 
 **Files:**
+
 - Create: `src/features/groups/hooks/useGroupSettings.ts`
 - Extract from: `src/features/groups/screens/GroupSettingsScreen.tsx` (857 lines)
 
@@ -588,6 +639,7 @@ interface GroupDetailData {
 ### Task 4.5: Rewrite GroupSettingsScreen as thin composition + components
 
 **Files:**
+
 - Modify: `src/features/groups/screens/GroupSettingsScreen.tsx`
 - Create components for each section
 
@@ -601,12 +653,14 @@ interface GroupDetailData {
 ### Task 4.6: Create useGroupsList hook
 
 **Files:**
+
 - Create: `src/features/groups/hooks/useGroupsList.ts`
 - Extract from: `src/features/groups/screens/GroupsScreen.tsx` (377 lines)
 
 ### Task 4.7: Rewrite GroupsScreen as thin composition
 
 **Files:**
+
 - Modify: `src/features/groups/screens/GroupsScreen.tsx`
 - Target ~80 lines
 
@@ -619,6 +673,7 @@ interface GroupDetailData {
 ### Task 5.1: Create useFriendsList hook
 
 **Files:**
+
 - Create: `src/features/friends/hooks/useFriendsList.ts`
 - Extract from: `src/features/friends/screens/FriendsScreen.tsx` (1028 lines)
 
@@ -650,6 +705,7 @@ export interface FriendsListData {
 ### Task 5.2: Rewrite FriendsScreen + create components
 
 **Files:**
+
 - Create: `src/features/friends/components/FriendsSummary.tsx` — balance summary card (MetricCell row + contextual text)
 - Create: `src/features/friends/components/FriendsRequests.tsx` — pending requests with Accept/Reject buttons
 - Create: `src/features/friends/components/FriendsSearchFilter.tsx` — SearchField + horizontal FilterPill scroll
@@ -664,6 +720,7 @@ export interface FriendsListData {
 ### Task 5.3: Create useFriendDetail hook
 
 **Files:**
+
 - Create: `src/features/friends/hooks/useFriendDetail.ts`
 - Extract from: `src/features/friends/screens/FriendDetailScreen.tsx` (1158 lines)
 
@@ -691,6 +748,7 @@ export interface FriendDetailData {
 ### Task 5.4: Rewrite FriendDetailScreen + create components
 
 **Files:**
+
 - Create: `src/features/friends/components/FriendBalanceCard.tsx` — hero balance display (settled vs owed states)
 - Create: `src/features/friends/components/FriendSharedGroups.tsx` — groups list
 - Create: `src/features/friends/components/FriendSpendingCategories.tsx` — category breakdown
@@ -714,6 +772,7 @@ git commit -m "refactor: split FriendsScreen and FriendDetailScreen into hooks +
 ### Task 6.1: Create useActivity hook
 
 **Files:**
+
 - Create: `src/features/activity/hooks/useActivity.ts`
 - Extract from: `src/features/activity/screens/ActivityScreen.tsx` (240 lines)
 
@@ -737,6 +796,7 @@ export interface ActivityData {
 ### Task 6.2: Rewrite ActivityScreen as thin composition
 
 **Files:**
+
 - Modify: `src/features/activity/screens/ActivityScreen.tsx`
 - Create: `src/features/activity/components/ActivitySection.tsx` — wraps a month section with header + card container
 
@@ -752,6 +812,7 @@ export interface ActivityData {
 ### Task 7.1: Create useExpenseDetail hook
 
 **Files:**
+
 - Create: `src/features/expenses/hooks/useExpenseDetail.ts`
 - Extract from: `src/features/expenses/screens/ExpenseDetailScreen.tsx` (968 lines)
 
@@ -774,6 +835,7 @@ export interface ExpenseDetailData {
 ### Task 7.2: Rewrite ExpenseDetailScreen + create components
 
 **Files:** Create under `src/features/expenses/components/`
+
 - `ExpenseSummary.tsx` — header section with icon, title, amount, date, paid by, group
 - `ExpenseSplitBreakdown.tsx` — split participant rows
 - `ExpenseComments.tsx` — comment list + input field
@@ -790,6 +852,7 @@ export interface ExpenseDetailData {
 ### Task 8.1: Create useSettlement hook
 
 **Files:**
+
 - Create: `src/features/settlements/hooks/useSettlement.ts`
 - Extract from: `src/features/settlements/screens/SettlementScreen.tsx` (970 lines)
 
@@ -814,6 +877,7 @@ export interface SettlementData {
 ### Task 8.2: Rewrite SettlementScreen + create components
 
 **Files:** Create under `src/features/settlements/components/`
+
 - `SettlementParties.tsx` — from/to user display with avatar + swap icon
 - `SettlementAmount.tsx` — amount input with preset chip buttons (Full/Half)
 - `SettlementConfirmation.tsx` — confirmation card with summary
@@ -830,6 +894,7 @@ export interface SettlementData {
 ### Task 9.1: Create useAnalytics hook
 
 **Files:**
+
 - Create: `src/features/analytics/hooks/useAnalytics.ts`
 - Extract from: `src/features/analytics/screens/AnalyticsScreen.tsx` (325 lines)
 
@@ -853,6 +918,7 @@ export interface AnalyticsData {
 ### Task 9.2: Rewrite screens as thin composition
 
 **Files:**
+
 - Modify: `src/features/analytics/screens/AnalyticsScreen.tsx`
 - Modify: `src/features/analytics/screens/StatsPlaceholderScreen.tsx` (if needed)
 
@@ -865,6 +931,7 @@ export interface AnalyticsData {
 ### Task 10.1: Create useProfile hook
 
 **Files:**
+
 - Create: `src/features/profile/hooks/useProfile.ts`
 - Extract from: `src/features/profile/screens/ProfileScreen.tsx` (537 lines)
 
@@ -888,6 +955,7 @@ export interface ProfileData {
 ### Task 10.2: Rewrite ProfileScreen + create components
 
 **Files:** Create under `src/features/profile/components/`
+
 - `ProfileHeader.tsx` — avatar + name + email
 - `ProfileBalance.tsx` — groups count + net balance metric cells
 - `ProfilePreferences.tsx` — Dark Mode, Currency pref rows
@@ -903,30 +971,39 @@ export interface ProfileData {
 ### Phase 11: Final Verification
 
 ### Task 11.1: Run full typecheck
+
 ```bash
 npx tsc --noEmit
 ```
+
 - [ ] EXIT 0
 
 ### Task 11.2: Verify no file exceeds 250 lines
+
 ```bash
 find src -name "*.tsx" -o -name "*.ts" | xargs wc -l | awk '$1 > 250 {print}'
 ```
+
 - [ ] Fix any files over 250 lines
 
 ### Task 11.3: Verify no screen imports data directly
+
 ```bash
 grep -r "useQuery\|useMutation" src/features/*/screens/ --include="*.tsx"
 ```
+
 - [ ] Should return zero results (or only in type imports)
 
 ### Task 11.4: Verify no component in components/ imports query hooks
+
 ```bash
 grep -r "from.*queries/" src/features/*/components/ --include="*.tsx"
 ```
+
 - [ ] Should return zero results (components use props, not queries)
 
 ### Task 11.5: Final commit
+
 ```bash
 git add -A
 git commit -m "refactor: complete architecture restructuring"

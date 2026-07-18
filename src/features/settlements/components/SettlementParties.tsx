@@ -1,10 +1,11 @@
 import type { JSX } from "react";
 import { View, Pressable, ScrollView } from "react-native";
-import { Typography } from "heroui-native";
+import { Text } from "heroui-native";
 import Animated, { FadeInDown, FadeIn, LinearTransition } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import { useUI, GlassSection } from "@/components/ui";
+import { useUI } from "@/components/ui";
+import { Eyebrow, useCoralColors } from "@/components/coral";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 
 interface FriendOption {
@@ -47,14 +48,25 @@ export function SettlementParties({
   onSelectFriend,
 }: SettlementPartiesProps): JSX.Element {
   const { color, radius } = useUI();
+  const coral = useCoralColors();
 
   return (
     <Animated.View
       entering={FadeInDown.duration(400)}
       style={{ paddingHorizontal: 24, paddingVertical: 24 }}
     >
-      <GlassSection title="Parties">
-        <View style={{ padding: 20 }}>
+      <View style={{ marginBottom: 28 }}>
+        <Eyebrow style={{ marginTop: 0 }}>Parties</Eyebrow>
+        <View
+          style={{
+            backgroundColor: coral.surface,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: coral.border,
+            overflow: "hidden",
+            padding: 20,
+          }}
+        >
           <View
             style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
           >
@@ -63,7 +75,7 @@ export function SettlementParties({
               layout={LinearTransition.springify()}
             >
               <AppUserAvatar user={leftUser} size="lg" />
-              <Typography
+              <Text
                 style={{
                   fontSize: 13,
                   fontFamily: "IBMPlexSans_600SemiBold",
@@ -72,7 +84,7 @@ export function SettlementParties({
                 }}
               >
                 {leftName}
-              </Typography>
+              </Text>
             </Animated.View>
 
             <View style={{ flex: 1, alignItems: "center", paddingHorizontal: 16 }}>
@@ -95,7 +107,7 @@ export function SettlementParties({
                 })}
               >
                 <icons.ArrowRightLeft size={16} color={color.text} strokeWidth={2.5} />
-                <Typography
+                <Text
                   style={{
                     fontSize: 12,
                     color: color.text,
@@ -105,7 +117,7 @@ export function SettlementParties({
                   }}
                 >
                   Swap
-                </Typography>
+                </Text>
               </Pressable>
             </View>
 
@@ -125,7 +137,7 @@ export function SettlementParties({
                     <AppUserAvatar user={rightUser} size="lg" />
                     <icons.ChevronDown size={16} color={color.text} />
                   </View>
-                  <Typography
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: "IBMPlexSans_600SemiBold",
@@ -134,12 +146,12 @@ export function SettlementParties({
                     }}
                   >
                     {rightName}
-                  </Typography>
+                  </Text>
                 </Pressable>
               ) : (
                 <View style={{ alignItems: "center" }}>
                   <AppUserAvatar user={rightUser} size="lg" />
-                  <Typography
+                  <Text
                     style={{
                       fontSize: 13,
                       fontFamily: "IBMPlexSans_600SemiBold",
@@ -148,7 +160,7 @@ export function SettlementParties({
                     }}
                   >
                     {rightName}
-                  </Typography>
+                  </Text>
                 </View>
               )}
             </Animated.View>
@@ -160,7 +172,7 @@ export function SettlementParties({
               exiting={FadeIn.duration(200)}
               style={{ marginTop: 20 }}
             >
-              <Typography
+              <Text
                 style={{
                   fontSize: 12,
                   color: color.muted,
@@ -169,7 +181,7 @@ export function SettlementParties({
                 }}
               >
                 Select who you are settling with
-              </Typography>
+              </Text>
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -200,7 +212,7 @@ export function SettlementParties({
                       }}
                     >
                       <AppUserAvatar user={optFriend} size="sm" />
-                      <Typography
+                      <Text
                         style={{
                           fontSize: 11,
                           fontFamily: "IBMPlexSans_600SemiBold",
@@ -210,7 +222,7 @@ export function SettlementParties({
                         numberOfLines={1}
                       >
                         {optFriend.name.split(" ")[0]}
-                      </Typography>
+                      </Text>
                     </Pressable>
                   );
                 })}
@@ -218,7 +230,7 @@ export function SettlementParties({
             </Animated.View>
           )}
         </View>
-      </GlassSection>
+      </View>
     </Animated.View>
   );
 }

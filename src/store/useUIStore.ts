@@ -1,7 +1,10 @@
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Appearance } from "react-native";
 import { Currency, CURRENCIES } from "@/types";
+
+export type ThemePreference = "system" | "light" | "dark";
 
 const FALLBACK_RATES: Record<string, number> = {
   USD: 1,
@@ -25,6 +28,13 @@ const FALLBACK_RATES: Record<string, number> = {
   NZD: 1.67,
 };
 
+function resolveIsDarkMode(theme: ThemePreference): boolean {
+  if (theme === "system") {
+    return Appearance.getColorScheme() === "dark";
+  }
+  return theme === "dark";
+}
+
 export interface UIState {
   isAppLoading: boolean;
   setIsAppLoading: (loading: boolean) => void;
@@ -32,8 +42,12 @@ export interface UIState {
   preferredCurrency: Currency;
   setCurrency: (currency: Currency) => void;
 
+  theme: ThemePreference;
+  setTheme: (theme: ThemePreference) => void;
+
   isDarkMode: boolean;
   setDarkMode: (dark: boolean) => void;
+  syncThemeFromSystem: () => void;
 
   exchangeRates: Record<string, number>;
   setExchangeRates: (rates: Record<string, number>) => void;
@@ -42,14 +56,35 @@ export interface UIState {
   convertCurrency: (amount: number, from: string, to: string) => number;
 }
 
+const initialTheme: ThemePreference = "system";
+const initialIsDark = resolveIsDarkMode(initialTheme);
+
 export const useUIStore = create<UIState>()(
   persist(
     (set, get) => ({
       isAppLoading: false,
       setIsAppLoading: (loading) => set({ isAppLoading: loading }),
 
-      isDarkMode: false,
-      setDarkMode: (dark) => set({ isDarkMode: dark }),
+      theme: initialTheme,
+      isDarkMode: initialIsDark,
+
+      setTheme: (theme) =>
+        set({
+          theme,
+          isDarkMode: resolveIsDarkMode(theme),
+        }),
+
+      setDarkMode: (dark) => {
+        set({
+          theme: dark ? "dark" : "light",
+          isDarkMode: dark,
+        });
+      },
+
+      syncThemeFromSystem: () => {
+        const { theme } = get();
+        set({ isDarkMode: resolveIsDarkMode(theme) });
+      },
 
       preferredCurrency: CURRENCIES.find((c) => c.code === "USD") ?? CURRENCIES[0]!,
       setCurrency: (currency) => set({ preferredCurrency: currency }),
@@ -83,8 +118,15 @@ export const useUIStore = create<UIState>()(
       partialize: (state) => ({
         preferredCurrency: state.preferredCurrency,
         exchangeRates: state.exchangeRates,
-        isDarkMode: state.isDarkMode,
+        theme: state.theme,
       }),
+      onRehydrateStorage: () => {
+        return (state) => {
+          if (state) {
+            state.isDarkMode = resolveIsDarkMode(state.theme ?? "system");
+          }
+        };
+      },
     }
   )
 );

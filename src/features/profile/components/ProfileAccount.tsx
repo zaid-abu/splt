@@ -1,8 +1,9 @@
 import type { JSX } from "react";
-import { View } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Text } from "react-native";
+import * as icons from "lucide-react-native";
 import { Lock } from "lucide-react-native";
-import { useUI, GlassSection, GlassRow } from "@/components/ui";
+import { useUI } from "@/components/ui";
+import { MoneyRow, Eyebrow, useCoralColors } from "@/components/coral";
 import { HapticButton } from "@/components/ui/HapticButton";
 
 interface ProfileAccountProps {
@@ -21,55 +22,68 @@ export function ProfileAccount({
   onDeleteAccount,
 }: ProfileAccountProps): JSX.Element {
   const { color, radius, space } = useUI();
+  const coral = useCoralColors();
 
   return (
-    <GlassSection title="Account">
-      <View style={{ padding: space.page }}>
-        <Typography
-          style={{
-            fontSize: 14,
-            color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
-            marginBottom: 20,
-            lineHeight: 20,
-          }}
-        >
-          {createdAt
-            ? `Account created on ${createdAt.toLocaleDateString()}`
-            : "Account details are synced with your profile."}
-        </Typography>
+    <View style={{ marginBottom: 28 }}>
+      <Eyebrow style={{ marginTop: 0 }}>Account</Eyebrow>
+      <View
+        style={{
+          backgroundColor: coral.surface,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: coral.border,
+          overflow: "hidden",
+        }}
+      >
+        <View style={{ padding: space.page }}>
+          <Text
+            style={{
+              fontSize: 14,
+              color: color.muted,
+              fontFamily: "InstrumentSans_500Medium",
+              marginBottom: 20,
+              lineHeight: 20,
+            }}
+          >
+            {createdAt
+              ? `Account created on ${createdAt.toLocaleDateString()}`
+              : "Account details are synced with your profile."}
+          </Text>
 
-        <GlassRow
-          icon={<Lock size={20} color={color.text} />}
-          title="Change Password"
-          onPress={onChangePassword}
-          showChevron
-        />
+          <MoneyRow
+            avatar={<Lock size={20} color={color.text} />}
+            title="Change Password"
+            amount=""
+            rightElement={<icons.ChevronRight size={18} color={color.muted} />}
+            onPress={onChangePassword}
+          />
 
-        <View style={{ height: 12 }} />
+          <View style={{ height: 12 }} />
 
-        <HapticButton onPress={onLogOut} tone="outlined" height={52}>
-          Log Out
-        </HapticButton>
+          <HapticButton onPress={onLogOut} tone="outlined" height={52}>
+            Log Out
+          </HapticButton>
 
-        <View style={{ height: 10 }} />
+          <View style={{ height: 10 }} />
 
-        <HapticButton onPress={onShareInvite} tone="outlined" height={52}>
-          Tell a Friend
-        </HapticButton>
+          <HapticButton onPress={onShareInvite} tone="outlined" height={52}>
+            Tell a Friend
+          </HapticButton>
 
-        <View
-          style={{
-            height: 1,
-            backgroundColor: color.border,
-            marginVertical: 16,
-          }}
-        />
+          <View
+            style={{
+              height: 1,
+              backgroundColor: color.border,
+              marginVertical: 16,
+            }}
+          />
 
-        <HapticButton onPress={onDeleteAccount} tone="danger" height={52}>
-          Delete Account
-        </HapticButton>
+          <HapticButton onPress={onDeleteAccount} tone="danger" height={52}>
+            Delete Account
+          </HapticButton>
+        </View>
       </View>
-    </GlassSection>
+    </View>
   );
 }

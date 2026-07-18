@@ -15,6 +15,14 @@ import * as balancesUtil from "@/features/settlements/utils/balances";
 import { useNotifications } from "@/features/notifications/queries/useNotifications";
 import { useAnalytics } from "@/features/analytics/hooks/useAnalytics";
 
+export interface DashboardGroupBalancePreview {
+  group: Group;
+  netBalance: number;
+  latestExpenseAt: number;
+  keyPerson?: User;
+  keyPersonBalance?: number;
+}
+
 export interface DashboardData {
   currentUser: User | null;
   preferredCurrency: Currency;
@@ -26,6 +34,7 @@ export interface DashboardData {
   owedUsers: User[];
   recentExpenses: Expense[];
   activeGroups: { group: Group; netBalance: number }[];
+  groupBalancePreview: DashboardGroupBalancePreview[];
   openGroupCount: number;
   activeExpenseFilter: "all" | "paid" | "owe";
   isLoading: boolean;
@@ -151,7 +160,7 @@ export function useDashboard(): DashboardData {
   }, [expenses, activeExpenseFilter, currentUser.id]);
 
   const groupNetBalances = useMemo(() => {
-    return groups.map((group) => {
+    return groups.map((group): DashboardGroupBalancePreview => {
       const balancesMap = balancesUtil.getUserBalances(
         currentUser.id,
         group.id,
@@ -165,6 +174,20 @@ export function useDashboard(): DashboardData {
       for (const amount of balancesMap.values()) {
         netBalance += amount;
       }
+
+      let keyPerson: User | undefined;
+      let keyPersonBalance: number | undefined;
+      for (const member of group.members) {
+        if (member.userId === currentUser.id) continue;
+
+        const balance = balancesMap.get(member.userId) ?? 0;
+        if (Math.abs(balance) <= 0.005) continue;
+        if (keyPersonBalance === undefined || Math.abs(balance) > Math.abs(keyPersonBalance)) {
+          keyPerson = member.user;
+          keyPersonBalance = balance;
+        }
+      }
+
       const latestExpenseAt = expenses
         .filter((expense) => expense.groupId === group.id)
         .reduce((latest, expense) => {
@@ -172,7 +195,7 @@ export function useDashboard(): DashboardData {
           return Math.max(latest, expenseTime);
         }, new Date(group.createdAt).getTime());
 
-      return { group, netBalance, latestExpenseAt };
+      return { group, netBalance, latestExpenseAt, keyPerson, keyPersonBalance };
     });
   }, [groups, currentUser.id, expenses, settlements, preferredCurrency, convertCurrency]);
 
@@ -181,16 +204,29 @@ export function useDashboard(): DashboardData {
       const aHasBalance = Math.abs(a.netBalance) > 0.005;
       const bHasBalance = Math.abs(b.netBalance) > 0.005;
       if (aHasBalance !== bHasBalance) return aHasBalance ? -1 : 1;
-      if (a.latestExpenseAt !== b.latestExpenseAt)
-        return b.latestExpenseAt - a.latestExpenseAt;
+      if (a.latestExpenseAt !== b.latestExpenseAt) return b.latestExpenseAt - a.latestExpenseAt;
       return Math.abs(b.netBalance) - Math.abs(a.netBalance);
     });
     return sorted.slice(0, 4);
   }, [groupNetBalances]);
 
+  const groupBalancePreview = useMemo(() => {
+    const openGroups = groupNetBalances.filter(({ netBalance }) => Math.abs(netBalance) > 0.005);
+    const candidates = openGroups.length > 0 ? openGroups : groupNetBalances;
+
+    return [...candidates]
+      .sort((a, b) => {
+        if (openGroups.length > 0) {
+          const balanceDifference = Math.abs(b.netBalance) - Math.abs(a.netBalance);
+          if (balanceDifference !== 0) return balanceDifference;
+        }
+        return b.latestExpenseAt - a.latestExpenseAt;
+      })
+      .slice(0, 4);
+  }, [groupNetBalances]);
+
   const openGroupCount = useMemo(
-    () =>
-      groupNetBalances.filter(({ netBalance }) => Math.abs(netBalance) > 0.005).length,
+    () => groupNetBalances.filter(({ netBalance }) => Math.abs(netBalance) > 0.005).length,
     [groupNetBalances]
   );
 
@@ -217,12 +253,12 @@ export function useDashboard(): DashboardData {
     } else if (youOwe > 0 && oweUsers.length > 0) {
       router.push(`/settle/${oweUsers[0].id}`);
     } else {
-      router.push("/(tabs)/friends");
+      router.push("/people");
     }
   }, [owedUsers, oweUsers, owedToYou, youOwe, router]);
 
   const handleViewAllGroups = useCallback(() => {
-    router.push("/(tabs)/groups");
+    router.push("/groups");
   }, [router]);
 
   const handleCreateGroup = useCallback(() => {
@@ -244,11 +280,11 @@ export function useDashboard(): DashboardData {
   );
 
   const handleViewAllActivity = useCallback(() => {
-    router.push("/(tabs)/activity");
+    router.push("/activity");
   }, [router]);
 
   const handleViewProfile = useCallback(() => {
-    router.push("/profile");
+    router.push("/settings");
   }, [router]);
 
   const handleViewNotifications = useCallback(() => {
@@ -256,7 +292,7 @@ export function useDashboard(): DashboardData {
   }, [router]);
 
   const handleViewStats = useCallback(() => {
-    router.push("/stats");
+    router.push("/analytics");
   }, [router]);
 
   const handleSettleUser = useCallback(
@@ -295,6 +331,7 @@ export function useDashboard(): DashboardData {
     owedUsers,
     recentExpenses,
     activeGroups,
+    groupBalancePreview,
     openGroupCount,
     activeExpenseFilter,
     totalSpent,

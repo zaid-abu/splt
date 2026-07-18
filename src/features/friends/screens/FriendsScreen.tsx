@@ -12,7 +12,6 @@ import Animated, { FadeInDown, LinearTransition } from "react-native-reanimated"
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useUI, ScreenHeader, IconButton } from "@/components/ui";
-import GlassBackground from "@/components/glassmorphism/GlassBackground";
 import { useFriendsList, type DisplayItem } from "@/features/friends/hooks/useFriendsList";
 import { FriendsSummary } from "@/features/friends/components/FriendsSummary";
 import { FriendsRequests } from "@/features/friends/components/FriendsRequests";
@@ -159,7 +158,6 @@ export default function FriendsScreen(): JSX.Element {
 
   return (
     <FocusAwareView style={{ flex: 1, backgroundColor: color.bg }}>
-      <GlassBackground />
       <ThemedStatusBar />
 
       <Animated.View

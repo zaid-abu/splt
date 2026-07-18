@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuthService } from "@/services/api/auth";
 import type { SignInData, SignUpData } from "@/services/api/auth";
+import { queryKeys } from "@/queries/keys";
 
 export function useSignIn() {
   const queryClient = useQueryClient();
@@ -8,9 +9,7 @@ export function useSignIn() {
   return useMutation({
     mutationFn: (data: SignInData) => AuthService.signIn(data),
     onSuccess: () => {
-      // Invalidate queries that depend on the session
-      queryClient.invalidateQueries({ queryKey: ["session"] });
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.account.all });
     },
   });
 }
@@ -21,8 +20,7 @@ export function useSignUp() {
   return useMutation({
     mutationFn: (data: SignUpData) => AuthService.signUp(data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["session"] });
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.account.all });
     },
   });
 }
@@ -56,13 +54,17 @@ export function useSignOut() {
 }
 
 export function useSignInWithGoogle() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => AuthService.signInWithGoogle(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.account.all }),
   });
 }
 
 export function useSignInWithApple() {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: () => AuthService.signInWithApple(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.account.all }),
   });
 }

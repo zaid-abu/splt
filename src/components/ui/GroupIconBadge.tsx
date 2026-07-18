@@ -90,7 +90,7 @@ export function GroupIconBadge({
             style={{
               fontSize: dims.font,
               color: tone.icon,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               letterSpacing: -0.3,
             }}
             numberOfLines={1}

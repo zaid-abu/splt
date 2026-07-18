@@ -41,7 +41,7 @@ function createCurrencyStyles(
       borderRadius: radius.lg,
       borderWidth: 1,
       borderColor: color.border,
-      backgroundColor: color.surface,
+      backgroundColor: "rgba(255, 255, 255, 0.7)",
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
@@ -119,7 +119,7 @@ function createCurrencyStyles(
       borderRadius: radius.pill,
       borderWidth: 1,
       borderColor: color.border,
-      backgroundColor: color.control,
+      backgroundColor: "rgba(255, 255, 255, 0.5)",
       flexDirection: "row",
       alignItems: "center",
       gap: 12,
@@ -151,18 +151,17 @@ function createCurrencyStyles(
       borderRadius: radius.lg,
       borderWidth: 1,
       borderColor: color.border,
-      backgroundColor: color.surface,
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       gap: 12,
     },
     itemCurrent: {
-      backgroundColor: color.subtle,
+      backgroundColor: "rgba(255, 255, 255, 0.45)",
     },
     itemSelected: {
       borderColor: color.text,
-      backgroundColor: color.subtle,
+      backgroundColor: "rgba(255, 255, 255, 0.45)",
     },
     itemLeft: {
       flex: 1,
@@ -365,7 +364,10 @@ export function CurrencySelector({
   const [search, setSearch] = useState("");
   const isDarkMode = useUIStore((s) => s.isDarkMode);
   const { color, radius } = useUI();
-  const styles = useMemo(() => createCurrencyStyles(color, radius, isDarkMode), [color, radius, isDarkMode]);
+  const styles = useMemo(
+    () => createCurrencyStyles(color, radius, isDarkMode),
+    [color, radius, isDarkMode]
+  );
 
   const selectedCurrency = CURRENCIES.find((currency) => currency.code === value) ?? CURRENCIES[0];
 
@@ -487,23 +489,33 @@ export function CurrencySelector({
       {label ? <Typography style={styles.label}>{label}</Typography> : null}
 
       <PressableFeedback accessibilityRole="button" onPress={handlePresentModalPress}>
-        <View style={styles.triggerContainer}>
-          <View style={styles.triggerLeft}>
-            <View style={styles.triggerSymbolShell}>
-              <Typography style={styles.triggerSymbolText}>{selectedCurrency.symbol}</Typography>
+        <View
+          style={{
+            borderRadius: radius.lg,
+            overflow: "hidden",
+            backgroundColor: color.surface,
+            borderWidth: 1,
+            borderColor: color.border,
+          }}
+        >
+          <View style={[styles.triggerContainer, { backgroundColor: "transparent" }]}>
+            <View style={styles.triggerLeft}>
+              <View style={styles.triggerSymbolShell}>
+                <Typography style={styles.triggerSymbolText}>{selectedCurrency.symbol}</Typography>
+              </View>
+
+              <View style={styles.triggerTextWrap}>
+                <Typography style={styles.triggerCodeText}>{selectedCurrency.code}</Typography>
+                <Typography numberOfLines={1} style={styles.triggerNameText}>
+                  {selectedCurrency.name}
+                </Typography>
+              </View>
             </View>
 
-            <View style={styles.triggerTextWrap}>
-              <Typography style={styles.triggerCodeText}>{selectedCurrency.code}</Typography>
-              <Typography numberOfLines={1} style={styles.triggerNameText}>
-                {selectedCurrency.name}
-              </Typography>
+            <View style={styles.triggerAdornment}>
+              <Typography style={styles.triggerChangeText}>Change</Typography>
+              <icons.ChevronDown size={18} color={color.muted} strokeWidth={1.75} />
             </View>
-          </View>
-
-          <View style={styles.triggerAdornment}>
-            <Typography style={styles.triggerChangeText}>Change</Typography>
-            <icons.ChevronDown size={18} color={color.muted} strokeWidth={1.75} />
           </View>
         </View>
       </PressableFeedback>

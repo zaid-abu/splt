@@ -7,7 +7,7 @@ import * as icons from "lucide-react-native";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
 import { useUI, IconButton } from "@/components/ui";
 import { ErrorState } from "@/components/ui/ErrorState";
-import GlassBackground from "@/components/glassmorphism/GlassBackground";
+
 import { getGreeting } from "@/utils/date";
 
 import { useDashboard } from "@/features/dashboard/hooks/useDashboard";
@@ -27,7 +27,6 @@ export default function DashboardScreen(): JSX.Element {
   if (dashboard.isError) {
     return (
       <View style={{ flex: 1, backgroundColor: color.bg }}>
-        <GlassBackground />
         <ThemedStatusBar />
         <View style={{ flex: 1, justifyContent: "center" }}>
           <ErrorState onRetry={dashboard.onRefresh} />
@@ -39,7 +38,6 @@ export default function DashboardScreen(): JSX.Element {
   if (dashboard.isLoading && dashboard.activeGroups.length === 0) {
     return (
       <View style={{ flex: 1, backgroundColor: color.bg }}>
-        <GlassBackground />
         <ThemedStatusBar />
         <DashboardSkeleton />
       </View>
@@ -48,7 +46,6 @@ export default function DashboardScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: color.bg }}>
-      <GlassBackground />
       <ThemedStatusBar />
 
       <ScrollView

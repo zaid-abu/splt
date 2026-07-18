@@ -1,8 +1,7 @@
 import type { ComponentType } from "react";
-import { View } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Text } from "react-native";
 import { useUI } from "@/components/ui";
-import GlassSurface from "@/components/glassmorphism/GlassSurface";
+import { useCoralColors } from "@/components/coral";
 
 type IconType = ComponentType<{
   size?: number;
@@ -20,9 +19,18 @@ export function EmptyState({
   subtitle: string;
 }): React.JSX.Element {
   const { color, radius } = useUI();
+  const coral = useCoralColors();
 
   return (
-    <GlassSurface borderRadius={radius.lg} padding={0}>
+    <View
+      style={{
+        borderRadius: radius.lg,
+        overflow: "hidden",
+        backgroundColor: coral.surface,
+        borderWidth: 1,
+        borderColor: color.border,
+      }}
+    >
       <View
         style={{
           alignItems: "center",
@@ -45,29 +53,29 @@ export function EmptyState({
         >
           <Icon size={32} color={color.text} strokeWidth={1.5} />
         </View>
-        <Typography
+        <Text
           style={{
             fontSize: 18,
             color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             textAlign: "center",
             marginBottom: 8,
           }}
         >
           {title}
-        </Typography>
-        <Typography
+        </Text>
+        <Text
           style={{
             fontSize: 15,
             color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
             textAlign: "center",
             lineHeight: 21,
           }}
         >
           {subtitle}
-        </Typography>
+        </Text>
       </View>
-    </GlassSurface>
+    </View>
   );
 }

@@ -920,3 +920,23 @@ Last updated: 2026-07-12
 
 **Pattern notes:**
 Profile uses the same loading-first pattern as the dashboard — skeleton placeholders during `isFirstLoad`, then a `ScrollView` with `RefreshControl`. Three sections stacked vertically: (1) tappable user card with avatar, name, email, and metric cells; (2) Preferences with Dark Mode toggle and Currency picker; (3) Account section with created date, Change Password row, Log Out/Tell a Friend outlined buttons, and a visually separated Delete Account danger action. The avatar region is pressable to navigate to `/profile/edit`. All standalone pill buttons use the shared `HapticButton` for consistent haptic feedback. Bottom sheets for delete confirmation use `HapticButton` pairs (Cancel outlined + Delete danger). The edit and change-password screens use `BottomActionBar` for their save buttons.
+
+### Circle Dock HTML Prototype
+
+File: design/circle-dock-redesign/prototype.css
+Last updated: 2026-07-18
+
+| Property         | Class / Value                                                                                                                  |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Background       | Canvas `#EFF6FD`; content surface `#F9FCFF`; control interior `#FFFFFF`; dark canvas `#0D1722`; dark surface `#172331`          |
+| Border           | `1px #C9D6E2` light; `1px #435466` dark                                                                                       |
+| Border radius    | Controls `14px`; actionable cards `16px`; task sheets `24px`; Circle Dock `18-20px`                                           |
+| Text - primary   | `Instrument Sans`, dark navy `#101B29` light / `#F2F7FB` dark; titles use weight `600-700`                                    |
+| Text - secondary | Mineral gray `#536272` light / `#A9B7C4` dark; IBM Plex Mono is restricted to financial and numeric values                    |
+| Spacing          | Phone gutters `16px`; card/row padding `10-16px`; section rhythm `14-24px`; focused-flow bottom actions preserve safe-area gap |
+| Hover state      | Pressed/hover uses restrained opacity or tonal surface change; visible `3px` focus outline with `3px` offset                   |
+| Shadow           | None for content; compact chrome lift for Circle Dock, task sheets, central Add, and transient feedback only                  |
+| Accent usage     | Coral `#F0584B` for creation; emerald `#006D3A` credit; crimson `#A81130` debt; amber `#765300` review/warning                  |
+
+**Pattern notes:**
+Circle Dock is the approved end-to-end visual contract for the next Splt implementation. Content surfaces remain opaque; blur is limited to persistent navigation and task sheets. Every financial color is paired with signed or plain-language direction. Minimum targets are `44pt` on iOS and `48dp` on Android. The same component vocabulary applies across social and household flows: balance hero, circle rows, semantic pills, segmented subviews, task sheets, completion receipts, and explicit query states. Future React Native components should use these tokens and geometry rather than copying legacy warm-cream, HeroUI, or glassmorphism patterns.

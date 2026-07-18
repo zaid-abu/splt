@@ -2,7 +2,8 @@ import type { JSX } from "react";
 import { View } from "react-native";
 import { Switch } from "heroui-native";
 import { Moon, DollarSign } from "lucide-react-native";
-import { useUI, GlassSection, GlassRow } from "@/components/ui";
+import { useUI } from "@/components/ui";
+import { MoneyRow, Eyebrow, useCoralColors } from "@/components/coral";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import type { Currency } from "@/types";
 
@@ -20,21 +21,37 @@ export function ProfilePreferences({
   onCurrencyChange,
 }: ProfilePreferencesProps): JSX.Element {
   const { color } = useUI();
+  const coral = useCoralColors();
 
   return (
-    <GlassSection title="Preferences">
-      <GlassRow
-        icon={<Moon size={20} color={color.text} />}
-        title="Dark Mode"
-        subtitle="Switch between light and dark themes"
-        end={<Switch isSelected={isDarkMode} onSelectedChange={onThemeToggle} />}
-      />
-      <GlassRow
-        icon={<DollarSign size={20} color={color.text} />}
-        title="Currency"
-        subtitle={preferredCurrencyCode}
-        end={<CurrencySelector value={preferredCurrencyCode} onChange={onCurrencyChange} />}
-      />
-    </GlassSection>
+    <View style={{ marginBottom: 28 }}>
+      <Eyebrow style={{ marginTop: 0 }}>Preferences</Eyebrow>
+      <View
+        style={{
+          backgroundColor: coral.surface,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: coral.border,
+          overflow: "hidden",
+        }}
+      >
+        <MoneyRow
+          avatar={<Moon size={20} color={color.text} />}
+          title="Dark Mode"
+          subtitle="Switch between light and dark themes"
+          amount=""
+          rightElement={<Switch isSelected={isDarkMode} onSelectedChange={onThemeToggle} />}
+        />
+        <MoneyRow
+          avatar={<DollarSign size={20} color={color.text} />}
+          title="Currency"
+          subtitle={preferredCurrencyCode}
+          amount=""
+          rightElement={
+            <CurrencySelector value={preferredCurrencyCode} onChange={onCurrencyChange} />
+          }
+        />
+      </View>
+    </View>
   );
 }

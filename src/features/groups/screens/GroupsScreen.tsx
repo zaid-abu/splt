@@ -13,8 +13,8 @@ import { GroupCard } from "@/features/groups/components/GroupCard";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { ErrorState } from "@/components/ui/ErrorState";
-import { useUI, ScreenHeader, SearchField, FilterPill, GlassHeroBalance } from "@/components/ui";
-import GlassBackground from "@/components/glassmorphism/GlassBackground";
+import { useUI, ScreenHeader, SearchField, FilterPill } from "@/components/ui";
+import { BalanceHero, StatPair } from "@/components/coral";
 import type { GroupFilter } from "@/types";
 
 import { useGroupsList } from "@/features/groups/hooks/useGroupsList";
@@ -50,7 +50,6 @@ export default function GroupsScreen(): JSX.Element {
 
   return (
     <View style={{ flex: 1, backgroundColor: color.bg }}>
-      <GlassBackground />
       <ThemedStatusBar />
 
       <View style={{ paddingTop: insets.top + 16 }}>
@@ -109,30 +108,19 @@ export default function GroupsScreen(): JSX.Element {
             ListHeaderComponent={
               <View>
                 <View style={{ paddingHorizontal: space.page, marginBottom: 16 }}>
-                  <GlassHeroBalance
+                  <BalanceHero
                     label="Net Balance"
-                    amount={formatAmount(Math.abs(totals.netTotal), preferredCurrencyCode)}
-                    amountColor={
-                      totals.netTotal < -0.005
-                        ? color.danger
-                        : totals.netTotal > 0.005
-                          ? color.success
-                          : color.text
-                    }
-                    metrics={[
-                      { label: "Groups", value: String(activeGroups.length) },
-                      {
+                    value={formatAmount(Math.abs(totals.netTotal), preferredCurrencyCode)}
+                  >
+                    <StatPair
+                      left={{ label: "Groups", value: String(activeGroups.length) }}
+                      right={{
                         label: "You owe",
                         value: formatAmount(totals.youOwe, preferredCurrencyCode),
-                        color: totals.youOwe > 0 ? color.danger : undefined,
-                      },
-                      {
-                        label: "Owed",
-                        value: formatAmount(totals.owedToYou, preferredCurrencyCode),
-                        color: totals.owedToYou > 0 ? color.success : undefined,
-                      },
-                    ]}
-                  />
+                        tone: totals.youOwe > 0 ? "negative" : "neutral",
+                      }}
+                    />
+                  </BalanceHero>
                 </View>
 
                 <View style={{ paddingHorizontal: space.page, marginBottom: 14 }}>
@@ -175,84 +163,84 @@ export default function GroupsScreen(): JSX.Element {
                 ) : (
                   <View
                     style={{
-                      alignItems: "center",
-                      justifyContent: "center",
+                      borderRadius: radius.lg,
                       padding: 32,
                       backgroundColor: color.surface,
-                      borderRadius: radius.lg,
                       borderWidth: 1,
                       borderColor: color.border,
                     }}
                   >
-                    <View
-                      style={{
-                        width: 64,
-                        height: 64,
-                        borderRadius: radius.xl,
-                        backgroundColor: color.control,
-                        borderWidth: 1,
-                        borderColor: color.border,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginBottom: 16,
-                      }}
-                    >
-                      <icons.Users size={32} color={color.text} strokeWidth={1.5} />
-                    </View>
-                    <Typography
-                      style={{
-                        fontSize: 18,
-                        color: color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                        textAlign: "center",
-                        marginBottom: 8,
-                      }}
-                    >
-                      No groups found
-                    </Typography>
-                    <Typography
-                      style={{
-                        fontSize: 15,
-                        color: color.muted,
-                        fontFamily: "IBMPlexSans_500Medium",
-                        textAlign: "center",
-                        lineHeight: 21,
-                        marginBottom: search || filter !== "all" ? 0 : 20,
-                      }}
-                    >
-                      {search
-                        ? "Try a different search term."
-                        : filter !== "all"
-                          ? "No groups match this filter."
-                          : "Create a group with friends to start splitting expenses easily."}
-                    </Typography>
-                    {!search && filter === "all" && (
-                      <Pressable
-                        onPress={handleCreateGroup}
-                        style={({ pressed }) => ({
-                          flexDirection: "row",
+                    <View style={{ alignItems: "center" }}>
+                      <View
+                        style={{
+                          width: 64,
+                          height: 64,
+                          borderRadius: radius.xl,
+                          backgroundColor: color.control,
+                          borderWidth: 1,
+                          borderColor: color.border,
                           alignItems: "center",
                           justifyContent: "center",
-                          backgroundColor: color.text,
-                          height: 52,
-                          borderRadius: radius.pill,
-                          paddingHorizontal: 28,
-                          opacity: pressed ? 0.72 : 1,
-                        })}
+                          marginBottom: 16,
+                        }}
                       >
-                        <icons.Plus size={20} color={color.textInverse} strokeWidth={2} />
-                        <Typography
-                          style={{
-                            color: color.textInverse,
-                            fontSize: 16,
-                            fontFamily: "IBMPlexSans_600SemiBold",
-                            marginLeft: 8,
-                          }}
+                        <icons.Users size={32} color={color.text} strokeWidth={1.5} />
+                      </View>
+                      <Typography
+                        style={{
+                          fontSize: 18,
+                          color: color.text,
+                          fontFamily: "IBMPlexSans_600SemiBold",
+                          textAlign: "center",
+                          marginBottom: 8,
+                        }}
+                      >
+                        No groups found
+                      </Typography>
+                      <Typography
+                        style={{
+                          fontSize: 15,
+                          color: color.muted,
+                          fontFamily: "IBMPlexSans_500Medium",
+                          textAlign: "center",
+                          lineHeight: 21,
+                          marginBottom: search || filter !== "all" ? 0 : 20,
+                        }}
+                      >
+                        {search
+                          ? "Try a different search term."
+                          : filter !== "all"
+                            ? "No groups match this filter."
+                            : "Create a group with friends to start splitting expenses easily."}
+                      </Typography>
+                      {!search && filter === "all" && (
+                        <Pressable
+                          onPress={handleCreateGroup}
+                          style={({ pressed }) => ({
+                            flexDirection: "row",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            backgroundColor: color.text,
+                            height: 52,
+                            borderRadius: radius.pill,
+                            paddingHorizontal: 28,
+                            opacity: pressed ? 0.72 : 1,
+                          })}
                         >
-                          Create Group
-                        </Typography>
-                      </Pressable>
-                    )}
+                          <icons.Plus size={20} color={color.textInverse} strokeWidth={2} />
+                          <Typography
+                            style={{
+                              color: color.textInverse,
+                              fontSize: 16,
+                              fontFamily: "IBMPlexSans_600SemiBold",
+                              marginLeft: 8,
+                            }}
+                          >
+                            Create Group
+                          </Typography>
+                        </Pressable>
+                      )}
+                    </View>
                   </View>
                 )}
               </View>

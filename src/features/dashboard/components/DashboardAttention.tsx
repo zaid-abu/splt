@@ -1,10 +1,11 @@
 import type { JSX } from "react";
-import { View } from "react-native";
-import { Typography } from "heroui-native";
-import { useUI, GlassSection, GlassRow } from "@/components/ui";
+import { View, Text } from "react-native";
+import { useUI } from "@/components/ui";
 import { HapticButton } from "@/components/ui/HapticButton";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
+import { MoneyRow, Eyebrow, useCoralColors } from "@/components/coral";
+import * as icons from "lucide-react-native";
 import type { User } from "@/types";
 
 interface DashboardAttentionProps {
@@ -23,75 +24,67 @@ export function DashboardAttention({
   onAction,
 }: DashboardAttentionProps): JSX.Element {
   const { color } = useUI();
+  const coral = useCoralColors();
 
   if (owedUsers.length === 0 && oweUsers.length === 0) return <></>;
 
   return (
-    <GlassSection title="Need attention">
-      {owedUsers.slice(0, 3).map((user) => {
-        const amount = formatAmount(
-          Math.abs(perUserBalances.get(user.id) ?? 0),
-          currencyCode,
-        );
-        return (
-          <GlassRow
-            key={user.id}
-            icon={<AppUserAvatar user={user} size="sm" />}
-            title={user.name}
-            subtitle="Owes you"
-            onPress={() => onAction(user.id)}
-            showChevron
-            end={
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Typography
-                  style={{
-                    fontSize: 13,
-                    color: color.success,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  {amount}
-                </Typography>
-                <HapticButton tone="outlined" height={36} onPress={() => onAction(user.id)}>
-                  Remind
-                </HapticButton>
-              </View>
-            }
-          />
-        );
-      })}
-      {oweUsers.slice(0, 3).map((user) => {
-        const amount = formatAmount(
-          Math.abs(perUserBalances.get(user.id) ?? 0),
-          currencyCode,
-        );
-        return (
-          <GlassRow
-            key={user.id}
-            icon={<AppUserAvatar user={user} size="sm" />}
-            title={user.name}
-            subtitle="You owe"
-            onPress={() => onAction(user.id)}
-            showChevron
-            end={
-              <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
-                <Typography
-                  style={{
-                    fontSize: 13,
-                    color: color.danger,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  {amount}
-                </Typography>
-                <HapticButton tone="ink" height={36} onPress={() => onAction(user.id)}>
-                  Settle
-                </HapticButton>
-              </View>
-            }
-          />
-        );
-      })}
-    </GlassSection>
+    <View style={{ marginBottom: 28 }}>
+      <Eyebrow style={{ marginTop: 0 }}>Need attention</Eyebrow>
+      <View
+        style={{
+          backgroundColor: coral.surface,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: coral.border,
+          overflow: "hidden",
+        }}
+      >
+        {owedUsers.slice(0, 3).map((user) => {
+          const amount = formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), currencyCode);
+          return (
+            <MoneyRow
+              key={user.id}
+              avatar={<AppUserAvatar user={user} size="sm" />}
+              title={user.name}
+              subtitle="Owes you"
+              onPress={() => onAction(user.id)}
+              amount={amount}
+              amountTone="positive"
+              rightElement={
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <HapticButton tone="outlined" height={36} onPress={() => onAction(user.id)}>
+                    Remind
+                  </HapticButton>
+                  <icons.ChevronRight size={18} color={color.muted} />
+                </View>
+              }
+            />
+          );
+        })}
+        {oweUsers.slice(0, 3).map((user) => {
+          const amount = formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), currencyCode);
+          return (
+            <MoneyRow
+              key={user.id}
+              avatar={<AppUserAvatar user={user} size="sm" />}
+              title={user.name}
+              subtitle="You owe"
+              onPress={() => onAction(user.id)}
+              amount={amount}
+              amountTone="negative"
+              rightElement={
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <HapticButton tone="ink" height={36} onPress={() => onAction(user.id)}>
+                    Settle
+                  </HapticButton>
+                  <icons.ChevronRight size={18} color={color.muted} />
+                </View>
+              }
+            />
+          );
+        })}
+      </View>
+    </View>
   );
 }

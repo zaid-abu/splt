@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Suma · Prototype launcher</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Instrument+Sans:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: oklch(97% 0.012 245);
+        --surface: oklch(99% 0.006 245);
+        --fg: oklch(22% 0.032 255);
+        --muted: oklch(46% 0.026 250);
+        --border: oklch(87% 0.022 245);
+        --accent: oklch(66% 0.19 28);
+        --accent-soft: oklch(93% 0.05 28);
+        --balance-surface: oklch(25% 0.045 255);
+        --balance-fg: oklch(97% 0.008 245);
+        --font-ui: "Instrument Sans", "SF Pro Text", "Roboto", system-ui, sans-serif;
+        --font-numeric: "IBM Plex Mono", "SFMono-Regular", ui-monospace, monospace;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100svh;
+        display: grid;
+        place-items: center;
+        padding: 32px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--font-ui);
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        width: min(56vw, 720px);
+        aspect-ratio: 1;
+        right: -14%;
+        bottom: -38%;
+        border-radius: 50%;
+        background: var(--accent);
+        filter: blur(120px);
+        opacity: 0.12;
+        pointer-events: none;
+      }
+      main {
+        width: min(100%, 880px);
+        position: relative;
+      }
+      h1 {
+        margin: 0 0 16px;
+        font-size: clamp(42px, 7vw, 72px);
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: -0.03em;
+      }
+      p {
+        max-width: 58ch;
+        margin: 0 0 38px;
+        color: var(--muted);
+        font-size: 17px;
+        line-height: 1.55;
+      }
+      .targets {
+        display: grid;
+        grid-template-columns: 1.15fr 0.85fr;
+        gap: 16px;
+      }
+      .targets a {
+        --panel-bg: var(--surface);
+        --panel-fg: var(--fg);
+        --panel-muted: var(--muted);
+        min-height: 210px;
+        padding: 26px;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        background: var(--panel-bg);
+        color: var(--panel-fg);
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        transition:
+          transform 0.18s cubic-bezier(0.22, 1, 0.36, 1),
+          background 0.18s ease;
+      }
+      .targets a:first-child {
+        --panel-bg: var(--balance-surface);
+        --panel-fg: var(--balance-fg);
+        --panel-muted: color-mix(in oklch, var(--balance-fg), transparent 28%);
+        border-color: transparent;
+      }
+      .targets a:hover {
+        transform: translateY(-3px);
+      }
+      a:focus-visible {
+        outline: 3px solid var(--accent);
+        outline-offset: 3px;
+      }
+      .platform {
+        color: var(--panel-muted);
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+      strong {
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+      .targets span:last-child {
+        color: var(--panel-muted);
+      }
+      .auth {
+        margin-top: 16px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .auth a {
+        min-height: 48px;
+        padding: 0 18px;
+        border: 1px solid var(--border);
+        border-radius: 999px;
+        background: var(--surface);
+        color: var(--fg);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      @media (max-width: 650px) {
+        body {
+          padding: 22px;
+          overflow: auto;
+        }
+        .targets {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 46px;
+        }
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: oklch(17% 0.02 255);
+          --surface: oklch(21% 0.024 255);
+          --fg: oklch(95% 0.008 245);
+          --muted: oklch(72% 0.025 245);
+          --border: oklch(32% 0.026 255);
+          --accent: oklch(72% 0.18 28);
+          --balance-surface: oklch(13% 0.035 255);
+          --balance-fg: oklch(97% 0.008 245);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main data-od-id="prototype-launcher">
+      <h1 data-od-id="launcher-title">Suma</h1>
+      <p>
+        Shared money organized around people and groups. Choose a native target, then use the
+        floating command control to move through the complete prototype without a tab bar.
+      </p>
+      <section class="targets" aria-label="Platform prototypes">
+        <a href="mobile-ios.html" data-od-id="open-ios"
+          ><span class="platform">Apple</span><strong>iOS prototype</strong
+          ><span>Large titles, material sheets, 44 pt controls</span></a
+        >
+        <a href="mobile-android.html" data-od-id="open-android"
+          ><span class="platform">Google</span><strong>Android prototype</strong
+          ><span>Material surfaces, FAB, 48 dp controls</span></a
+        >
+      </section>
+      <nav class="auth" aria-label="Start authentication flow">
+        <a href="mobile-ios.html?screen=welcome">iOS auth flow</a>
+        <a href="mobile-android.html?screen=welcome">Android auth flow</a>
+      </nav>
+    </main>
+  </body>
+</html>

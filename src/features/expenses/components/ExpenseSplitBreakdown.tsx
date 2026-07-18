@@ -1,10 +1,10 @@
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Pressable, Text } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { AppLoader } from "@/components/ui/AppLoader";
-import { useUI, GlassSection, GlassRow } from "@/components/ui";
+import { useUI } from "@/components/ui";
+import { MoneyRow, Eyebrow, useCoralColors } from "@/components/coral";
 import type { ExpenseSplit } from "@/types";
 
 interface ExpenseSplitBreakdownProps {
@@ -40,6 +40,7 @@ export function ExpenseSplitBreakdown({
   isAppLoading,
 }: ExpenseSplitBreakdownProps): JSX.Element {
   const { color, radius, space } = useUI();
+  const coral = useCoralColors();
 
   return (
     <>
@@ -47,47 +48,48 @@ export function ExpenseSplitBreakdown({
         entering={FadeInDown.duration(400).delay(100)}
         style={{ paddingHorizontal: space.page, paddingTop: 32 }}
       >
-        <GlassSection title="Split Breakdown">
-          {isAppLoading ? (
-            <View style={{ paddingVertical: 24 }}>
-              <AppLoader />
-            </View>
-          ) : (
-            splits.map((split) => {
-              const isMe = split.userId === currentUserId;
-              const isPayer = split.paid;
-              const isSettled = split.paid && !isPayer;
+        <View style={{ marginBottom: 28 }}>
+          <Eyebrow style={{ marginTop: 0 }}>Split Breakdown</Eyebrow>
+          <View
+            style={{
+              backgroundColor: coral.surface,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: coral.border,
+              overflow: "hidden",
+            }}
+          >
+            {isAppLoading ? (
+              <View style={{ paddingVertical: 24 }}>
+                <AppLoader />
+              </View>
+            ) : (
+              splits.map((split) => {
+                const isMe = split.userId === currentUserId;
+                const isPayer = split.paid;
+                const isSettled = split.paid && !isPayer;
 
-              let subtitle: string;
-              if (isPayer) {
-                subtitle = split.paid ? "Paid the bill" : "Owes";
-              } else {
-                subtitle = isSettled ? "Settled" : "Owes";
-              }
+                let subtitle: string;
+                if (isPayer) {
+                  subtitle = split.paid ? "Paid the bill" : "Owes";
+                } else {
+                  subtitle = isSettled ? "Settled" : "Owes";
+                }
 
-              return (
-                <GlassRow
-                  key={split.userId}
-                  icon={<AppUserAvatar user={split.user} size="lg" />}
-                  title={isMe ? "You" : split.user.name}
-                  subtitle={subtitle}
-                  end={
-                    <Typography
-                      style={{
-                        fontSize: 20,
-                        color: color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
-                      }}
-                    >
-                      {formatAmt(split.amount)}
-                    </Typography>
-                  }
-                  onPress={() => onUserPress?.(split.userId)}
-                />
-              );
-            })
-          )}
-        </GlassSection>
+                return (
+                  <MoneyRow
+                    key={split.userId}
+                    avatar={<AppUserAvatar user={split.user} size="lg" />}
+                    title={isMe ? "You" : split.user.name}
+                    subtitle={subtitle}
+                    amount={formatAmt(split.amount)}
+                    onPress={() => onUserPress?.(split.userId)}
+                  />
+                );
+              })
+            )}
+          </View>
+        </View>
       </Animated.View>
 
       {myShareSummaryAmount && (
@@ -103,40 +105,40 @@ export function ExpenseSplitBreakdown({
               borderRadius: radius.lg,
             }}
           >
-            <Typography
+            <Text
               style={{
                 fontSize: 14,
                 color: color.textInverse,
                 opacity: 0.7,
-                fontFamily: "IBMPlexSans_600SemiBold",
+                fontFamily: "InstrumentSans_600SemiBold",
                 textTransform: "uppercase",
                 letterSpacing: 1.4,
                 marginBottom: 8,
               }}
             >
               {myShareSummaryLabel}
-            </Typography>
-            <Typography
+            </Text>
+            <Text
               style={{
                 fontSize: 28,
                 color: color.textInverse,
-                fontFamily: "IBMPlexSans_600SemiBold",
+                fontFamily: "InstrumentSans_600SemiBold",
                 marginBottom: 8,
               }}
             >
               {myShareSummaryAmount}
-            </Typography>
-            <Typography
+            </Text>
+            <Text
               style={{
                 fontSize: 14,
                 color: color.textInverse,
                 opacity: 0.9,
-                fontFamily: "IBMPlexSans_500Medium",
+                fontFamily: "InstrumentSans_500Medium",
                 lineHeight: 20,
               }}
             >
               {settleMessage}
-            </Typography>
+            </Text>
 
             {showSettleButton && (
               <Pressable
@@ -152,15 +154,15 @@ export function ExpenseSplitBreakdown({
                   opacity: pressed ? 0.8 : 1,
                 })}
               >
-                <Typography
+                <Text
                   style={{
                     fontSize: 15,
                     color: color.brand,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                   }}
                 >
                   Settle Your Share
-                </Typography>
+                </Text>
               </Pressable>
             )}
           </View>

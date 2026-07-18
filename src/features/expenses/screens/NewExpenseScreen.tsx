@@ -106,7 +106,7 @@ export default function NewExpenseScreen(): JSX.Element {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace("/(tabs)");
+      router.replace("/home");
     }
   }, [router]);
 

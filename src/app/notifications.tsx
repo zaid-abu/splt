@@ -1,5 +1,2 @@
-import NotificationsScreen from "@/features/notifications/screens/NotificationsScreen";
-
-export default function NotificationsRoute() {
-  return <NotificationsScreen />;
-}
+import NotificationsV2Screen from "@/features/notifications/screens-v2/NotificationsScreen";
+export default NotificationsV2Screen;

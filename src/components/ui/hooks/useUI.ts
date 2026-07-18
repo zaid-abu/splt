@@ -4,13 +4,15 @@ import { LIGHT_COLORS, DARK_COLORS, RADIUS, SPACE, SHADOW } from "@/components/u
 
 export function useUI() {
   const isDark = useUIStore((s) => s.isDarkMode);
+  const color = isDark ? DARK_COLORS : LIGHT_COLORS;
+
   return useMemo(
     () => ({
-      color: isDark ? DARK_COLORS : LIGHT_COLORS,
+      color,
       radius: RADIUS,
       space: SPACE,
       shadow: SHADOW,
     }),
-    [isDark],
+    [color]
   );
 }

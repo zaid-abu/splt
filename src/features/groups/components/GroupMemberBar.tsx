@@ -1,11 +1,11 @@
 import type { JSX } from "react";
-import { ScrollView, Pressable } from "react-native";
+import { ScrollView, Pressable, View } from "react-native";
 import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { useUI } from "@/components/ui";
-import GlassSurface from "@/components/glassmorphism/GlassSurface";
+
 import type { GroupMember } from "@/types";
 
 export interface GroupMemberBarProps {
@@ -26,7 +26,16 @@ export function GroupMemberBar({
   const { color, radius } = useUI();
 
   return (
-    <GlassSurface borderRadius={radius.pill} padding={8}>
+    <View
+      style={{
+        borderRadius: radius.pill,
+        padding: 8,
+        backgroundColor: color.surface,
+        borderWidth: 1,
+        borderColor: color.border,
+        overflow: "hidden",
+      }}
+    >
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -90,6 +99,6 @@ export function GroupMemberBar({
           );
         })}
       </ScrollView>
-    </GlassSurface>
+    </View>
   );
 }

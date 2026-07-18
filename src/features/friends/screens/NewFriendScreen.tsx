@@ -61,7 +61,7 @@ export default function NewFriendScreen(): JSX.Element {
       if (router.canGoBack()) {
         router.back();
       } else {
-        router.replace("/(tabs)");
+        router.replace("/people");
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to add friend";
@@ -137,11 +137,7 @@ export default function NewFriendScreen(): JSX.Element {
             height: 44,
             paddingHorizontal: isRequested || isAdded ? 16 : 0,
             width: isRequested || isAdded ? undefined : 44,
-            backgroundColor: isAdded
-              ? color.success
-              : isRequested
-                ? color.control
-                : color.text,
+            backgroundColor: isAdded ? color.success : isRequested ? color.control : color.text,
             borderWidth: isRequested ? 1 : 0,
             borderColor: color.border,
             alignItems: "center",
@@ -213,7 +209,7 @@ export default function NewFriendScreen(): JSX.Element {
             if (router.canGoBack()) {
               router.back();
             } else {
-              router.replace("/(tabs)");
+              router.replace("/people");
             }
           }}
         />

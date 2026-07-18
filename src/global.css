@@ -5,216 +5,132 @@
 @source "../node_modules/heroui-native/lib";
 @source "../node_modules/heroui-native/src";
 
-/* ─── Body font utilities ──────────────────────────────────────────────────── */
-@utility font-normal {
-  font-family: "IBMPlexSans_400Regular";
+@utility font-ui {
+  font-family: "InstrumentSans_400Regular";
 }
 
-@utility font-medium {
-  font-family: "IBMPlexSans_500Medium";
+@utility font-ui-medium {
+  font-family: "InstrumentSans_500Medium";
 }
 
-@utility font-semibold {
-  font-family: "IBMPlexSans_600SemiBold";
+@utility font-ui-semibold {
+  font-family: "InstrumentSans_600SemiBold";
 }
 
-@utility font-bold {
-  font-family: "IBMPlexSans_600SemiBold";
+@utility font-numeric {
+  font-family: "IBMPlexMono_500Medium";
 }
 
-@utility font-black {
-  font-family: "IBMPlexSans_600SemiBold";
+@utility font-numeric-semibold {
+  font-family: "IBMPlexMono_600SemiBold";
 }
 
-/* ─── Heading font utilities ────────────────────────────────────────────────── */
-@utility font-heading {
-  font-family: "Sora_600SemiBold";
-}
-
-@utility font-heading-italic {
-  font-family: "Sora_600SemiBold";
-  font-style: italic;
-}
-
-/* ─── Tailwind theme bridge ────────────────────────────────────────────────── */
 @theme {
-  --color-primary: var(--color-primary);
-  --color-primary-light: var(--color-primary-light);
-  --color-primary-dark: var(--color-primary-dark);
-  --color-primary-foreground: var(--color-primary-foreground);
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-raised: var(--surface-raised);
+  --color-foreground: var(--fg);
+  --color-muted-foreground: var(--muted);
+  --color-border: var(--border);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--ink-on-accent);
+  --color-success: var(--positive);
+  --color-danger: var(--negative);
+  --color-warning: var(--warning);
+  --color-balance-surface: var(--balance-surface);
+  --color-balance-foreground: var(--balance-fg);
+  --color-avatar-soft: var(--avatar-soft);
+  --color-avatar-ink: var(--avatar-ink);
 
-  --color-secondary: var(--color-secondary);
-  --color-secondary-light: var(--color-secondary-light);
-  --color-secondary-dark: var(--color-secondary-dark);
-  --color-secondary-foreground: var(--color-secondary-foreground);
+  /* Legacy aliases keep current routes usable during the rewrite. */
+  --color-primary-light: var(--accent-soft);
+  --color-primary-dark: var(--accent-ink);
+  --color-secondary: var(--surface);
+  --color-secondary-light: var(--surface-raised);
+  --color-secondary-dark: var(--border);
+  --color-secondary-foreground: var(--fg);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--ink-on-accent);
+  --color-accent-red: var(--negative);
+  --color-accent-green: var(--positive);
+  --color-accent-purple: var(--avatar-ink);
+  --color-accent-purple-light: var(--avatar-soft);
+  --color-accent-purple-medium: var(--avatar-ink);
+  --color-accent-pink: var(--negative-soft);
+  --color-accent-orange: var(--warning);
+  --color-accent-blue: var(--avatar-ink);
+  --color-surface-secondary: var(--bg);
+  --color-surface-tertiary: var(--accent-soft);
+  --color-text-primary: var(--fg);
+  --color-text-secondary: var(--muted);
+  --color-text-tertiary: var(--muted);
+  --color-text-disabled: var(--muted);
+  --color-text-inverse: var(--ink-on-accent);
+  --color-border-light: var(--border);
+  --color-border-main: var(--border);
+  --color-input: var(--accent);
+  --color-input-foreground: var(--surface);
+  --color-muted: var(--border);
+  --color-tertiary-foreground: var(--muted);
 
-  --color-accent-red: var(--color-accent-red);
-  --color-accent-green: var(--color-accent-green);
-  --color-accent-purple: var(--color-accent-purple);
-  --color-accent-pink: var(--color-accent-pink);
-  --color-accent-orange: var(--color-accent-orange);
-
-  --color-accent-purple-light: var(--color-accent-purple);
-  --color-accent-purple-medium: var(--color-accent-purple);
-  --color-accent-blue: var(--color-accent-purple);
-
-  --color-background: var(--color-background);
-  --color-surface: var(--color-surface);
-  --color-surface-secondary: var(--color-surface-secondary);
-
-  --color-text-primary: var(--color-text-primary);
-  --color-text-secondary: var(--color-text-secondary);
-  --color-text-disabled: var(--color-text-disabled);
-  --color-text-inverse: var(--color-text-inverse);
-
-  --color-border-light: var(--color-border-light);
-  --color-border-main: var(--color-border-main);
-
-  --color-input: var(--color-input);
-  --color-input-foreground: var(--color-input-foreground);
-
-  --color-foreground: var(--color-text-primary);
-  --color-surface-tertiary: var(--color-border-light);
-  --color-accent: var(--color-accent-red);
-  --color-accent-foreground: #ffffff;
-  --color-success: var(--color-accent-green);
-  --color-warning: var(--color-warning);
-  --color-danger: var(--color-accent-red);
-  --color-muted: var(--color-border-main);
-  --color-muted-foreground: var(--color-text-secondary);
-  --color-tertiary-foreground: var(--color-text-tertiary);
-  --color-border: var(--color-border-main);
-
-  --font-family-heading: var(--font-family-heading);
-  --font-family-body: var(--font-family-body);
-
-  --text-xs: var(--text-xs);
-  --text-sm: var(--text-sm);
-  --text-md: var(--text-md);
-  --text-lg: var(--text-lg);
-  --text-xl: var(--text-xl);
-  --text-xxl: var(--text-xxl);
-  --text-xxxl: var(--text-xxxl);
-
-  --spacing-xxs: var(--spacing-xxs);
-  --spacing-xs: var(--spacing-xs);
-  --spacing-sm: var(--spacing-sm);
-  --spacing-md: var(--spacing-md);
-  --spacing-lg: var(--spacing-lg);
-  --spacing-xl: var(--spacing-xl);
-  --spacing-xxl: var(--spacing-xxl);
-
-  --radius-sm: var(--radius-sm);
-  --radius-md: var(--radius-md);
-  --radius-lg: var(--radius-lg);
-  --radius-xl: var(--radius-xl);
-  --radius-xxl: var(--radius-xxl);
-  --radius-pill: var(--radius-pill);
+  --radius-sm: 12px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-xxl: 24px;
+  --radius-pill: 9999px;
 }
 
-/* ─── Light mode (Glassmorphism) ────────────────────────────────────────────── */
 @layer base {
   :root {
-    --color-primary: #102033;
-    --color-primary-light: #34465f;
-    --color-primary-dark: #0a1520;
-    --color-primary-foreground: #ffffff;
-
-    --color-secondary: rgba(255, 255, 255, 0.74);
-    --color-secondary-light: rgba(255, 255, 255, 0.85);
-    --color-secondary-dark: rgba(255, 255, 255, 0.55);
-    --color-secondary-foreground: #102033;
-
-    --color-accent-red: #ef4444;
-    --color-accent-green: #22c55e;
-    --color-accent-purple: #c4a8e0;
-    --color-accent-pink: #e8c4c4;
-    --color-accent-orange: #f59e0b;
-
-    --color-background: #eef6ff;
-    --color-surface: rgba(255, 255, 255, 0.74);
-    --color-surface-secondary: rgba(238, 246, 255, 0.72);
-
-    --color-input: #4f8cff;
-    --color-input-foreground: rgba(255, 255, 255, 0.74);
-
-    --color-text-primary: #102033;
-    --color-text-secondary: #60708a;
-    --color-text-tertiary: #8a9bb5;
-    --color-text-disabled: #b0bdd0;
-    --color-text-inverse: #ffffff;
-
-    --color-border-light: rgba(255, 255, 255, 0.38);
-    --color-border-main: rgba(255, 255, 255, 0.64);
-
-    --color-success: #22c55e;
-    --color-danger: #ef4444;
-    --color-warning: #f59e0b;
-
-    --font-family-heading: "Sora_600SemiBold";
-    --font-family-body: "IBMPlexSans_400Regular";
-
-    --text-xs: 12px;
-    --text-sm: 14px;
-    --text-md: 16px;
-    --text-lg: 20px;
-    --text-xl: 24px;
-    --text-xxl: 32px;
-    --text-xxxl: 40px;
-
-    --spacing-xxs: 4px;
-    --spacing-xs: 8px;
-    --spacing-sm: 12px;
-    --spacing-md: 16px;
-    --spacing-lg: 20px;
-    --spacing-xl: 32px;
-    --spacing-xxl: 48px;
-
-    --radius-sm: 16px;
-    --radius-md: 24px;
-    --radius-lg: 36px;
-    --radius-xl: 36px;
-    --radius-xxl: 36px;
-    --radius-pill: 9999px;
+    --bg: oklch(97% 0.012 245);
+    --surface: oklch(99% 0.006 245);
+    --surface-raised: oklch(100% 0 0 / 0.82);
+    --fg: oklch(22% 0.032 255);
+    --muted: oklch(46% 0.026 250);
+    --border: oklch(87% 0.022 245);
+    --accent: oklch(66% 0.19 28);
+    --accent-ink: oklch(31% 0.11 25);
+    --accent-soft: oklch(93% 0.05 28);
+    --ink-on-accent: oklch(99% 0.004 25);
+    --positive: oklch(52% 0.145 157);
+    --positive-soft: oklch(93% 0.045 157);
+    --negative: oklch(50% 0.19 18);
+    --negative-soft: oklch(94% 0.04 18);
+    --warning: oklch(66% 0.14 78);
+    --balance-surface: oklch(25% 0.045 255);
+    --balance-fg: oklch(97% 0.008 245);
+    --avatar-soft: oklch(92% 0.035 245);
+    --avatar-ink: oklch(35% 0.07 250);
+    --shadow-device: 0 18px 48px oklch(20% 0.03 255 / 0.15);
+    --shadow-raised: 0 6px 8px oklch(20% 0.03 255 / 0.1);
+    --shadow-sheet: 0 8px 12px oklch(20% 0.03 255 / 0.2);
+    --font-ui: "Instrument Sans", "SF Pro Text", "Roboto", system-ui, sans-serif;
+    --font-numeric: "IBM Plex Mono", "SFMono-Regular", ui-monospace, monospace;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   :root.dark {
     color-scheme: dark;
 
-    --color-primary: #e8ecf4;
-    --color-primary-light: #ffffff;
-    --color-primary-dark: #b0bccc;
-    --color-primary-foreground: #0a1628;
-
-    --color-secondary: rgba(20, 35, 55, 0.74);
-    --color-secondary-light: rgba(20, 35, 55, 0.9);
-    --color-secondary-dark: rgba(20, 35, 55, 0.55);
-    --color-secondary-foreground: #e8ecf4;
-
-    --color-accent-red: #f87171;
-    --color-accent-green: #4ade80;
-    --color-accent-purple: #c4a8e0;
-    --color-accent-pink: #e8c4c4;
-    --color-accent-orange: #fbbf24;
-
-    --color-background: #0a1628;
-    --color-surface: rgba(20, 35, 55, 0.74);
-    --color-surface-secondary: rgba(10, 22, 40, 0.72);
-
-    --color-input: #5b94ff;
-    --color-input-foreground: rgba(20, 35, 55, 0.74);
-
-    --color-text-primary: #e8ecf4;
-    --color-text-secondary: #7a8aa8;
-    --color-text-tertiary: #5a6a88;
-    --color-text-disabled: #3a4a68;
-    --color-text-inverse: #0a1628;
-
-    --color-border-light: rgba(255, 255, 255, 0.08);
-    --color-border-main: rgba(255, 255, 255, 0.12);
-
-    --color-success: #4ade80;
-    --color-danger: #f87171;
-    --color-warning: #fbbf24;
+    --bg: oklch(17% 0.02 255);
+    --surface: oklch(21% 0.024 255);
+    --surface-raised: oklch(25% 0.026 255 / 0.84);
+    --fg: oklch(95% 0.008 245);
+    --muted: oklch(72% 0.025 245);
+    --border: oklch(32% 0.026 255);
+    --accent: oklch(72% 0.18 28);
+    --accent-ink: oklch(91% 0.055 28);
+    --accent-soft: oklch(29% 0.065 28);
+    --ink-on-accent: oklch(18% 0.035 25);
+    --positive: oklch(72% 0.14 157);
+    --positive-soft: oklch(27% 0.055 157);
+    --negative: oklch(72% 0.17 18);
+    --negative-soft: oklch(27% 0.06 18);
+    --warning: oklch(76% 0.13 78);
+    --balance-surface: oklch(13% 0.035 255);
+    --balance-fg: oklch(97% 0.008 245);
+    --avatar-soft: oklch(28% 0.05 245);
+    --avatar-ink: oklch(88% 0.045 245);
   }
 }

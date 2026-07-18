@@ -71,7 +71,7 @@ export function useGroupsList(): UseGroupsListReturn {
         expenses,
         settlements,
         preferredCurrency,
-        convertCurrency,
+        convertCurrency
       );
       let netBalance = 0;
       for (const amount of balancesMap.values()) {
@@ -107,7 +107,7 @@ export function useGroupsList(): UseGroupsListReturn {
         acc.netTotal += item.netBalance;
         return acc;
       },
-      { youOwe: 0, owedToYou: 0, netTotal: 0 },
+      { youOwe: 0, owedToYou: 0, netTotal: 0 }
     );
   }, [activeGroups]);
 
@@ -132,7 +132,7 @@ export function useGroupsList(): UseGroupsListReturn {
     (groupId: string) => {
       router.push(`/group/${groupId}`);
     },
-    [router],
+    [router]
   );
 
   const handleCreateGroup = useCallback(() => {

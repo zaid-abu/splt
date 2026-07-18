@@ -53,6 +53,8 @@ export const EXPENSE_CATEGORIES: { key: ExpenseCategory; label: string; icon: st
 
 export type SplitMethod = "equal" | "custom" | "percentage";
 
+export type AccountSetupState = "profile_pending" | "activation_pending" | "complete";
+
 export interface User {
   id: string;
   name: string;
@@ -60,6 +62,7 @@ export interface User {
   avatar?: string;
   initials: string;
   defaultCurrency: string;
+  setupState: AccountSetupState;
   createdAt?: Date;
 }
 
@@ -189,3 +192,5 @@ export interface AppNotification {
   date: Date;
   data?: Friendship;
 }
+
+export * from "./recurring";

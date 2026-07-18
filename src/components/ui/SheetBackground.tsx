@@ -12,7 +12,12 @@ export function BlurredSheetBackground(): React.JSX.Element {
       tint={isDarkMode ? "dark" : "light"}
       style={{
         flex: 1,
-        backgroundColor: Platform.OS === "android" ? color.surface : "transparent",
+        backgroundColor:
+          Platform.OS === "android"
+            ? isDarkMode
+              ? "rgba(20, 35, 55, 0.9)"
+              : "rgba(255, 255, 255, 0.85)"
+            : "transparent",
         borderTopLeftRadius: 0,
         borderTopRightRadius: 0,
       }}

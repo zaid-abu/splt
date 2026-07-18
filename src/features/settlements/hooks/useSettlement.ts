@@ -25,10 +25,7 @@ interface SettlementInput {
   note: string;
 }
 
-export function useSettlement(
-  currentUser: User | null | undefined,
-  params: SettleRouteParams
-) {
+export function useSettlement(currentUser: User | null | undefined, params: SettleRouteParams) {
   const currentUserId = currentUser?.id;
   const pathname = usePathname();
   const { toast } = useAppToast();
@@ -38,9 +35,8 @@ export function useSettlement(
 
   const { data: groups = [], isLoading: isLoadingGroups } = useGroups(currentUserId);
   const { data: expenses = [], isLoading: isLoadingExpenses } = useUserExpenses(currentUserId);
-  const { data: settlements = [], isLoading: isLoadingSettlements } = useUserSettlements(
-    currentUserId
-  );
+  const { data: settlements = [], isLoading: isLoadingSettlements } =
+    useUserSettlements(currentUserId);
   const { data: combinedFriends = [], isLoading: isLoadingFriends } = useFriends(currentUserId);
 
   const convertCurrency = useUIStore((s) => s.convertCurrency);

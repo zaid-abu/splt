@@ -1,7 +1,6 @@
-import { View } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Text } from "react-native";
 import * as icons from "lucide-react-native";
-import { GlassHeroBalance, useUI } from "@/components/ui";
+import { BalanceHero, useCoralColors } from "@/components/coral";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import Animated, { FadeInDown } from "react-native-reanimated";
 
@@ -22,7 +21,7 @@ export function FriendBalanceCard({
   lastActivityCopy,
   currencyCode,
 }: FriendBalanceCardProps): React.JSX.Element {
-  const { color, radius } = useUI();
+  const coral = useCoralColors();
 
   return (
     <Animated.View
@@ -30,58 +29,56 @@ export function FriendBalanceCard({
       style={{ paddingHorizontal: 24, marginBottom: 40 }}
     >
       {isSettled ? (
-        <GlassHeroBalance label="Status" amount="All settled up" amountColor={color.success} metrics={[]}>
+        <BalanceHero label="Status" value="All settled up">
           <View
             style={{
               marginTop: 14,
               paddingTop: 14,
               borderTopWidth: 1,
-              borderTopColor: color.borderSoft,
+              borderTopColor: coral.border,
               alignItems: "center",
             }}
           >
-            <Typography
+            <Text
               style={{
                 fontSize: 14,
-                color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
+                color: coral.muted,
+                fontFamily: "InstrumentSans_500Medium",
               }}
             >
               No pending balances
-            </Typography>
-            <Typography
+            </Text>
+            <Text
               numberOfLines={2}
               style={{
                 marginTop: 4,
                 fontSize: 14,
                 lineHeight: 20,
-                color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
+                color: coral.muted,
+                fontFamily: "InstrumentSans_500Medium",
                 textAlign: "center",
               }}
             >
               {lastActivityCopy}
-            </Typography>
+            </Text>
           </View>
-        </GlassHeroBalance>
+        </BalanceHero>
       ) : (
-        <GlassHeroBalance
+        <BalanceHero
           label={isPositive ? `${friendName} owes you` : `You owe ${friendName}`}
-          amount={formatAmount(Math.abs(netBalance), currencyCode)}
-          amountColor={isPositive ? color.success : color.danger}
-          metrics={[]}
+          value={formatAmount(Math.abs(netBalance), currencyCode)}
         >
-          <Typography
+          <Text
             numberOfLines={2}
             style={{
               marginTop: 14,
               paddingTop: 14,
               borderTopWidth: 1,
-              borderTopColor: color.borderSoft,
+              borderTopColor: coral.border,
               fontSize: 14,
               lineHeight: 20,
-              color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
+              color: coral.muted,
+              fontFamily: "InstrumentSans_500Medium",
               textAlign: "center",
             }}
           >
@@ -89,8 +86,8 @@ export function FriendBalanceCard({
               ? "Send a reminder or add another shared expense."
               : "Settle this balance when you are ready."}{" "}
             {lastActivityCopy}
-          </Typography>
-        </GlassHeroBalance>
+          </Text>
+        </BalanceHero>
       )}
     </Animated.View>
   );

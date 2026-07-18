@@ -31,7 +31,7 @@ export function OnboardingScreen() {
   const handleComplete = async () => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     await AsyncStorage.setItem("@splt_onboarded", "true");
-    router.replace("/(tabs)");
+    router.replace("/home");
   };
 
   const handleNext = () => {

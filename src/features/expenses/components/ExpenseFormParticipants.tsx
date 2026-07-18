@@ -179,15 +179,20 @@ export function ExpenseSelectionTabs({
         (selectionTab === "groups" && filteredGroups.length === 0) ? (
           <View
             style={{
-              padding: 24,
               borderRadius: radius.lg,
+              padding: 24,
+              backgroundColor: color.surface,
               borderWidth: 1,
               borderColor: color.border,
-              backgroundColor: color.surface,
-              alignItems: "center",
             }}
           >
-            <Typography style={{ color: color.muted, fontFamily: "IBMPlexSans_500Medium" }}>
+            <Typography
+              style={{
+                color: color.muted,
+                fontFamily: "IBMPlexSans_500Medium",
+                textAlign: "center",
+              }}
+            >
               No matching {selectionTab} found.
             </Typography>
           </View>
@@ -195,9 +200,11 @@ export function ExpenseSelectionTabs({
           <View
             style={{
               borderRadius: radius.lg,
+              padding: 0,
+              backgroundColor: color.surface,
               borderWidth: 1,
               borderColor: color.border,
-              backgroundColor: color.surface,
+              overflow: "hidden",
             }}
           >
             {selectionTab === "friends" &&
@@ -439,9 +446,11 @@ export function ExpenseFormParticipants({
       <View
         style={{
           borderRadius: radius.lg,
+          padding: 0,
+          backgroundColor: color.surface,
           borderWidth: 1,
           borderColor: color.border,
-          backgroundColor: color.surface,
+          overflow: "hidden",
         }}
       >
         {participants.map((u, idx) => {

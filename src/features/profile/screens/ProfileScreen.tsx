@@ -90,11 +90,11 @@ export default function ProfileScreen(): JSX.Element {
           <FocusAwareView delay={0} style={{ marginBottom: 40 }}>
             <View
               style={{
-                backgroundColor: color.surface,
                 borderRadius: radius.lg,
+                padding: space.page,
+                backgroundColor: color.surface,
                 borderWidth: 1,
                 borderColor: color.border,
-                padding: space.page,
               }}
             >
               <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 32 }}>
@@ -127,10 +127,12 @@ export default function ProfileScreen(): JSX.Element {
             </View>
             <View
               style={{
-                backgroundColor: color.surface,
                 borderRadius: radius.lg,
+                padding: 0,
+                backgroundColor: color.surface,
                 borderWidth: 1,
                 borderColor: color.border,
+                overflow: "hidden",
               }}
             >
               <View style={{ padding: 16, gap: 12 }}>
@@ -145,10 +147,12 @@ export default function ProfileScreen(): JSX.Element {
             </View>
             <View
               style={{
-                backgroundColor: color.surface,
                 borderRadius: radius.lg,
+                padding: 0,
+                backgroundColor: color.surface,
                 borderWidth: 1,
                 borderColor: color.border,
+                overflow: "hidden",
               }}
             >
               <View style={{ padding: space.page, gap: 12 }}>

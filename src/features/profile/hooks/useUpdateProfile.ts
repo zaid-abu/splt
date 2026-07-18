@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { AuthService } from "@/services/api/auth";
+import { queryKeys } from "@/queries/keys";
 
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
@@ -8,7 +9,7 @@ export function useUpdateProfile() {
     mutationFn: ({ userId, data }: { userId: string; data: { name?: string; email?: string } }) =>
       AuthService.updateProfile(userId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.account.all });
     },
   });
 }

@@ -1,10 +1,10 @@
 import type { JSX } from "react";
-import { View, Pressable, TextInput, ScrollView } from "react-native";
-import { Typography, Spinner } from "heroui-native";
+import { View, Pressable, TextInput, ScrollView, Text } from "react-native";
+import { Spinner } from "heroui-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
-import { useUI, GlassSection } from "@/components/ui";
-import GlassSurface from "@/components/glassmorphism/GlassSurface";
+import { useUI } from "@/components/ui";
+import { Eyebrow, useCoralColors } from "@/components/coral";
 
 interface SettlementConfirmationProps {
   showOptional: boolean;
@@ -28,16 +28,15 @@ export function SettlementConfirmation({
   onGroupSelect,
 }: SettlementConfirmationProps): JSX.Element {
   const { color, radius } = useUI();
+  const coral = useCoralColors();
 
   return (
     <>
       <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
         <Pressable onPress={onToggleOptional} style={{ padding: 8 }}>
-          <Typography
-            style={{ fontSize: 13, color: color.brand, fontFamily: "IBMPlexSans_500Medium" }}
-          >
+          <Text style={{ fontSize: 13, color: color.brand, fontFamily: "IBMPlexSans_500Medium" }}>
             {showOptional ? "Hide Options" : "+ Add Note or Group"}
-          </Typography>
+          </Text>
         </Pressable>
 
         {showOptional && (
@@ -46,95 +45,103 @@ export function SettlementConfirmation({
             exiting={FadeOut}
             style={{ width: "100%", marginTop: 16, gap: 16 }}
           >
-            <GlassSection title="Details">
-              <View style={{ padding: 16, gap: 16 }}>
-                <TextInput
-                  placeholder="Add a note..."
-                  placeholderTextColor={color.muted}
-                  value={note}
-                  onChangeText={onNoteChange}
-                  style={{
-                    borderWidth: 1,
-                    borderColor: color.border,
-                    padding: 16,
-                    borderRadius: radius.lg,
-                    fontSize: 15,
-                    fontFamily: "IBMPlexSans_500Medium",
-                    backgroundColor: "transparent",
-                  }}
-                />
+            <Eyebrow style={{ marginTop: 0 }}>Details</Eyebrow>
+            <View
+              style={{
+                backgroundColor: coral.surface,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: coral.border,
+                overflow: "hidden",
+                padding: 16,
+              }}
+            >
+              <TextInput
+                placeholder="Add a note..."
+                placeholderTextColor={color.muted}
+                value={note}
+                onChangeText={onNoteChange}
+                style={{
+                  borderWidth: 1,
+                  borderColor: color.border,
+                  padding: 16,
+                  borderRadius: radius.lg,
+                  fontSize: 15,
+                  fontFamily: "IBMPlexSans_500Medium",
+                  backgroundColor: "transparent",
+                }}
+              />
 
-                {sharedGroups.length > 0 && !isGroupRoute && (
-                  <View>
-                    <Typography
+              {sharedGroups.length > 0 && !isGroupRoute && (
+                <View>
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: color.muted,
+                      fontFamily: "IBMPlexSans_500Medium",
+                      marginBottom: 8,
+                      marginLeft: 4,
+                    }}
+                  >
+                    Link to Group
+                  </Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ gap: 8 }}
+                  >
+                    <Pressable
+                      onPress={() => onGroupSelect(undefined)}
                       style={{
-                        fontSize: 12,
-                        color: color.muted,
-                        fontFamily: "IBMPlexSans_500Medium",
-                        marginBottom: 8,
-                        marginLeft: 4,
+                        paddingHorizontal: 16,
+                        paddingVertical: 10,
+                        borderWidth: 1,
+                        borderRadius: radius.pill,
+                        borderColor: !selectedGroupId ? color.brand : color.border,
+                        backgroundColor: !selectedGroupId ? color.brand : "transparent",
                       }}
                     >
-                      Link to Group
-                    </Typography>
-                    <ScrollView
-                      horizontal
-                      showsHorizontalScrollIndicator={false}
-                      contentContainerStyle={{ gap: 8 }}
-                    >
-                      <Pressable
-                        onPress={() => onGroupSelect(undefined)}
+                      <Text
                         style={{
-                          paddingHorizontal: 16,
-                          paddingVertical: 10,
-                          borderWidth: 1,
-                          borderRadius: radius.pill,
-                          borderColor: !selectedGroupId ? color.brand : color.border,
-                          backgroundColor: !selectedGroupId ? color.brand : "transparent",
+                          fontSize: 13,
+                          color: !selectedGroupId ? color.textInverse : color.text,
+                          fontFamily: "IBMPlexSans_600SemiBold",
                         }}
                       >
-                        <Typography
+                        None
+                      </Text>
+                    </Pressable>
+                    {sharedGroups.map((g) => {
+                      const isSelected = selectedGroupId === g.id;
+                      return (
+                        <Pressable
+                          key={g.id}
+                          onPress={() => onGroupSelect(g.id)}
                           style={{
-                            fontSize: 13,
-                            color: !selectedGroupId ? color.textInverse : color.text,
-                            fontFamily: "IBMPlexSans_600SemiBold",
+                            paddingHorizontal: 16,
+                            paddingVertical: 10,
+                            borderWidth: 1,
+                            borderRadius: radius.pill,
+                            borderColor: isSelected ? color.brand : color.border,
+                            backgroundColor: isSelected ? color.brand : "transparent",
                           }}
                         >
-                          None
-                        </Typography>
-                      </Pressable>
-                      {sharedGroups.map((g) => {
-                        const isSelected = selectedGroupId === g.id;
-                        return (
-                          <Pressable
-                            key={g.id}
-                            onPress={() => onGroupSelect(g.id)}
+                          <Text
                             style={{
-                              paddingHorizontal: 16,
-                              paddingVertical: 10,
-                              borderWidth: 1,
-                              borderRadius: radius.pill,
-                              borderColor: isSelected ? color.brand : color.border,
-                              backgroundColor: isSelected ? color.brand : "transparent",
+                              fontSize: 13,
+                              color: isSelected ? color.textInverse : color.text,
+                              fontFamily: "IBMPlexSans_600SemiBold",
                             }}
                           >
-                            <Typography
-                              style={{
-                                fontSize: 13,
-                                color: isSelected ? color.textInverse : color.text,
-                                fontFamily: "IBMPlexSans_600SemiBold",
-                              }}
-                            >
-                              {g.name}
-                            </Typography>
-                          </Pressable>
-                        );
-                      })}
-                    </ScrollView>
-                  </View>
-                )}
-              </View>
-            </GlassSection>
+                            {g.name}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </ScrollView>
+                </View>
+              )}
+            </View>
           </Animated.View>
         )}
       </View>
@@ -166,8 +173,26 @@ export function SettlementStickySubmit({
   const { color, radius } = useUI();
 
   return (
-    <View style={{ paddingHorizontal: 24, paddingBottom: Math.max(bottomInset, 24), paddingTop: 12, backgroundColor: color.bg, borderTopWidth: 1, borderTopColor: color.border }}>
-      <GlassSurface borderRadius={radius.lg} padding={0}>
+    <View
+      style={{
+        paddingHorizontal: 24,
+        paddingBottom: Math.max(bottomInset, 24),
+        paddingTop: 12,
+        backgroundColor: color.bg,
+        borderTopWidth: 1,
+        borderTopColor: color.border,
+      }}
+    >
+      <View
+        style={{
+          borderRadius: radius.lg,
+          padding: 0,
+          backgroundColor: color.surface,
+          borderWidth: 1,
+          borderColor: color.border,
+          overflow: "hidden",
+        }}
+      >
         <View
           style={{
             paddingHorizontal: 16,
@@ -175,7 +200,7 @@ export function SettlementStickySubmit({
             marginBottom: 12,
           }}
         >
-          <Typography
+          <Text
             style={{
               fontSize: 13,
               color: color.muted,
@@ -184,8 +209,8 @@ export function SettlementStickySubmit({
             }}
           >
             Recording payment
-          </Typography>
-          <Typography
+          </Text>
+          <Text
             style={{
               fontSize: 15,
               color: color.text,
@@ -193,9 +218,9 @@ export function SettlementStickySubmit({
             }}
           >
             {leftName} pays {rightName}
-          </Typography>
+          </Text>
         </View>
-      </GlassSurface>
+      </View>
       <Pressable
         onPress={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
@@ -215,7 +240,7 @@ export function SettlementStickySubmit({
         {isAddingSettlement ? (
           <Spinner color={color.textInverse} size="sm" />
         ) : (
-          <Typography
+          <Text
             style={{
               fontSize: 16,
               color: color.textInverse,
@@ -225,7 +250,7 @@ export function SettlementStickySubmit({
           >
             Record {settlementCurrencyObj.symbol}
             {parsedAmount.toFixed(2)}
-          </Typography>
+          </Text>
         )}
       </Pressable>
     </View>

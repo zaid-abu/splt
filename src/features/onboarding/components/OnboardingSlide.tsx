@@ -5,6 +5,7 @@ import * as icons from "lucide-react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
 import { useUI } from "@/components/ui";
+
 import { OnboardingSlideData } from "../constants/slides";
 
 interface OnboardingSlideProps {
@@ -20,10 +21,15 @@ export function OnboardingSlide({ item, width }: OnboardingSlideProps) {
     <View style={[styles.container, { width }]}>
       <Animated.View entering={FadeIn.duration(800)} style={styles.iconContainer}>
         <View
-          style={[
-            styles.iconShell,
-            { backgroundColor: color.surface, borderColor: color.border },
-          ]}
+          style={{
+            width: 80,
+            height: 80,
+            borderRadius: 24,
+            overflow: "hidden",
+            borderWidth: 1,
+            borderColor: color.border,
+            backgroundColor: color.surface,
+          }}
         >
           <View style={[styles.iconInner, { backgroundColor: color.bg }]}>
             {Icon && <Icon size={48} color={color.textStrong} strokeWidth={1.25} />}

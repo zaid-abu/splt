@@ -22,7 +22,15 @@ export function ProfileHeader({ name, email, onEdit }: ProfileHeaderProps): JSX.
     >
       <View style={{ flexDirection: "row", alignItems: "center" }}>
         <AppUserAvatar
-          user={{ id: "", name, email, avatar: undefined, initials: name.charAt(0), defaultCurrency: "" }}
+          user={{
+            id: "",
+            name,
+            email,
+            avatar: undefined,
+            initials: name.charAt(0),
+            defaultCurrency: "",
+            setupState: "complete",
+          }}
           size="lg"
         />
         <View style={{ marginLeft: 16, flex: 1 }}>

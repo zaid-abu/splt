@@ -8,6 +8,7 @@ import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClientProvider } from "@tanstack/react-query";
 
 import { AuthProvider } from "@/context/AppContext";
+import { AuthLifecycleGuard } from "@/features/auth/components/AuthLifecycleGuard";
 import { useUIStore } from "@/store/useUIStore";
 import { queryClient } from "@/lib/queryClient";
 import { GlobalQueryToast } from "@/components/feedback/GlobalQueryToast";
@@ -35,7 +36,9 @@ export function AppProvider({ children }: AppProviderProps): JSX.Element {
           <HeroUINativeProvider>
             <GlobalQueryToast />
             <BottomSheetModalProvider>
-              <AuthProvider>{children}</AuthProvider>
+              <AuthProvider>
+                <AuthLifecycleGuard>{children}</AuthLifecycleGuard>
+              </AuthProvider>
             </BottomSheetModalProvider>
           </HeroUINativeProvider>
         </QueryClientProvider>

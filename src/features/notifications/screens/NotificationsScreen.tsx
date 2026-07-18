@@ -172,11 +172,7 @@ export default function NotificationsScreen(): JSX.Element {
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 100 }}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={color.text}
-            />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={color.text} />
           }
           ListEmptyComponent={
             <View style={{ padding: 40, alignItems: "center", justifyContent: "center" }}>

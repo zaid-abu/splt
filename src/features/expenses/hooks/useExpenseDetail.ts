@@ -50,11 +50,7 @@ export function useExpenseDetail(expenseId: string) {
   const paidByMe = expense?.paidBy === currentUser.id;
   const myShare = expense?.splits.find((s: any) => s.userId === currentUser.id);
 
-  const paidByLabel = expense
-    ? paidByMe
-      ? "You"
-      : expense.paidByUser.name
-    : "";
+  const paidByLabel = expense ? (paidByMe ? "You" : expense.paidByUser.name) : "";
 
   const handleDelete = useCallback(async () => {
     if (!expense) return;

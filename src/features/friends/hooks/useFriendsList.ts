@@ -234,9 +234,7 @@ export function useFriendsList() {
 
   const topBalanceAction = useMemo(() => {
     return (
-      friendRows.find((row) => row.balance < 0) ??
-      friendRows.find((row) => row.balance > 0) ??
-      null
+      friendRows.find((row) => row.balance < 0) ?? friendRows.find((row) => row.balance > 0) ?? null
     );
   }, [friendRows]);
 
@@ -358,7 +356,14 @@ export function useFriendsList() {
     if (isGroupsError) refetchGroups();
     if (isExpensesError) refetchExpenses();
     if (isSettlementsError) refetchSettlements();
-  }, [isGroupsError, isExpensesError, isSettlementsError, refetchGroups, refetchExpenses, refetchSettlements]);
+  }, [
+    isGroupsError,
+    isExpensesError,
+    isSettlementsError,
+    refetchGroups,
+    refetchExpenses,
+    refetchSettlements,
+  ]);
 
   return {
     currentUser,

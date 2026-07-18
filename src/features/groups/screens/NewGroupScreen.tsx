@@ -149,7 +149,7 @@ export default function NewGroupScreen(): JSX.Element {
       }
 
       isNavigating.current = true;
-      router.replace(`/(tabs)/groups`);
+      router.replace("/home");
       setTimeout(() => {
         router.push(`/group/${group.id}`);
       }, 50);

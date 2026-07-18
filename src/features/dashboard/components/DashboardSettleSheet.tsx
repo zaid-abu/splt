@@ -4,11 +4,7 @@ import { View, Pressable } from "react-native";
 import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import {
-  BottomSheetModal,
-  BottomSheetBackdrop,
-  BottomSheetView,
-} from "@gorhom/bottom-sheet";
+import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useUI } from "@/components/ui";
@@ -121,10 +117,7 @@ export const DashboardSettleSheet = forwardRef<BottomSheetModal, DashboardSettle
                       }}
                     >
                       Owes you{" "}
-                      {formatAmount(
-                        Math.abs(perUserBalances.get(user.id) ?? 0),
-                        currencyCode
-                      )}
+                      {formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), currencyCode)}
                     </Typography>
                   </View>
                   <icons.ChevronRight size={18} color={color.muted} strokeWidth={1.75} />
@@ -185,10 +178,7 @@ export const DashboardSettleSheet = forwardRef<BottomSheetModal, DashboardSettle
                       }}
                     >
                       You owe{" "}
-                      {formatAmount(
-                        Math.abs(perUserBalances.get(user.id) ?? 0),
-                        currencyCode
-                      )}
+                      {formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), currencyCode)}
                     </Typography>
                   </View>
                   <icons.ChevronRight size={18} color={color.muted} strokeWidth={1.75} />

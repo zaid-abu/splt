@@ -1,8 +1,7 @@
 import { Children, type ReactNode } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Pressable, Text } from "react-native";
 import { useUI } from "@/components/ui";
-import GlassSurface from "@/components/glassmorphism/GlassSurface";
+import { useCoralColors } from "@/components/coral";
 
 interface ListSectionProps {
   label: string;
@@ -20,6 +19,7 @@ export function ListSection({
   children,
 }: ListSectionProps): React.JSX.Element {
   const { color, radius } = useUI();
+  const coral = useCoralColors();
   const childrenArray = Children.toArray(children);
 
   return (
@@ -32,33 +32,41 @@ export function ListSection({
           marginBottom: 10,
         }}
       >
-        <Typography
+        <Text
           style={{
             fontSize: 18,
             color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             letterSpacing: -0.2,
           }}
         >
           {label}
-        </Typography>
+        </Text>
         {onViewAll && viewAllLabel ? (
           <Pressable onPress={onViewAll} hitSlop={8}>
-            <Typography
+            <Text
               style={{
                 fontSize: 13,
                 color: color.muted,
-                fontFamily: "IBMPlexSans_600SemiBold",
+                fontFamily: "InstrumentSans_600SemiBold",
               }}
             >
               {viewAllLabel}
-            </Typography>
+            </Text>
           </Pressable>
         ) : (
           rightAction
         )}
       </View>
-      <GlassSurface borderRadius={radius.md} padding={0}>
+      <View
+        style={{
+          borderRadius: radius.md,
+          overflow: "hidden",
+          backgroundColor: coral.surface,
+          borderWidth: 1,
+          borderColor: color.border,
+        }}
+      >
         {childrenArray.map((child, index) => {
           const isLast = index === childrenArray.length - 1;
           return (
@@ -73,7 +81,7 @@ export function ListSection({
             </View>
           );
         })}
-      </GlassSurface>
+      </View>
     </View>
   );
 }

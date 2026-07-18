@@ -1,11 +1,11 @@
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Pressable, Text } from "react-native";
 import * as icons from "lucide-react-native";
-import { useUI, GlassSection, GlassRow } from "@/components/ui";
+import { useUI } from "@/components/ui";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { ListRowSkeleton } from "@/components/ui/Skeleton";
+import { MoneyRow, Eyebrow, useCoralColors } from "@/components/coral";
 import type { Group } from "@/types";
 
 type LucideIcon = React.ComponentType<{
@@ -58,6 +58,7 @@ export function DashboardGroupsPreview({
   onGroupPress,
 }: DashboardGroupsPreviewProps): JSX.Element {
   const { color, radius } = useUI();
+  const coral = useCoralColors();
 
   return (
     <View style={{ marginBottom: 28 }}>
@@ -70,15 +71,15 @@ export function DashboardGroupsPreview({
           paddingHorizontal: 2,
         }}
       >
-        <Typography
+        <Text
           style={{
             fontSize: 13,
             color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
           }}
         >
           {openCount} open
-        </Typography>
+        </Text>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Create group"
@@ -100,102 +101,122 @@ export function DashboardGroupsPreview({
         </Pressable>
       </View>
 
-      <GlassSection title="Groups" viewAllLabel="View all" onViewAll={onViewAll}>
-        {isLoading ? (
-          <View>
-            <ListRowSkeleton />
-            <ListRowSkeleton />
-          </View>
-        ) : groups.length > 0 ? (
-          groups.map(({ group, netBalance }) => {
-            const memberCount = group.members.length;
-            let subAmountText = "";
-            let subAmountColor: string = color.muted;
-
-            if (netBalance < 0) {
-              subAmountText = `You owe ${formatAmount(Math.abs(netBalance), group.currency)}`;
-              subAmountColor = color.danger;
-            } else if (netBalance > 0) {
-              subAmountText = `Owes you ${formatAmount(netBalance, group.currency)}`;
-              subAmountColor = color.success;
-            } else {
-              subAmountText = "Settled up";
-            }
-
-            return (
-              <GlassRow
-                key={group.id}
-                icon={<GroupIconBadge group={group} size="md" />}
-                title={group.name}
-                subtitle={`${memberCount} participants`}
-                onPress={() => onGroupPress(group.id)}
-                showChevron
-                end={
-                  <Typography
-                    style={{
-                      fontSize: 13,
-                      color: subAmountColor,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                    }}
-                  >
-                    {subAmountText}
-                  </Typography>
-                }
-              />
-            );
-          })
-        ) : (
-          <View
-            style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}
-          >
-            <EmptyIconShell icon={icons.UsersRound} />
-            <Typography
+      <View style={{ marginBottom: 28 }}>
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginBottom: 10,
+          }}
+        >
+          <Eyebrow style={{ marginTop: 0, marginBottom: 0 }}>Groups</Eyebrow>
+          <Pressable onPress={onViewAll} hitSlop={8}>
+            <Text
               style={{
-                color: color.text,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                fontSize: 17,
-                marginBottom: 4,
-              }}
-            >
-              No groups yet
-            </Typography>
-            <Typography
-              style={{
+                fontSize: 13,
+                fontFamily: "InstrumentSans_600SemiBold",
                 color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
-                fontSize: 14,
-                textAlign: "center",
-                marginBottom: 16,
               }}
             >
-              Start a shared space for expenses.
-            </Typography>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onCreateGroup}
-              style={({ pressed }) => ({
-                paddingHorizontal: 16,
-                minHeight: 44,
-                backgroundColor: color.text,
-                borderRadius: radius.pill,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed ? 0.8 : 1,
-              })}
-            >
-              <Typography
+              View all
+            </Text>
+          </Pressable>
+        </View>
+        <View
+          style={{
+            backgroundColor: coral.surface,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: coral.border,
+            overflow: "hidden",
+          }}
+        >
+          {isLoading ? (
+            <View>
+              <ListRowSkeleton />
+              <ListRowSkeleton />
+            </View>
+          ) : groups.length > 0 ? (
+            groups.map(({ group, netBalance }) => {
+              const memberCount = group.members.length;
+              let subAmountText = "";
+              let subAmountTone: "neutral" | "positive" | "negative" = "neutral";
+
+              if (netBalance < 0) {
+                subAmountText = `${formatAmount(Math.abs(netBalance), group.currency)}`;
+                subAmountTone = "negative";
+              } else if (netBalance > 0) {
+                subAmountText = `${formatAmount(netBalance, group.currency)}`;
+                subAmountTone = "positive";
+              } else {
+                subAmountText = "Settled";
+              }
+
+              return (
+                <MoneyRow
+                  key={group.id}
+                  avatar={<GroupIconBadge group={group} size="md" />}
+                  title={group.name}
+                  subtitle={`${memberCount} participants`}
+                  onPress={() => onGroupPress(group.id)}
+                  amount={subAmountText}
+                  amountTone={subAmountTone}
+                  rightElement={<icons.ChevronRight size={18} color={color.muted} />}
+                />
+              );
+            })
+          ) : (
+            <View style={{ paddingVertical: 28, alignItems: "center", justifyContent: "center" }}>
+              <EmptyIconShell icon={icons.UsersRound} />
+              <Text
                 style={{
-                  fontSize: 14,
-                  color: color.textInverse,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  color: color.text,
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 17,
+                  marginBottom: 4,
                 }}
               >
-                Create group
-              </Typography>
-            </Pressable>
-          </View>
-        )}
-      </GlassSection>
+                No groups yet
+              </Text>
+              <Text
+                style={{
+                  color: color.muted,
+                  fontFamily: "InstrumentSans_500Medium",
+                  fontSize: 14,
+                  textAlign: "center",
+                  marginBottom: 16,
+                }}
+              >
+                Start a shared space for expenses.
+              </Text>
+              <Pressable
+                accessibilityRole="button"
+                onPress={onCreateGroup}
+                style={({ pressed }) => ({
+                  paddingHorizontal: 16,
+                  minHeight: 44,
+                  backgroundColor: color.text,
+                  borderRadius: radius.pill,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: color.textInverse,
+                    fontFamily: "InstrumentSans_600SemiBold",
+                  }}
+                >
+                  Create group
+                </Text>
+              </Pressable>
+            </View>
+          )}
+        </View>
+      </View>
     </View>
   );
 }

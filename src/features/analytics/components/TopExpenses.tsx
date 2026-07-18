@@ -1,12 +1,12 @@
 import React from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Pressable, Text } from "react-native";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { EXPENSE_CATEGORIES } from "@/types";
 import * as icons from "lucide-react-native";
 import type { AnalyticsExpense } from "../hooks/useAnalytics";
 import dayjs from "dayjs";
 import { useUI } from "@/components/ui";
+import { useCoralColors } from "@/components/coral";
 
 interface Props {
   expenses: AnalyticsExpense[];
@@ -16,20 +16,21 @@ interface Props {
 
 export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
   const { color, radius, space, shadow } = useUI();
+  const coral = useCoralColors();
   return (
     <View
       style={{
-        backgroundColor: color.surface,
         borderRadius: 16,
-        borderWidth: 1,
-        borderColor: color.border,
         padding: 16,
+        backgroundColor: coral.surface,
+        borderWidth: 1,
+        borderColor: coral.border,
       }}
     >
-      <Typography
+      <Text
         style={{
           fontSize: 11,
-          fontFamily: "IBMPlexSans_600SemiBold",
+          fontFamily: "InstrumentSans_600SemiBold",
           color: color.text,
           letterSpacing: 1.1,
           textTransform: "uppercase",
@@ -37,21 +38,21 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
         }}
       >
         Top Expenses
-      </Typography>
+      </Text>
 
       {expenses.length === 0 ? (
         <View style={{ paddingVertical: 24, alignItems: "center", justifyContent: "center" }}>
           <icons.ReceiptText size={38} color={color.muted} strokeWidth={1.25} />
-          <Typography
+          <Text
             style={{
               marginTop: 12,
               color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
+              fontFamily: "InstrumentSans_500Medium",
               marginBottom: 16,
             }}
           >
             No expenses in this period.
-          </Typography>
+          </Text>
           <Pressable
             accessibilityRole="button"
             onPress={onLogExpense}
@@ -63,15 +64,15 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <Typography
+            <Text
               style={{
                 fontSize: 14,
                 color: color.textInverse,
-                fontFamily: "IBMPlexSans_600SemiBold",
+                fontFamily: "InstrumentSans_600SemiBold",
               }}
             >
               Log expense
-            </Typography>
+            </Text>
           </Pressable>
         </View>
       ) : (
@@ -110,37 +111,37 @@ export function TopExpenses({ expenses, currencyCode, onLogExpense }: Props) {
                     <Icon size={20} color={color.text} strokeWidth={1.5} />
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Typography
+                    <Text
                       style={{
                         fontSize: 16,
                         color: color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
+                        fontFamily: "InstrumentSans_600SemiBold",
                       }}
                       numberOfLines={1}
                     >
                       {expense.title}
-                    </Typography>
-                    <Typography
+                    </Text>
+                    <Text
                       style={{
                         fontSize: 13,
                         color: color.muted,
-                        fontFamily: "IBMPlexSans_500Medium",
+                        fontFamily: "InstrumentSans_500Medium",
                         marginTop: 2,
                       }}
                     >
                       {dayjs(expense.date).format("MMM D, YYYY")}
-                    </Typography>
+                    </Text>
                   </View>
                 </View>
-                <Typography
+                <Text
                   style={{
                     fontSize: 16,
                     color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                   }}
                 >
                   {formatAmount(expense.myShareInPrefCurrency, currencyCode)}
-                </Typography>
+                </Text>
               </View>
             );
           })}

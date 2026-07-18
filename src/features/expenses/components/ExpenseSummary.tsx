@@ -1,10 +1,10 @@
 import type { JSX } from "react";
-import { View, Pressable, Image } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Pressable, Image, Text } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
-import { useUI, GlassHeroBalance } from "@/components/ui";
+import { useUI } from "@/components/ui";
+import { BalanceHero, StatPair } from "@/components/coral";
 import type { Expense, User } from "@/types";
 
 interface ExpenseSummaryProps {
@@ -34,17 +34,6 @@ export function ExpenseSummary({
 }: ExpenseSummaryProps): JSX.Element {
   const { color, radius, space } = useUI();
 
-  const metrics: Array<{ label: string; value: string }> = [
-    { label: "Date", value: dateStr },
-    {
-      label: "Paid by",
-      value: paidByLabel,
-    },
-  ];
-  if (groupName) {
-    metrics.push({ label: "Group", value: groupName });
-  }
-
   return (
     <Animated.View
       entering={FadeInDown.duration(400)}
@@ -62,36 +51,72 @@ export function ExpenseSummary({
           marginBottom: 16,
         }}
       >
-        <Typography
+        <Text
           style={{
             fontSize: 28,
             color: color.text,
-            fontFamily: "Sora_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             lineHeight: 34,
           }}
         >
           {title}
-        </Typography>
+        </Text>
         <CategoryIconBadge category={category} size="lg" />
       </View>
 
-      <GlassHeroBalance
-        label={categoryLabel}
-        amount={formattedAmount}
-        metrics={metrics}
-      >
+      <BalanceHero label={categoryLabel} value={formattedAmount}>
+        <View style={{ flexDirection: "row", gap: 12, marginVertical: 12 }}>
+          <StatPair
+            left={{ label: "Date", value: dateStr }}
+            right={{ label: "Paid by", value: paidByLabel }}
+          />
+          {groupName ? (
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: color.surface,
+                borderWidth: 1,
+                borderColor: color.border,
+                borderRadius: 14,
+                padding: 14,
+                marginTop: 12,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 16,
+                  color: color.text,
+                }}
+              >
+                {groupName}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_400Regular",
+                  fontSize: 12,
+                  color: color.muted,
+                  marginTop: 5,
+                }}
+              >
+                Group
+              </Text>
+            </View>
+          ) : null}
+        </View>
+
         {notes ? (
-          <Typography
+          <Text
             style={{
               marginTop: 16,
               fontSize: 14,
               color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
+              fontFamily: "InstrumentSans_500Medium",
               lineHeight: 22,
             }}
           >
             &quot;{notes}&quot;
-          </Typography>
+          </Text>
         ) : null}
 
         {receiptUrl ? (
@@ -100,7 +125,7 @@ export function ExpenseSummary({
               accessibilityRole="imagebutton"
               accessibilityLabel="View receipt"
               onPress={() => {
-                // Open full-screen image — uses router or Linking
+                // Open full-screen image
               }}
               style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
             >
@@ -114,19 +139,19 @@ export function ExpenseSummary({
                 resizeMode="contain"
               />
             </Pressable>
-            <Typography
+            <Text
               style={{
                 marginTop: 8,
                 fontSize: 13,
                 color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
+                fontFamily: "InstrumentSans_500Medium",
               }}
             >
               Receipt
-            </Typography>
+            </Text>
           </View>
         ) : null}
-      </GlassHeroBalance>
+      </BalanceHero>
     </Animated.View>
   );
 }

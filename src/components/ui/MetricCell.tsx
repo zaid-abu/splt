@@ -11,12 +11,6 @@ interface MetricCellProps {
 export function MetricCell({ label, value, tone = "neutral" }: MetricCellProps): React.JSX.Element {
   const { color, radius } = useUI();
 
-  const bgColors = {
-    neutral: color.control,
-    success: color.successTint,
-    danger: color.dangerTint,
-    brand: color.bg,
-  };
   const valueColors = {
     neutral: color.text,
     success: color.success,
@@ -32,7 +26,6 @@ export function MetricCell({ label, value, tone = "neutral" }: MetricCellProps):
         paddingVertical: 12,
         paddingHorizontal: 12,
         borderRadius: radius.md,
-        backgroundColor: bgColors[tone],
         borderWidth: 1,
         borderColor: color.border,
       }}

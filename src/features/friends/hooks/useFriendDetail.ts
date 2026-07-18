@@ -100,8 +100,7 @@ export function useFriendDetail(friendId: string) {
   const directFriendship = useMemo(
     () =>
       allFriendships.find(
-        (friendship) =>
-          friendship.status === "accepted" && friendship.friendUser?.id === friendId
+        (friendship) => friendship.status === "accepted" && friendship.friendUser?.id === friendId
       ) ?? null,
     [allFriendships, friendId]
   );
@@ -279,7 +278,7 @@ export function useFriendDetail(friendId: string) {
                 variant: "success",
                 placement: "top",
               });
-              router.replace("/(tabs)/friends");
+              router.replace("/people");
             } catch (error) {
               toast.show({
                 label: "Could not remove friend",
@@ -306,7 +305,16 @@ export function useFriendDetail(friendId: string) {
     if (isExpensesError) refetchExpenses();
     if (isSettlementsError) refetchSettlements();
     if (isFriendshipsError) refetchFriendships();
-  }, [isGroupsError, isExpensesError, isSettlementsError, isFriendshipsError, refetchGroups, refetchExpenses, refetchSettlements, refetchFriendships]);
+  }, [
+    isGroupsError,
+    isExpensesError,
+    isSettlementsError,
+    isFriendshipsError,
+    refetchGroups,
+    refetchExpenses,
+    refetchSettlements,
+    refetchFriendships,
+  ]);
 
   return {
     currentUser,

@@ -50,13 +50,7 @@ export function AppLoader({ fullScreen = false }: AppLoaderProps): JSX.Element {
 
   return (
     <View style={[styles.container, fullScreen && { flex: 1, backgroundColor: color.bg }]}>
-      <Animated.View
-        style={[
-          styles.box,
-          { borderColor: color.brand },
-          animatedStyle,
-        ]}
-      />
+      <Animated.View style={[styles.box, { borderColor: color.brand }, animatedStyle]} />
       <Typography style={[styles.text, { color: color.brand }]}>LOADING</Typography>
     </View>
   );

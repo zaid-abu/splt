@@ -1,10 +1,10 @@
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Pressable, Text } from "react-native";
 import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { GlassRow, useUI } from "@/components/ui";
+import { useUI } from "@/components/ui";
+import { MoneyRow } from "@/components/coral";
 import { getBalanceCopy } from "@/utils/balance";
 import { formatActivityDate } from "@/utils/date";
 import { SwipeableRow } from "@/components/layout/SwipeableRow";
@@ -71,8 +71,8 @@ export function FriendRow({
             overflow: "hidden",
           })}
         >
-          <GlassRow
-            icon={<AppUserAvatar user={friend} size="md" balance={balance} />}
+          <MoneyRow
+            avatar={<AppUserAvatar user={friend} size="md" balance={balance} />}
             title={friend.name}
             subtitle={
               recentExpense
@@ -81,31 +81,10 @@ export function FriendRow({
                   ? friend.email
                   : "Shared group contact"
             }
-            end={
+            amount={balance === 0 ? balanceCopy.label : balanceCopy.amount}
+            amountTone={balance > 0 ? "positive" : balance < 0 ? "negative" : "neutral"}
+            rightElement={
               <View style={{ alignItems: "flex-end", maxWidth: 116 }}>
-                <View
-                  style={{
-                    paddingHorizontal: 9,
-                    paddingVertical: 5,
-                    borderRadius: 999,
-                    backgroundColor: balanceCopy.bg,
-                    borderWidth: 1,
-                    borderColor: color.border,
-                  }}
-                >
-                  <Typography
-                    numberOfLines={1}
-                    adjustsFontSizeToFit
-                    style={{
-                      fontSize: 13,
-                      lineHeight: 16,
-                      color: balanceCopy.color,
-                      fontFamily: "IBMPlexSans_600SemiBold",
-                    }}
-                  >
-                    {balance === 0 ? balanceCopy.label : balanceCopy.amount}
-                  </Typography>
-                </View>
                 <Pressable
                   accessibilityRole="button"
                   onPress={(event) => {
@@ -132,16 +111,16 @@ export function FriendRow({
                     color={balance === 0 ? color.text : color.textInverse}
                     strokeWidth={2}
                   />
-                  <Typography
+                  <Text
                     style={{
                       fontSize: 12,
                       lineHeight: 15,
                       color: balance === 0 ? color.text : color.textInverse,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                     }}
                   >
                     {actionLabel}
-                  </Typography>
+                  </Text>
                 </Pressable>
               </View>
             }

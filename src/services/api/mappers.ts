@@ -4,16 +4,21 @@ import type {
   ExpenseSplit,
   Group,
   GroupMember,
+  RecurringExpense,
+  RecurringFormValues,
+  RecurringOccurrence,
   Settlement,
   User,
 } from "@/types";
-import type { Inserts, Tables, Updates } from "@/services/supabase/database.types";
+import type { Inserts, Tables, Updates, Json } from "@/services/supabase/database.types";
 
 type DbActivity = Tables<"activities">;
 type DbExpense = Tables<"expenses">;
 type DbExpenseSplit = Tables<"expense_splits">;
 type DbGroup = Tables<"groups">;
 type DbGroupMember = Tables<"group_members">;
+type DbRecurringExpense = Tables<"recurring_expenses">;
+type DbRecurringOccurrence = Tables<"recurring_occurrences">;
 type DbSettlement = Tables<"settlements">;
 type DbUser = Tables<"users">;
 
@@ -50,6 +55,7 @@ export function mapUser(row: DbUser): User {
     avatar: row.avatar ?? undefined,
     initials: row.initials,
     defaultCurrency: row.default_currency,
+    setupState: row.setup_state,
     createdAt: new Date(row.created_at),
   };
 }
@@ -239,6 +245,89 @@ export function toActivityInsert(activity: Partial<Activity>): Inserts<"activiti
   }) as Inserts<"activities">;
 }
 
+export function mapRecurringExpense(row: DbRecurringExpense): RecurringExpense {
+  return {
+    id: row.id,
+    groupId: row.group_id,
+    createdBy: row.created_by,
+    paidByUserId: row.paid_by_user_id,
+    title: row.title,
+    amount: row.amount,
+    currencyCode: row.currency_code,
+    splitMethod: row.split_method,
+    splitConfig: row.split_config as RecurringExpense["splitConfig"],
+    frequency: row.frequency,
+    intervalValue: row.interval_value,
+    dayOfWeek: row.day_of_week,
+    dayOfMonth: row.day_of_month,
+    startDate: row.start_date,
+    nextRunDate: row.next_run_date,
+    reminderDaysBefore: row.reminder_days_before,
+    autoPost: row.auto_post,
+    status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export function mapRecurringOccurrence(row: DbRecurringOccurrence): RecurringOccurrence {
+  return {
+    id: row.id,
+    recurringExpenseId: row.recurring_expense_id,
+    scheduledFor: row.scheduled_for,
+    expenseId: row.expense_id,
+    status: row.status,
+    createdAt: row.created_at,
+  };
+}
+
+export function toRecurringExpenseInsert(
+  input: RecurringFormValues,
+  createdBy: string
+): Inserts<"recurring_expenses"> {
+  return compact({
+    group_id: input.groupId,
+    created_by: createdBy,
+    paid_by_user_id: input.paidByUserId,
+    title: input.title,
+    amount: input.amount,
+    currency_code: input.currencyCode,
+    split_method: input.splitMethod,
+    split_config: input.splitConfig as Json,
+    frequency: input.frequency,
+    interval_value: input.intervalValue,
+    day_of_week: input.dayOfWeek,
+    day_of_month: input.dayOfMonth,
+    start_date: input.startDate,
+    next_run_date: input.startDate,
+    reminder_days_before: input.reminderDaysBefore,
+    auto_post: input.autoPost,
+    status: input.status,
+  }) as Inserts<"recurring_expenses">;
+}
+
+export function toRecurringExpenseUpdate(
+  input: Partial<RecurringFormValues>
+): Updates<"recurring_expenses"> {
+  return compact({
+    group_id: input.groupId,
+    paid_by_user_id: input.paidByUserId,
+    title: input.title,
+    amount: "amount" in input ? input.amount : undefined,
+    currency_code: input.currencyCode,
+    split_method: input.splitMethod,
+    split_config: "splitConfig" in input ? (input.splitConfig as Json) : undefined,
+    frequency: input.frequency,
+    interval_value: input.intervalValue,
+    day_of_week: "dayOfWeek" in input ? input.dayOfWeek : undefined,
+    day_of_month: "dayOfMonth" in input ? input.dayOfMonth : undefined,
+    start_date: input.startDate,
+    reminder_days_before: input.reminderDaysBefore,
+    auto_post: "autoPost" in input ? input.autoPost : undefined,
+    status: input.status,
+  });
+}
+
 function emptyUser(id: string): User {
   return {
     id,
@@ -246,5 +335,6 @@ function emptyUser(id: string): User {
     email: "",
     initials: "?",
     defaultCurrency: "USD",
+    setupState: "complete",
   };
 }

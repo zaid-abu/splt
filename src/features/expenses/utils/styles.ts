@@ -1,6 +1,5 @@
 import { StyleSheet } from "react-native";
-import { LIGHT_COLORS } from "@/components/ui";
-import { GLASS_RADIUS } from "@/constants/glassmorphism-tokens";
+import { LIGHT_COLORS, RADIUS } from "@/components/ui";
 
 export let styles = createNewExpenseStyles();
 
@@ -88,7 +87,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       flexDirection: "row",
       gap: 4,
       padding: 4,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -96,7 +95,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     segment: {
       flex: 1,
       minHeight: 42,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       alignItems: "center",
       justifyContent: "center",
     },
@@ -120,7 +119,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       minHeight: 42,
       paddingLeft: 5,
       paddingRight: 12,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -135,7 +134,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     },
     listCard: {
       overflow: "hidden",
-      borderRadius: GLASS_RADIUS.lg,
+      borderRadius: RADIUS.lg,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.surface,
@@ -172,7 +171,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     selectionMark: {
       width: 24,
       height: 24,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -238,7 +237,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     changeButton: {
       minHeight: 38,
       paddingHorizontal: 14,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -298,7 +297,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       minHeight: 52,
       marginTop: 12,
       paddingHorizontal: 16,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -329,7 +328,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     statusPill: {
       minHeight: 32,
       paddingHorizontal: 12,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       alignItems: "center",
@@ -354,7 +353,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       flex: 1,
       minHeight: 70,
       padding: 12,
-      borderRadius: GLASS_RADIUS.md,
+      borderRadius: RADIUS.md,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -428,7 +427,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     currencyChip: {
       minHeight: 36,
       paddingHorizontal: 13,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -498,7 +497,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       minHeight: 48,
       paddingLeft: 6,
       paddingRight: 14,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -527,7 +526,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       minHeight: 46,
       paddingLeft: 5,
       paddingRight: 14,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -555,7 +554,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       flex: 1,
       minHeight: 98,
       padding: 12,
-      borderRadius: GLASS_RADIUS.lg,
+      borderRadius: RADIUS.lg,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.surface,
@@ -593,7 +592,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     remainingPill: {
       minHeight: 28,
       paddingHorizontal: 10,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       justifyContent: "center",
@@ -634,7 +633,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     sharePill: {
       minHeight: 34,
       paddingHorizontal: 10,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -651,7 +650,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     },
     shareInput: {
       height: 42,
-      borderRadius: GLASS_RADIUS.md,
+      borderRadius: RADIUS.md,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -670,7 +669,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     percentInput: {
       flex: 1,
       height: 42,
-      borderRadius: GLASS_RADIUS.md,
+      borderRadius: RADIUS.md,
       borderWidth: 1,
       borderColor: LIGHT_COLORS.border,
       backgroundColor: LIGHT_COLORS.control,
@@ -698,7 +697,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     },
     primaryButton: {
       minHeight: 56,
-      borderRadius: GLASS_RADIUS.pill,
+      borderRadius: RADIUS.pill,
       backgroundColor: LIGHT_COLORS.ink,
       alignItems: "center",
       justifyContent: "center",

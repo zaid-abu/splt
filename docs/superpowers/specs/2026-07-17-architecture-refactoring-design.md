@@ -20,14 +20,14 @@ Target: zero files over 250 lines.
 Screen (50-100 lines)
   └─ imports 1 hook + N UI components
   └─ composes: <Layout><Header/><Content/><Footer/></Layout>
-  
+
 Hook (100-200 lines)
   └─ React Query: useQuery / useMutation
   └─ Computed values: useMemo
   └─ Callbacks: useCallback
   └─ Returns: { data, actions, isLoading, error }
   └─ No JSX
-  
+
 UI Component (30-150 lines)
   └─ Props: data + callbacks (typed interfaces)
   └─ Renders JSX with styles
@@ -191,16 +191,16 @@ src/
 
 ## 4. Rules
 
-| Rule | Rationale |
-|------|-----------|
-| Screens only compose | Import 1 hook + N UI components. No useMemo, useQuery, inline styles |
-| Hooks return shape: `{ data, actions, isLoading }` | Consistent interface. No JSX |
-| UI components via typed props | Everything comes from parent. Only useUI() + animation hooks internally |
-| One component per file (shared UI) | Easy to find, test, change independently |
-| Max 250 lines per file | If it grows, split it |
-| Feature UI uses domain types | Can accept `Group`, `User`, `Expense` as props |
-| No inline styles outside StyleSheet | Keeps render clean |
-| Barrel exports (`index.ts`) for shared UI | `import { Card, Skeleton, ... } from "@/components/ui"` |
+| Rule                                               | Rationale                                                               |
+| -------------------------------------------------- | ----------------------------------------------------------------------- |
+| Screens only compose                               | Import 1 hook + N UI components. No useMemo, useQuery, inline styles    |
+| Hooks return shape: `{ data, actions, isLoading }` | Consistent interface. No JSX                                            |
+| UI components via typed props                      | Everything comes from parent. Only useUI() + animation hooks internally |
+| One component per file (shared UI)                 | Easy to find, test, change independently                                |
+| Max 250 lines per file                             | If it grows, split it                                                   |
+| Feature UI uses domain types                       | Can accept `Group`, `User`, `Expense` as props                          |
+| No inline styles outside StyleSheet                | Keeps render clean                                                      |
+| Barrel exports (`index.ts`) for shared UI          | `import { Card, Skeleton, ... } from "@/components/ui"`                 |
 
 ## 5. Antipatterns to Eliminate
 

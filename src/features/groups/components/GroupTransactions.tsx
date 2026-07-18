@@ -1,11 +1,11 @@
 import type { JSX } from "react";
-import { View } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { formatActivityDate } from "@/utils/date";
-import { useUI, GlassSection, GlassRow } from "@/components/ui";
+import { useUI } from "@/components/ui";
+import { MoneyRow, Eyebrow, useCoralColors } from "@/components/coral";
 import type { Expense, User } from "@/types";
 
 function EmptyIconShell({ icon: Icon }: { icon: any }): JSX.Element {
@@ -47,70 +47,87 @@ export function GroupTransactions({
   onExpensePress,
 }: GroupTransactionsProps): JSX.Element {
   const { color } = useUI();
+  const coral = useCoralColors();
 
   return (
-    <GlassSection
-      title="Transactions"
-      viewAllLabel={`Total: ${formatAmount(totalExpensesInGroupCurrency, currency)}`}
-    >
-      {expenses.length === 0 ? (
-        <View
+    <View style={{ marginBottom: 28 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: 10,
+        }}
+      >
+        <Eyebrow style={{ marginTop: 0, marginBottom: 0 }}>Transactions</Eyebrow>
+        <Text
           style={{
-            paddingVertical: 36,
-            alignItems: "center",
+            fontSize: 13,
+            fontFamily: "InstrumentSans_600SemiBold",
+            color: color.muted,
           }}
         >
-          <EmptyIconShell icon={icons.Receipt} />
-          <Typography
+          Total: {formatAmount(totalExpensesInGroupCurrency, currency)}
+        </Text>
+      </View>
+      <View
+        style={{
+          backgroundColor: coral.surface,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: coral.border,
+          overflow: "hidden",
+        }}
+      >
+        {expenses.length === 0 ? (
+          <View
             style={{
-              fontSize: 16,
-              color: color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              marginBottom: 8,
+              paddingVertical: 36,
+              alignItems: "center",
             }}
           >
-            No expenses yet
-          </Typography>
-          <Typography
-            style={{
-              fontSize: 14,
-              color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
-              textAlign: "center",
-            }}
-          >
-            Add the first expense for this group
-          </Typography>
-        </View>
-      ) : (
-        expenses.map((expense) => {
-          const paidByUser = userById.get(expense.paidBy);
-          const iPaid = expense.paidBy === currentUserId;
-          const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
+            <EmptyIconShell icon={icons.Receipt} />
+            <Text
+              style={{
+                fontSize: 16,
+                color: color.text,
+                fontFamily: "InstrumentSans_600SemiBold",
+                marginBottom: 8,
+              }}
+            >
+              No expenses yet
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: color.muted,
+                fontFamily: "InstrumentSans_500Medium",
+                textAlign: "center",
+              }}
+            >
+              Add the first expense for this group
+            </Text>
+          </View>
+        ) : (
+          expenses.map((expense) => {
+            const paidByUser = userById.get(expense.paidBy);
+            const iPaid = expense.paidBy === currentUserId;
+            const paidByName = iPaid ? "You" : (paidByUser?.name.split(" ")[0] ?? "Someone");
 
-          return (
-            <GlassRow
-              key={expense.id}
-              icon={<CategoryIconBadge category={expense.category} size="md" />}
-              title={expense.title}
-              subtitle={`${paidByName} paid · ${formatActivityDate(expense.date ?? expense.createdAt)}`}
-              end={
-                <Typography
-                  style={{
-                    fontSize: 15,
-                    color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
-                  }}
-                >
-                  {formatAmount(expense.amount, expense.currency)}
-                </Typography>
-              }
-              showChevron
-              onPress={() => onExpensePress(expense.id)}
-            />
-          );
-        })
-      )}
-    </GlassSection>
+            return (
+              <MoneyRow
+                key={expense.id}
+                avatar={<CategoryIconBadge category={expense.category} size="md" />}
+                title={expense.title}
+                subtitle={`${paidByName} paid \u00b7 ${formatActivityDate(expense.date ?? expense.createdAt)}`}
+                amount={formatAmount(expense.amount, expense.currency)}
+                onPress={() => onExpensePress(expense.id)}
+                rightElement={<icons.ChevronRight size={18} color={color.muted} />}
+              />
+            );
+          })
+        )}
+      </View>
+    </View>
   );
 }

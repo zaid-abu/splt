@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from "react";
-import { View, Animated } from "react-native";
+import { View, Animated, Text } from "react-native";
 import { useUI } from "@/components/ui";
+import { useCoralColors } from "@/components/coral";
 
 export function Skeleton({
   width,
@@ -41,24 +42,26 @@ export function Skeleton({
 
 export function CardSkeleton(): React.JSX.Element {
   const { color, radius, space, shadow } = useUI();
+  const coral = useCoralColors();
   return (
     <View
       style={{
-        backgroundColor: color.surface,
         borderRadius: radius.lg,
+        padding: 16,
+        backgroundColor: coral.surface,
         borderWidth: 1,
         borderColor: color.border,
-        padding: 16,
-        gap: 12,
       }}
     >
-      <View style={{ width: "40%" }}>
+      <View style={{ gap: 12 }}>
+        <View style={{ width: "40%" }}>
+          <Skeleton height={14} />
+        </View>
+        <View style={{ width: "70%" }}>
+          <Skeleton height={22} />
+        </View>
         <Skeleton height={14} />
       </View>
-      <View style={{ width: "70%" }}>
-        <Skeleton height={22} />
-      </View>
-      <Skeleton height={14} />
     </View>
   );
 }

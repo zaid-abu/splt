@@ -1,15 +1,11 @@
 import type { JSX } from "react";
 import { useEffect } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Pressable, Text } from "react-native";
 import * as icons from "lucide-react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withSpring,
-} from "react-native-reanimated";
-import { useUI, GlassHeroBalance } from "@/components/ui";
+import Animated, { useSharedValue, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import { useUI } from "@/components/ui";
 import { formatAmount } from "@/components/ui/AmountDisplay";
+import { BalanceHero, StatPair } from "@/components/coral";
 import type { User } from "@/types";
 
 interface DashboardBalanceProps {
@@ -62,32 +58,21 @@ export function DashboardBalance({
         ? `${formatAmount(Math.abs(netBalance), currencyCode)} left to settle`
         : "You are settled up";
 
-  const amountColor =
-    netBalance > 0
-      ? color.success
-      : netBalance < 0
-        ? color.danger
-        : color.muted;
-
   return (
     <Animated.View style={balanceAnimatedStyle}>
-      <GlassHeroBalance
-        label="Today's money state"
-        amount={balanceTitle}
-        amountColor={amountColor}
-        metrics={[
-          {
+      <BalanceHero label="Today's money state" value={balanceTitle}>
+        <StatPair
+          left={{
             label: "You owe",
             value: formatAmount(youOwe, currencyCode),
-            color: youOwe > 0 ? color.danger : color.muted,
-          },
-          {
+            tone: youOwe > 0 ? "negative" : "neutral",
+          }}
+          right={{
             label: "Owed to you",
             value: formatAmount(owedToYou, currencyCode),
-            color: owedToYou > 0 ? color.success : color.muted,
-          },
-        ]}
-      >
+            tone: owedToYou > 0 ? "positive" : "neutral",
+          }}
+        />
         {totalSpent > 0 && (
           <Pressable
             accessibilityRole="button"
@@ -106,41 +91,41 @@ export function DashboardBalance({
             <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
               <icons.BarChart3 size={16} color={color.muted} strokeWidth={1.75} />
               <View>
-                <Typography
+                <Text
                   style={{
                     fontSize: 13,
                     color: color.muted,
-                    fontFamily: "IBMPlexSans_500Medium",
+                    fontFamily: "InstrumentSans_500Medium",
                   }}
                 >
                   This month
-                </Typography>
-                <Typography
+                </Text>
+                <Text
                   style={{
                     fontSize: 16,
                     color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                   }}
                 >
                   {formatAmount(totalSpent, currencyCode)}
-                </Typography>
+                </Text>
               </View>
             </View>
             <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
-              <Typography
+              <Text
                 style={{
                   fontSize: 13,
                   color: color.muted,
-                  fontFamily: "IBMPlexSans_500Medium",
+                  fontFamily: "InstrumentSans_500Medium",
                 }}
               >
                 {expenseCount} expense{expenseCount !== 1 ? "s" : ""}
-              </Typography>
+              </Text>
               <icons.ChevronRight size={16} color={color.muted} strokeWidth={1.75} />
             </View>
           </Pressable>
         )}
-      </GlassHeroBalance>
+      </BalanceHero>
     </Animated.View>
   );
 }

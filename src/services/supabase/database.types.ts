@@ -76,6 +76,8 @@ export interface Database {
           split_method: "equal" | "custom" | "percentage";
           date: string;
           notes: string | null;
+          receipt_url: string | null;
+          recurring_expense_id: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -90,6 +92,8 @@ export interface Database {
           split_method: Database["public"]["Tables"]["expenses"]["Row"]["split_method"];
           date?: string;
           notes?: string | null;
+          receipt_url?: string | null;
+          recurring_expense_id?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -123,6 +127,7 @@ export interface Database {
           created_by: string;
           total_expenses: number;
           simplify_debts: boolean;
+          default_split_method: "equal" | "custom" | "percentage";
           updated_at: string;
         };
         Insert: {
@@ -135,6 +140,7 @@ export interface Database {
           created_by: string;
           total_expenses?: number;
           simplify_debts?: boolean;
+          default_split_method?: "equal" | "custom" | "percentage";
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["groups"]["Insert"]>;
@@ -174,6 +180,7 @@ export interface Database {
           avatar: string | null;
           initials: string;
           default_currency: string;
+          setup_state: "profile_pending" | "activation_pending" | "complete";
           created_at: string;
           updated_at: string;
         };
@@ -184,6 +191,7 @@ export interface Database {
           avatar?: string | null;
           initials: string;
           default_currency?: string;
+          setup_state?: "profile_pending" | "activation_pending" | "complete";
           created_at?: string;
           updated_at?: string;
         };
@@ -212,9 +220,108 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["friendships"]["Insert"]>;
         Relationships: [];
       };
+      recurring_expenses: {
+        Row: {
+          id: string;
+          group_id: string;
+          created_by: string;
+          paid_by_user_id: string;
+          title: string;
+          amount: number | null;
+          currency_code: string;
+          split_method: "equal" | "amount" | "percentage" | "shares";
+          split_config: Json | null;
+          frequency: "weekly" | "monthly" | "yearly";
+          interval_value: number;
+          day_of_week: number | null;
+          day_of_month: number | null;
+          start_date: string;
+          next_run_date: string;
+          reminder_days_before: number;
+          auto_post: boolean;
+          status: "active" | "paused";
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          group_id: string;
+          created_by: string;
+          paid_by_user_id: string;
+          title: string;
+          amount?: number | null;
+          currency_code: string;
+          split_method: "equal" | "amount" | "percentage" | "shares";
+          split_config?: Json | null;
+          frequency: "weekly" | "monthly" | "yearly";
+          interval_value?: number;
+          day_of_week?: number | null;
+          day_of_month?: number | null;
+          start_date: string;
+          next_run_date: string;
+          reminder_days_before?: number;
+          auto_post?: boolean;
+          status?: "active" | "paused";
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["recurring_expenses"]["Insert"]>;
+        Relationships: [];
+      };
+      recurring_occurrences: {
+        Row: {
+          id: string;
+          recurring_expense_id: string;
+          scheduled_for: string;
+          expense_id: string | null;
+          status: "pending" | "generated" | "skipped" | "failed";
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          recurring_expense_id: string;
+          scheduled_for: string;
+          expense_id?: string | null;
+          status?: "pending" | "generated" | "skipped" | "failed";
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["recurring_occurrences"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      next_recurring_date: {
+        Args: {
+          p_frequency: string;
+          p_interval: number;
+          p_current_date: string;
+          p_day_of_week?: number;
+          p_day_of_month?: number;
+        };
+        Returns: string;
+      };
+      generate_due_recurring_expenses: {
+        Args: {
+          run_date?: string;
+        };
+        Returns: number;
+      };
+      is_group_member: {
+        Args: {
+          target_group_id: string;
+          target_user_id: string;
+        };
+        Returns: boolean;
+      };
+      is_group_owner: {
+        Args: {
+          target_group_id: string;
+          target_user_id: string;
+        };
+        Returns: boolean;
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

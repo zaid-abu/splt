@@ -4,7 +4,6 @@ import { Typography } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui";
-import GlassSurface from "@/components/glassmorphism/GlassSurface";
 
 export interface GroupInviteBannerProps {
   groupName: string;
@@ -22,7 +21,15 @@ export function GroupInviteBanner({
   if (memberCount >= 3) return <></>;
 
   return (
-    <GlassSurface borderRadius={radius.lg} padding={24}>
+    <View
+      style={{
+        borderRadius: radius.lg,
+        padding: 24,
+        backgroundColor: color.surface,
+        borderWidth: 1,
+        borderColor: color.border,
+      }}
+    >
       <View style={{ alignItems: "center" }}>
         <View
           style={{
@@ -87,6 +94,6 @@ export function GroupInviteBanner({
           </Typography>
         </Pressable>
       </View>
-    </GlassSurface>
+    </View>
   );
 }

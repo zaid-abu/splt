@@ -36,11 +36,7 @@ export function SplitMethodSelector({
             ]}
           >
             <View style={[styles.methodIcon, active && styles.methodIconActive]}>
-              <Icon
-                size={17}
-                color={active ? color.textInverse : color.text}
-                strokeWidth={1.8}
-              />
+              <Icon size={17} color={active ? color.textInverse : color.text} strokeWidth={1.8} />
             </View>
             <Typography style={styles.methodTitle}>{method.label}</Typography>
             <Typography style={styles.methodMeta}>{method.helper}</Typography>

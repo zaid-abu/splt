@@ -17,10 +17,7 @@ export function DashboardSkeleton(): JSX.Element {
 
   return (
     <View style={{ flex: 1, paddingTop: 40, paddingHorizontal: space.page }}>
-      <Animated.View
-        entering={FadeInDown.duration(350).springify()}
-        style={{ marginBottom: 18 }}
-      >
+      <Animated.View entering={FadeInDown.duration(350).springify()} style={{ marginBottom: 18 }}>
         <Skeleton height={200} radius={radius.lg} />
       </Animated.View>
 

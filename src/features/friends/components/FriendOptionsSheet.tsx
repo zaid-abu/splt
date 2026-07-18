@@ -78,5 +78,5 @@ export function OptionRow({
   );
 }
 
-// The OptionRow component is consumed by the FriendDetailScreen 
+// The OptionRow component is consumed by the FriendDetailScreen
 // in the bottom sheet modal. It is not a standalone sheet component.

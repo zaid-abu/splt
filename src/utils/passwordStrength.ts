@@ -4,29 +4,16 @@ export interface PasswordStrengthResult {
 }
 
 export function evaluatePasswordStrength(password: string): PasswordStrengthResult {
-  const len = password.length;
-
-  if (len < 6) {
-    return { score: 0, label: "Too short" };
-  }
+  if (password.length < 8) return { score: 0, label: "Too short" };
+  if (!/[0-9]|[^A-Za-z0-9]/.test(password)) return { score: 0, label: "Weak" };
 
   let categories = 0;
   if (/[a-z]/.test(password)) categories++;
   if (/[A-Z]/.test(password)) categories++;
   if (/[0-9]/.test(password)) categories++;
-  if (/[^a-zA-Z0-9]/.test(password)) categories++;
+  if (/[^A-Za-z0-9]/.test(password)) categories++;
 
-  if (len < 8 && categories < 3) {
-    return { score: 0, label: "Weak" };
-  }
-
-  if (categories <= 2) {
-    return { score: 1, label: "Fair" };
-  }
-
-  if (categories === 3 || len < 12) {
-    return { score: 2, label: "Good" };
-  }
-
+  if (categories <= 1) return { score: 1, label: "Fair" };
+  if (categories <= 2 || password.length < 12) return { score: 2, label: "Good" };
   return { score: 3, label: "Strong" };
 }

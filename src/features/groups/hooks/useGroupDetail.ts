@@ -44,7 +44,7 @@ export function useGroupDetail(groupId: string): UseGroupDetailReturn {
 
   const isAllSettled = useMemo(
     () => data.youOwe === 0 && data.owedToYou === 0,
-    [data.youOwe, data.owedToYou],
+    [data.youOwe, data.owedToYou]
   );
 
   const memberBalances = useMemo(() => {
@@ -69,7 +69,7 @@ export function useGroupDetail(groupId: string): UseGroupDetailReturn {
     if (router.canGoBack()) {
       router.back();
     } else {
-      router.replace("/(tabs)");
+      router.replace("/home");
     }
   }, [router]);
 
@@ -83,7 +83,7 @@ export function useGroupDetail(groupId: string): UseGroupDetailReturn {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
       router.push(`/friend/${userId}`);
     },
-    [router],
+    [router]
   );
 
   const handleSettleUp = useCallback(() => {
@@ -100,7 +100,7 @@ export function useGroupDetail(groupId: string): UseGroupDetailReturn {
     (expenseId: string) => {
       router.push(`/expense/${expenseId}`);
     },
-    [router],
+    [router]
   );
 
   return {

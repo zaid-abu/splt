@@ -3,9 +3,12 @@
  * Consistent query key management across the application.
  */
 export const queryKeys = {
-  // Auth & User
-  user: ["user"] as const,
-  userProfile: (userId: string) => ["user", userId] as const,
+  account: {
+    all: ["account"] as const,
+    session: ["account", "session"] as const,
+    currentUser: ["account", "current-user"] as const,
+    profile: (userId: string) => ["account", "profile", userId] as const,
+  },
 
   // Groups
   groups: ["groups"] as const,
@@ -40,4 +43,12 @@ export const queryKeys = {
 
   // Notifications
   notifications: (userId?: string) => ["notifications", userId] as const,
+
+  // Recurring
+  recurring: {
+    all: ["recurring"] as const,
+    list: (userId: string) => ["recurring", "list", userId] as const,
+    detail: (id: string) => ["recurring", id] as const,
+    occurrences: (id: string) => ["recurring", id, "occurrences"] as const,
+  },
 } as const;

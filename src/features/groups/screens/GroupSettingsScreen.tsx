@@ -3,13 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import type { GroupSettingsRouteParams } from "@/types/navigation";
 import type { JSX } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  View,
-  Pressable,
-} from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
@@ -72,70 +66,71 @@ export default function GroupSettingsScreen(): JSX.Element {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", padding: 24 }}>
           <View
             style={{
-              alignItems: "center",
-              backgroundColor: color.surface,
               borderRadius: radius.lg,
+              padding: 32,
+              backgroundColor: color.surface,
               borderWidth: 1,
               borderColor: color.border,
-              padding: 32,
             }}
           >
-            <View
-              style={{
-                width: 56,
-                height: 56,
-                borderRadius: radius.lg,
-                backgroundColor: color.control,
-                borderWidth: 1,
-                borderColor: color.border,
-                alignItems: "center",
-                justifyContent: "center",
-                marginBottom: 16,
-              }}
-            >
-              <icons.Frown size={24} color={color.text} strokeWidth={1.8} />
-            </View>
-            <Typography
-              style={{
-                fontSize: 18,
-                color: color.text,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                marginBottom: 8,
-              }}
-            >
-              Group not found
-            </Typography>
-            <Typography
-              style={{
-                fontSize: 14,
-                color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
-                textAlign: "center",
-              }}
-            >
-              This group may have been deleted.
-            </Typography>
-            <Pressable
-              onPress={handleBack}
-              style={({ pressed }) => ({
-                marginTop: 20,
-                paddingVertical: 14,
-                paddingHorizontal: 24,
-                backgroundColor: color.text,
-                borderRadius: radius.pill,
-                opacity: pressed ? 0.75 : 1,
-              })}
-            >
-              <Typography
+            <View style={{ alignItems: "center" }}>
+              <View
                 style={{
-                  color: color.textInverse,
-                  fontFamily: "IBMPlexSans_600SemiBold",
-                  fontSize: 15,
+                  width: 56,
+                  height: 56,
+                  borderRadius: radius.lg,
+                  backgroundColor: color.control,
+                  borderWidth: 1,
+                  borderColor: color.border,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginBottom: 16,
                 }}
               >
-                Go back
+                <icons.Frown size={24} color={color.text} strokeWidth={1.8} />
+              </View>
+              <Typography
+                style={{
+                  fontSize: 18,
+                  color: color.text,
+                  fontFamily: "IBMPlexSans_600SemiBold",
+                  marginBottom: 8,
+                }}
+              >
+                Group not found
               </Typography>
-            </Pressable>
+              <Typography
+                style={{
+                  fontSize: 14,
+                  color: color.muted,
+                  fontFamily: "IBMPlexSans_500Medium",
+                  textAlign: "center",
+                }}
+              >
+                This group may have been deleted.
+              </Typography>
+              <Pressable
+                onPress={handleBack}
+                style={({ pressed }) => ({
+                  marginTop: 20,
+                  paddingVertical: 14,
+                  paddingHorizontal: 24,
+                  backgroundColor: color.text,
+                  borderRadius: radius.pill,
+                  opacity: pressed ? 0.75 : 1,
+                })}
+              >
+                <Typography
+                  style={{
+                    color: color.textInverse,
+                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontSize: 15,
+                  }}
+                >
+                  Go back
+                </Typography>
+              </Pressable>
+            </View>
           </View>
         </View>
       </View>
@@ -190,11 +185,7 @@ export default function GroupSettingsScreen(): JSX.Element {
           >
             Settings
           </Typography>
-          <IconButton
-            icon={icons.X}
-            accessibilityLabel="Close settings"
-            onPress={handleBack}
-          />
+          <IconButton icon={icons.X} accessibilityLabel="Close settings" onPress={handleBack} />
         </View>
 
         <ScrollView

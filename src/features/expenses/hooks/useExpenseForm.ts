@@ -362,7 +362,7 @@ export function useExpenseForm({
       if (router.canGoBack()) {
         router.back();
       } else {
-        router.replace("/(tabs)");
+        router.replace("/home");
       }
     } catch (e: any) {
       toast.show({
