@@ -30,7 +30,7 @@ export function CoralScreen({
   const blurTarget = useRef<View | null>(null);
 
   const gutter = isIOS ? 22 : 20;
-  const bottomClearance = insets.bottom + 76;
+  const bottomClearance = Math.max(insets.bottom, 16);
   const childArray = Children.toArray(children);
   const hasTopBar =
     childArray.length > 0 && isValidElement(childArray[0]) && childArray[0].type === CoralTopBar;

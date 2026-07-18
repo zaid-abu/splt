@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { View, FlatList, Pressable, Text, ActivityIndicator } from "react-native";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
+import { SHELL_HREFS } from "@/features/navigation/shell";
 
 import { CoralScreen } from "@/components/coral/CoralScreen";
 import { CoralTopBar } from "@/components/coral/CoralTopBar";
@@ -58,7 +59,7 @@ export default function NewFriendScreen() {
       if (router.canGoBack()) {
         router.back();
       } else {
-        router.replace("/people");
+        router.replace(SHELL_HREFS.circlesPeople);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Failed to add friend";

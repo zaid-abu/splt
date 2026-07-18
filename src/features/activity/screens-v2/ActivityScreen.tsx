@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View, Text, ActivityIndicator, ScrollView } from "react-native";
-import { useRouter } from "expo-router";
+import { View, Text, ActivityIndicator, ScrollView, Pressable } from "react-native";
 
 import { useActivity, ACTIVITY_FILTERS } from "@/features/activity/hooks/useActivity";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -12,56 +11,61 @@ import {
   Eyebrow,
   MoneyRow,
   CoralChip,
-  ContextBar,
 } from "@/components/coral";
-import { useUI } from "@/components/ui";
+import { useCoralColors } from "@/components/coral/useCoral";
 import type { Activity as ActivityType } from "@/types";
 
 function LoadingState() {
-  const { color } = useUI();
+  const coral = useCoralColors();
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <ActivityIndicator size="large" color={color.muted} />
+      <ActivityIndicator size="large" color={coral.muted} />
     </View>
   );
 }
 
 function ErrorState({ onRetry }: { onRetry: () => void }) {
-  const { color } = useUI();
+  const coral = useCoralColors();
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 16 }}>
       <Text
         style={{
           fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 18,
-          color: color.text,
+          color: coral.foreground,
         }}
       >
         Something went wrong
       </Text>
-      <Text
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Tap to retry"
         onPress={onRetry}
-        style={{
-          fontFamily: "InstrumentSans_600SemiBold",
-          fontSize: 15,
-          color: color.brand,
-        }}
+        style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
       >
-        Tap to retry
-      </Text>
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_600SemiBold",
+            fontSize: 15,
+            color: coral.accent,
+          }}
+        >
+          Tap to retry
+        </Text>
+      </Pressable>
     </View>
   );
 }
 
 function EmptyState() {
-  const { color } = useUI();
+  const coral = useCoralColors();
   return (
     <View style={{ minHeight: 310, alignItems: "center", justifyContent: "center", padding: 30 }}>
       <Text
         style={{
           fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 18,
-          color: color.text,
+          color: coral.foreground,
           textAlign: "center",
         }}
       >
@@ -71,7 +75,7 @@ function EmptyState() {
         style={{
           fontFamily: "InstrumentSans_400Regular",
           fontSize: 15,
-          color: color.muted,
+          color: coral.muted,
           textAlign: "center",
           lineHeight: 21,
           marginTop: 8,
@@ -81,11 +85,6 @@ function EmptyState() {
       </Text>
     </View>
   );
-}
-
-function formatSignedAmount(amount: number, currencyCode: string): string {
-  if (amount > 0) return `+${formatAmount(amount, currencyCode)}`;
-  return formatAmount(amount, currencyCode);
 }
 
 function renderActivityRow(activity: ActivityType) {
@@ -129,19 +128,8 @@ function renderActivityRow(activity: ActivityType) {
 }
 
 export default function ActivityScreen(): JSX.Element {
-  const router = useRouter();
-  const { color } = useUI();
-
-  const {
-    isError,
-    refetch,
-    isAppLoading,
-    searchQuery,
-    setSearchQuery,
-    activeFilter,
-    setActiveFilter,
-    groupedActivities,
-  } = useActivity();
+  const { isError, refetch, isAppLoading, activeFilter, setActiveFilter, groupedActivities } =
+    useActivity();
 
   if (isError) {
     return (
@@ -163,17 +151,7 @@ export default function ActivityScreen(): JSX.Element {
 
   return (
     <CoralScreen>
-      <CoralTopBar
-        title="Activity"
-        onBack={() => {
-          if (router.canGoBack()) {
-            router.back();
-          } else {
-            router.replace("/home");
-          }
-        }}
-      />
-      <ContextBar title="Activity" backTo={{ label: "Home", route: "/home" }} />
+      <CoralTopBar title="Activity" />
 
       <LargeTitle>Everything that moved.</LargeTitle>
 

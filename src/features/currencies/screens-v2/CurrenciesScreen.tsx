@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { View, Text, ScrollView, Pressable } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
 import { Check, ChevronRight } from "lucide-react-native";
@@ -27,9 +27,12 @@ export default function CurrenciesScreen(): JSX.Element {
   };
 
   const getExchangeLabel = (code: string): string => {
-    if (code === "USD") return "";
+    if (code === "USD") return "Base currency for reference rates";
     const rate = exchangeRates[code] || exchangeRates["USD"] || 1;
-    return `1 USD = ${rate.toLocaleString("en-US", { maximumFractionDigits: code === "IDR" || code === "KRW" || code === "JPY" || code === "VND" ? 0 : 2 })} ${code} · updated today`;
+    return `1 USD = ${rate.toLocaleString("en-US", {
+      maximumFractionDigits:
+        code === "IDR" || code === "KRW" || code === "JPY" || code === "VND" ? 0 : 2,
+    })} ${code}`;
   };
 
   return (
@@ -57,6 +60,9 @@ export default function CurrenciesScreen(): JSX.Element {
         return (
           <Pressable
             key={c.code}
+            accessibilityRole="button"
+            accessibilityLabel={`${c.code} · ${c.name}${isHome ? ", home currency" : ""}`}
+            accessibilityState={{ selected: isHome }}
             onPress={() => handleSelectCurrency(c)}
             style={({ pressed }) => ({
               flexDirection: "row",
@@ -107,7 +113,7 @@ export default function CurrenciesScreen(): JSX.Element {
                   marginTop: 3,
                 }}
               >
-                {isHome ? "Home currency" : rateLabel || ""}
+                {isHome ? "Home currency" : rateLabel}
               </Text>
             </View>
             {isHome ? (
@@ -118,68 +124,6 @@ export default function CurrenciesScreen(): JSX.Element {
           </Pressable>
         );
       })}
-
-      <Eyebrow>Conversion preference</Eyebrow>
-
-      <Pressable
-        accessibilityRole="switch"
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          minHeight: 52,
-        }}
-      >
-        <View>
-          <Text
-            style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: color.text }}
-          >
-            Use expense-date rate
-          </Text>
-          <Text
-            style={{
-              fontFamily: "InstrumentSans_400Regular",
-              fontSize: 13,
-              color: color.muted,
-              marginTop: 3,
-            }}
-          >
-            Best for trips with changing rates
-          </Text>
-        </View>
-        <View
-          style={{
-            width: 51,
-            height: 31,
-            borderRadius: 9999,
-            backgroundColor: coral.accent,
-            justifyContent: "center",
-            paddingHorizontal: 3,
-          }}
-        >
-          <View
-            style={{
-              width: 25,
-              height: 25,
-              borderRadius: 9999,
-              backgroundColor: color.textInverse,
-              alignSelf: "flex-end",
-            }}
-          />
-        </View>
-      </Pressable>
-
-      <Text
-        style={{
-          fontFamily: "InstrumentSans_400Regular",
-          fontSize: 13,
-          color: color.muted,
-          marginTop: 18,
-          lineHeight: 20,
-        }}
-      >
-        Rates are shown before settlement and can be corrected by group members.
-      </Text>
     </CoralScreen>
   );
 }

@@ -66,8 +66,11 @@
 - `src/app/settings.tsx`: Redirect-only legacy wrapper.
 - `src/components/coral/CoralScreen.tsx`: Remove the unconditional `76px` dock allowance.
 - `src/components/coral/CoralSheet.tsx`: Honor reduced motion for the new global sheet and existing sheet consumers.
+- `src/components/coral/MoneyRow.tsx`: Give every pressable money row a button role and composed accessible name.
 - `src/components/coral/index.ts`: Export new shell components and remove retired exports.
-- `src/features/friends/hooks/useFriendsList.ts`: Expose balance rows and include expense/settlement hydration in loading state.
+- `src/features/friends/hooks/useFriendsList.ts`: Expose balance rows and include all row-source queries in loading, error, and retry state.
+- `src/features/friends/queries/useFriends.ts`: Expose direct-friend query `isError` and `refetch` to composed consumers.
+- `src/features/groups/hooks/useGroupsList.ts`: Include balance-source hydration in Groups loading, error, retry, and refresh states.
 - `src/features/profile/screens-v2/SettingsScreen.tsx`: Temporarily re-export the working More screen until the legacy `/settings` wrapper becomes a redirect, then delete it.
 - `src/features/notifications/screens-v2/NotificationsScreen.tsx`: Remove inert Mark All Read and show real loading/error states.
 - `src/features/currencies/screens-v2/CurrenciesScreen.tsx`: Remove the inert expense-date conversion switch and unsupported correction copy.
@@ -242,7 +245,7 @@ export const SHELL_TABS: readonly {
   key: ShellTabKey;
   routeName: ShellTabRouteName;
   label: string;
-  href: string;
+  href: Href;
 }[] = [
   { key: "home", routeName: "(home-tab)", label: "Home", href: SHELL_HREFS.home },
   {
@@ -260,7 +263,7 @@ export const SHELL_TABS: readonly {
   { key: "more", routeName: "(more-tab)", label: "More", href: SHELL_HREFS.more },
 ];
 
-export const LEGACY_REDIRECT_HREFS: Record<LegacyShellRoute, string> = {
+export const LEGACY_REDIRECT_HREFS: Record<LegacyShellRoute, Href> = {
   groups: SHELL_HREFS.circlesGroups,
   people: SHELL_HREFS.circlesPeople,
   settings: SHELL_HREFS.more,
@@ -269,7 +272,7 @@ export const LEGACY_REDIRECT_HREFS: Record<LegacyShellRoute, string> = {
 export const GLOBAL_ACTIONS: readonly {
   id: GlobalActionId;
   label: string;
-  href: string;
+  href: Href;
 }[] = [
   { id: "add-expense", label: "Add expense", href: "/expense/new" },
   { id: "settle-up", label: "Settle up", href: SHELL_HREFS.settleNew },
@@ -284,12 +287,12 @@ export function parseCircleSegment(value: string | string[] | undefined): Circle
 }
 
 export function legacyRedirectHref(route: LegacyShellRoute): Href {
-  return LEGACY_REDIRECT_HREFS[route] as Href;
+  return LEGACY_REDIRECT_HREFS[route];
 }
 
 export function settlementHref(friendId?: string | null): Href {
   const id = friendId?.trim();
-  if (!id) return SHELL_HREFS.settleNew as Href;
+  if (!id) return SHELL_HREFS.settleNew;
   return { pathname: "/settle/[id]", params: { id } };
 }
 ```
@@ -322,14 +325,29 @@ Expected: both files format successfully; test suite PASS.
 **Files:**
 
 - Modify: `src/features/friends/hooks/useFriendsList.ts`
+- Modify: `src/features/friends/queries/useFriends.ts`
+- Modify: `src/features/groups/hooks/useGroupsList.ts`
+- Modify: `src/components/coral/MoneyRow.tsx`
 - Create: `src/features/circles/screens/CirclesScreen.tsx`
 
 **Interfaces:**
 
 - Consumes: `parseCircleSegment(value: string | string[] | undefined): "groups" | "people"`, `SHELL_HREFS.circlesGroups`, `SHELL_HREFS.circlesPeople`, `useGroupsList(): UseGroupsListReturn`, and `useFriendsList()`.
-- Produces: default `CirclesScreen(): JSX.Element`; `useFriendsList()` additionally returns `friendRows: FriendListItem[]` and does not report loading complete until groups, friends, expenses, and settlements hydrate.
+- Produces: default `CirclesScreen(): JSX.Element`; both list hooks wait for every balance source before presenting money rows; `useFriendsList()` additionally returns `friendRows: FriendListItem[]`.
 
 - [ ] **Step 1: Correct the friends-list loading/data interface**
+
+In `src/features/friends/queries/useFriends.ts`, replace the returned object from `useFriends` with:
+
+```ts
+return {
+  data: combinedFriends,
+  isLoading: friendsQuery.isLoading || isLoadingGroups,
+  isError: friendsQuery.isError,
+  error: friendsQuery.error,
+  refetch: friendsQuery.refetch,
+};
+```
 
 In `src/features/friends/hooks/useFriendsList.ts`, replace the expense and settlement query destructuring blocks exactly:
 
@@ -346,12 +364,61 @@ const {
   isError: isSettlementsError,
   refetch: refetchSettlements,
 } = useUserSettlements(currentUser?.id);
+const {
+  data: friends = [],
+  isLoading: isLoadingFriends,
+  isError: isFriendsError,
+  refetch: refetchFriends,
+} = useFriends(currentUser?.id);
+const {
+  data: allFriendships = [],
+  isLoading: isLoadingFriendships,
+  isError: isFriendshipsError,
+  refetch: refetchFriendships,
+} = useAllFriendships(currentUser?.id);
 ```
 
 Replace the `isLoading` declaration exactly:
 
 ```ts
-const isLoading = isLoadingGroups || isLoadingFriends || isLoadingExpenses || isLoadingSettlements;
+const isLoading =
+  isLoadingGroups ||
+  isLoadingFriends ||
+  isLoadingFriendships ||
+  isLoadingExpenses ||
+  isLoadingSettlements;
+```
+
+Delete the original one-line `useFriends(...)` and `useAllFriendships(...)` declarations because the replacement block above owns both queries.
+
+Replace the `isError` declaration with:
+
+```ts
+const isError =
+  isGroupsError || isFriendsError || isFriendshipsError || isExpensesError || isSettlementsError;
+```
+
+Replace `refetchAll` completely:
+
+```ts
+const refetchAll = useCallback(() => {
+  if (isGroupsError) void refetchGroups();
+  if (isFriendsError) void refetchFriends();
+  if (isFriendshipsError) void refetchFriendships();
+  if (isExpensesError) void refetchExpenses();
+  if (isSettlementsError) void refetchSettlements();
+}, [
+  isGroupsError,
+  isFriendsError,
+  isFriendshipsError,
+  isExpensesError,
+  isSettlementsError,
+  refetchGroups,
+  refetchFriends,
+  refetchFriendships,
+  refetchExpenses,
+  refetchSettlements,
+]);
 ```
 
 Add `friendRows` immediately before `displayRows` in the returned object:
@@ -361,7 +428,90 @@ Add `friendRows` immediately before `displayRows` in the returned object:
     displayRows,
 ```
 
-- [ ] **Step 2: Create the complete Circles screen**
+- [ ] **Step 2: Make Groups wait for its balance sources**
+
+In `src/features/groups/hooks/useGroupsList.ts`, replace all three query destructuring blocks with:
+
+```ts
+const {
+  data: groups = [],
+  isLoading: isLoadingGroups,
+  isError: isGroupsError,
+  refetch: refetchGroups,
+} = useGroups(currentUser?.id);
+const {
+  data: expenses = [],
+  isLoading: isLoadingExpenses,
+  isError: isExpensesError,
+  refetch: refetchExpenses,
+} = useUserExpenses(currentUser?.id);
+const {
+  data: settlements = [],
+  isLoading: isLoadingSettlements,
+  isError: isSettlementsError,
+  refetch: refetchSettlements,
+} = useUserSettlements(currentUser?.id);
+
+const isLoading = isLoadingGroups || isLoadingExpenses || isLoadingSettlements;
+const isError = isGroupsError || isExpensesError || isSettlementsError;
+```
+
+Immediately before the returned object, add:
+
+```ts
+const refetch = useCallback(() => {
+  void Promise.all([refetchGroups(), refetchExpenses(), refetchSettlements()]);
+}, [refetchExpenses, refetchGroups, refetchSettlements]);
+```
+
+Replace `onRefresh` completely so pull-to-refresh updates the same balance snapshot:
+
+```ts
+const onRefresh = useCallback(async () => {
+  setRefreshing(true);
+  try {
+    await Promise.all([refetchGroups(), refetchExpenses(), refetchSettlements()]);
+  } finally {
+    setRefreshing(false);
+  }
+}, [refetchExpenses, refetchGroups, refetchSettlements]);
+```
+
+Delete the now-unused `useQueryClient` import and `const queryClient = useQueryClient();` declaration.
+
+In the returned object, replace `refetch: refetchGroups` with:
+
+```ts
+refetch,
+```
+
+- [ ] **Step 3: Make shared pressable money rows accessible**
+
+In `src/components/coral/MoneyRow.tsx`, add this optional prop to `MoneyRowProps`:
+
+```ts
+accessibilityLabel?: string;
+```
+
+Add `accessibilityLabel,` immediately after `rightElement,` in the function parameter destructuring, then replace the pressable return block with:
+
+```tsx
+if (onPress) {
+  const accessibleName = accessibilityLabel ?? [title, subtitle, amount].filter(Boolean).join(", ");
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={accessibleName}
+      onPress={onPress}
+      style={{ width: "100%" }}
+    >
+      {content}
+    </Pressable>
+  );
+}
+```
+
+- [ ] **Step 4: Create the complete Circles screen**
 
 Create `src/features/circles/screens/CirclesScreen.tsx`:
 
@@ -579,19 +729,18 @@ export default function CirclesScreen(): JSX.Element {
 }
 ```
 
-- [ ] **Step 3: Verify type and lint boundaries for Circles**
+- [ ] **Step 5: Verify format and lint boundaries for Circles**
 
 Run:
 
 ```bash
-npx prettier --write src/features/friends/hooks/useFriendsList.ts src/features/circles/screens/CirclesScreen.tsx
-npx eslint src/features/friends/hooks/useFriendsList.ts src/features/circles/screens/CirclesScreen.tsx
-npm run typecheck
+npx prettier --write src/components/coral/MoneyRow.tsx src/features/friends/hooks/useFriendsList.ts src/features/friends/queries/useFriends.ts src/features/groups/hooks/useGroupsList.ts src/features/circles/screens/CirclesScreen.tsx
+npx eslint src/components/coral/MoneyRow.tsx src/features/friends/hooks/useFriendsList.ts src/features/friends/queries/useFriends.ts src/features/groups/hooks/useGroupsList.ts src/features/circles/screens/CirclesScreen.tsx
 ```
 
-Expected: Prettier writes both files; ESLint exits 0; TypeScript exits 0. If unrelated dirty files fail the full typecheck, record those diagnostics separately and verify neither changed file appears in the errors.
+Expected: Prettier writes all five files and ESLint exits 0. Defer full typecheck until Task 6 creates the canonical `/circles`, `/more`, and `/settle/new` wrappers and regenerates Expo's typed-route declaration.
 
-- [ ] **Step 4: Manually validate direct row semantics after the route is mounted in Task 6**
+- [ ] **Step 6: Manually validate direct row semantics after the route is mounted in Task 6**
 
 At both `/circles?segment=groups` and `/circles?segment=people`, search for one item and press its row.
 
@@ -816,6 +965,7 @@ export default function NotificationsV2Screen(): JSX.Element {
   const {
     data: notifications = [],
     isLoading,
+    isRefetching,
     isError,
     refetch,
   } = useNotifications(currentUser?.id);
@@ -863,7 +1013,7 @@ export default function NotificationsV2Screen(): JSX.Element {
         }
         refreshControl={
           <RefreshControl
-            refreshing={false}
+            refreshing={isRefetching}
             onRefresh={() => void refetch()}
             tintColor={color.text}
           />
@@ -966,17 +1116,29 @@ In `src/features/currencies/screens-v2/CurrenciesScreen.tsx`, delete everything 
 }
 ```
 
-- [ ] **Step 5: Format, lint, and typecheck More and its destinations**
+Also remove `ScrollView` from the React Native import and replace `getExchangeLabel` so the UI does not claim a refresh timestamp the store does not track:
+
+```ts
+const getExchangeLabel = (code: string): string => {
+  if (code === "USD") return "Base currency for reference rates";
+  const rate = exchangeRates[code] || exchangeRates["USD"] || 1;
+  return `1 USD = ${rate.toLocaleString("en-US", {
+    maximumFractionDigits:
+      code === "IDR" || code === "KRW" || code === "JPY" || code === "VND" ? 0 : 2,
+  })} ${code}`;
+};
+```
+
+- [ ] **Step 5: Format and lint More and its destinations**
 
 Run:
 
 ```bash
 npx prettier --write src/features/profile/screens-v2/MoreScreen.tsx src/features/profile/screens-v2/SettingsScreen.tsx src/features/notifications/screens-v2/NotificationsScreen.tsx src/features/currencies/screens-v2/CurrenciesScreen.tsx
 npx eslint src/features/profile/screens-v2/MoreScreen.tsx src/features/profile/screens-v2/SettingsScreen.tsx src/features/notifications/screens-v2/NotificationsScreen.tsx src/features/currencies/screens-v2/CurrenciesScreen.tsx
-npm run typecheck
 ```
 
-Expected: focused lint exits 0 and typecheck exits 0, subject only to separately recorded pre-existing dirty-worktree failures.
+Expected: focused lint exits 0. Defer full typecheck until Task 6 regenerates Expo's typed-route declaration for the new canonical routes.
 
 ---
 
@@ -1000,6 +1162,7 @@ Create `src/features/settlements/screens-v2/NewSettlementScreen.tsx`:
 import type { JSX } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useRouter } from "expo-router";
+import { CircleCheckBig } from "lucide-react-native";
 
 import {
   CoralButton,
@@ -1064,6 +1227,7 @@ export default function NewSettlementScreen(): JSX.Element {
         </View>
       ) : candidates.length === 0 ? (
         <EmptyState
+          visual={<CircleCheckBig size={48} color={color.muted} strokeWidth={1.4} />}
           title="No open balances"
           subtitle="Everyone is settled. Open People to review your circles."
         >
@@ -1110,7 +1274,7 @@ import NewSettlementScreen from "@/features/settlements/screens-v2/NewSettlement
 export default NewSettlementScreen;
 ```
 
-- [ ] **Step 3: Verify selector type/lint and fallback test**
+- [ ] **Step 3: Verify selector formatting, lint, and fallback test**
 
 Run:
 
@@ -1118,10 +1282,9 @@ Run:
 npx prettier --write src/features/settlements/screens-v2/NewSettlementScreen.tsx src/app/settle/new.tsx
 npx eslint src/features/settlements/screens-v2/NewSettlementScreen.tsx src/app/settle/new.tsx
 npm test -- --runInBand src/features/navigation/shell.test.ts -t "falls back"
-npm run typecheck
 ```
 
-Expected: focused test PASS; no type or focused lint errors.
+Expected: focused test PASS and focused lint exits 0. Defer full typecheck until Task 6 regenerates Expo's typed-route declaration.
 
 ---
 
@@ -1138,7 +1301,7 @@ Expected: focused test PASS; no type or focused lint errors.
 **Interfaces:**
 
 - Consumes: `BottomTabBarProps` from `expo-router/js-tabs`, `SHELL_TABS`, `GLOBAL_ACTIONS`, `GlobalActionId`, Coral colors, safe-area insets supplied by the tab navigator, and `useReducedMotion()`.
-- Produces: `CircleDock(props: BottomTabBarProps & { onAddPress(): void }): JSX.Element`; `GlobalActionSheet(props: { visible: boolean; onClose(): void; onActionPress(href: string): void }): JSX.Element`.
+- Produces: `CircleDock(props: BottomTabBarProps & { onAddPress(): void }): JSX.Element`; `GlobalActionSheet(props: { visible: boolean; onClose(): void; onActionPress(href: Href): void }): JSX.Element`.
 
 - [ ] **Step 1: Write the failing CircleDock interaction test**
 
@@ -1485,6 +1648,7 @@ Create `src/components/coral/GlobalActionSheet.tsx`:
 ```tsx
 import type { ComponentType, JSX } from "react";
 import { Pressable, Text, View } from "react-native";
+import type { Href } from "expo-router";
 import * as Haptics from "expo-haptics";
 import {
   CalendarPlus,
@@ -1515,7 +1679,7 @@ const ICONS: Record<GlobalActionId, ActionIcon> = {
 export interface GlobalActionSheetProps {
   visible: boolean;
   onClose: () => void;
-  onActionPress: (href: string) => void;
+  onActionPress: (href: Href) => void;
 }
 
 export function GlobalActionSheet({
@@ -1695,10 +1859,9 @@ Run:
 npx prettier --write src/components/coral/CircleDock.tsx src/components/coral/CircleDock.test.tsx src/components/coral/GlobalActionSheet.tsx src/components/coral/GlobalActionSheet.test.tsx src/components/coral/CoralSheet.tsx
 npm test -- --runInBand src/components/coral/CircleDock.test.tsx src/components/coral/GlobalActionSheet.test.tsx
 npx eslint src/components/coral/CircleDock.tsx src/components/coral/GlobalActionSheet.tsx src/components/coral/CoralSheet.tsx
-npm run typecheck
 ```
 
-Expected: 2 suites PASS, 4 tests PASS; focused lint and typecheck exit 0.
+Expected: 2 suites PASS, 4 tests PASS, and focused lint exits 0. Defer full typecheck until Task 6 regenerates Expo's typed-route declaration.
 
 ---
 
@@ -1990,10 +2153,7 @@ export default function RootLayout(): JSX.Element | null {
 
         <Stack.Screen name="group/[id]" />
         <Stack.Screen name="group/[id]/settings" />
-        <Stack.Screen
-          name="group/new"
-          options={{ presentation: "transparentModal", animation: "fade" }}
-        />
+        <Stack.Screen name="group/new" />
 
         <Stack.Screen name="expense/[id]" options={{ presentation: "modal" }} />
         <Stack.Screen name="expense/new" />
@@ -2079,10 +2239,9 @@ Run:
 ```bash
 for route in home activity analytics notifications currencies; do count=$(rg --files src/app | rg "/${route}\.tsx$" | wc -l | tr -d ' '); test "$count" = "1" || { printf '%s has %s wrappers\n' "$route" "$count"; exit 1; }; done
 test "$(rg --files 'src/app/(shell)' | rg '/index\.tsx$' | wc -l | tr -d ' ')" = "0"
-npm run typecheck
 ```
 
-Expected: both shell assertions exit 0 with no output; typecheck exits 0. Exactly these paths remain for moved wrappers:
+Expected: both shell assertions exit 0 with no output. Exactly these paths remain for moved wrappers:
 
 ```text
 src/app/(shell)/(home-tab)/home.tsx
@@ -2101,6 +2260,16 @@ npx expo start --clear
 ```
 
 Expected: Metro starts without `A navigator can only contain Screen`, duplicate route, unmatched route, or missing default export errors. Open `/home`, `/circles`, `/activity`, `/more`, `/analytics`, `/notifications`, and `/currencies`; each resolves once and the Circle Dock remains mounted.
+
+- [ ] **Step 9: Typecheck after Expo regenerates the route declaration**
+
+After Metro reports ready and `.expo/types/router.d.ts` contains `/circles`, `/more`, and `/settle/new`, run in a second terminal:
+
+```bash
+npm run typecheck
+```
+
+Expected: TypeScript exits 0. If unrelated dirty files fail the full typecheck, preserve those diagnostics separately and confirm no Phase 1B file appears in them.
 
 ---
 
@@ -2346,8 +2515,8 @@ Run:
 ```bash
 npm test -- --runInBand
 npm run typecheck
-npx eslint src/app/_layout.tsx 'src/app/(shell)/**/*.{ts,tsx}' src/app/groups.tsx src/app/people.tsx src/app/settings.tsx src/app/settle/new.tsx src/components/coral/CircleDock.tsx src/components/coral/GlobalActionSheet.tsx src/components/coral/CoralScreen.tsx src/components/coral/CoralSheet.tsx src/features/navigation/shell.ts src/features/circles/screens/CirclesScreen.tsx src/features/profile/screens-v2/MoreScreen.tsx src/features/settlements/screens-v2/NewSettlementScreen.tsx src/features/friends/hooks/useFriendsList.ts src/features/dashboard/hooks/useDashboard.ts src/features/activity/screens-v2/ActivityScreen.tsx src/features/friends/screens-v2/NewFriendScreen.tsx src/features/friends/screens-v2/FriendDetailScreen.tsx src/features/notifications/screens-v2/NotificationsScreen.tsx src/features/currencies/screens-v2/CurrenciesScreen.tsx
-npx prettier --check src/app/_layout.tsx 'src/app/(shell)/**/*.{ts,tsx}' src/app/groups.tsx src/app/people.tsx src/app/settings.tsx src/app/settle/new.tsx src/components/coral/CircleDock.tsx src/components/coral/CircleDock.test.tsx src/components/coral/GlobalActionSheet.tsx src/components/coral/GlobalActionSheet.test.tsx src/components/coral/CoralScreen.tsx src/components/coral/CoralSheet.tsx src/features/navigation/shell.ts src/features/navigation/shell.test.ts src/features/circles/screens/CirclesScreen.tsx src/features/profile/screens-v2/MoreScreen.tsx src/features/settlements/screens-v2/NewSettlementScreen.tsx src/features/friends/hooks/useFriendsList.ts src/features/dashboard/hooks/useDashboard.ts src/features/activity/screens-v2/ActivityScreen.tsx src/features/friends/screens-v2/NewFriendScreen.tsx src/features/friends/screens-v2/FriendDetailScreen.tsx src/features/notifications/screens-v2/NotificationsScreen.tsx src/features/currencies/screens-v2/CurrenciesScreen.tsx
+npx eslint src/app/_layout.tsx 'src/app/(shell)/**/*.{ts,tsx}' src/app/groups.tsx src/app/people.tsx src/app/settings.tsx src/app/settle/new.tsx src/components/coral/CircleDock.tsx src/components/coral/GlobalActionSheet.tsx src/components/coral/MoneyRow.tsx src/components/coral/CoralScreen.tsx src/components/coral/CoralSheet.tsx src/features/navigation/shell.ts src/features/circles/screens/CirclesScreen.tsx src/features/profile/screens-v2/MoreScreen.tsx src/features/settlements/screens-v2/NewSettlementScreen.tsx src/features/friends/hooks/useFriendsList.ts src/features/friends/queries/useFriends.ts src/features/groups/hooks/useGroupsList.ts src/features/dashboard/hooks/useDashboard.ts src/features/activity/screens-v2/ActivityScreen.tsx src/features/friends/screens-v2/NewFriendScreen.tsx src/features/friends/screens-v2/FriendDetailScreen.tsx src/features/notifications/screens-v2/NotificationsScreen.tsx src/features/currencies/screens-v2/CurrenciesScreen.tsx
+npx prettier --check src/app/_layout.tsx 'src/app/(shell)/**/*.{ts,tsx}' src/app/groups.tsx src/app/people.tsx src/app/settings.tsx src/app/settle/new.tsx src/components/coral/CircleDock.tsx src/components/coral/CircleDock.test.tsx src/components/coral/GlobalActionSheet.tsx src/components/coral/GlobalActionSheet.test.tsx src/components/coral/MoneyRow.tsx src/components/coral/CoralScreen.tsx src/components/coral/CoralSheet.tsx src/features/navigation/shell.ts src/features/navigation/shell.test.ts src/features/circles/screens/CirclesScreen.tsx src/features/profile/screens-v2/MoreScreen.tsx src/features/settlements/screens-v2/NewSettlementScreen.tsx src/features/friends/hooks/useFriendsList.ts src/features/friends/queries/useFriends.ts src/features/groups/hooks/useGroupsList.ts src/features/dashboard/hooks/useDashboard.ts src/features/activity/screens-v2/ActivityScreen.tsx src/features/friends/screens-v2/NewFriendScreen.tsx src/features/friends/screens-v2/FriendDetailScreen.tsx src/features/notifications/screens-v2/NotificationsScreen.tsx src/features/currencies/screens-v2/CurrenciesScreen.tsx
 ```
 
 Expected: tests PASS; typecheck exits 0; focused ESLint exits 0; Prettier reports all listed files use code style. If the full test/typecheck encounters unrelated dirty-worktree failures, preserve their complete output, prove focused checks pass, and do not edit unrelated files.
@@ -2451,7 +2620,7 @@ Run:
 
 ```bash
 git status --short
-git diff -- src/app src/components/coral src/features/navigation src/features/circles src/features/profile/screens-v2 src/features/settlements/screens-v2 src/features/friends/hooks/useFriendsList.ts src/features/dashboard/hooks/useDashboard.ts src/features/activity/screens-v2/ActivityScreen.tsx src/features/friends/screens-v2/NewFriendScreen.tsx src/features/friends/screens-v2/FriendDetailScreen.tsx src/features/notifications/screens-v2/NotificationsScreen.tsx src/features/currencies/screens-v2/CurrenciesScreen.tsx
+git diff -- src/app src/components/coral src/features/navigation src/features/circles src/features/profile/screens-v2 src/features/settlements/screens-v2 src/features/friends/hooks/useFriendsList.ts src/features/friends/queries/useFriends.ts src/features/groups/hooks/useGroupsList.ts src/features/dashboard/hooks/useDashboard.ts src/features/activity/screens-v2/ActivityScreen.tsx src/features/friends/screens-v2/NewFriendScreen.tsx src/features/friends/screens-v2/FriendDetailScreen.tsx src/features/notifications/screens-v2/NotificationsScreen.tsx src/features/currencies/screens-v2/CurrenciesScreen.tsx
 ```
 
 Expected: only scoped Phase 1B changes are attributable to this plan. Existing unrelated modifications and deletions remain untouched. Do not stage or commit.
@@ -2461,7 +2630,7 @@ Expected: only scoped Phase 1B changes are attributable to this plan. Existing u
 ## Self-Review Record
 
 - Route conflicts: every pathless tab group has a uniquely named explicit leaf; moved wrappers are deleted in the same task; no shell `index.tsx` exists.
-- Type consistency: tab route names in `SHELL_TABS` exactly match directory names and `Tabs.Screen` names; action hrefs are strings accepted by `router.push`; settlement objects use the existing `/settle/[id]` route parameter shape.
+- Type consistency: tab route names in `SHELL_TABS` exactly match directory names and `Tabs.Screen` names; shell/action targets use Expo Router's `Href`; settlement objects use the existing `/settle/[id]` route parameter shape.
 - Imports: all new aliases resolve under `@/*`; Expo Router JavaScript tabs and their `BottomTabBarProps` come only from `expo-router/js-tabs`; no new package is required.
 - Exposed actions: five Add actions navigate; Circles rows open detail only; More omits inert destinations; Notifications loses fake Mark All Read; Currencies loses its fake conversion switch.
 - Structural dock behavior: only `(shell)` renders `CircleDock`; focused root routes cannot render it; no pathname allowlist remains after cleanup.

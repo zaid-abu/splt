@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Modal, Pressable, View, ScrollView, Animated, Dimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCoralColors } from "./useCoral";
+import { useReducedMotion } from "@/utils/useReducedMotion";
 
 type CoralSheetProps = {
   visible: boolean;
@@ -15,13 +16,22 @@ const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 export function CoralSheet({ visible, onClose, children }: CoralSheetProps) {
   const insets = useSafeAreaInsets();
   const coral = useCoralColors();
+  const reduceMotion = useReducedMotion();
   const [modalVisible, setModalVisible] = useState(false);
-  const translateY = useRef(new Animated.Value(SCREEN_HEIGHT)).current;
-  const backdropOpacity = useRef(new Animated.Value(0)).current;
+  const [translateY] = useState(() => new Animated.Value(SCREEN_HEIGHT));
+  const [backdropOpacity] = useState(() => new Animated.Value(0));
   const prevVisible = useRef(false);
 
   const animateOut = useCallback(
     (callback?: () => void) => {
+      if (reduceMotion) {
+        translateY.setValue(SCREEN_HEIGHT);
+        backdropOpacity.setValue(0);
+        setModalVisible(false);
+        callback?.();
+        return;
+      }
+
       Animated.parallel([
         Animated.timing(translateY, {
           toValue: SCREEN_HEIGHT,
@@ -38,7 +48,7 @@ export function CoralSheet({ visible, onClose, children }: CoralSheetProps) {
         callback?.();
       });
     },
-    [translateY, backdropOpacity]
+    [backdropOpacity, reduceMotion, translateY]
   );
 
   const handleClose = useCallback(() => {
@@ -46,29 +56,40 @@ export function CoralSheet({ visible, onClose, children }: CoralSheetProps) {
   }, [animateOut, onClose]);
 
   useEffect(() => {
-    if (visible && !prevVisible.current) {
+    if (visible) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setModalVisible(true);
-      translateY.setValue(SCREEN_HEIGHT * 0.1);
-      backdropOpacity.setValue(0);
-      Animated.parallel([
-        Animated.spring(translateY, {
-          toValue: 0,
-          damping: 28,
-          stiffness: 360,
-          mass: 0.85,
-          useNativeDriver: true,
-        }),
-        Animated.timing(backdropOpacity, {
-          toValue: 1,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      if (reduceMotion) {
+        translateY.stopAnimation();
+        backdropOpacity.stopAnimation();
+        translateY.setValue(0);
+        backdropOpacity.setValue(1);
+        prevVisible.current = visible;
+        return;
+      }
+      if (!prevVisible.current) {
+        translateY.setValue(SCREEN_HEIGHT * 0.1);
+        backdropOpacity.setValue(0);
+        Animated.parallel([
+          Animated.spring(translateY, {
+            toValue: 0,
+            damping: 28,
+            stiffness: 360,
+            mass: 0.85,
+            useNativeDriver: true,
+          }),
+          Animated.timing(backdropOpacity, {
+            toValue: 1,
+            duration: 250,
+            useNativeDriver: true,
+          }),
+        ]).start();
+      }
     } else if (!visible && prevVisible.current) {
       animateOut();
     }
     prevVisible.current = visible;
-  }, [visible, animateOut, translateY, backdropOpacity]);
+  }, [visible, animateOut, translateY, backdropOpacity, reduceMotion]);
 
   if (!modalVisible) return null;
 

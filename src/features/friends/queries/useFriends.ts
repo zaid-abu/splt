@@ -44,7 +44,9 @@ export function useFriends(userId?: string) {
   return {
     data: combinedFriends,
     isLoading: friendsQuery.isLoading || isLoadingGroups,
+    isError: friendsQuery.isError,
     error: friendsQuery.error,
+    refetch: friendsQuery.refetch,
   };
 }
 

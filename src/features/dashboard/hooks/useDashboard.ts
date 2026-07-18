@@ -3,6 +3,7 @@ import { useRouter } from "expo-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
+import { SHELL_HREFS, settlementHref } from "@/features/navigation/shell";
 
 import type { User, Group, Expense, Currency } from "@/types";
 import { useAuth } from "@/context/AppContext";
@@ -248,17 +249,17 @@ export function useDashboard(): DashboardData {
   const handleSettleUp = useCallback(() => {
     if (owedUsers.length > 0 && oweUsers.length > 0) {
       settleSheetRef.current?.present();
-    } else if (owedToYou > 0 && owedUsers.length > 0) {
-      router.push(`/settle/${owedUsers[0].id}`);
-    } else if (youOwe > 0 && oweUsers.length > 0) {
-      router.push(`/settle/${oweUsers[0].id}`);
+    } else if (owedToYou > 0) {
+      router.push(settlementHref(owedUsers[0]?.id));
+    } else if (youOwe > 0) {
+      router.push(settlementHref(oweUsers[0]?.id));
     } else {
-      router.push("/people");
+      router.push(SHELL_HREFS.circlesPeople);
     }
   }, [owedUsers, oweUsers, owedToYou, youOwe, router]);
 
   const handleViewAllGroups = useCallback(() => {
-    router.push("/groups");
+    router.push(SHELL_HREFS.circlesGroups);
   }, [router]);
 
   const handleCreateGroup = useCallback(() => {
@@ -280,24 +281,24 @@ export function useDashboard(): DashboardData {
   );
 
   const handleViewAllActivity = useCallback(() => {
-    router.push("/activity");
+    router.push(SHELL_HREFS.activity);
   }, [router]);
 
   const handleViewProfile = useCallback(() => {
-    router.push("/settings");
+    router.push(SHELL_HREFS.more);
   }, [router]);
 
   const handleViewNotifications = useCallback(() => {
-    router.push("/notifications");
+    router.push(SHELL_HREFS.notifications);
   }, [router]);
 
   const handleViewStats = useCallback(() => {
-    router.push("/analytics");
+    router.push(SHELL_HREFS.analytics);
   }, [router]);
 
   const handleSettleUser = useCallback(
     (userId: string) => {
-      router.push(`/settle/${userId}`);
+      router.push(settlementHref(userId));
     },
     [router]
   );

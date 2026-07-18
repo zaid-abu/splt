@@ -4,7 +4,6 @@ import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
 import * as balancesUtil from "@/features/settlements/utils/balances";
-import { useQueryClient } from "@tanstack/react-query";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
 import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
@@ -43,7 +42,6 @@ export interface UseGroupsListReturn {
 
 export function useGroupsList(): UseGroupsListReturn {
   const router = useRouter();
-  const queryClient = useQueryClient();
   const { currentUser } = useAuth();
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
@@ -51,12 +49,25 @@ export function useGroupsList(): UseGroupsListReturn {
 
   const {
     data: groups = [],
-    isLoading,
-    isError,
+    isLoading: isLoadingGroups,
+    isError: isGroupsError,
     refetch: refetchGroups,
   } = useGroups(currentUser?.id);
-  const { data: expenses = [] } = useUserExpenses(currentUser?.id);
-  const { data: settlements = [] } = useUserSettlements(currentUser?.id);
+  const {
+    data: expenses = [],
+    isLoading: isLoadingExpenses,
+    isError: isExpensesError,
+    refetch: refetchExpenses,
+  } = useUserExpenses(currentUser?.id);
+  const {
+    data: settlements = [],
+    isLoading: isLoadingSettlements,
+    isError: isSettlementsError,
+    refetch: refetchSettlements,
+  } = useUserSettlements(currentUser?.id);
+
+  const isLoading = isLoadingGroups || isLoadingExpenses || isLoadingSettlements;
+  const isError = isGroupsError || isExpensesError || isSettlementsError;
 
   const { search, setSearch, debouncedSearch } = useDebouncedSearch();
   const [filter, setFilter] = useState<GroupFilter>("all");
@@ -122,11 +133,18 @@ export function useGroupsList(): UseGroupsListReturn {
     });
   }, [activeGroups, filter, debouncedSearch]);
 
+  const refetch = useCallback(() => {
+    void Promise.all([refetchGroups(), refetchExpenses(), refetchSettlements()]);
+  }, [refetchExpenses, refetchGroups, refetchSettlements]);
+
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
-    await queryClient.refetchQueries({ queryKey: ["groups"] });
-    setRefreshing(false);
-  }, [queryClient]);
+    try {
+      await Promise.all([refetchGroups(), refetchExpenses(), refetchSettlements()]);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetchExpenses, refetchGroups, refetchSettlements]);
 
   const handleGroupPress = useCallback(
     (groupId: string) => {
@@ -153,7 +171,7 @@ export function useGroupsList(): UseGroupsListReturn {
     refreshing,
     preferredCurrencyCode: preferredCurrency.code,
     onRefresh,
-    refetch: refetchGroups,
+    refetch,
     handleGroupPress,
     handleCreateGroup,
   };

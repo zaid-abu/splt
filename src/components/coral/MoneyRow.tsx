@@ -11,6 +11,7 @@ type MoneyRowProps = {
   amountTone?: "neutral" | "positive" | "negative";
   onPress?: () => void;
   rightElement?: ReactNode;
+  accessibilityLabel?: string;
 };
 
 export function MoneyRow({
@@ -21,6 +22,7 @@ export function MoneyRow({
   amountTone = "neutral",
   onPress,
   rightElement,
+  accessibilityLabel,
 }: MoneyRowProps) {
   const { color } = useUI();
   const coral = useCoralColors();
@@ -86,8 +88,15 @@ export function MoneyRow({
   );
 
   if (onPress) {
+    const accessibleName =
+      accessibilityLabel ?? [title, subtitle, amount].filter(Boolean).join(", ");
     return (
-      <Pressable onPress={onPress} style={{ width: "100%" }}>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={accessibleName}
+        onPress={onPress}
+        style={{ width: "100%" }}
+      >
         {content}
       </Pressable>
     );

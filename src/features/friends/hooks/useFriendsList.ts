@@ -59,16 +59,28 @@ export function useFriendsList() {
   } = useGroups(currentUser?.id);
   const {
     data: expenses = [],
+    isLoading: isLoadingExpenses,
     isError: isExpensesError,
     refetch: refetchExpenses,
   } = useUserExpenses(currentUser?.id);
   const {
     data: settlements = [],
+    isLoading: isLoadingSettlements,
     isError: isSettlementsError,
     refetch: refetchSettlements,
   } = useUserSettlements(currentUser?.id);
-  const { data: friends = [], isLoading: isLoadingFriends } = useFriends(currentUser?.id);
-  const { data: allFriendships = [] } = useAllFriendships(currentUser?.id);
+  const {
+    data: friends = [],
+    isLoading: isLoadingFriends,
+    isError: isFriendsError,
+    refetch: refetchFriends,
+  } = useFriends(currentUser?.id);
+  const {
+    data: allFriendships = [],
+    isLoading: isLoadingFriendships,
+    isError: isFriendshipsError,
+    refetch: refetchFriendships,
+  } = useAllFriendships(currentUser?.id);
   const { mutateAsync: acceptFriend } = useAcceptFriend();
   const { mutateAsync: rejectFriend } = useRejectFriend();
   const { mutateAsync: removeFriend } = useRemoveFriend();
@@ -80,7 +92,12 @@ export function useFriendsList() {
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<FriendFilter>("all");
 
-  const isLoading = isLoadingGroups || isLoadingFriends;
+  const isLoading =
+    isLoadingGroups ||
+    isLoadingFriends ||
+    isLoadingFriendships ||
+    isLoadingExpenses ||
+    isLoadingSettlements;
 
   const balances = useMemo(
     () =>
@@ -350,17 +367,24 @@ export function useFriendsList() {
     [preferredCurrency.code, router]
   );
 
-  const isError = isGroupsError || isExpensesError || isSettlementsError;
+  const isError =
+    isGroupsError || isFriendsError || isFriendshipsError || isExpensesError || isSettlementsError;
 
   const refetchAll = useCallback(() => {
-    if (isGroupsError) refetchGroups();
-    if (isExpensesError) refetchExpenses();
-    if (isSettlementsError) refetchSettlements();
+    if (isGroupsError) void refetchGroups();
+    if (isFriendsError) void refetchFriends();
+    if (isFriendshipsError) void refetchFriendships();
+    if (isExpensesError) void refetchExpenses();
+    if (isSettlementsError) void refetchSettlements();
   }, [
     isGroupsError,
+    isFriendsError,
+    isFriendshipsError,
     isExpensesError,
     isSettlementsError,
     refetchGroups,
+    refetchFriends,
+    refetchFriendships,
     refetchExpenses,
     refetchSettlements,
   ]);
@@ -375,6 +399,7 @@ export function useFriendsList() {
     filterCounts,
     pendingRequests,
     topBalanceAction,
+    friendRows,
     displayRows,
     refreshing,
     search,

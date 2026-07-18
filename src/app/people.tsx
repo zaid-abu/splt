@@ -1,2 +1,7 @@
-import PeopleScreen from "@/features/friends/screens-v2/PeopleScreen";
-export default PeopleScreen;
+import { Redirect } from "expo-router";
+
+import { legacyRedirectHref } from "@/features/navigation/shell";
+
+export default function LegacyPeopleRedirect() {
+  return <Redirect href={legacyRedirectHref("people")} />;
+}

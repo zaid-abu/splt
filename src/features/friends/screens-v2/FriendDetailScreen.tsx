@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { FriendRouteParams } from "@/types/navigation";
 import * as Haptics from "expo-haptics";
+import { SHELL_HREFS } from "@/features/navigation/shell";
 
 import { useFriendDetail } from "@/features/friends/hooks/useFriendDetail";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -150,7 +151,7 @@ export default function FriendDetailScreen(): JSX.Element {
           if (router.canGoBack()) {
             router.back();
           } else {
-            router.replace("/people");
+            router.replace(SHELL_HREFS.circlesPeople);
           }
         }}
       />

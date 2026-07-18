@@ -30,6 +30,7 @@ export function CoralSegment({ options, selected, onSelect }: CoralSegmentProps)
           <Pressable
             key={option.value}
             accessibilityRole="button"
+            accessibilityState={{ selected: isActive }}
             onPress={() => {
               Haptics.selectionAsync();
               onSelect(option.value);
