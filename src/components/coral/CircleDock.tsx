@@ -123,9 +123,9 @@ export function CircleDock({
           borderColor: coral.border,
           borderRadius: 20,
           overflow: "visible",
-          shadowColor: "#000000",
+          shadowColor: "#122237",
           shadowOffset: { width: 0, height: 6 },
-          shadowOpacity: isDark ? 0.28 : 0.14,
+          shadowOpacity: isDark ? 0.28 : 0.16,
           shadowRadius: 14,
           elevation: 12,
         }}
