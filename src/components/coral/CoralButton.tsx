@@ -1,5 +1,5 @@
 import { Pressable, ActivityIndicator, Text, Platform } from "react-native";
-import { useUI } from "@/components/ui";
+
 import { useCoralColors } from "./useCoral";
 
 type CoralButtonProps = {
@@ -17,7 +17,6 @@ export function CoralButton({
   disabled = false,
   loading = false,
 }: CoralButtonProps) {
-  const { color } = useUI();
   const coral = useCoralColors();
 
   const styles = {
