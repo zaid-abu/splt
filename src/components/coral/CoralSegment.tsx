@@ -1,6 +1,6 @@
 import { View, Text, Pressable, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
-import { useUI } from "@/components/ui";
+import { useCoralColors } from "./useCoral";
 
 type SegmentOption = { label: string; value: string };
 
@@ -11,14 +11,14 @@ type CoralSegmentProps = {
 };
 
 export function CoralSegment({ options, selected, onSelect }: CoralSegmentProps) {
-  const { color } = useUI();
+  const coral = useCoralColors();
   const minHeight = Platform.OS === "ios" ? 44 : 48;
 
   return (
     <View
       style={{
         flexDirection: "row",
-        backgroundColor: color.border,
+        backgroundColor: coral.border,
         borderRadius: 14,
         padding: 3,
         gap: 3,
@@ -39,7 +39,7 @@ export function CoralSegment({ options, selected, onSelect }: CoralSegmentProps)
               flex: 1,
               minHeight,
               borderRadius: 11,
-              backgroundColor: isActive ? color.surface : "transparent",
+              backgroundColor: isActive ? coral.surface : "transparent",
               alignItems: "center",
               justifyContent: "center",
             }}
@@ -49,7 +49,7 @@ export function CoralSegment({ options, selected, onSelect }: CoralSegmentProps)
                 fontFamily: "InstrumentSans_600SemiBold",
                 fontSize: 13,
                 fontWeight: isActive ? "600" : "400",
-                color: color.text,
+                color: coral.foreground,
               }}
             >
               {option.label}

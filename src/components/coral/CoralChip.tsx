@@ -1,6 +1,5 @@
 import { Pressable, Text, Platform } from "react-native";
 import * as Haptics from "expo-haptics";
-import { useUI } from "@/components/ui";
 import { useCoralColors } from "./useCoral";
 
 type CoralChipProps = {
@@ -10,7 +9,6 @@ type CoralChipProps = {
 };
 
 export function CoralChip({ label, isActive = false, onPress }: CoralChipProps) {
-  const { color } = useUI();
   const coral = useCoralColors();
   const minHeight = Platform.OS === "ios" ? 44 : 48;
   const borderRadius = Platform.OS === "ios" ? 22 : 24;
@@ -26,9 +24,9 @@ export function CoralChip({ label, isActive = false, onPress }: CoralChipProps) 
         minHeight,
         paddingHorizontal: 16,
         borderRadius,
-        backgroundColor: isActive ? color.text : color.surface,
+        backgroundColor: isActive ? coral.foreground : coral.surface,
         borderWidth: 1,
-        borderColor: isActive ? color.text : color.border,
+        borderColor: isActive ? coral.foreground : coral.border,
         alignItems: "center",
         justifyContent: "center",
         opacity: pressed ? 0.72 : 1,
@@ -38,7 +36,7 @@ export function CoralChip({ label, isActive = false, onPress }: CoralChipProps) 
         style={{
           fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 13,
-          color: isActive ? color.textInverse : color.text,
+          color: isActive ? coral.inkOnAccent : coral.foreground,
         }}
       >
         {label}
