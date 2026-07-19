@@ -1,4 +1,4 @@
-import { useCallback } from "react"
+import { useCallback, Fragment } from "react"
 import type { JSX } from "react"
 import { View, Text, ActivityIndicator, Pressable, RefreshControl, ScrollView } from "react-native"
 import { Bell, CircleUserRound } from "lucide-react-native"
@@ -8,6 +8,8 @@ import { useRouter } from "expo-router"
 import { useAuth } from "@/context/AppContext"
 import { useHomeSnapshot } from "@/features/dashboard/hooks/useHomeSnapshot"
 import { formatAmount } from "@/components/ui/AmountDisplay"
+import { minorToMajor } from "@/features/money/splits"
+import { useUIStore } from "@/store/useUIStore"
 import { AppUserAvatar } from "@/components/ui/MemberAvatar"
 import { getGreeting } from "@/utils/date"
 import {
@@ -15,26 +17,101 @@ import {
   CoralTopBar,
   LargeTitle,
   BalanceHero,
-  Eyebrow,
   MoneyRow,
   CoralButton,
   useCoralColors,
 } from "@/components/coral"
-import { useUI } from "@/components/ui"
 import type { AttentionRow, GroupLedgerRow, MovementRow } from "@/features/dashboard/hooks/useHomeSnapshot"
 
-function formatSignedAmount(amount: number, currencyCode: string): string {
-  if (amount > 0) return `+${formatAmount(amount, currencyCode)}`
-  return formatAmount(amount, currencyCode)
+function formatSignedAmount(amountMinor: number, currencyCode: string): string {
+  const major = minorToMajor(amountMinor, currencyCode)
+  if (major > 0) return `+${formatAmount(major, currencyCode)}`
+  return formatAmount(major, currencyCode)
 }
 
-export default function MoneyMapScreen(): JSX.Element {
+function getFormattedDate(): string {
+  return new Date().toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  })
+}
+
+function SectionHeading({ title, meta }: { title: string; meta?: string }) {
+  const coral = useCoralColors()
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "baseline",
+        justifyContent: "space-between",
+        gap: 12,
+        marginTop: 24,
+        marginBottom: 10,
+        paddingHorizontal: 2,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_600SemiBold",
+          fontSize: 15,
+          color: coral.foreground,
+        }}
+      >
+        {title}
+      </Text>
+      {meta ? (
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_400Regular",
+            fontSize: 12,
+            color: coral.muted,
+          }}
+        >
+          {meta}
+        </Text>
+      ) : null}
+    </View>
+  )
+}
+
+function SectionCard({ children }: { children: React.ReactNode }) {
+  const coral = useCoralColors()
+  return (
+    <View
+      style={{
+        borderWidth: 1,
+        borderColor: coral.border,
+        borderRadius: 16,
+        backgroundColor: coral.surface,
+        overflow: "hidden",
+      }}
+    >
+      {children}
+    </View>
+  )
+}
+
+function Separator() {
+  const coral = useCoralColors()
+  return (
+    <View
+      style={{
+        height: 1,
+        backgroundColor: coral.border,
+        marginLeft: 58,
+      }}
+    />
+  )
+}
+
+export default function MoneyMapScreen(): JSX.Element | null {
   const router = useRouter()
   const { currentUser } = useAuth()
   const snapshot = useHomeSnapshot(currentUser?.id ?? "")
   const coral = useCoralColors()
-  const { color } = useUI()
-
+  const storeCurrency = useUIStore((s) => s.preferredCurrency)
+  const convertCurrency = useUIStore((s) => s.convertCurrency)
   const onRefresh = useCallback(() => {
     void snapshot.refresh()
   }, [snapshot.refresh])
@@ -47,7 +124,7 @@ export default function MoneyMapScreen(): JSX.Element {
             style={{
               fontFamily: "InstrumentSans_600SemiBold",
               fontSize: 18,
-              color: color.text,
+              color: coral.foreground,
             }}
           >
             Something went wrong
@@ -57,7 +134,7 @@ export default function MoneyMapScreen(): JSX.Element {
             style={{
               fontFamily: "InstrumentSans_600SemiBold",
               fontSize: 15,
-              color: color.brand,
+              color: coral.accent,
             }}
           >
             Tap to retry
@@ -67,35 +144,42 @@ export default function MoneyMapScreen(): JSX.Element {
     )
   }
 
-  if (snapshot.isInitialLoading || !snapshot.data) {
+  if (snapshot.isInitialLoading) {
     return (
       <CoralScreen scroll={false}>
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <ActivityIndicator size="large" color={color.muted} />
+          <ActivityIndicator size="large" color={coral.muted} />
         </View>
       </CoralScreen>
     )
+  }
+
+  if (!snapshot.data) {
+    return null
   }
 
   const data = snapshot.data
   const notificationCount = data.notifications.length
   const greeting = getGreeting()
   const userName = currentUser?.name?.split(" ")[0] ?? "there"
+  const preferredCurrency = storeCurrency.code
 
-  const netSigned = data.groupLedger.reduce((sum, row) => sum + row.netSignedMinor, 0)
-  const preferredCurrency =
-    data.heroBalances.length > 0
-      ? data.heroBalances[0].currency
-      : data.groupLedger.length > 0
-        ? data.groupLedger[0].group.currency
-        : "USD"
+  const groupLedgerConverted = data.groupLedger.map((row) => {
+    const major = minorToMajor(row.netSignedMinor, row.group.currency)
+    const converted = convertCurrency(major, row.group.currency, preferredCurrency)
+    return { ...row, convertedMinor: Math.round(converted * 100) }
+  })
 
-  const totalOwed = data.groupLedger.reduce(
-    (sum, row) => sum + Math.max(0, row.netSignedMinor),
+  const netSigned = groupLedgerConverted.reduce(
+    (sum, row) => sum + row.convertedMinor,
     0
   )
-  const totalOwe = data.groupLedger.reduce(
-    (sum, row) => sum + Math.abs(Math.min(0, row.netSignedMinor)),
+  const totalOwed = groupLedgerConverted.reduce(
+    (sum, row) => sum + Math.max(0, row.convertedMinor),
+    0
+  )
+  const totalOwe = groupLedgerConverted.reduce(
+    (sum, row) => sum + Math.abs(Math.min(0, row.convertedMinor)),
     0
   )
 
@@ -124,10 +208,13 @@ export default function MoneyMapScreen(): JSX.Element {
     }
   }
 
+  const netSignedMajor = minorToMajor(netSigned, preferredCurrency)
+  const totalOwedMajor = minorToMajor(totalOwed, preferredCurrency)
+  const totalOweMajor = minorToMajor(totalOwe, preferredCurrency)
   const heroValue =
-    netSigned >= 0
-      ? `+${formatAmount(netSigned, preferredCurrency)}`
-      : formatAmount(netSigned, preferredCurrency)
+    netSignedMajor >= 0
+      ? `+${formatAmount(netSignedMajor, preferredCurrency)}`
+      : formatAmount(netSignedMajor, preferredCurrency)
 
   return (
     <CoralScreen>
@@ -138,7 +225,7 @@ export default function MoneyMapScreen(): JSX.Element {
             accessibilityLabel="Open settings"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-              router.push("/profile")
+              router.push("/more")
             }}
             style={{
               width: 48,
@@ -150,7 +237,7 @@ export default function MoneyMapScreen(): JSX.Element {
             {currentUser ? (
               <AppUserAvatar user={currentUser} size="sm" />
             ) : (
-              <CircleUserRound size={24} color={color.text} strokeWidth={1.7} />
+              <CircleUserRound size={24} color={coral.foreground} strokeWidth={1.7} />
             )}
           </Pressable>
         }
@@ -170,7 +257,7 @@ export default function MoneyMapScreen(): JSX.Element {
                 justifyContent: "center",
               }}
             >
-              <Bell size={22} color={color.text} strokeWidth={1.7} />
+              <Bell size={22} color={coral.foreground} strokeWidth={1.7} />
             </Pressable>
             {notificationCount > 0 && (
               <View
@@ -196,11 +283,22 @@ export default function MoneyMapScreen(): JSX.Element {
           <RefreshControl
             refreshing={snapshot.isRefreshing}
             onRefresh={onRefresh}
-            tintColor={color.text}
+            tintColor={coral.foreground}
           />
         }
-        contentContainerStyle={{ paddingBottom: 40 }}
+        contentContainerStyle={{ paddingBottom: 110 }}
       >
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_600SemiBold",
+            fontSize: 12,
+            color: coral.muted,
+            marginBottom: 4,
+          }}
+        >
+          {getFormattedDate()}
+        </Text>
+
         <LargeTitle>
           {greeting}, {userName}.
         </LargeTitle>
@@ -226,79 +324,99 @@ export default function MoneyMapScreen(): JSX.Element {
         ) : (
           <>
             <BalanceHero
-              label="Across all your circles"
+              label="Across your circles"
               value={heroValue}
-              note={`You're owed ${formatAmount(totalOwed, preferredCurrency)} \u00B7 You owe ${formatAmount(totalOwe, preferredCurrency)}`}
+              note={`You're owed ${formatAmount(totalOwedMajor, preferredCurrency)} \u00B7 You owe ${formatAmount(totalOweMajor, preferredCurrency)}`}
             />
 
             {data.attentionRows.length > 0 && (
               <>
-                <Eyebrow>Needs attention</Eyebrow>
-                {data.attentionRows.map((row) => {
-                  const isOwe = row.type === "owe"
-                  return (
-                    <MoneyRow
-                      key={`attention-${row.counterpartyId}`}
-                      title={row.user.name}
-                      subtitle={
-                        isOwe
-                          ? `You owe ${formatAmount(Math.abs(row.signedAmountMinor), row.currency)}`
-                          : `Owes you ${formatAmount(row.signedAmountMinor, row.currency)}`
-                      }
-                      amount={formatSignedAmount(
-                        isOwe ? -Math.abs(row.signedAmountMinor) : row.signedAmountMinor,
-                        row.currency
-                      )}
-                      amountTone={isOwe ? "negative" : "positive"}
-                      onPress={() => handleAttentionPress(row)}
-                    />
-                  )
-                })}
-              </>
-            )}
-
-            {data.nextSchedule && (
-              <>
-                <Eyebrow>Upcoming</Eyebrow>
-                <MoneyRow
-                  title={data.nextSchedule.title}
-                  subtitle={data.nextSchedule.nextDueLabel ?? "Upcoming"}
-                  amount=""
-                  amountTone="neutral"
-                  onPress={() => handleSchedulePress(data.nextSchedule!.id)}
+                <SectionHeading
+                  title="Needs attention"
+                  meta={`${data.attentionRows.length}`}
                 />
+                <SectionCard>
+                  {data.attentionRows.map((row, idx) => {
+                    const isOwe = row.type === "owe"
+                    return (
+                      <Fragment key={`attention-${row.counterpartyId}`}>
+                        {idx > 0 ? <Separator /> : null}
+                        <MoneyRow
+                          title={row.user.name}
+                          subtitle={
+                            isOwe
+                              ? `You owe ${formatAmount(minorToMajor(Math.abs(row.signedAmountMinor), row.currency), row.currency)}`
+                              : `Owes you ${formatAmount(minorToMajor(row.signedAmountMinor, row.currency), row.currency)}`
+                          }
+                          amount={formatSignedAmount(
+                            isOwe ? -Math.abs(row.signedAmountMinor) : row.signedAmountMinor,
+                            row.currency
+                          )}
+                          amountTone={isOwe ? "negative" : "positive"}
+                          onPress={() => handleAttentionPress(row)}
+                        />
+                      </Fragment>
+                    )
+                  })}
+                </SectionCard>
               </>
             )}
 
             {data.groupLedger.length > 0 && (
               <>
-                <Eyebrow>Your circles</Eyebrow>
-                {data.groupLedger.map((row) => (
+                <SectionHeading
+                  title="Where you stand"
+                  meta={`${data.groupLedger.length} circle${data.groupLedger.length !== 1 ? "s" : ""}`}
+                />
+                <SectionCard>
+                  {data.groupLedger.map((row, idx) => (
+                    <Fragment key={`group-${row.group.id}`}>
+                      {idx > 0 ? <Separator /> : null}
+                      <MoneyRow
+                        title={row.group.name}
+                        subtitle={row.netSignedMinor >= 0 ? "You're owed" : "You owe"}
+                        amount={formatSignedAmount(row.netSignedMinor, row.group.currency)}
+                        amountTone={row.netSignedMinor >= 0 ? "positive" : "negative"}
+                        onPress={() => handleGroupPress(row)}
+                      />
+                    </Fragment>
+                  ))}
+                </SectionCard>
+              </>
+            )}
+
+            {data.nextSchedule && (
+              <>
+                <SectionHeading title="Next up" meta="Upcoming" />
+                <SectionCard>
                   <MoneyRow
-                    key={`group-${row.group.id}`}
-                    title={row.group.name}
-                    subtitle={row.netSignedMinor >= 0 ? "You're owed" : "You owe"}
-                    amount={formatSignedAmount(row.netSignedMinor, row.group.currency)}
-                    amountTone={row.netSignedMinor >= 0 ? "positive" : "negative"}
-                    onPress={() => handleGroupPress(row)}
+                    title={data.nextSchedule.title}
+                    subtitle={data.nextSchedule.nextDueLabel ?? "Upcoming"}
+                    amount=""
+                    amountTone="neutral"
+                    onPress={() => handleSchedulePress(data.nextSchedule!.id)}
                   />
-                ))}
+                </SectionCard>
               </>
             )}
 
             {data.recentMovement.length > 0 && (
               <>
-                <Eyebrow>Recent movement</Eyebrow>
-                {data.recentMovement.map((row) => (
-                  <MoneyRow
-                    key={`movement-${row.id}`}
-                    title={row.description}
-                    subtitle={row.counterpartyName}
-                    amount={formatAmount(row.amount, row.currency)}
-                    amountTone={row.type === "expense" ? "negative" : "positive"}
-                    onPress={() => handleMovementPress(row)}
-                  />
-                ))}
+                <SectionHeading title="Recent movement" />
+                <SectionCard>
+                  {data.recentMovement.map((row, idx) => (
+                    <Fragment key={`movement-${row.id}`}>
+                      {idx > 0 ? <Separator /> : null}
+                      <MoneyRow
+                        title={row.description}
+                        subtitle={row.counterpartyName}
+                        amount={formatAmount(row.amount, row.currency)}
+                        amountTone={row.type === "expense" ? "negative" : "positive"}
+                        onPress={() => handleMovementPress(row)}
+                      />
+                    </Fragment>
+                  ))}
+                </SectionCard>
               </>
             )}
           </>
