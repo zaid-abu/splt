@@ -118,7 +118,20 @@ export default function GroupSettingsScreen() {
 
   return (
     <CoralScreen contentContainerStyle={{ gap: 4 }}>
-      <CoralTopBar title="Settings" onBack={() => router.back()} />
+      <CoralTopBar title={group.name} onBack={() => router.back()} />
+
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_400Regular",
+          fontSize: 14,
+          color: coral.muted,
+          lineHeight: 20,
+          marginTop: 4,
+          marginBottom: 8,
+        }}
+      >
+        Changes apply to {group.name} after the current group data has loaded.
+      </Text>
 
       {canEdit && (
         <>
@@ -261,7 +274,21 @@ export default function GroupSettingsScreen() {
         </View>
       )}
 
-      <Eyebrow>Members ({group.members.length})</Eyebrow>
+      <CoralField
+        label="Members"
+        value={group.members.map((m) => (m.userId === currentUser.id ? "You" : m.user.name)).join(", ")}
+        editable={false}
+      />
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_400Regular",
+          fontSize: 12,
+          color: coral.muted,
+          marginTop: -1,
+        }}
+      >
+        {group.members.length} people
+      </Text>
 
       <View style={{ gap: 4 }}>
         {group.members.map((member) => {

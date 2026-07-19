@@ -77,6 +77,31 @@ export default function AnalyticsScreen() {
     <CoralScreen contentContainerStyle={{ gap: 4 }}>
       <CoralTopBar title="Analytics" onBack={() => router.back()} />
 
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_600SemiBold",
+          fontSize: 30,
+          color: coral.foreground,
+          letterSpacing: -0.035 * 30,
+          lineHeight: 30 * 1.08,
+          marginBottom: 2,
+        }}
+      >
+        Insights
+      </Text>
+
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_400Regular",
+          fontSize: 14,
+          color: coral.muted,
+          lineHeight: 20,
+          marginBottom: 8,
+        }}
+      >
+        Every aggregate below represents your share unless explicitly stated otherwise.
+      </Text>
+
       <BalanceHero label="Total spent" value={totalSpentStr} note={getBalanceNote()} />
 
       <StatPair
@@ -94,7 +119,6 @@ export default function AnalyticsScreen() {
 
       {trendData.length > 0 && (
         <>
-          <Eyebrow>Spending Trend</Eyebrow>
           <View
             style={{
               backgroundColor: coral.surface,
@@ -105,6 +129,16 @@ export default function AnalyticsScreen() {
               gap: 8,
             }}
           >
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 14,
+                color: coral.foreground,
+                marginBottom: 4,
+              }}
+            >
+              Spending trend
+            </Text>
             {trendData.map((point, idx) => {
               const maxVal = Math.max(...trendData.map((d) => d.value), 1);
               const barWidth = `${Math.max((point.value / maxVal) * 100, 2)}%`;
@@ -153,8 +187,26 @@ export default function AnalyticsScreen() {
 
       {sortedCategories.length > 0 && (
         <>
-          <Eyebrow>Top Categories</Eyebrow>
-          <View style={{ gap: 4 }}>
+          <View
+            style={{
+              backgroundColor: coral.surface,
+              borderWidth: 1,
+              borderColor: coral.border,
+              borderRadius: 16,
+              overflow: "hidden",
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 14,
+                color: coral.foreground,
+                padding: 12,
+                paddingBottom: 4,
+              }}
+            >
+              Top categories
+            </Text>
             {sortedCategories.map((cat) => {
               const catInfo = EXPENSE_CATEGORIES.find((c) => c.key === cat.category);
               return (
@@ -179,36 +231,6 @@ export default function AnalyticsScreen() {
                 />
               );
             })}
-          </View>
-        </>
-      )}
-
-      {topExpenses.length > 0 && (
-        <>
-          <Eyebrow>Top Expenses</Eyebrow>
-          <View style={{ gap: 4 }}>
-            {topExpenses.map((expense) => (
-              <MoneyRow
-                key={expense.id}
-                avatar={
-                  <View
-                    style={{
-                      width: 44,
-                      height: 44,
-                      borderRadius: 14,
-                      backgroundColor: coral.avatarSoft,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    {renderCategoryIcon(expense.category)}
-                  </View>
-                }
-                title={expense.title}
-                subtitle={expense.paidByUser?.name}
-                amount={formatAmount(expense.myShareInPrefCurrency)}
-              />
-            ))}
           </View>
         </>
       )}

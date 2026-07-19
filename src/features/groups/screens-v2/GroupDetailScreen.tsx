@@ -1,9 +1,9 @@
 import type { JSX } from "react"
 import { useMemo, useCallback, useState } from "react"
-import { View, Text, ActivityIndicator, Pressable, ScrollView } from "react-native"
+import { View, Text, ActivityIndicator, Pressable } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import type { GroupRouteParams } from "@/types/navigation"
-import { Settings, Plus, ArrowLeftRight, Calendar, ChevronRight } from "lucide-react-native"
+import { Settings, Plus, ArrowLeftRight, Calendar } from "lucide-react-native"
 import * as Haptics from "expo-haptics"
 
 import { useAuth } from "@/context/AppContext"
@@ -160,6 +160,7 @@ export default function GroupDetailScreen(): JSX.Element {
   const { id, view: viewParam } = useLocalSearchParams<GroupRouteParams>()
   const router = useRouter()
   const { color } = useUI()
+  const coral = useCoralColors()
   const { currentUser } = useAuth()
   const view = parseGroupView(viewParam)
   const currentUserId = currentUser?.id
@@ -244,6 +245,49 @@ export default function GroupDetailScreen(): JSX.Element {
 
   const scheduleData: ScheduleSections = scheduleSections
 
+  const nonZeroMembers = members
+    .filter((m) => {
+      const bal = balances.find((b) => b.counterpartyId === m.userId)
+      return bal && Math.abs(bal.signedAmountMinor / 100) > 0.005
+    })
+    .sort((a, b) => {
+      const balA = balances.find((ba) => ba.counterpartyId === a.userId)
+      const balB = balances.find((bb) => bb.counterpartyId === b.userId)
+      return (balB?.signedAmountMinor ?? 0) - (balA?.signedAmountMinor ?? 0)
+    })
+
+  const heroNote = netBalance > 0
+    ? `You are owed across ${openBalanceCount} balance${openBalanceCount !== 1 ? "s" : ""}`
+    : netBalance < 0
+      ? `You owe across ${openBalanceCount} balance${openBalanceCount !== 1 ? "s" : ""}`
+      : "All settled"
+
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const filteredExpenses = useMemo(() => {
+    if (!searchQuery.trim()) return expenses
+    const q = searchQuery.toLowerCase()
+    return expenses.filter(
+      (e) =>
+        e.title.toLowerCase().includes(q) ||
+        e.paidByUser?.name?.toLowerCase().includes(q)
+    )
+  }, [expenses, searchQuery])
+
+  const groupedExpenses = useMemo(() => {
+    return groupExpensesByMonth(filteredExpenses)
+  }, [filteredExpenses])
+
+  const handleSettlePress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    router.push(`/group/${id}/settle`)
+  }, [router, id])
+
+  const handleSchedulePress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    router.push(`/expense/new?groupId=${id}&recurring=true`)
+  }, [router, id])
+
   return (
     <CoralScreen>
       <CoralTopBar
@@ -289,21 +333,6 @@ export default function GroupDetailScreen(): JSX.Element {
           {memberUsers.length > 0 && <AvatarStack users={memberUsers} max={4} />}
         </View>
       </View>
-
-      {!isMultiCurrency && (
-        <StatPair
-          left={{
-            label: balanceTone === "positive" ? "You're owed" : "You owe",
-            value: formatSignedAmount(netBalance, currencyCode),
-            tone: balanceTone,
-          }}
-          right={{
-            label: "Open balances",
-            value: String(openBalanceCount),
-            tone: "neutral",
-          }}
-        />
-      )}
 
       {snapshot.isStaleOffline && (
         <View
@@ -351,6 +380,14 @@ export default function GroupDetailScreen(): JSX.Element {
         </View>
       )}
 
+      {!isMultiCurrency && view === "overview" && (
+        <BalanceHero
+          label={`Your position in ${group.name}`}
+          value={formatSignedAmount(netBalance, currencyCode)}
+          note={heroNote}
+        />
+      )}
+
       <View style={{ marginTop: 8, marginBottom: 12 }}>
         <CoralSegment
           options={VIEW_OPTIONS}
@@ -361,44 +398,131 @@ export default function GroupDetailScreen(): JSX.Element {
 
       {view === "overview" && (
         <>
-          <Eyebrow>Balances</Eyebrow>
-          {members
-            .filter((m) => {
-              const bal = balances.find((b) => b.counterpartyId === m.userId)
-              return bal && Math.abs(bal.signedAmountMinor / 100) > 0.005
-            })
-            .sort((a, b) => {
-              const balA = balances.find((ba) => ba.counterpartyId === a.userId)
-              const balB = balances.find((bb) => bb.counterpartyId === b.userId)
-              return (balB?.signedAmountMinor ?? 0) - (balA?.signedAmountMinor ?? 0)
-            })
-            .map((member) => {
+          <View
+            style={{
+              flexDirection: "row",
+              gap: 8,
+              marginVertical: 14,
+            }}
+          >
+            <Pressable
+              onPress={handleAddExpense}
+              style={{
+                flex: 1,
+                minHeight: 62,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 5,
+                borderWidth: 1,
+                borderColor: coral.border,
+                borderRadius: 14,
+                backgroundColor: coral.surface,
+              }}
+            >
+              <Plus size={20} color={coral.foreground} strokeWidth={1.8} />
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 11,
+                  color: coral.foreground,
+                }}
+              >
+                Add expense
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={handleSettlePress}
+              style={{
+                flex: 1,
+                minHeight: 62,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 5,
+                borderWidth: 1,
+                borderColor: coral.border,
+                borderRadius: 14,
+                backgroundColor: coral.surface,
+              }}
+            >
+              <ArrowLeftRight size={20} color={coral.foreground} strokeWidth={1.8} />
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 11,
+                  color: coral.foreground,
+                }}
+              >
+                Settle
+              </Text>
+            </Pressable>
+            <Pressable
+              onPress={handleSchedulePress}
+              style={{
+                flex: 1,
+                minHeight: 62,
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 5,
+                borderWidth: 1,
+                borderColor: coral.border,
+                borderRadius: 14,
+                backgroundColor: coral.surface,
+              }}
+            >
+              <Calendar size={20} color={coral.foreground} strokeWidth={1.8} />
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 11,
+                  color: coral.foreground,
+                }}
+              >
+                Schedule
+              </Text>
+            </Pressable>
+          </View>
+
+          <SectionHeading title="People" meta="Pairwise balances" />
+          {nonZeroMembers.length > 0 ? (
+            nonZeroMembers.map((member) => {
               const balance = balances.find((b) => b.counterpartyId === member.userId)
               const majorAmount = (balance?.signedAmountMinor ?? 0) / 100
+              const owesMe = majorAmount > 0
+              const subtitle = owesMe
+                ? `${member.user.name} owes ${formatAmount(majorAmount, balance?.currency ?? currencyCode)}`
+                : `You owe ${member.user.name} ${formatAmount(Math.abs(majorAmount), balance?.currency ?? currencyCode)}`
               return (
                 <MoneyRow
                   key={member.userId}
                   avatar={<AppUserAvatar user={member.user} size="sm" balance={majorAmount} />}
                   title={member.user.name}
-                  subtitle={
-                    majorAmount > 0
-                      ? `Owes ${formatAmount(majorAmount, balance?.currency ?? currencyCode)}`
-                      : `You owe ${formatAmount(Math.abs(majorAmount), balance?.currency ?? currencyCode)}`
-                  }
+                  subtitle={subtitle}
                   amount={formatSignedAmount(majorAmount, balance?.currency ?? currencyCode)}
                   amountTone={majorAmount > 0 ? "positive" : majorAmount < 0 ? "negative" : "neutral"}
                   onPress={() => handleMemberPress(member.userId)}
                 />
               )
-            })}
+            })
+          ) : (
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 14,
+                color: color.muted,
+                paddingVertical: 12,
+              }}
+            >
+              No open balances
+            </Text>
+          )}
 
           {expenses.length > 0 && (
             <>
-              <Eyebrow>Latest</Eyebrow>
+              <SectionHeading title="Latest" />
               {expenses.slice(0, 5).map((expense) => {
-                const isPayer = expense.paidBy === currentUserId
-                const share = expense.splits?.find((s) => s.userId === currentUserId)
-                return (
+                  const isPayer = expense.paidBy === currentUserId
+                  const share = expense.splits?.find((s) => s.userId === currentUserId)
+                  return (
                   <MoneyRow
                     key={expense.id}
                     avatar={<AppUserAvatar user={expense.paidByUser} size="sm" />}
@@ -428,7 +552,14 @@ export default function GroupDetailScreen(): JSX.Element {
 
       {view === "expenses" && (
         <>
-          {expenses.length === 0 ? (
+          <CoralSearchField
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            onClear={() => setSearchQuery("")}
+            placeholder={`Search ${group.name} expenses`}
+          />
+
+          {filteredExpenses.length === 0 ? (
             <View style={{ paddingVertical: 40, alignItems: "center" }}>
               <Text
                 style={{
@@ -437,37 +568,42 @@ export default function GroupDetailScreen(): JSX.Element {
                   color: color.muted,
                 }}
               >
-                No expenses yet
+                {searchQuery.trim() ? "No matching expenses" : "No expenses yet"}
               </Text>
             </View>
           ) : (
-            expenses.map((expense) => {
-              const isPayer = expense.paidBy === group.createdBy
-              const share = expense.splits?.find((s) => s.userId === group.createdBy)
-              return (
-                <MoneyRow
-                  key={expense.id}
-                  avatar={<AppUserAvatar user={expense.paidByUser} size="sm" />}
-                  title={expense.title}
-                  subtitle={
-                    isPayer
-                      ? `You paid \u00B7 your share ${formatAmount(share?.amount ?? 0, expense.currency)}`
-                      : `${expense.paidByUser?.name ?? "Someone"} paid \u00B7 your share ${formatAmount(share?.amount ?? 0, expense.currency)}`
-                  }
-                  amount={
-                    isPayer
-                      ? formatSignedAmount(
-                          expense.amount - (share?.amount ?? 0),
-                          expense.currency
-                        )
-                      : formatAmount(share?.amount ?? 0, expense.currency)
-                  }
-                  amountTone={isPayer ? "positive" : "negative"}
-                  onPress={() => handleExpensePress(expense.id)}
-                />
-              )
-            })
+            Array.from(groupedExpenses.entries()).map(([monthLabel, monthExpenses]) => (
+              <View key={monthLabel}>
+                <SectionHeading title={monthLabel} />
+                {monthExpenses.map((expense) => {
+                  const isPayer = expense.paidBy === currentUserId
+                  const share = expense.splits?.find((s) => s.userId === currentUserId)
+                  const shareAmount = share?.amount ?? 0
+                  const dateLabel = formatDate(expense.date.toString())
+                  const payerName = expense.paidByUser?.name ?? "Someone"
+                  return (
+                    <MoneyRow
+                      key={expense.id}
+                      avatar={<AppUserAvatar user={expense.paidByUser} size="sm" />}
+                      title={expense.title}
+                      subtitle={
+                        isPayer
+                          ? `${dateLabel} - You paid`
+                          : `${dateLabel} - ${payerName} paid`
+                      }
+                      amount={formatAmount(shareAmount, expense.currency)}
+                      amountTone={isPayer ? "positive" : "negative"}
+                      onPress={() => handleExpensePress(expense.id)}
+                    />
+                  )
+                })}
+              </View>
+            ))
           )}
+
+          <View style={{ marginTop: 20 }}>
+            <CoralButton label="Add expense" variant="primary" onPress={handleAddExpense} />
+          </View>
         </>
       )}
 
@@ -495,7 +631,7 @@ export default function GroupDetailScreen(): JSX.Element {
                   {scheduleData.needsReview.map((item: ScheduleReadItem) => (
                     <MoneyRow
                       key={item.id}
-                      title={`Recurring expense`}
+                      title={item.title ?? "Recurring expense"}
                       subtitle={`Needs review \u00B7 ${formatDate(item.scheduledDate)}`}
                       amount={formatDate(item.scheduledDate)}
                       onPress={() => router.push(item.href)}
@@ -509,7 +645,7 @@ export default function GroupDetailScreen(): JSX.Element {
                   {scheduleData.active.map((item: ScheduleReadItem) => (
                     <MoneyRow
                       key={item.id}
-                      title={`Recurring expense`}
+                      title={item.title ?? "Recurring expense"}
                       subtitle={`Active \u00B7 Next ${formatDate(item.scheduledDate)}`}
                       amount={formatDate(item.scheduledDate)}
                       onPress={() => router.push(item.href)}
@@ -523,7 +659,7 @@ export default function GroupDetailScreen(): JSX.Element {
                   {scheduleData.paused.map((item: ScheduleReadItem) => (
                     <MoneyRow
                       key={item.id}
-                      title={`Recurring expense`}
+                      title={item.title ?? "Recurring expense"}
                       subtitle={`Paused \u00B7 Next ${formatDate(item.scheduledDate)}`}
                       amount={formatDate(item.scheduledDate)}
                       onPress={() => router.push(item.href)}
@@ -535,10 +671,6 @@ export default function GroupDetailScreen(): JSX.Element {
           )}
         </>
       )}
-
-      <View style={{ marginTop: 20 }}>
-        <CoralButton label="Add an expense" variant="primary" onPress={handleAddExpense} />
-      </View>
     </CoralScreen>
   )
 }

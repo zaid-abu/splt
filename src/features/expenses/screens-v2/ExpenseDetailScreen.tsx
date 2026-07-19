@@ -6,7 +6,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 
-import { useUI } from "@/components/ui";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { AppLoader } from "@/components/ui/AppLoader";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -36,7 +35,6 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
   const coral = useCoralColors();
-  const { color } = useUI();
   const { mutateAsync: deleteExpense } = useDeleteExpense();
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { toast } = useAppToast();
@@ -233,206 +231,126 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
           textAlign: "center", lineHeight: 24, marginTop: 8, marginBottom: 24,
         }}
       >
-        Paid by {paidByMe ? "You" : paidByName} · split {splitMethodLabel} · {relativeDate}
+        {group ? `${group.name} · ` : ""}{relativeDate} · {EXPENSE_CATEGORIES.find((c) => c.key === expense.category)?.label ?? expense.category}
       </Text>
 
-      <View style={{ flexDirection: "row", gap: 12, marginBottom: 22 }}>
-        <View
-          style={{
-            flex: 1, backgroundColor: coral.surface, borderWidth: 1, borderColor: coral.border,
-            borderRadius: 14, padding: 14, alignItems: "center",
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: "IBMPlexMono_600SemiBold", fontSize: 22, color: coral.foreground,
-              fontVariant: ["tabular-nums"],
-            }}
-          >
-            {formatAmount(minorToMajor(myShareMinor, expense.currency), expense.currency)}
-          </Text>
-          <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 12, color: coral.muted, marginTop: 5 }}>
-            Your share
-          </Text>
-        </View>
-        <View
-          style={{
-            flex: 1, backgroundColor: coral.surface, borderWidth: 1, borderColor: coral.border,
-            borderRadius: 14, padding: 14, alignItems: "center",
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: "IBMPlexMono_600SemiBold", fontSize: 22, color: coral.foreground,
-              fontVariant: ["tabular-nums"],
-            }}
-          >
-            {expense.splits.length}
-          </Text>
-          <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 12, color: coral.muted, marginTop: 5 }}>
-            People included
-          </Text>
-        </View>
-      </View>
-
-      {youLentMinor > 0 && (
-        <View
-          style={{
-            flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-            paddingHorizontal: 4, paddingVertical: 10, marginBottom: 6,
-            backgroundColor: coral.surface, borderRadius: 14, borderWidth: 1, borderColor: coral.border,
-            padding: 14,
-          }}
-        >
-          <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 14, color: coral.muted }}>
-            You lent
-          </Text>
-          <Text style={{ fontFamily: "IBMPlexMono_600SemiBold", fontSize: 18, color: coral.positive }}>
-            {formatAmount(minorToMajor(youLentMinor, expense.currency), expense.currency)}
-          </Text>
-        </View>
-      )}
-
-      {youBorrowedMinor > 0 && (
-        <View
-          style={{
-            flexDirection: "row", justifyContent: "space-between", alignItems: "center",
-            paddingHorizontal: 4, paddingVertical: 10, marginBottom: 6,
-            backgroundColor: coral.surface, borderRadius: 14, borderWidth: 1, borderColor: coral.border,
-            padding: 14,
-          }}
-        >
-          <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 14, color: coral.muted }}>
-            You borrowed
-          </Text>
-          <Text style={{ fontFamily: "IBMPlexMono_600SemiBold", fontSize: 18, color: coral.negative }}>
-            {formatAmount(minorToMajor(youBorrowedMinor, expense.currency), expense.currency)}
-          </Text>
-        </View>
-      )}
-
-      {group && (
-        <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }}>
+      <View
+        style={{
+          borderRadius: 16, borderWidth: 1, borderColor: coral.border,
+          backgroundColor: coral.surface, padding: 15, marginBottom: 20,
+        }}
+      >
+        {[
+          { label: "Paid by", value: paidByMe ? "You" : paidByName },
+          {
+            label: "Your actual share",
+            value: formatAmount(minorToMajor(myShareMinor, expense.currency), expense.currency),
+          },
+          ...(youLentMinor > 0
+            ? [{ label: "You lent", value: formatAmount(minorToMajor(youLentMinor, expense.currency), expense.currency), tone: "credit" as const }]
+            : []),
+          ...(youBorrowedMinor > 0
+            ? [{ label: "You borrowed", value: formatAmount(minorToMajor(youBorrowedMinor, expense.currency), expense.currency), tone: "debt" as const }]
+            : []),
+          { label: "Split method", value: `${splitMethodLabel} · ${expense.splits.length} included` },
+        ].map((line, i, arr) => (
           <View
+            key={line.label}
             style={{
-              width: 32, height: 32, borderRadius: 12, borderWidth: 1, borderColor: coral.border,
-              backgroundColor: coral.surface, alignItems: "center", justifyContent: "center",
+              flexDirection: "row", justifyContent: "space-between", alignItems: "baseline",
+              gap: 16, minHeight: 40, paddingVertical: 8,
+              borderBottomWidth: i < arr.length - 1 ? 1 : 0,
+              borderBottomColor: coral.border,
             }}
           >
-            <Text style={{ fontSize: 14, color: coral.foreground }}>
-              {group.name.charAt(0).toUpperCase()}
+            <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 14, color: coral.muted }}>
+              {line.label}
+            </Text>
+            <Text
+              style={{
+                fontFamily: "IBMPlexMono_600SemiBold", fontSize: 16,
+                fontVariant: ["tabular-nums"],
+                color: line.tone === "credit" ? coral.positive
+                  : line.tone === "debt" ? coral.negative
+                  : coral.foreground,
+              }}
+            >
+              {line.value}
             </Text>
           </View>
-          <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 14, color: coral.muted }}>
-            {group.name}
-          </Text>
-        </View>
-      )}
-
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 12 }}>
-        <View
-          style={{
-            width: 32, height: 32, borderRadius: 12, borderWidth: 1, borderColor: coral.border,
-            backgroundColor: coral.surface, alignItems: "center", justifyContent: "center",
-          }}
-        >
-          <Text style={{ fontSize: 14, color: coral.foreground }}>
-            {(EXPENSE_CATEGORIES.find((c) => c.key === expense.category)?.label ?? expense.category).charAt(0)}
-          </Text>
-        </View>
-        <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 14, color: coral.muted }}>
-          {EXPENSE_CATEGORIES.find((c) => c.key === expense.category)?.label ?? expense.category}
-        </Text>
+        ))}
       </View>
 
-      <Eyebrow>The split</Eyebrow>
+      <Eyebrow>Split breakdown</Eyebrow>
 
-      {expense.splits.map((split, idx) => {
+      {expense.splits.map((split) => {
         const isMe = split.userId === currentUser.id;
         const isPayer = split.userId === expense.paidBy;
-        let direction: string;
-        let tone: "neutral" | "positive" | "negative";
+        const totalStr = formatAmount(minorToMajor(expense.amountMinor, expense.currency), expense.currency);
+        const shareStr = formatAmount(minorToMajor(split.amountMinor, expense.currency), expense.currency);
+
+        let subtitle: string;
+        let amount: string;
+        let amountTone: "neutral" | "positive" | "negative";
 
         if (isPayer) {
-          direction = "paid the full amount";
-          tone = "neutral";
+          const lentMinor = expense.amountMinor - split.amountMinor;
+          const lentStr = formatAmount(minorToMajor(lentMinor, expense.currency), expense.currency);
+          subtitle = `Paid ${totalStr} - share ${shareStr}`;
+          amount = `+${lentStr} lent`;
+          amountTone = "positive";
         } else if (paidByMe) {
-          direction = isMe ? "you owe yourself" : `owes you`;
-          tone = isMe ? "neutral" : "positive";
+          subtitle = "Owes you";
+          amount = `${shareStr} owed`;
+          amountTone = "negative";
+        } else if (isMe) {
+          subtitle = "Your share";
+          amount = shareStr;
+          amountTone = "negative";
         } else {
-          direction = isMe ? `you owe ${paidByName}` : `owes ${paidByName}`;
-          tone = isMe ? "negative" : "neutral";
+          subtitle = `Owes ${paidByName}`;
+          amount = `${shareStr} owed`;
+          amountTone = "negative";
         }
-
-        const displayAmount = isPayer
-          ? formatAmount(minorToMajor(expense.amountMinor - split.amountMinor, expense.currency), expense.currency)
-          : formatAmount(minorToMajor(split.amountMinor, expense.currency), expense.currency);
 
         return (
           <MoneyRow
             key={split.userId}
             avatar={<AppUserAvatar user={split.user} size="md" />}
             title={isMe ? "You" : split.user.name}
-            subtitle={direction}
-            amount={displayAmount}
-            amountTone={tone}
-            rightElement={
-              idx < expense.splits.length - 1 ? undefined : undefined
-            }
+            subtitle={subtitle}
+            amount={amount}
+            amountTone={amountTone}
           />
         );
       })}
 
-      {data.permissions.canEdit && (
-        <Pressable
-          accessibilityRole="button"
-          onPress={handleEdit}
-          style={({ pressed }) => ({
-            minHeight: 52, width: "100%", borderRadius: 14,
-            backgroundColor: coral.accentSoft, paddingHorizontal: 18,
-            alignItems: "center", justifyContent: "center", marginTop: 18,
-            opacity: pressed ? 0.82 : 1,
-          })}
-        >
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, letterSpacing: 0.02 * 16, color: coral.accentInk }}>
-            Edit expense
-          </Text>
-        </Pressable>
-      )}
+      <View style={{ marginTop: 18, gap: 10 }}>
+        {data.permissions.canEdit && (
+          <CoralButton label="Edit expense" onPress={handleEdit} variant="secondary" />
+        )}
 
-      {settlementCandidates.length > 0 && (
-        <Pressable
-          accessibilityRole="button"
-          onPress={handleSettlePress}
-          style={({ pressed }) => ({
-            minHeight: 52, width: "100%", borderRadius: 14,
-            backgroundColor: coral.balanceSurface, paddingHorizontal: 18,
-            alignItems: "center", justifyContent: "center", marginTop: 10,
-            opacity: pressed ? 0.82 : 1,
-          })}
-        >
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.balanceForeground }}>
-            Settle up
-          </Text>
-        </Pressable>
-      )}
+        {settlementCandidates.length > 0 && (
+          <CoralButton label="Settle balance" onPress={handleSettlePress} variant="primary" />
+        )}
+      </View>
 
-      {data.receiptUrl ? (
-        <Pressable
-          accessibilityRole="button"
-          onPress={handleViewReceipt}
-          disabled={receiptLoading}
-          style={({ pressed }) => ({
-            marginTop: 24, borderRadius: 14, borderWidth: 1, borderColor: coral.border,
-            borderStyle: "dashed", padding: 14, alignItems: "center",
-            opacity: receiptLoading ? 0.5 : pressed ? 0.7 : 1,
-          })}
-        >
-          <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 14, color: coral.muted }}>
-            {receiptLoading ? "Loading receipt..." : "View receipt"}
-          </Text>
-        </Pressable>
-      ) : null}
+      {data.receiptUrl ? <MoneyRow
+        avatar={
+          <View
+            style={{
+              width: 42, height: 42, borderRadius: 14,
+              backgroundColor: coral.accentSoft, alignItems: "center", justifyContent: "center",
+            }}
+          >
+            <Text style={{ fontSize: 11, fontWeight: "800", color: coral.accentInk }}>R</Text>
+          </View>
+        }
+        title="Receipt attached"
+        subtitle={`Open receipt image${data.comments.length > 0 ? ` · ${data.comments.length} comment${data.comments.length === 1 ? "" : "s"}` : ""}`}
+        amount={receiptLoading ? "Loading..." : "View"}
+        onPress={receiptLoading ? undefined : handleViewReceipt}
+      /> : null}
 
       <View style={{ marginTop: 32, marginBottom: 40 }}>
         <ExpenseComments expenseId={expense.id} currentUserId={currentUser.id} />

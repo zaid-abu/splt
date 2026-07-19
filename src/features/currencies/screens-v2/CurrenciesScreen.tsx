@@ -2,21 +2,17 @@ import type { JSX } from "react";
 import { View, Text, Pressable } from "react-native";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { Check, ChevronRight } from "lucide-react-native";
+import { ChevronRight } from "lucide-react-native";
 
 import { CoralScreen } from "@/components/coral/CoralScreen";
 import { CoralTopBar } from "@/components/coral/CoralTopBar";
-import { LargeTitle } from "@/components/coral/LargeTitle";
-import { Eyebrow } from "@/components/coral/Eyebrow";
 import { useCoralColors } from "@/components/coral/useCoral";
-import { useUI } from "@/components/ui";
 import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES, type Currency } from "@/types";
 
 export default function CurrenciesScreen(): JSX.Element {
   const router = useRouter();
   const coral = useCoralColors();
-  const { color } = useUI();
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const exchangeRates = useUIStore((s) => s.exchangeRates);
   const setCurrency = useUIStore((s) => s.setCurrency);
@@ -35,95 +31,225 @@ export default function CurrenciesScreen(): JSX.Element {
     })} ${code}`;
   };
 
+  const availableCurrencies = CURRENCIES.filter((c) => c.code !== preferredCurrency.code);
+  const homeLabel = `${preferredCurrency.code} - used for overall balances`;
+
   return (
     <CoralScreen>
       <CoralTopBar title="Currencies" onBack={() => router.canGoBack() && router.back()} />
 
-      <LargeTitle>Travel without conversion math.</LargeTitle>
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_600SemiBold",
+          fontSize: 30,
+          color: coral.foreground,
+          letterSpacing: -0.035 * 30,
+          lineHeight: 30 * 1.08,
+          marginBottom: 2,
+        }}
+      >
+        Currencies
+      </Text>
+
       <Text
         style={{
           fontFamily: "InstrumentSans_400Regular",
+          fontSize: 14,
+          color: coral.muted,
+          lineHeight: 20,
+          marginBottom: 16,
+        }}
+      >
+        Choose your home currency and understand when conversion rates were last refreshed.
+      </Text>
+
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 15,
-          color: color.muted,
-          lineHeight: 22,
+          color: coral.foreground,
+          marginBottom: 8,
+          paddingHorizontal: 2,
+        }}
+      >
+        Home currency
+      </Text>
+
+      <View
+        style={{
+          backgroundColor: coral.surface,
+          borderWidth: 1,
+          borderColor: coral.border,
+          borderRadius: 16,
+          overflow: "hidden",
           marginBottom: 8,
         }}
       >
-        Original amounts stay intact. Group balances use the selected home currency.
-      </Text>
-
-      <Eyebrow>Available currencies</Eyebrow>
-
-      {CURRENCIES.map((c) => {
-        const isHome = preferredCurrency.code === c.code;
-        const rateLabel = getExchangeLabel(c.code);
-        return (
-          <Pressable
-            key={c.code}
-            accessibilityRole="button"
-            accessibilityLabel={`${c.code} · ${c.name}${isHome ? ", home currency" : ""}`}
-            accessibilityState={{ selected: isHome }}
-            onPress={() => handleSelectCurrency(c)}
-            style={({ pressed }) => ({
-              flexDirection: "row",
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            minHeight: 64,
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            gap: 12,
+          }}
+        >
+          <View
+            style={{
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              backgroundColor: coral.accentSoft,
               alignItems: "center",
-              minHeight: 68,
-              paddingVertical: 10,
-              gap: 12,
-              opacity: pressed ? 0.65 : 1,
-            })}
+              justifyContent: "center",
+            }}
           >
-            <View
+            <Text
               style={{
-                width: 48,
-                height: 48,
-                borderRadius: 14,
-                backgroundColor: isHome ? coral.accentSoft : color.surface,
-                borderWidth: isHome ? 1 : undefined,
-                borderColor: isHome ? coral.accent : undefined,
-                alignItems: "center",
-                justifyContent: "center",
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 16,
+                color: coral.accent,
               }}
             >
-              <Text
+              {preferredCurrency.symbol}
+            </Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 14,
+                color: coral.foreground,
+              }}
+              numberOfLines={1}
+            >
+              {preferredCurrency.name}
+            </Text>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 12,
+                color: coral.muted,
+                marginTop: 3,
+              }}
+              numberOfLines={1}
+            >
+              {homeLabel}
+            </Text>
+          </View>
+          <View
+            style={{
+              backgroundColor: coral.positiveSoft,
+              borderRadius: 999,
+              paddingHorizontal: 9,
+              paddingVertical: 4,
+              minHeight: 30,
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "IBMPlexMono_600SemiBold",
+                fontSize: 11,
+                color: coral.positive,
+              }}
+            >
+              Selected
+            </Text>
+          </View>
+        </View>
+      </View>
+
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_600SemiBold",
+          fontSize: 15,
+          color: coral.foreground,
+          marginBottom: 8,
+          paddingHorizontal: 2,
+        }}
+      >
+        Available currencies
+      </Text>
+
+      <View
+        style={{
+          backgroundColor: coral.surface,
+          borderWidth: 1,
+          borderColor: coral.border,
+          borderRadius: 16,
+          overflow: "hidden",
+        }}
+      >
+        {availableCurrencies.map((c, idx) => {
+          const rateLabel = getExchangeLabel(c.code);
+          return (
+            <Pressable
+              key={c.code}
+              accessibilityRole="button"
+              accessibilityLabel={`${c.code} · ${c.name}`}
+              onPress={() => handleSelectCurrency(c)}
+              style={({ pressed }) => ({
+                flexDirection: "row",
+                alignItems: "center",
+                minHeight: 64,
+                paddingVertical: 10,
+                paddingHorizontal: 12,
+                gap: 12,
+                opacity: pressed ? 0.65 : 1,
+                borderBottomWidth: idx < availableCurrencies.length - 1 ? 1 : 0,
+                borderBottomColor: coral.border,
+              })}
+            >
+              <View
                 style={{
-                  fontFamily: "InstrumentSans_600SemiBold",
-                  fontSize: 16,
-                  color: isHome ? coral.accent : color.text,
+                  width: 44,
+                  height: 44,
+                  borderRadius: 14,
+                  backgroundColor: coral.avatarSoft,
+                  alignItems: "center",
+                  justifyContent: "center",
                 }}
               >
-                {c.symbol}
-              </Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  fontFamily: "InstrumentSans_600SemiBold",
-                  fontSize: 16,
-                  color: color.text,
-                }}
-              >
-                {c.code} · {c.name}
-              </Text>
-              <Text
-                style={{
-                  fontFamily: "InstrumentSans_400Regular",
-                  fontSize: 13,
-                  color: color.muted,
-                  marginTop: 3,
-                }}
-              >
-                {isHome ? "Home currency" : rateLabel}
-              </Text>
-            </View>
-            {isHome ? (
-              <Check size={22} color={coral.accent} strokeWidth={2} />
-            ) : (
-              <ChevronRight size={20} color={color.muted} strokeWidth={1.5} />
-            )}
-          </Pressable>
-        );
-      })}
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 16,
+                    color: coral.avatarInk,
+                  }}
+                >
+                  {c.symbol}
+                </Text>
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 14,
+                    color: coral.foreground,
+                  }}
+                  numberOfLines={1}
+                >
+                  {c.code} · {c.name}
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 12,
+                    color: coral.muted,
+                    marginTop: 3,
+                  }}
+                  numberOfLines={1}
+                >
+                  {rateLabel}
+                </Text>
+              </View>
+              <ChevronRight size={20} color={coral.muted} strokeWidth={1.5} />
+            </Pressable>
+          );
+        })}
+      </View>
     </CoralScreen>
   );
 }

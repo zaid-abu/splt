@@ -220,27 +220,214 @@ export default function NotificationsV2Screen(): JSX.Element {
     )
   }
 
+  const pendingNotifications = notifications.filter(
+    (n) => n.kind === "friend_request" || n.kind === "group_invite",
+  )
+  const earlierNotifications = notifications.filter(
+    (n) => n.kind !== "friend_request" && n.kind !== "group_invite",
+  )
+
+  function renderNotificationRow(item: AppNotification) {
+    const dateLabel = formatRelativeDate(item.date)
+    const isWorking = workingId === item.id
+
+    if (item.kind === "friend_request") {
+      return (
+        <View style={{ paddingVertical: 12, paddingHorizontal: 12, borderBottomWidth: 0 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 14,
+              color: coral.foreground,
+            }}
+          >
+            {item.title}
+          </Text>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 12,
+              color: coral.muted,
+              marginTop: 3,
+            }}
+          >
+            {item.subtitle} · {dateLabel}
+          </Text>
+          <NotificationActions
+            kind="friend_request"
+            onAccept={() => void handleAcceptFriend(item)}
+            onDecline={() => void handleDeclineFriend(item)}
+            working={isWorking}
+          />
+        </View>
+      )
+    }
+
+    if (item.kind === "group_invite") {
+      return (
+        <View style={{ paddingVertical: 12, paddingHorizontal: 12, borderBottomWidth: 0 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 14,
+              color: coral.foreground,
+            }}
+          >
+            {item.title}
+          </Text>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 12,
+              color: coral.muted,
+              marginTop: 3,
+            }}
+          >
+            {item.subtitle} · {dateLabel}
+          </Text>
+          <NotificationActions
+            kind="group_invite"
+            onAccept={() => void handleAcceptInvite(item)}
+            onDecline={() => void handleDeclineInvite(item)}
+            working={isWorking}
+          />
+        </View>
+      )
+    }
+
+    const onPress = item.kind === "balance_reminder"
+      ? () => handleNavPerson(item.actorId)
+      : item.kind === "expense_added"
+        ? () => handleNavExpense(item.expenseId)
+        : undefined
+
+    return (
+      <MoneyRow
+        title={item.title}
+        subtitle={`${item.subtitle} · ${dateLabel}`}
+        amount=""
+        amountTone="neutral"
+        onPress={onPress}
+      />
+    )
+  }
+
+  const renderEmpty = () => {
+    if (isLoading) {
+      return (
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator color={color.text} accessibilityLabel="Loading notifications" />
+        </View>
+      )
+    }
+    return (
+      <EmptyState
+        visual={<BellOff size={48} color={coral.muted} strokeWidth={1.2} />}
+        title="All caught up!"
+        subtitle="You have no new notifications right now."
+      />
+    )
+  }
+
   return (
     <CoralScreen scroll={false}>
       <CoralTopBar title="Notifications" onBack={() => router.back()} />
-      <FlatList
-        data={notifications}
+      <FlatList<AppNotification>
+        data={[]}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ flexGrow: 1 }}
-        ListHeaderComponent={<LargeTitle>Worth knowing.</LargeTitle>}
-        ListEmptyComponent={
-          isLoading ? (
-            <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-              <ActivityIndicator color={color.text} accessibilityLabel="Loading notifications" />
-            </View>
-          ) : (
-            <EmptyState
-              visual={<BellOff size={48} color={coral.muted} strokeWidth={1.2} />}
-              title="All caught up!"
-              subtitle="You have no new notifications right now."
-            />
-          )
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 24 }}
+        ListHeaderComponent={
+          <>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 30,
+                color: coral.foreground,
+                letterSpacing: -0.035 * 30,
+                lineHeight: 30 * 1.08,
+                marginBottom: 2,
+              }}
+            >
+              Notifications
+            </Text>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 14,
+                color: coral.muted,
+                lineHeight: 20,
+                marginBottom: 16,
+              }}
+            >
+              Requests, scheduled reviews, and important account events that need action.
+            </Text>
+            {pendingNotifications.length > 0 && (
+              <>
+                <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 8, paddingHorizontal: 2 }}>
+                  <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 15, color: coral.foreground }}>
+                    Needs a response
+                  </Text>
+                  <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 12, color: coral.muted }}>
+                    {pendingNotifications.length} new
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    backgroundColor: coral.surface,
+                    borderWidth: 1,
+                    borderColor: coral.border,
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    marginBottom: 12,
+                  }}
+                >
+                  {pendingNotifications.map((item) => (
+                    <View key={item.id}>{renderNotificationRow(item)}</View>
+                  ))}
+                </View>
+              </>
+            )}
+            {earlierNotifications.length > 0 && (
+              <>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 15,
+                    color: coral.foreground,
+                    marginBottom: 8,
+                    paddingHorizontal: 2,
+                  }}
+                >
+                  Earlier
+                </Text>
+                <View
+                  style={{
+                    backgroundColor: coral.surface,
+                    borderWidth: 1,
+                    borderColor: coral.border,
+                    borderRadius: 16,
+                    overflow: "hidden",
+                    marginBottom: 12,
+                  }}
+                >
+                  {earlierNotifications.map((item, idx) => (
+                    <View
+                      key={item.id}
+                      style={{
+                        borderBottomWidth: idx < earlierNotifications.length - 1 ? 1 : 0,
+                        borderBottomColor: coral.border,
+                      }}
+                    >
+                      {renderNotificationRow(item)}
+                    </View>
+                  ))}
+                </View>
+              </>
+            )}
+          </>
         }
+        ListEmptyComponent={notifications.length === 0 ? renderEmpty : null}
+        renderItem={() => null}
         refreshControl={
           <RefreshControl
             refreshing={isRefetching}
@@ -248,81 +435,6 @@ export default function NotificationsV2Screen(): JSX.Element {
             tintColor={color.text}
           />
         }
-        renderItem={({ item }: { item: AppNotification }) => {
-          const dateLabel = formatRelativeDate(item.date)
-          const isWorking = workingId === item.id
-
-          if (item.kind === "friend_request") {
-            return (
-              <View style={{ paddingHorizontal: 2, paddingVertical: 12 }}>
-                <MoneyRow
-                  title={item.title}
-                  subtitle={`${item.subtitle} \u00B7 ${dateLabel}`}
-                  amount=""
-                  amountTone="neutral"
-                />
-                <NotificationActions
-                  kind="friend_request"
-                  onAccept={() => void handleAcceptFriend(item)}
-                  onDecline={() => void handleDeclineFriend(item)}
-                  working={isWorking}
-                />
-              </View>
-            )
-          }
-
-          if (item.kind === "group_invite") {
-            return (
-              <View style={{ paddingHorizontal: 2, paddingVertical: 12 }}>
-                <MoneyRow
-                  title={item.title}
-                  subtitle={`${item.subtitle} \u00B7 ${dateLabel}`}
-                  amount=""
-                  amountTone="neutral"
-                />
-                <NotificationActions
-                  kind="group_invite"
-                  onAccept={() => void handleAcceptInvite(item)}
-                  onDecline={() => void handleDeclineInvite(item)}
-                  working={isWorking}
-                />
-              </View>
-            )
-          }
-
-          if (item.kind === "balance_reminder") {
-            return (
-              <MoneyRow
-                title={item.title}
-                subtitle={`${item.subtitle} \u00B7 ${dateLabel}`}
-                amount=""
-                amountTone="neutral"
-                onPress={() => handleNavPerson(item.actorId)}
-              />
-            )
-          }
-
-          if (item.kind === "expense_added") {
-            return (
-              <MoneyRow
-                title={item.title}
-                subtitle={`${item.subtitle} \u00B7 ${dateLabel}`}
-                amount=""
-                amountTone="neutral"
-                onPress={() => handleNavExpense(item.expenseId)}
-              />
-            )
-          }
-
-          return (
-            <MoneyRow
-              title={item.title}
-              subtitle={`${item.subtitle} \u00B7 ${dateLabel}`}
-              amount=""
-              amountTone="neutral"
-            />
-          )
-        }}
       />
     </CoralScreen>
   )

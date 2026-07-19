@@ -37,6 +37,8 @@ export function ExpenseCreateSuccess({
   splits,
   expenseId,
   onReturn,
+  onViewExpense,
+  onBackToGroup,
   onUndoSuccess,
 }: ExpenseCreateSuccessProps): JSX.Element {
   const coral = useCoralColors()
@@ -271,13 +273,13 @@ export function ExpenseCreateSuccess({
 
         <CoralButton
           label="View expense"
-          onPress={handleReturn}
+          onPress={onViewExpense}
           variant="secondary"
         />
 
         <CoralButton
           label="Back to group"
-          onPress={handleReturn}
+          onPress={onBackToGroup}
           variant="primary"
         />
 
