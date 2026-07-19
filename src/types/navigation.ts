@@ -5,8 +5,10 @@ export type FriendRouteParams = {
 export type SettleRouteParams = {
   id: string;
   groupId?: string;
-  amount?: string;
-  direction?: string;
+  friendshipId?: string;
+  currency?: string;
+  expenseId?: string;
+  returnTo?: string;
 };
 
 export type GroupSettleRouteParams = {
@@ -19,6 +21,7 @@ export type ExpenseRouteParams = {
 
 export type GroupRouteParams = {
   id: string;
+  view?: string;
 };
 
 export type GroupSettingsRouteParams = {
@@ -28,8 +31,11 @@ export type GroupSettingsRouteParams = {
 export type ExpenseNewRouteParams = {
   groupId?: string;
   friendId?: string;
-  expenseId?: string;
+  returnTo?: string;
+  resume?: string;
 };
+
+export type GroupView = "overview" | "expenses" | "schedule";
 
 export type AppRouteParams = {
   "/friend/[id]": FriendRouteParams;

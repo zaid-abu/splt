@@ -1,14 +1,42 @@
 import { supabase } from "@/services/supabase/client";
 import type { Expense } from "@/types";
-import {
-  mapExpense,
-  toExpenseInsert,
-  toExpenseSplitInsert,
-  toExpenseUpdate,
-  type ExpenseRow,
-} from "@/services/api/mappers";
+import { mapExpense, type ExpenseRow } from "@/services/api/mappers";
+import type { ExpenseMutationInput, ReceiptMimeType } from "@/features/money/types";
 
 const expenseSelect = "*, paidByUser:users!paid_by(*), splits:expense_splits(*, user:users(*))";
+
+const ALLOWED_MIME_TYPES: ReceiptMimeType[] = [
+  "image/jpeg",
+  "image/png",
+  "image/heic",
+  "application/pdf",
+];
+const MAX_RECEIPT_BYTES = 10_485_760;
+
+function toSplitsJson(splits: ExpenseMutationInput["splits"]) {
+  return splits.map((s) => ({
+    user_id: s.userId,
+    amount_minor: s.amountMinor,
+    percentage: s.percentageUnits ?? null,
+    shares: s.shareUnits ?? null,
+    position: s.position,
+  }));
+}
+
+function extractRpcError(error: unknown): never {
+  if (error instanceof Error && /^BALANCE_CHANGED:(\d+)$/.test(error.message)) {
+    const match = error.message.match(/^BALANCE_CHANGED:(\d+)$/)!;
+    throw { code: "balance-changed", currentMinor: parseInt(match[1], 10) };
+  }
+  throw error;
+}
+
+function getGroupAndFriendship(context: ExpenseMutationInput["context"]) {
+  if (context.type === "group") {
+    return { groupId: context.groupId, friendshipId: "" };
+  }
+  return { groupId: "", friendshipId: context.friendshipId };
+}
 
 export const expensesApi = {
   async fetchGroupExpenses(groupId: string): Promise<Expense[]> {
@@ -24,7 +52,6 @@ export const expensesApi = {
   },
 
   async fetchUserExpenses(userId: string): Promise<Expense[]> {
-    // 1. Get all expense IDs the user is part of
     const { data: splitsData, error: splitsError } = await supabase
       .from("expense_splits")
       .select("expense_id")
@@ -36,7 +63,6 @@ export const expensesApi = {
 
     const expenseIds = splitsData.map((s) => s.expense_id);
 
-    // 2. Fetch those expenses with ALL their splits
     const { data, error } = await supabase
       .from("expenses")
       .select(expenseSelect)
@@ -60,63 +86,134 @@ export const expensesApi = {
     return mapExpense(data);
   },
 
-  async addExpense(expenseData: Partial<Expense>): Promise<Expense> {
-    const { splits, ...coreData } = expenseData;
+  async createExpense(input: ExpenseMutationInput): Promise<Expense> {
+    const { groupId, friendshipId } = getGroupAndFriendship(input.context);
 
-    // 1. Insert core expense
-    const { data: expData, error: expError } = await supabase
-      .from("expenses")
-      .insert(toExpenseInsert(coreData))
-      .select()
-      .single();
+    const { data, error } = await supabase.rpc("create_expense_v2", {
+      p_client_operation_id: input.clientOperationId,
+      p_group_id: groupId,
+      p_friendship_id: friendshipId,
+      p_title: input.title,
+      p_amount_minor: input.amountMinor,
+      p_currency: input.currency,
+      p_category: input.category,
+      p_paid_by: input.paidBy,
+      p_split_method: input.splitMethod,
+      p_date: input.date.toISOString(),
+      p_notes: input.notes ?? "",
+      p_receipt_key: input.receiptKey ?? "",
+      p_splits: toSplitsJson(input.splits),
+    });
 
-    if (expError) throw expError;
-
-    // 2. Insert splits if provided
-    if (splits && splits.length > 0) {
-      const splitsToInsert = splits.map((split) => toExpenseSplitInsert(expData.id, split));
-
-      const { error: splitError } = await supabase.from("expense_splits").insert(splitsToInsert);
-
-      if (splitError) throw splitError;
-    }
-
-    // 3. Return full expense via fetchExpense to get joined data
-    return await this.fetchExpense(expData.id);
+    if (error) extractRpcError(error);
+    return this.fetchExpense(data);
   },
 
-  async updateExpense(expenseId: string, updates: Partial<Expense>): Promise<Expense> {
-    const { splits, ...coreData } = updates;
+  async updateExpense(
+    expenseId: string,
+    input: Omit<ExpenseMutationInput, "clientOperationId" | "context">
+  ): Promise<Expense> {
+    const { data, error } = await supabase.rpc("update_expense_v2", {
+      p_expense_id: expenseId,
+      p_title: input.title,
+      p_amount_minor: input.amountMinor,
+      p_currency: input.currency,
+      p_category: input.category,
+      p_paid_by: input.paidBy,
+      p_split_method: input.splitMethod,
+      p_date: input.date.toISOString(),
+      p_notes: input.notes ?? "",
+      p_receipt_key: input.receiptKey ?? "",
+      p_splits: toSplitsJson(input.splits),
+    });
 
-    // 1. Update core expense
-    if (Object.keys(coreData).length > 0) {
-      const { error: expError } = await supabase
-        .from("expenses")
-        .update(toExpenseUpdate(coreData))
-        .eq("id", expenseId);
-
-      if (expError) throw expError;
-    }
-
-    // 2. Update splits if provided (simplified as delete and recreate)
-    if (splits) {
-      await supabase.from("expense_splits").delete().eq("expense_id", expenseId);
-
-      if (splits.length > 0) {
-        const splitsToInsert = splits.map((split) => toExpenseSplitInsert(expenseId, split));
-
-        const { error: splitError } = await supabase.from("expense_splits").insert(splitsToInsert);
-
-        if (splitError) throw splitError;
-      }
-    }
-
-    // 3. Return updated expense
-    return await this.fetchExpense(expenseId);
+    if (error) extractRpcError(error);
+    return this.fetchExpense(data);
   },
 
   async deleteExpense(expenseId: string): Promise<void> {
-    const { error } = await supabase.from("expenses").delete().eq("id", expenseId);
+    const { error } = await supabase.rpc("delete_expense_v2", {
+      p_expense_id: expenseId,
+    });
     if (error) throw error;
+  },
+
+  async uploadStagedReceipt(input: {
+    operationId: string;
+    uri: string;
+    mimeType: ReceiptMimeType;
+  }): Promise<string> {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+    if (authError || !user) throw authError ?? new Error("Not authenticated");
+
+    const { operationId, uri, mimeType } = input;
+
+    if (!ALLOWED_MIME_TYPES.includes(mimeType)) {
+      throw new Error(`Unsupported MIME type: ${mimeType}`);
+    }
+
+    const response = await fetch(uri);
+    const blob = await response.blob();
+
+    if (blob.size > MAX_RECEIPT_BYTES) {
+      throw new Error(`File too large (max 10 MB)`);
+    }
+
+    const key = `staging/${user.id}/${operationId}/receipt`;
+
+    const { error: regError } = await supabase.rpc("register_receipt_upload", {
+      p_client_operation_id: operationId,
+      p_object_key: key,
+      p_mime_type: mimeType,
+      p_size_bytes: blob.size,
+    });
+
+    if (regError) throw regError;
+
+    const { error: uploadError } = await supabase.storage
+      .from("expense-receipts")
+      .upload(key, blob, { contentType: mimeType, upsert: true });
+
+    if (uploadError) {
+      await supabase.storage
+        .from("expense-receipts")
+        .remove([key])
+        .catch(() => {});
+      throw uploadError;
+    }
+
+    return key;
+  },
+
+  async removeStagedReceipt(key: string): Promise<void> {
+    const { error } = await supabase.storage.from("expense-receipts").remove([key]);
+    if (error) throw error;
+  },
+
+  async createReceiptSignedUrl(_expenseId: string, key: string): Promise<string> {
+    const { data, error } = await supabase.storage
+      .from("expense-receipts")
+      .createSignedUrl(key, 300);
+    if (error) throw error;
+    return data.signedUrl;
+  },
+
+  async registerReceiptUpload(input: {
+    operationId: string;
+    objectKey: string;
+    mimeType: ReceiptMimeType;
+    sizeBytes: number;
+  }): Promise<string> {
+    const { data, error } = await supabase.rpc("register_receipt_upload", {
+      p_client_operation_id: input.operationId,
+      p_object_key: input.objectKey,
+      p_mime_type: input.mimeType,
+      p_size_bytes: input.sizeBytes,
+    });
+    if (error) throw error;
+    return data;
   },
 };

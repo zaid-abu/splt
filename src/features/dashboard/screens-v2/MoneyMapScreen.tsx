@@ -1,13 +1,15 @@
-import type { JSX } from "react";
-import { View, Text, ActivityIndicator, Pressable } from "react-native";
-import { Bell, CircleUserRound } from "lucide-react-native";
-import * as Haptics from "expo-haptics";
+import { useCallback } from "react"
+import type { JSX } from "react"
+import { View, Text, ActivityIndicator, Pressable, RefreshControl, ScrollView } from "react-native"
+import { Bell, CircleUserRound } from "lucide-react-native"
+import * as Haptics from "expo-haptics"
+import { useRouter } from "expo-router"
 
-import { useDashboard } from "@/features/dashboard/hooks/useDashboard";
-import { GroupBalanceLedger } from "@/features/dashboard/components/GroupBalanceLedger";
-import { formatAmount } from "@/components/ui/AmountDisplay";
-import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { getGreeting } from "@/utils/date";
+import { useAuth } from "@/context/AppContext"
+import { useHomeSnapshot } from "@/features/dashboard/hooks/useHomeSnapshot"
+import { formatAmount } from "@/components/ui/AmountDisplay"
+import { AppUserAvatar } from "@/components/ui/MemberAvatar"
+import { getGreeting } from "@/utils/date"
 import {
   CoralScreen,
   CoralTopBar,
@@ -15,87 +17,117 @@ import {
   BalanceHero,
   Eyebrow,
   MoneyRow,
+  CoralButton,
   useCoralColors,
-} from "@/components/coral";
-import { useUI } from "@/components/ui";
-
-function LoadingState() {
-  const { color } = useUI();
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <ActivityIndicator size="large" color={color.muted} />
-    </View>
-  );
-}
-
-function ErrorState({ onRetry }: { onRetry: () => void }) {
-  const { color } = useUI();
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 16 }}>
-      <Text
-        style={{
-          fontFamily: "InstrumentSans_600SemiBold",
-          fontSize: 18,
-          color: color.text,
-        }}
-      >
-        Something went wrong
-      </Text>
-      <Text
-        onPress={onRetry}
-        style={{
-          fontFamily: "InstrumentSans_600SemiBold",
-          fontSize: 15,
-          color: color.brand,
-        }}
-      >
-        Tap to retry
-      </Text>
-    </View>
-  );
-}
+} from "@/components/coral"
+import { useUI } from "@/components/ui"
+import type { AttentionRow, GroupLedgerRow, MovementRow } from "@/features/dashboard/hooks/useHomeSnapshot"
 
 function formatSignedAmount(amount: number, currencyCode: string): string {
-  if (amount > 0) return `+${formatAmount(amount, currencyCode)}`;
-  return formatAmount(amount, currencyCode);
-}
-
-function getLede(balanceTone: string, openGroupCount: number): string {
-  if (openGroupCount > 1) return `${openGroupCount} circles need your attention.`;
-  if (openGroupCount === 1) return "One circle needs your attention.";
-  if (balanceTone === "success") return "You're in the green.";
-  if (balanceTone === "danger") return "Time to settle up.";
-  return "Everything is settled.";
+  if (amount > 0) return `+${formatAmount(amount, currencyCode)}`
+  return formatAmount(amount, currencyCode)
 }
 
 export default function MoneyMapScreen(): JSX.Element {
-  const dashboard = useDashboard();
-  const coral = useCoralColors();
-  const { color } = useUI();
+  const router = useRouter()
+  const { currentUser } = useAuth()
+  const snapshot = useHomeSnapshot(currentUser?.id ?? "")
+  const coral = useCoralColors()
+  const { color } = useUI()
 
-  if (dashboard.isError) {
+  const onRefresh = useCallback(() => {
+    void snapshot.refresh()
+  }, [snapshot.refresh])
+
+  if (snapshot.isError && !snapshot.data) {
     return (
       <CoralScreen scroll={false}>
-        <ErrorState onRetry={dashboard.onRefresh} />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 18,
+              color: color.text,
+            }}
+          >
+            Something went wrong
+          </Text>
+          <Text
+            onPress={onRefresh}
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 15,
+              color: color.brand,
+            }}
+          >
+            Tap to retry
+          </Text>
+        </View>
       </CoralScreen>
-    );
+    )
   }
 
-  if (dashboard.isLoading && dashboard.activeGroups.length === 0) {
+  if (snapshot.isInitialLoading || !snapshot.data) {
     return (
       <CoralScreen scroll={false}>
-        <LoadingState />
+        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+          <ActivityIndicator size="large" color={color.muted} />
+        </View>
       </CoralScreen>
-    );
+    )
   }
 
-  const netBalance = dashboard.owedToYou - dashboard.youOwe;
-  const greeting = getGreeting();
-  const userName = dashboard.currentUser?.name.split(" ")[0] ?? "there";
-  const lede = getLede(dashboard.balanceTone, dashboard.openGroupCount);
-  const currencyCode = dashboard.preferredCurrency.code;
-  const topOweUsers = dashboard.oweUsers.slice(0, 2);
-  const topOwedUsers = dashboard.owedUsers.slice(0, 2);
+  const data = snapshot.data
+  const notificationCount = data.notifications.length
+  const greeting = getGreeting()
+  const userName = currentUser?.name?.split(" ")[0] ?? "there"
+
+  const netSigned = data.groupLedger.reduce((sum, row) => sum + row.netSignedMinor, 0)
+  const preferredCurrency =
+    data.heroBalances.length > 0
+      ? data.heroBalances[0].currency
+      : data.groupLedger.length > 0
+        ? data.groupLedger[0].group.currency
+        : "USD"
+
+  const totalOwed = data.groupLedger.reduce(
+    (sum, row) => sum + Math.max(0, row.netSignedMinor),
+    0
+  )
+  const totalOwe = data.groupLedger.reduce(
+    (sum, row) => sum + Math.abs(Math.min(0, row.netSignedMinor)),
+    0
+  )
+
+  function handleAttentionPress(row: AttentionRow) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    router.push(`/friend/${row.counterpartyId}`)
+  }
+
+  function handleGroupPress(row: GroupLedgerRow) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    router.push(`/group/${row.group.id}`)
+  }
+
+  function handleSchedulePress(id: string) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    router.push(`/recurring/${id}`)
+  }
+
+  function handleMovementPress(row: MovementRow) {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    if (row.type === "expense") {
+      router.push(`/expense/${row.id.replace("exp-", "")}`)
+    } else {
+      const friendId = row.id.replace("set-", "")
+      router.push(`/friend/${friendId}`)
+    }
+  }
+
+  const heroValue =
+    netSigned >= 0
+      ? `+${formatAmount(netSigned, preferredCurrency)}`
+      : formatAmount(netSigned, preferredCurrency)
 
   return (
     <CoralScreen>
@@ -105,8 +137,8 @@ export default function MoneyMapScreen(): JSX.Element {
             accessibilityRole="button"
             accessibilityLabel="Open settings"
             onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              dashboard.handleViewProfile();
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+              router.push("/profile")
             }}
             style={{
               width: 48,
@@ -115,8 +147,8 @@ export default function MoneyMapScreen(): JSX.Element {
               justifyContent: "center",
             }}
           >
-            {dashboard.currentUser ? (
-              <AppUserAvatar user={dashboard.currentUser} size="sm" />
+            {currentUser ? (
+              <AppUserAvatar user={currentUser} size="sm" />
             ) : (
               <CircleUserRound size={24} color={color.text} strokeWidth={1.7} />
             )}
@@ -128,8 +160,8 @@ export default function MoneyMapScreen(): JSX.Element {
               accessibilityRole="button"
               accessibilityLabel="Open notifications"
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                dashboard.handleViewNotifications();
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                router.push("/notifications")
               }}
               style={{
                 width: 48,
@@ -140,7 +172,7 @@ export default function MoneyMapScreen(): JSX.Element {
             >
               <Bell size={22} color={color.text} strokeWidth={1.7} />
             </Pressable>
-            {dashboard.hasNotifications && (
+            {notificationCount > 0 && (
               <View
                 style={{
                   position: "absolute",
@@ -159,101 +191,119 @@ export default function MoneyMapScreen(): JSX.Element {
         }
       />
 
-      <LargeTitle>
-        {greeting}, {userName}.
-      </LargeTitle>
-
-      <Text
-        style={{
-          fontFamily: "InstrumentSans_400Regular",
-          fontSize: 15,
-          color: color.muted,
-          lineHeight: 21,
-          marginBottom: 10,
-        }}
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={snapshot.isRefreshing}
+            onRefresh={onRefresh}
+            tintColor={color.text}
+          />
+        }
+        contentContainerStyle={{ paddingBottom: 40 }}
       >
-        {lede}
-      </Text>
+        <LargeTitle>
+          {greeting}, {userName}.
+        </LargeTitle>
 
-      <BalanceHero
-        label="Across all your circles"
-        value={formatSignedAmount(netBalance, currencyCode)}
-        note={`You're owed ${formatAmount(dashboard.owedToYou, currencyCode)} \u00B7 You owe ${formatAmount(dashboard.youOwe, currencyCode)}`}
-      />
+        {data.isFirstUse ? (
+          <View style={{ gap: 12, marginTop: 12 }}>
+            <CoralButton
+              label="Create a Group"
+              variant="primary"
+              onPress={() => router.push("/group/new")}
+            />
+            <CoralButton
+              label="Add a Person"
+              variant="secondary"
+              onPress={() => router.push("/friend/new")}
+            />
+            <CoralButton
+              label="Add an Expense"
+              variant="secondary"
+              onPress={() => router.push("/expense/new")}
+            />
+          </View>
+        ) : (
+          <>
+            <BalanceHero
+              label="Across all your circles"
+              value={heroValue}
+              note={`You're owed ${formatAmount(totalOwed, preferredCurrency)} \u00B7 You owe ${formatAmount(totalOwe, preferredCurrency)}`}
+            />
 
-      {(topOweUsers.length > 0 || topOwedUsers.length > 0) && (
-        <>
-          <Eyebrow>Needs attention</Eyebrow>
-          {topOweUsers.map((user) => {
-            const balance = dashboard.perUserBalances.get(user.id) ?? 0;
-            return (
-              <MoneyRow
-                key={`owe-${user.id}`}
-                avatar={<AppUserAvatar user={user} size="sm" />}
-                title={user.name}
-                subtitle={`You owe ${formatAmount(Math.abs(balance), currencyCode)}`}
-                amount={formatAmount(balance, currencyCode)}
-                amountTone="negative"
-                onPress={() => dashboard.handleSettleUser(user.id)}
-              />
-            );
-          })}
-          {topOwedUsers.map((user) => {
-            const balance = dashboard.perUserBalances.get(user.id) ?? 0;
-            return (
-              <MoneyRow
-                key={`owed-${user.id}`}
-                avatar={<AppUserAvatar user={user} size="sm" />}
-                title={user.name}
-                subtitle={`Owes you ${formatAmount(balance, currencyCode)}`}
-                amount={formatSignedAmount(balance, currencyCode)}
-                amountTone="positive"
-                onPress={() => dashboard.handleSettleUser(user.id)}
-              />
-            );
-          })}
-        </>
-      )}
+            {data.attentionRows.length > 0 && (
+              <>
+                <Eyebrow>Needs attention</Eyebrow>
+                {data.attentionRows.map((row) => {
+                  const isOwe = row.type === "owe"
+                  return (
+                    <MoneyRow
+                      key={`attention-${row.counterpartyId}`}
+                      title={row.user.name}
+                      subtitle={
+                        isOwe
+                          ? `You owe ${formatAmount(Math.abs(row.signedAmountMinor), row.currency)}`
+                          : `Owes you ${formatAmount(row.signedAmountMinor, row.currency)}`
+                      }
+                      amount={formatSignedAmount(
+                        isOwe ? -Math.abs(row.signedAmountMinor) : row.signedAmountMinor,
+                        row.currency
+                      )}
+                      amountTone={isOwe ? "negative" : "positive"}
+                      onPress={() => handleAttentionPress(row)}
+                    />
+                  )
+                })}
+              </>
+            )}
 
-      <GroupBalanceLedger
-        items={dashboard.groupBalancePreview}
-        currencyCode={currencyCode}
-        onGroupPress={dashboard.handleGroupPress}
-        onViewAll={dashboard.handleViewAllGroups}
-      />
+            {data.nextSchedule && (
+              <>
+                <Eyebrow>Upcoming</Eyebrow>
+                <MoneyRow
+                  title={data.nextSchedule.title}
+                  subtitle={data.nextSchedule.nextDueLabel ?? "Upcoming"}
+                  amount=""
+                  amountTone="neutral"
+                  onPress={() => handleSchedulePress(data.nextSchedule!.id)}
+                />
+              </>
+            )}
 
-      {dashboard.recentExpenses.length > 0 && (
-        <>
-          <Eyebrow>Recent movement</Eyebrow>
-          {dashboard.recentExpenses.slice(0, 4).map((expense) => {
-            const isPayer = expense.paidBy === dashboard.currentUser?.id;
-            const userShare = expense.splits.find((s) => s.userId === dashboard.currentUser?.id);
-            const payerName = expense.paidByUser?.name ?? "Someone";
-            return (
-              <MoneyRow
-                key={expense.id}
-                avatar={<AppUserAvatar user={expense.paidByUser} size="sm" />}
-                title={expense.title}
-                subtitle={
-                  isPayer
-                    ? `You paid \u00B7 split with ${expense.splits.length} people`
-                    : `${payerName} paid`
-                }
-                amount={
-                  isPayer
-                    ? formatSignedAmount(
-                        expense.amount - (userShare?.amount ?? 0),
-                        expense.currency
-                      )
-                    : formatAmount(userShare?.amount ?? 0, expense.currency)
-                }
-                amountTone={isPayer ? "positive" : "negative"}
-                onPress={() => dashboard.handleExpensePress(expense.id)}
-              />
-            );
-          })}
-        </>
-      )}
+            {data.groupLedger.length > 0 && (
+              <>
+                <Eyebrow>Your circles</Eyebrow>
+                {data.groupLedger.map((row) => (
+                  <MoneyRow
+                    key={`group-${row.group.id}`}
+                    title={row.group.name}
+                    subtitle={row.netSignedMinor >= 0 ? "You're owed" : "You owe"}
+                    amount={formatSignedAmount(row.netSignedMinor, row.group.currency)}
+                    amountTone={row.netSignedMinor >= 0 ? "positive" : "negative"}
+                    onPress={() => handleGroupPress(row)}
+                  />
+                ))}
+              </>
+            )}
+
+            {data.recentMovement.length > 0 && (
+              <>
+                <Eyebrow>Recent movement</Eyebrow>
+                {data.recentMovement.map((row) => (
+                  <MoneyRow
+                    key={`movement-${row.id}`}
+                    title={row.description}
+                    subtitle={row.counterpartyName}
+                    amount={formatAmount(row.amount, row.currency)}
+                    amountTone={row.type === "expense" ? "negative" : "positive"}
+                    onPress={() => handleMovementPress(row)}
+                  />
+                ))}
+              </>
+            )}
+          </>
+        )}
+      </ScrollView>
     </CoralScreen>
-  );
+  )
 }

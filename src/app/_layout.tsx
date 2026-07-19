@@ -89,6 +89,7 @@ export default function RootLayout(): JSX.Element | null {
         <Stack.Screen name="group/new" />
 
         <Stack.Screen name="expense/[id]" options={{ presentation: "modal" }} />
+        <Stack.Screen name="expense/[id]/edit" />
         <Stack.Screen name="expense/new" />
 
         <Stack.Screen name="settle/new" />
@@ -101,6 +102,8 @@ export default function RootLayout(): JSX.Element | null {
         <Stack.Screen name="recurring/[id]" />
         <Stack.Screen name="recurring/[id]/edit" />
         <Stack.Screen name="recurring/new" />
+
+        <Stack.Screen name="invite/[token]" />
       </Stack>
     </AppProvider>
   );

@@ -1,30 +1,26 @@
-import { useQuery } from "@tanstack/react-query";
-import { FriendsService } from "@/features/friends/services/api";
-import type { AppNotification } from "@/types";
-import { queryKeys } from "@/queries/keys";
+import { useQuery } from "@tanstack/react-query"
+import { supabase } from "@/services/supabase/client"
+import { queryKeys } from "@/queries/keys"
+import { mapNotification } from "@/services/api/mappers"
+import type { Tables } from "@/services/supabase/database.types"
 
 export function useNotifications(userId?: string) {
   return useQuery({
     queryKey: queryKeys.notifications(userId),
     queryFn: async () => {
-      if (!userId) return [];
+      if (!userId) return []
 
-      const pendingRequests = await FriendsService.getPendingFriendRequests(userId);
+      const { data, error } = await supabase
+        .from("notifications")
+        .select("*")
+        .eq("recipient_id", userId)
+        .is("read_at", null)
+        .order("created_at", { ascending: false })
 
-      const notifications: AppNotification[] = pendingRequests.map((req) => ({
-        id: `friend_req_${req.id}`,
-        type: "friend_request",
-        title: "New Friend Request",
-        subtitle: `${req.friendUser?.name || "Someone"} wants to be your friend.`,
-        date: req.createdAt,
-        data: req,
-      }));
+      if (error) throw error
 
-      // In the future, we can add group invites, settlements, etc. here
-      // and sort them by date descending
-
-      return notifications.sort((a, b) => b.date.getTime() - a.date.getTime());
+      return (data ?? []).map((row) => mapNotification(row as Tables<"notifications">))
     },
     enabled: !!userId,
-  });
+  })
 }

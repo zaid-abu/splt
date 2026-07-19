@@ -8,7 +8,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 
-import { useAddFriend, useAllFriendships } from "@/features/friends/queries/useFriends";
+import { useTransitionFriendship, useAllFriendships } from "@/features/friends/queries/useFriends";
 import { useAuth } from "@/context/AppContext";
 import { useSearchUsers } from "@/features/users/queries/useUsers";
 import type { User } from "@/types";
@@ -21,7 +21,7 @@ export default function NewFriendScreen(): JSX.Element {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();
-  const { mutateAsync: addFriend } = useAddFriend();
+  const { mutateAsync: transitionFriendship } = useTransitionFriendship();
   const { toast } = useAppToast();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -46,9 +46,9 @@ export default function NewFriendScreen(): JSX.Element {
     setAddingUserId(targetUser.id);
 
     try {
-      await addFriend({
-        userId: currentUser.id,
-        friendId: targetUser.id,
+      await transitionFriendship({
+        counterpartyId: targetUser.id,
+        action: "request",
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);

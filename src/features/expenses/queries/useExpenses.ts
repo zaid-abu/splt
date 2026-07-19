@@ -3,6 +3,7 @@ import { queryKeys } from "@/queries/keys";
 import { expensesApi } from "@/features/expenses/services/api";
 import { activitiesApi } from "@/features/activity/services/api";
 import type { Expense } from "@/types";
+import type { ExpenseMutationInput } from "@/features/money/types";
 
 export function useGroupExpenses(groupId: string | undefined) {
   return useQuery({
@@ -14,7 +15,7 @@ export function useGroupExpenses(groupId: string | undefined) {
 
 export function useUserExpenses(userId: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.expenses, // Could refine this key
+    queryKey: queryKeys.expenses,
     queryFn: () => expensesApi.fetchUserExpenses(userId!),
     enabled: !!userId,
   });
@@ -28,11 +29,11 @@ export function useExpenseDetails(expenseId: string | undefined) {
   });
 }
 
-export function useAddExpense() {
+export function useCreateExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (expenseData: Partial<Expense>) => expensesApi.addExpense(expenseData),
+    mutationFn: (input: ExpenseMutationInput) => expensesApi.createExpense(input),
     onSuccess: (newExpense) => {
       if (newExpense.groupId) {
         queryClient.invalidateQueries({ queryKey: queryKeys.groupExpenses(newExpense.groupId) });
@@ -57,8 +58,13 @@ export function useUpdateExpense() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<Expense> }) =>
-      expensesApi.updateExpense(id, updates),
+    mutationFn: ({
+      id,
+      input,
+    }: {
+      id: string;
+      input: Omit<ExpenseMutationInput, "clientOperationId" | "context">;
+    }) => expensesApi.updateExpense(id, input),
     onSuccess: (updatedExpense, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenseDetails(variables.id) });
       if (updatedExpense.groupId) {
@@ -77,8 +83,6 @@ export function useDeleteExpense() {
   return useMutation({
     mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
     onSuccess: (_, expenseId) => {
-      // We don't have the groupId here easily without returning it from delete or passing it,
-      // so invalidate broadly or require groupId to be passed.
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
       queryClient.removeQueries({ queryKey: queryKeys.expenseDetails(expenseId) });
     },

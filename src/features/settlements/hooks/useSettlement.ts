@@ -130,12 +130,13 @@ export function useSettlement(currentUser: User | null | undefined, params: Sett
       : 0
     : overallBalances.get(effectiveFriendId ?? "") || 0;
 
+  const rawParams = params as Record<string, string | undefined>;
   const initialDirection =
-    (params.direction as "you" | "them") || (netBalance < 0 ? "you" : "them");
+    (rawParams.direction as "you" | "them" | undefined) ?? (netBalance < 0 ? "you" : "them");
   const [direction, setDirection] = useState<"you" | "them">(initialDirection);
 
-  const initialAmtStr = params.amount
-    ? params.amount
+  const initialAmtStr = rawParams.amount
+    ? rawParams.amount
     : Math.abs(netBalance) > 0
       ? Math.abs(netBalance).toFixed(2)
       : "";

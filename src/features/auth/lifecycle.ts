@@ -78,6 +78,7 @@ export function classifyLifecycleRoute(segments: readonly string[]): LifecycleRo
   if (first === "verify-email") return "verification";
   if (first === "profile-setup") return "profileSetup";
   if (first === "first-action") return "firstAction";
+  if (first === "invite") return "readyApp";
   if (first === "onboarding") return "legacyOnboarding";
   if (first === "index" || first === "") return "index";
   return "readyApp";

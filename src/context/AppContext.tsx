@@ -35,7 +35,7 @@ export interface AuthContextValue {
 }
 
 export type ActivationDestination =
-  "/group/new" | "/friend/new" | "/expense/new" | "/recurring/new" | "/home";
+  "/group/new" | "/friend/new" | "/expense/new" | "/recurring/new" | "/home" | `/invite/${string}`;
 
 const fallbackUser: User = {
   id: "",

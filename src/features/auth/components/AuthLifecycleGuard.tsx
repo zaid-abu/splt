@@ -8,6 +8,7 @@ import { CoralButton } from "@/components/coral/CoralButton";
 import { useCoralColors } from "@/components/coral/useCoral";
 import { useAuth } from "@/context/AppContext";
 import { classifyLifecycleRoute, decideLifecycleRoute } from "@/features/auth/lifecycle";
+import { consumePendingInviteToken } from "@/features/invitations/services/pendingInvite";
 
 export function AuthLifecycleGuard({ children }: { children: ReactNode }) {
   const { activationDestination, authPhase, clearActivationDestination, refreshAuth } = useAuth();
@@ -43,6 +44,19 @@ export function AuthLifecycleGuard({ children }: { children: ReactNode }) {
     routeKind,
     router,
   ]);
+
+  useEffect(() => {
+    if (!rootState?.key) return;
+    if (authPhase.status !== "ready") return;
+    if (routeKind !== "readyApp") return;
+    if (segments[0] === "invite") return;
+
+    consumePendingInviteToken().then((token) => {
+      if (token) {
+        router.replace(`/invite/${token}` as Href);
+      }
+    })
+  }, [authPhase.status, routeKind, rootState?.key, segments, router]);
 
   if (routeKind === "authCallback") return children;
 

@@ -42,8 +42,13 @@ export default function GroupSettingsScreen() {
     setSimplifyDebts,
     defaultSplitMethod,
     setDefaultSplitMethod,
+    newExpenseAlerts,
+    setNewExpenseAlerts,
     loading,
     balances,
+    permissions,
+    currentMember,
+    blockingBalances,
     deleteSheetRef,
     leaveSheetRef,
     removeMemberSheetRef,
@@ -96,115 +101,165 @@ export default function GroupSettingsScreen() {
     { label: "Percentage", value: "percentage" },
   ];
 
+  const canEdit = permissions?.canEdit ?? false;
+  const canDelete = permissions?.canDelete ?? false;
+  const canLeave = permissions?.canLeave ?? false;
+  const canAddMember = permissions?.canAddMember ?? false;
+
+  const hasBlockers = blockingBalances.length > 0;
+
+  function blockerSummary(): string {
+    if (!hasBlockers) return ""
+    const lines = blockingBalances.map(
+      (b) => `${b.userName}: ${b.amount > 0 ? "+" : ""}${b.amount.toFixed(2)}`
+    )
+    return `\n\nOutstanding balances in ${group.currency}:\n${lines.join("\n")}`
+  }
+
   return (
     <CoralScreen contentContainerStyle={{ gap: 4 }}>
       <CoralTopBar title="Settings" onBack={() => router.back()} />
 
-      <Eyebrow>Identity</Eyebrow>
+      {canEdit && (
+        <>
+          <Eyebrow>Identity</Eyebrow>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ gap: 10, paddingBottom: 4 }}
-      >
-        {GROUP_ICONS.map((i) => {
-          const Ico = (icons as any)[i] || icons.HelpCircle;
-          const isSelected = icon === i;
-          return (
-            <Pressable
-              key={i}
-              onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setIcon(i);
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ gap: 10, paddingBottom: 4 }}
+          >
+            {GROUP_ICONS.map((i) => {
+              const Ico = (icons as any)[i] || icons.HelpCircle;
+              const isSelected = icon === i;
+              return (
+                <Pressable
+                  key={i}
+                  onPress={() => {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                    setIcon(i);
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: 14,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: isSelected ? coral.accent : coral.surface,
+                      borderWidth: 1,
+                      borderColor: isSelected ? coral.accent : coral.border,
+                    }}
+                  >
+                    <Ico
+                      size={22}
+                      color={isSelected ? coral.inkOnAccent : coral.foreground}
+                      strokeWidth={isSelected ? 2 : 1.5}
+                    />
+                  </View>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          <CoralField
+            label="Name"
+            placeholder="Group name"
+            value={name}
+            onChangeText={(v) => {
+              setNameError("");
+              setName(v);
+            }}
+            error={nameError}
+          />
+
+          <CoralField
+            label="Description"
+            placeholder="Optional description"
+            value={description}
+            onChangeText={setDescription}
+          />
+
+          <Eyebrow>Finance</Eyebrow>
+
+          <CoralSelect
+            label="Currency"
+            options={currencyOptions}
+            value={currencyCode}
+            onValueChange={setCurrencyCode}
+            placeholder="Select currency"
+          />
+
+          <CoralSelect
+            label="Default split method"
+            options={splitMethodOptions}
+            value={defaultSplitMethod}
+            onValueChange={(value) => setDefaultSplitMethod(value as any)}
+            placeholder="Select method"
+          />
+
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 52,
+              marginTop: 8,
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 16,
+                color: coral.foreground,
               }}
             >
-              <View
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 14,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  backgroundColor: isSelected ? coral.accent : coral.surface,
-                  borderWidth: 1,
-                  borderColor: isSelected ? coral.accent : coral.border,
-                }}
-              >
-                <Ico
-                  size={22}
-                  color={isSelected ? coral.inkOnAccent : coral.foreground}
-                  strokeWidth={isSelected ? 2 : 1.5}
-                />
-              </View>
-            </Pressable>
-          );
-        })}
-      </ScrollView>
+              Simplify debts
+            </Text>
+            <Switch
+              value={simplifyDebts}
+              onValueChange={(v) => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setSimplifyDebts(v);
+              }}
+              trackColor={{ false: coral.border, true: coral.accent }}
+              thumbColor="white"
+            />
+          </View>
+        </>
+      )}
 
-      <CoralField
-        label="Name"
-        placeholder="Group name"
-        value={name}
-        onChangeText={(v) => {
-          setNameError("");
-          setName(v);
-        }}
-        error={nameError}
-      />
-
-      <CoralField
-        label="Description"
-        placeholder="Optional description"
-        value={description}
-        onChangeText={setDescription}
-      />
-
-      <Eyebrow>Finance</Eyebrow>
-
-      <CoralSelect
-        label="Currency"
-        options={currencyOptions}
-        value={currencyCode}
-        onValueChange={setCurrencyCode}
-        placeholder="Select currency"
-      />
-
-      <CoralSelect
-        label="Default split method"
-        options={splitMethodOptions}
-        value={defaultSplitMethod}
-        onValueChange={(value) => setDefaultSplitMethod(value as any)}
-        placeholder="Select method"
-      />
-
-      <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          minHeight: 52,
-          marginTop: 8,
-        }}
-      >
-        <Text
+      {currentMember && (
+        <View
           style={{
-            fontFamily: "InstrumentSans_400Regular",
-            fontSize: 16,
-            color: coral.foreground,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            minHeight: 52,
+            marginTop: 8,
           }}
         >
-          Simplify debts
-        </Text>
-        <Switch
-          value={simplifyDebts}
-          onValueChange={(v) => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            setSimplifyDebts(v);
-          }}
-          trackColor={{ false: coral.border, true: coral.accent }}
-          thumbColor="white"
-        />
-      </View>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 16,
+              color: coral.foreground,
+            }}
+          >
+            New expense alerts
+          </Text>
+          <Switch
+            value={newExpenseAlerts}
+            onValueChange={(v) => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+              setNewExpenseAlerts(v);
+            }}
+            trackColor={{ false: coral.border, true: coral.accent }}
+            thumbColor="white"
+          />
+        </View>
+      )}
 
       <Eyebrow>Members ({group.members.length})</Eyebrow>
 
@@ -234,7 +289,7 @@ export default function GroupSettingsScreen() {
                 Math.abs(balance) < 0.01 ? "neutral" : balance > 0 ? "positive" : "negative"
               }
               rightElement={
-                !isCurrentUser ? (
+                !isCurrentUser && permissions?.canRemoveMember(member.userId) ? (
                   <Pressable
                     onPress={() => handleRemoveMemberClick(member.userId, member.user.name)}
                     style={{
@@ -253,35 +308,52 @@ export default function GroupSettingsScreen() {
         })}
       </View>
 
-      <CoralButton
-        label="+ Add member"
-        variant="secondary"
-        onPress={() => searchSheetRef.current?.present()}
-      />
+      {canAddMember && (
+        <CoralButton
+          label="+ Add member"
+          variant="secondary"
+          onPress={() => searchSheetRef.current?.present()}
+        />
+      )}
 
       <View style={{ height: 8 }} />
 
-      <CoralButton label="Save Changes" onPress={handleSave} disabled={loading} loading={loading} />
+      {canEdit && (
+        <CoralButton
+          label="Save Changes"
+          onPress={handleSave}
+          disabled={loading}
+          loading={loading}
+        />
+      )}
 
       <View style={{ height: 16 }} />
 
-      <CoralButton
-        label={`Delete "${group.name}"`}
-        variant="danger"
-        onPress={() => deleteSheetRef.current?.present()}
-      />
+      {canDelete && (
+        <CoralButton
+          label={`Delete "${group.name}"`}
+          variant="danger"
+          onPress={() => deleteSheetRef.current?.present()}
+        />
+      )}
 
-      <CoralButton
-        label="Leave group"
-        variant="text"
-        onPress={() => leaveSheetRef.current?.present()}
-      />
+      {canLeave && (
+        <CoralButton
+          label="Leave group"
+          variant="text"
+          onPress={() => leaveSheetRef.current?.present()}
+        />
+      )}
 
       <View style={{ height: 40 }} />
 
       <ConfirmationSheet
         title="Delete Group?"
-        description={`Are you sure you want to delete "${group.name}"? This cannot be undone.`}
+        description={
+          hasBlockers
+            ? `"${group.name}" has outstanding balances. Deleting will pause the group — history remains and invitations are cancelled.${blockerSummary()}`
+            : `Are you sure you want to delete "${group.name}"? This cannot be undone.`
+        }
         confirmLabel="Delete"
         confirmTone="danger"
         sheetRef={deleteSheetRef}
@@ -290,7 +362,11 @@ export default function GroupSettingsScreen() {
 
       <ConfirmationSheet
         title="Remove Member?"
-        description={`Are you sure you want to remove ${memberToRemove?.name} from "${group.name}"?`}
+        description={
+          memberToRemove && blockingBalances.some((b) => b.userId === memberToRemove.id)
+            ? `${memberToRemove.name} has an outstanding balance. Remove them anyway?${blockerSummary()}`
+            : `Are you sure you want to remove ${memberToRemove?.name} from "${group.name}"?`
+        }
         confirmLabel="Remove"
         confirmTone="danger"
         sheetRef={removeMemberSheetRef}
@@ -299,7 +375,11 @@ export default function GroupSettingsScreen() {
 
       <ConfirmationSheet
         title="Leave Group?"
-        description={`Are you sure you want to leave "${group.name}"? Your expense history will be preserved.`}
+        description={
+          hasBlockers
+            ? `"${group.name}" has outstanding balances in your name. Settle them before leaving.${blockerSummary()}`
+            : `Are you sure you want to leave "${group.name}"? Your expense history will be preserved.`
+        }
         confirmLabel="Leave"
         confirmTone="brand"
         sheetRef={leaveSheetRef}

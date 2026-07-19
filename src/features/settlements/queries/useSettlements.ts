@@ -3,6 +3,7 @@ import { queryKeys } from "@/queries/keys";
 import { settlementsApi } from "@/features/settlements/services/api";
 import { activitiesApi } from "@/features/activity/services/api";
 import type { Settlement } from "@/types";
+import type { SettlementMutationInput } from "@/features/money/types";
 
 export function useGroupSettlements(groupId: string | undefined) {
   return useQuery({
@@ -14,9 +15,36 @@ export function useGroupSettlements(groupId: string | undefined) {
 
 export function useUserSettlements(userId: string | undefined) {
   return useQuery({
-    queryKey: queryKeys.settlements, // Could refine based on user
+    queryKey: queryKeys.settlements,
     queryFn: () => settlementsApi.fetchUserSettlements(userId!),
     enabled: !!userId,
+  });
+}
+
+export function useCreateSettlement() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: SettlementMutationInput) => settlementsApi.createSettlement(input),
+    onSuccess: (newSettlement) => {
+      if (newSettlement.groupId) {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.groupSettlements(newSettlement.groupId),
+        });
+      }
+      queryClient.invalidateQueries({ queryKey: queryKeys.settlements });
+      activitiesApi.logActivity({
+        type: "settlement",
+        settlement: { id: newSettlement.id } as Settlement,
+        groupId: newSettlement.groupId,
+        userId: newSettlement.fromUserId,
+        user: newSettlement.fromUser,
+        description: `Settlement of ${newSettlement.currency} ${newSettlement.amount}`,
+        amount: newSettlement.amount,
+        currency: newSettlement.currency,
+        date: newSettlement.date,
+      });
+    },
   });
 }
 

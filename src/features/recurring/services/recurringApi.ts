@@ -12,6 +12,17 @@ type DbRecurringExpense = Tables<"recurring_expenses">;
 type DbRecurringOccurrence = Tables<"recurring_occurrences">;
 
 export const recurringApi = {
+  async fetchGroupRecurringExpenses(groupId: string): Promise<RecurringExpense[]> {
+    const { data, error } = await supabase
+      .from("recurring_expenses")
+      .select("*")
+      .eq("group_id", groupId)
+      .order("created_at", { ascending: false })
+      .returns<DbRecurringExpense[]>();
+
+    if (error) throw error;
+    return data?.map(mapRecurringExpense) ?? [];
+  },
   async fetchRecurringExpenses(userId: string): Promise<RecurringExpense[]> {
     const { data: memberships, error: membershipError } = await supabase
       .from("group_members")

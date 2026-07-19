@@ -7,11 +7,9 @@ import * as Haptics from "expo-haptics";
 import { useAuth } from "@/context/AppContext";
 import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import {
-  useAcceptFriend,
+  useTransitionFriendship,
   useAllFriendships,
   useFriends,
-  useRejectFriend,
-  useRemoveFriend,
 } from "@/features/friends/queries/useFriends";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
@@ -81,9 +79,7 @@ export function useFriendsList() {
     isError: isFriendshipsError,
     refetch: refetchFriendships,
   } = useAllFriendships(currentUser?.id);
-  const { mutateAsync: acceptFriend } = useAcceptFriend();
-  const { mutateAsync: rejectFriend } = useRejectFriend();
-  const { mutateAsync: removeFriend } = useRemoveFriend();
+  const { mutateAsync: transitionFriendship } = useTransitionFriendship();
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
@@ -282,11 +278,10 @@ export function useFriendsList() {
   const handleRequestAction = useCallback(
     async (friendshipId: string, action: "accept" | "reject") => {
       try {
-        if (action === "accept") {
-          await acceptFriend({ friendshipId });
-        } else {
-          await rejectFriend({ friendshipId });
-        }
+        await transitionFriendship({
+          counterpartyId: friendshipId,
+          action: action === "accept" ? "accept" : "decline",
+        });
         Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       } catch (error) {
         toast.show({
@@ -297,7 +292,7 @@ export function useFriendsList() {
         });
       }
     },
-    [acceptFriend, rejectFriend, toast]
+    [transitionFriendship, toast]
   );
 
   const handleRemoveFriend = useCallback(
@@ -320,7 +315,10 @@ export function useFriendsList() {
             style: "destructive",
             onPress: async () => {
               try {
-                await removeFriend({ friendshipId: row.friendship!.id });
+                await transitionFriendship({
+                  counterpartyId: row.friend.id,
+                  action: "remove",
+                });
                 Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
                 toast.show({
                   label: "Friend removed",

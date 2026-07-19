@@ -8,9 +8,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "@/context/AppContext";
 import { useSearchUsers } from "@/features/users/queries/useUsers";
-import { useFriends, useAllFriendships, useAddFriend } from "@/features/friends/queries/useFriends";
+import { useFriends } from "@/features/friends/queries/useFriends";
 import type { User } from "@/types";
-import { useAppToast } from "@/hooks/useAppToast";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useUI, EmptyState } from "@/components/ui";
 
@@ -22,14 +21,12 @@ interface UserSearchBottomSheetProps {
 
 export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBottomSheetProps>(
   ({ onSelect, excludeUserIds = [], title = "Add Member" }, ref) => {
-    const { color, radius, space, shadow } = useUI();
+    const { color, radius } = useUI();
     const insets = useSafeAreaInsets();
     const { currentUser } = useAuth();
-    const { toast } = useAppToast();
 
     const [searchQuery, setSearchQuery] = useState("");
     const [debouncedQuery, setDebouncedQuery] = useState("");
-    const [isProcessing, setIsProcessing] = useState<string | null>(null);
 
     // Queries
     const { data: searchResults = [], isLoading: isSearching } = useSearchUsers(
@@ -37,8 +34,6 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
       currentUser.id
     );
     const { data: friends = [] } = useFriends(currentUser.id);
-    const { data: allFriendships = [] } = useAllFriendships(currentUser.id);
-    const { mutateAsync: addFriend } = useAddFriend();
 
     // Debounce search query
     useEffect(() => {
@@ -61,50 +56,13 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
       []
     );
 
-    const handleUserSelect = async (user: User) => {
+    const handleUserSelect = (user: User) => {
       if (excludeUserIds.includes(user.id)) return;
-      if (isProcessing) return;
 
-      setIsProcessing(user.id);
-      try {
-        // Check if they are already friends
-        const existingFriendship = allFriendships.find((f) => f.friendUser?.id === user.id);
-        const isAdded = existingFriendship?.status === "accepted";
-        const isRequested = existingFriendship?.status === "pending";
-
-        // If not friends and not requested, send a request
-        if (!isAdded && !isRequested) {
-          await addFriend({
-            userId: currentUser.id,
-            friendId: user.id,
-          });
-          toast.show({
-            label: "Friend Request Sent",
-            description: `A friend request was sent to ${user.name}.`,
-            variant: "success",
-            placement: "top",
-          });
-        }
-
-        // Trigger onSelect callback (which handles closing the sheet and adding to group)
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-        // Let the parent component handle closing to allow state updates
-        onSelect(user);
-
-        // Reset state
-        setSearchQuery("");
-        setDebouncedQuery("");
-      } catch {
-        toast.show({
-          label: "Error",
-          description: "Failed to add user.",
-          variant: "danger",
-          placement: "top",
-        });
-      } finally {
-        setIsProcessing(null);
-      }
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      onSelect(user)
+      setSearchQuery("")
+      setDebouncedQuery("")
     };
 
     // Determine what list to show
@@ -123,7 +81,6 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
 
     const renderUserItem = ({ item }: { item: User; index: number }) => {
       const isExcluded = excludeUserIds.includes(item.id);
-      const isProcessingThis = isProcessing === item.id;
 
       return (
         <View
@@ -168,7 +125,7 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
           <Pressable
             accessibilityRole="button"
             onPress={() => handleUserSelect(item)}
-            disabled={isExcluded || !!isProcessing}
+            disabled={isExcluded}
             style={({ pressed }) => ({
               height: 40,
               paddingHorizontal: isExcluded ? 16 : 0,
@@ -177,12 +134,10 @@ export const UserSearchBottomSheet = forwardRef<BottomSheetModal, UserSearchBott
               alignItems: "center",
               justifyContent: "center",
               borderRadius: radius.pill,
-              opacity: pressed || (!!isProcessing && !isProcessingThis) ? 0.5 : 1,
+              opacity: pressed ? 0.5 : 1,
             })}
           >
-            {isProcessingThis ? (
-              <Spinner size="sm" color={color.textInverse} />
-            ) : isExcluded ? (
+            {isExcluded ? (
               <Typography
                 style={{
                   fontSize: 14,

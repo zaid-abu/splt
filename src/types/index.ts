@@ -51,7 +51,7 @@ export const EXPENSE_CATEGORIES: { key: ExpenseCategory; label: string; icon: st
   { key: "other", label: "Other", icon: "Package" },
 ];
 
-export type SplitMethod = "equal" | "custom" | "percentage";
+export type SplitMethod = "equal" | "custom" | "percentage" | "shares";
 
 export type AccountSetupState = "profile_pending" | "activation_pending" | "complete";
 
@@ -66,13 +66,17 @@ export interface User {
   createdAt?: Date;
 }
 
-export type FriendshipStatus = "pending" | "accepted" | "blocked";
+export type FriendshipStatus = "pending" | "accepted" | "blocked" | "declined" | "removed";
 
 export interface Friendship {
   id: string;
   userId: string;
   friendId: string;
   status: FriendshipStatus;
+  requestedBy: string;
+  blockedBy?: string;
+  requestExpiresAt?: Date;
+  statusBeforeBlock?: string;
   createdAt: Date;
   updatedAt: Date;
   friendUser?: User; // joined data
@@ -82,6 +86,7 @@ export interface GroupMember {
   userId: string;
   user: User;
   balance: number; // positive = owed money, negative = owes money
+  newExpenseAlerts?: boolean;
 }
 
 export interface Group {
@@ -96,42 +101,55 @@ export interface Group {
   totalExpenses: number;
   simplifyDebts?: boolean;
   defaultSplitMethod?: SplitMethod;
+  kind?: string;
+  archivedAt?: Date | null;
 }
 
 export interface ExpenseSplit {
   userId: string;
   user: User;
   amount: number;
+  amountMinor: number;
   percentage?: number;
+  shares?: number;
+  position: number;
   paid: boolean;
 }
 
 export interface Expense {
   id: string;
   groupId?: string;
+  friendshipId?: string;
   title: string;
   amount: number;
+  amountMinor: number;
   currency: string;
   category: ExpenseCategory;
   paidBy: string; // userId
   paidByUser: User;
+  createdBy: string;
   splits: ExpenseSplit[];
   splitMethod: SplitMethod;
   date: Date;
   notes?: string;
   receiptUrl?: string;
+  receiptKey?: string;
+  legacyReceiptUrl?: string;
   createdAt: Date;
 }
 
 export interface Settlement {
   id: string;
   groupId?: string;
+  friendshipId?: string;
   fromUserId: string;
   toUserId: string;
   fromUser: User;
   toUser: User;
   amount: number;
+  amountMinor: number;
   currency: string;
+  method: "cash" | "bank_transfer" | "other";
   date: Date;
   note?: string;
 }
@@ -149,6 +167,7 @@ export interface Activity {
   user: User;
   description: string;
   amount?: number;
+  amountMinor?: number;
   currency?: string;
   date: Date;
 }
@@ -160,6 +179,66 @@ export interface Balance {
   youOwe: number;
   net: number;
   currency: string;
+}
+
+// ─── New domain types ──────────────────────────────────────────────────────
+
+export interface GroupInvitation {
+  id: string;
+  groupId: string;
+  inviterId: string;
+  inviteeId: string;
+  status: "pending" | "accepted" | "declined" | "cancelled" | "expired";
+  expiresAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface FriendInvite {
+  id: string;
+  createdBy: string;
+  expiresAt: Date;
+  revokedAt?: Date;
+  redeemedBy?: string;
+  redeemedAt?: Date;
+  createdAt: Date;
+}
+
+export type NotificationKind =
+  "friend_request" | "group_invite" | "balance_reminder" | "expense_added";
+
+export interface AppNotification {
+  id: string;
+  kind: NotificationKind;
+  title: string;
+  subtitle: string;
+  date: Date;
+  data?: Record<string, unknown>;
+  actorId?: string;
+  groupId?: string;
+  friendshipId?: string;
+  expenseId?: string;
+}
+
+export interface ReceiptUpload {
+  id: string;
+  ownerId: string;
+  clientOperationId: string;
+  objectKey: string;
+  status: "staged" | "attached" | "cleanup_pending" | "cleaned";
+  attachedExpenseId?: string;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: Date;
+  cleanedAt?: Date;
+}
+
+export interface ExpenseComment {
+  id: string;
+  expenseId: string;
+  userId: string;
+  text: string;
+  createdAt: Date;
 }
 
 // ─── Screen-specific filter types ───────────────────────────────────────────
@@ -179,18 +258,6 @@ export interface CategoryData {
 export interface TrendData {
   label: string;
   value: number;
-}
-
-// ─── Notification types ─────────────────────────────────────────────────────
-export type NotificationType = "friend_request";
-
-export interface AppNotification {
-  id: string;
-  type: NotificationType;
-  title: string;
-  subtitle: string;
-  date: Date;
-  data?: Friendship;
 }
 
 export * from "./recurring";

@@ -94,6 +94,8 @@ describe("classifyLifecycleRoute", () => {
     [["onboarding"], "legacyOnboarding"],
     [["home"], "readyApp"],
     [["expense", "new"], "readyApp"],
+    [["invite", "tok_abc"], "readyApp"],
+    [["invite", "some-other-token"], "readyApp"],
   ])("classifies %j", (segments, expected) => {
     expect(classifyLifecycleRoute(segments)).toBe(expected);
   });

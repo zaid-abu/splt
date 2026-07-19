@@ -1,6 +1,7 @@
-import type { JSX, ReactNode } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { UserPlus } from "lucide-react-native";
 
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
@@ -16,14 +17,22 @@ import {
   MoneyRow,
 } from "@/components/coral";
 import { useUI } from "@/components/ui";
-import { useFriendsList, type DisplayItem } from "@/features/friends/hooks/useFriendsList";
-import { useGroupsList } from "@/features/groups/hooks/useGroupsList";
+import { useAuth } from "@/context/AppContext";
+import {
+  useCirclesSnapshot,
+  type GroupSection,
+  type PersonSection,
+  type RequestItem,
+} from "@/features/circles/hooks/useCirclesSnapshot";
 import { parseCircleSegment, type CircleSegment } from "@/features/navigation/shell";
+import { useTransitionFriendship } from "@/features/friends/queries/useFriends";
 
 const SEGMENTS = [
   { label: "Groups", value: "groups" },
   { label: "People", value: "people" },
 ] as const;
+
+const ZERO_DECIMAL_CURRENCIES = new Set(["JPY", "KRW", "VND", "IDR"]);
 
 function CenteredState({ children }: { children: ReactNode }) {
   return (
@@ -33,66 +42,146 @@ function CenteredState({ children }: { children: ReactNode }) {
   );
 }
 
-function signedAmount(amount: number, currency: string): string {
-  if (amount > 0) return `+${formatAmount(amount, currency)}`;
-  if (amount < 0) return `-${formatAmount(Math.abs(amount), currency)}`;
-  return formatAmount(0, currency);
+function signedAmount(amountMajor: number, currency: string): string {
+  const abs = Math.abs(amountMajor);
+  const isZeroDecimal = ZERO_DECIMAL_CURRENCIES.has(currency);
+  const formatted = abs.toLocaleString("en-US", {
+    minimumFractionDigits: isZeroDecimal ? 0 : 2,
+    maximumFractionDigits: isZeroDecimal ? 0 : 2,
+  });
+  if (amountMajor > 0) return `+${currency} ${formatted}`;
+  if (amountMajor < 0) return `-${currency} ${formatted}`;
+  return `${currency} ${isZeroDecimal ? "0" : "0.00"}`;
 }
+
+function groupSubtitle(section: GroupSection): string {
+  const { group, balance } = section;
+  if (balance === null || balance.signedAmountMinor === 0) {
+    return `${group.members.length} people · Settled`;
+  }
+  const absMajor = Math.abs(balance.signedAmountMinor) / 100;
+  const formatted = formatAmount(absMajor, balance.currency);
+  if (balance.signedAmountMinor > 0) {
+    return `${group.members.length} people · You are owed ${formatted}`;
+  }
+  return `${group.members.length} people · You owe ${formatted}`;
+}
+
+function groupAmount(section: GroupSection): {
+  text: string;
+  tone: "neutral" | "positive" | "negative";
+} {
+  const { balance } = section;
+  if (balance === null || balance.signedAmountMinor === 0) {
+    return { text: "Settled", tone: "neutral" };
+  }
+  const major = balance.signedAmountMinor / 100;
+  return {
+    text: signedAmount(major, balance.currency),
+    tone: major > 0 ? "positive" : "negative",
+  };
+}
+
+function personSubtitle(section: PersonSection): string {
+  const { user, classification, topBalance } = section;
+  if (classification === "mixed") return "Mixed balance";
+  if ((classification === "owes-you" || classification === "you-owe") && topBalance) {
+    const absMajor = Math.abs(topBalance.signedAmountMinor) / 100;
+    const formatted = formatAmount(absMajor, topBalance.currency);
+    const firstName = user.name.split(" ")[0];
+    if (classification === "owes-you") return `${firstName} owes you ${formatted}`;
+    return `You owe ${firstName} ${formatted}`;
+  }
+  return "Settled";
+}
+
+function personAmount(section: PersonSection): {
+  text: string;
+  tone: "neutral" | "positive" | "negative";
+} {
+  const { classification, topBalance } = section;
+  if (classification === "settled" || !topBalance || topBalance.signedAmountMinor === 0) {
+    return { text: "Settled", tone: "neutral" };
+  }
+  const major = topBalance.signedAmountMinor / 100;
+  return {
+    text: signedAmount(major, topBalance.currency),
+    tone: major > 0 ? "positive" : "negative",
+  };
+}
+
+const CLASSIFICATION_LABELS: Record<string, string> = {
+  "owes-you": "Owes you",
+  mixed: "Mixed",
+  "you-owe": "You owe",
+  settled: "Settled",
+};
+
+const CLASSIFICATION_ORDER = ["owes-you", "mixed", "you-owe", "settled"] as const;
 
 export default function CirclesScreen(): JSX.Element {
   const params = useLocalSearchParams<{ segment?: string | string[] }>();
   const router = useRouter();
   const { color } = useUI();
+  const { currentUser } = useAuth();
   const segment = parseCircleSegment(params.segment);
-  const groups = useGroupsList();
-  const people = useFriendsList();
 
-  const search = segment === "groups" ? groups.search : people.search;
-  const setSearch = segment === "groups" ? groups.setSearch : people.setSearch;
-  const isLoading = segment === "groups" ? groups.isLoading : people.isLoading;
-  const isError = segment === "groups" ? groups.isError : people.isError;
+  const [groupSearch, setGroupSearch] = useState("");
+  const [peopleSearch, setPeopleSearch] = useState("");
+
+  const search = segment === "groups" ? groupSearch : peopleSearch;
+  const setSearch = segment === "groups" ? setGroupSearch : setPeopleSearch;
+  const placeholder = segment === "groups" ? "Search groups" : "Search people";
+
+  const snapshot = useCirclesSnapshot(currentUser.id, search);
+  const { mutateAsync: transitionFriendship } = useTransitionFriendship();
 
   const selectSegment = (next: CircleSegment) => {
     router.setParams({ segment: next });
   };
 
   const retry = () => {
-    if (segment === "groups") {
-      groups.refetch();
-    } else {
-      people.refetchAll();
-    }
+    snapshot.refresh();
   };
 
-  const renderPersonItem = (item: DisplayItem) => {
-    if (item.kind === "section") {
-      return <Eyebrow key={item.id}>{`${item.title} · ${item.count}`}</Eyebrow>;
-    }
+  const handleAccept = useCallback(
+    async (friendshipId: string) => {
+      try {
+        await transitionFriendship({ counterpartyId: friendshipId, action: "accept" });
+      } catch {
+        /* silently ignored */
+      }
+    },
+    [transitionFriendship]
+  );
 
-    const { friend, balance, recentExpense } = item.item;
-    const subtitle =
-      balance > 0
-        ? `${friend.name.split(" ")[0]} owes you ${formatAmount(balance, people.preferredCurrency.code)}`
-        : balance < 0
-          ? `You owe ${friend.name.split(" ")[0]} ${formatAmount(Math.abs(balance), people.preferredCurrency.code)}`
-          : (recentExpense?.title ?? "Settled");
+  const handleDecline = useCallback(
+    async (friendshipId: string) => {
+      try {
+        await transitionFriendship({ counterpartyId: friendshipId, action: "decline" });
+      } catch {
+        /* silently ignored */
+      }
+    },
+    [transitionFriendship]
+  );
 
-    return (
-      <MoneyRow
-        key={item.id}
-        avatar={<AppUserAvatar user={friend} size="sm" />}
-        title={friend.name}
-        subtitle={subtitle}
-        amount={
-          Math.abs(balance) <= 0.005
-            ? "Settled"
-            : signedAmount(balance, people.preferredCurrency.code)
-        }
-        amountTone={balance > 0 ? "positive" : balance < 0 ? "negative" : "neutral"}
-        onPress={() => router.push({ pathname: "/friend/[id]", params: { id: friend.id } })}
-      />
-    );
-  };
+  const needsAttentionGroupSections = snapshot.data?.groupSections.filter(
+    (s) => s.balance !== null && s.balance.signedAmountMinor !== 0
+  );
+  const allGroupSections = snapshot.data?.groupSections.filter(
+    (s) => s.balance === null || s.balance.signedAmountMinor === 0
+  );
+
+  const hasData =
+    (needsAttentionGroupSections && needsAttentionGroupSections.length > 0) ||
+    (allGroupSections && allGroupSections.length > 0) ||
+    (snapshot.data?.personSections && snapshot.data.personSections.length > 0) ||
+    (snapshot.data?.pendingRequests && snapshot.data.pendingRequests.length > 0);
+
+  const hasSearch = search.trim().length > 0;
+
+  const pendingRequests = snapshot.data?.pendingRequests ?? [];
 
   return (
     <CoralScreen>
@@ -120,11 +209,15 @@ export default function CirclesScreen(): JSX.Element {
         value={search}
         onChangeText={setSearch}
         onClear={() => setSearch("")}
-        placeholder={segment === "groups" ? "Search groups" : "Search people"}
+        placeholder={placeholder}
         style={{ marginTop: 14, marginBottom: 8 }}
       />
 
-      {isError ? (
+      {snapshot.isInitialLoading ? (
+        <CenteredState>
+          <ActivityIndicator color={color.text} accessibilityLabel={`Loading ${segment}`} />
+        </CenteredState>
+      ) : snapshot.isError && !snapshot.data ? (
         <CenteredState>
           <Text
             style={{
@@ -137,55 +230,7 @@ export default function CirclesScreen(): JSX.Element {
           </Text>
           <CoralButton label="Try again" variant="secondary" onPress={retry} />
         </CenteredState>
-      ) : isLoading ? (
-        <CenteredState>
-          <ActivityIndicator color={color.text} accessibilityLabel={`Loading ${segment}`} />
-        </CenteredState>
-      ) : segment === "groups" ? (
-        groups.filtered.length > 0 ? (
-          <>
-            <Eyebrow>{`${groups.filtered.length} groups`}</Eyebrow>
-            {groups.filtered.map(({ group, netBalance }) => {
-              const subtitle =
-                netBalance > 0
-                  ? `You are owed ${formatAmount(netBalance, groups.preferredCurrencyCode)}`
-                  : netBalance < 0
-                    ? `You owe ${formatAmount(Math.abs(netBalance), groups.preferredCurrencyCode)}`
-                    : "Settled";
-
-              return (
-                <MoneyRow
-                  key={group.id}
-                  avatar={<GroupIconBadge group={group} size="sm" />}
-                  title={group.name}
-                  subtitle={`${group.members.length} people · ${subtitle}`}
-                  amount={
-                    Math.abs(netBalance) <= 0.005
-                      ? "Settled"
-                      : signedAmount(netBalance, groups.preferredCurrencyCode)
-                  }
-                  amountTone={netBalance > 0 ? "positive" : netBalance < 0 ? "negative" : "neutral"}
-                  onPress={() => groups.handleGroupPress(group.id)}
-                />
-              );
-            })}
-          </>
-        ) : (
-          <CenteredState>
-            <Text
-              style={{
-                fontFamily: "InstrumentSans_400Regular",
-                fontSize: 15,
-                color: color.muted,
-              }}
-            >
-              {search ? "No groups match your search." : "No groups yet."}
-            </Text>
-          </CenteredState>
-        )
-      ) : people.displayRows.length > 0 ? (
-        people.displayRows.map(renderPersonItem)
-      ) : (
+      ) : !hasData && !hasSearch ? (
         <CenteredState>
           <Text
             style={{
@@ -194,9 +239,130 @@ export default function CirclesScreen(): JSX.Element {
               color: color.muted,
             }}
           >
-            {search ? "No people match your search." : "No people yet."}
+            {segment === "groups" ? "No groups yet." : "No people yet."}
           </Text>
         </CenteredState>
+      ) : segment === "groups" ? (
+        <>
+          {pendingRequests.length > 0 && (
+            <RequestsSection
+              requests={pendingRequests}
+              onAccept={handleAccept}
+              onDecline={handleDecline}
+            />
+          )}
+
+          {needsAttentionGroupSections && needsAttentionGroupSections.length > 0 && (
+            <>
+              <Eyebrow>Needs attention</Eyebrow>
+              {needsAttentionGroupSections.map((section) => {
+                const { text: amountText, tone } = groupAmount(section);
+                return (
+                  <MoneyRow
+                    key={section.group.id}
+                    avatar={<GroupIconBadge group={section.group} size="sm" />}
+                    title={section.group.name}
+                    subtitle={groupSubtitle(section)}
+                    amount={amountText}
+                    amountTone={tone}
+                    onPress={() =>
+                      router.push({ pathname: "/group/[id]", params: { id: section.group.id } })
+                    }
+                  />
+                );
+              })}
+            </>
+          )}
+
+          {allGroupSections && allGroupSections.length > 0 && (
+            <>
+              <Eyebrow>All groups</Eyebrow>
+              {allGroupSections.map((section) => {
+                const { text: amountText, tone } = groupAmount(section);
+                return (
+                  <MoneyRow
+                    key={section.group.id}
+                    avatar={<GroupIconBadge group={section.group} size="sm" />}
+                    title={section.group.name}
+                    subtitle={groupSubtitle(section)}
+                    amount={amountText}
+                    amountTone={tone}
+                    onPress={() =>
+                      router.push({ pathname: "/group/[id]", params: { id: section.group.id } })
+                    }
+                  />
+                );
+              })}
+            </>
+          )}
+
+          {hasSearch && !needsAttentionGroupSections?.length && !allGroupSections?.length && (
+            <CenteredState>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_400Regular",
+                  fontSize: 15,
+                  color: color.muted,
+                }}
+              >
+                No groups match your search.
+              </Text>
+            </CenteredState>
+          )}
+        </>
+      ) : (
+        <>
+          {pendingRequests.length > 0 && (
+            <RequestsSection
+              requests={pendingRequests}
+              onAccept={handleAccept}
+              onDecline={handleDecline}
+            />
+          )}
+
+          {CLASSIFICATION_ORDER.map((classification) => {
+            const rows =
+              snapshot.data?.personSections?.filter((s) => s.classification === classification) ??
+              [];
+            if (rows.length === 0) return null;
+            return (
+              <View key={classification}>
+                <Eyebrow>{CLASSIFICATION_LABELS[classification]}</Eyebrow>
+                {rows.map((section) => {
+                  const { text: amountText, tone } = personAmount(section);
+                  return (
+                    <MoneyRow
+                      key={section.user.id}
+                      avatar={<AppUserAvatar user={section.user} size="sm" />}
+                      title={section.user.name}
+                      subtitle={personSubtitle(section)}
+                      amount={amountText}
+                      amountTone={tone}
+                      onPress={() =>
+                        router.push({ pathname: "/friend/[id]", params: { id: section.user.id } })
+                      }
+                    />
+                  );
+                })}
+              </View>
+            );
+          })}
+
+          {hasSearch &&
+            (!snapshot.data?.personSections || snapshot.data.personSections.length === 0) && (
+              <CenteredState>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 15,
+                    color: color.muted,
+                  }}
+                >
+                  No people match your search.
+                </Text>
+              </CenteredState>
+            )}
+        </>
       )}
 
       <View style={{ marginTop: 20 }}>
@@ -207,5 +373,99 @@ export default function CirclesScreen(): JSX.Element {
         />
       </View>
     </CoralScreen>
+  );
+}
+
+function RequestsSection({
+  requests,
+  onAccept,
+  onDecline,
+}: {
+  requests: RequestItem[];
+  onAccept: (friendshipId: string) => void;
+  onDecline: (friendshipId: string) => void;
+}) {
+  const { color } = useUI();
+
+  return (
+    <View style={{ marginBottom: 8 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 6,
+          marginTop: 28,
+          marginBottom: 10,
+        }}
+      >
+        <UserPlus size={16} color={color.muted} />
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_600SemiBold",
+            fontSize: 14,
+            letterSpacing: 0.14,
+            color: color.muted,
+          }}
+        >
+          Friend requests
+        </Text>
+      </View>
+      {requests.map((req) => (
+        <View
+          key={req.friendship.id}
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            minHeight: 68,
+            paddingVertical: 10,
+            paddingHorizontal: 2,
+            gap: 12,
+          }}
+        >
+          <AppUserAvatar user={req.user} size="sm" />
+          <View style={{ minWidth: 0, flex: 1 }}>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 16,
+                letterSpacing: -0.08,
+                color: color.text,
+              }}
+            >
+              {req.user.name}
+            </Text>
+            <Text
+              numberOfLines={1}
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 13,
+                lineHeight: 18.85,
+                color: color.muted,
+                marginTop: 3,
+              }}
+            >
+              Wants to be friends
+            </Text>
+          </View>
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            <View style={{ width: 90 }}>
+              <CoralButton
+                label="Accept"
+                variant="primary"
+                onPress={() => onAccept(req.friendship.id)}
+              />
+            </View>
+            <View style={{ width: 90 }}>
+              <CoralButton
+                label="Decline"
+                variant="secondary"
+                onPress={() => onDecline(req.friendship.id)}
+              />
+            </View>
+          </View>
+        </View>
+      ))}
+    </View>
   );
 }

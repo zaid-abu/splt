@@ -10,7 +10,7 @@ import { useCallback, useState, type JSX } from "react";
 import { useNotifications } from "@/features/notifications/queries/useNotifications";
 import type { AppNotification } from "@/types";
 import { useAuth } from "@/context/AppContext";
-import { useAcceptFriend, useRejectFriend } from "@/features/friends/queries/useFriends";
+import { useTransitionFriendship } from "@/features/friends/queries/useFriends";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { FocusAwareView } from "@/components/animations/PageAnimator";
 import { ErrorState } from "@/components/ui/ErrorState";
@@ -29,8 +29,7 @@ export default function NotificationsScreen(): JSX.Element {
     refetch,
   } = useNotifications(currentUser?.id);
   const [refreshing, setRefreshing] = useState(false);
-  const { mutateAsync: acceptFriend, isPending: isAccepting } = useAcceptFriend();
-  const { mutateAsync: rejectFriend, isPending: isRejecting } = useRejectFriend();
+  const { mutateAsync: transitionFriendship, isPending: isTransitioning } = useTransitionFriendship();
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -38,21 +37,22 @@ export default function NotificationsScreen(): JSX.Element {
     setRefreshing(false);
   }, [refetch]);
 
-  const handleAccept = async (friendshipId: string) => {
+  const handleAccept = async (counterpartyId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await acceptFriend({ friendshipId });
+    await transitionFriendship({ counterpartyId, action: "accept" });
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
 
-  const handleReject = async (friendshipId: string) => {
+  const handleReject = async (counterpartyId: string) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    await rejectFriend({ friendshipId });
+    await transitionFriendship({ counterpartyId, action: "decline" });
   };
 
   const renderItem = ({ item, index }: { item: AppNotification; index: number }) => {
-    if (item.type === "friend_request" && item.data) {
-      const friendship = item.data;
-      const isWorking = isAccepting || isRejecting;
+    if (item.kind === "friend_request" && item.data) {
+      const notificationData = item.data as Record<string, unknown> | undefined;
+      const actorId = notificationData?.actor_id as string | undefined;
+      const isWorking = isTransitioning;
 
       return (
         <View
@@ -63,7 +63,26 @@ export default function NotificationsScreen(): JSX.Element {
           }}
         >
           <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 16 }}>
-            <AppUserAvatar user={friendship.friendUser!} size="md" />
+              <AppUserAvatar
+                user={
+                  {
+                    id: actorId ?? "unknown",
+                    name: item.subtitle.replace(" wants to be your friend.", ""),
+                    email: "",
+                    initials: item.subtitle.charAt(0) ?? "?",
+                    defaultCurrency: "USD",
+                    setupState: "complete",
+                  } as {
+                    id: string;
+                    name: string;
+                    email: string;
+                    initials: string;
+                    defaultCurrency: string;
+                    setupState: "profile_pending" | "activation_pending" | "complete";
+                  }
+                }
+                size="md"
+              />
             <View style={{ flex: 1, marginLeft: 16 }}>
               <Typography
                 style={{
@@ -87,20 +106,20 @@ export default function NotificationsScreen(): JSX.Element {
             </View>
           </View>
           <View style={{ flexDirection: "row", gap: 12 }}>
-            <Pressable
-              onPress={() => handleAccept(friendship.id)}
-              disabled={isWorking}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 48,
-                borderRadius: radius.pill,
-                backgroundColor: color.text,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed || isWorking ? 0.7 : 1,
-              })}
-            >
-              {isAccepting ? (
+              <Pressable
+                  onPress={() => handleAccept(actorId ?? "")}
+                  disabled={isWorking}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    height: 48,
+                    borderRadius: radius.pill,
+                    backgroundColor: color.text,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: pressed || isWorking ? 0.7 : 1,
+                  })}
+                >
+                  {isTransitioning ? (
                 <ActivityIndicator color={color.textInverse} />
               ) : (
                 <Typography
@@ -115,22 +134,22 @@ export default function NotificationsScreen(): JSX.Element {
               )}
             </Pressable>
 
-            <Pressable
-              onPress={() => handleReject(friendship.id)}
-              disabled={isWorking}
-              style={({ pressed }) => ({
-                flex: 1,
-                height: 48,
-                borderRadius: radius.pill,
-                backgroundColor: "transparent",
-                borderWidth: 1,
-                borderColor: color.border,
-                alignItems: "center",
-                justifyContent: "center",
-                opacity: pressed || isWorking ? 0.5 : 1,
-              })}
-            >
-              {isRejecting ? (
+              <Pressable
+                  onPress={() => handleReject(actorId ?? "")}
+                  disabled={isWorking}
+                  style={({ pressed }) => ({
+                    flex: 1,
+                    height: 48,
+                    borderRadius: radius.pill,
+                    backgroundColor: "transparent",
+                    borderWidth: 1,
+                    borderColor: color.border,
+                    alignItems: "center",
+                    justifyContent: "center",
+                    opacity: pressed || isWorking ? 0.5 : 1,
+                  })}
+                >
+                  {isTransitioning ? (
                 <ActivityIndicator color={color.text} />
               ) : (
                 <Typography

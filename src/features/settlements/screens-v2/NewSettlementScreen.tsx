@@ -1,7 +1,7 @@
-import type { JSX } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
-import { useRouter } from "expo-router";
-import { CircleCheckBig } from "lucide-react-native";
+import { useMemo, type JSX } from "react"
+import { ActivityIndicator, Text, View } from "react-native"
+import { useRouter } from "expo-router"
+import { CircleCheckBig } from "lucide-react-native"
 
 import {
   CoralButton,
@@ -10,26 +10,74 @@ import {
   EmptyState,
   LargeTitle,
   MoneyRow,
-} from "@/components/coral";
-import { formatAmount } from "@/components/ui/AmountDisplay";
-import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { useUI } from "@/components/ui";
-import { useFriendsList } from "@/features/friends/hooks/useFriendsList";
-import { SHELL_HREFS, settlementHref } from "@/features/navigation/shell";
+} from "@/components/coral"
+import { AppUserAvatar } from "@/components/ui/MemberAvatar"
+import { useUI } from "@/components/ui"
+import { SHELL_HREFS } from "@/features/navigation/shell"
+import { useOpenBalances } from "@/features/balances/queries/useBalances"
+import { useAuth } from "@/context/AppContext"
+import type { OpenBalance } from "@/features/money/types"
+import { formatAmount } from "@/components/ui/AmountDisplay"
+
+type CounterpartyGroup = {
+  counterpartyId: string
+  counterpartyName: string
+  counterpartyAvatar?: string
+  entries: OpenBalance[]
+}
 
 export default function NewSettlementScreen(): JSX.Element {
-  const router = useRouter();
-  const { color } = useUI();
-  const { friendRows, isLoading, isError, refetchAll, preferredCurrency } = useFriendsList();
-  const candidates = friendRows.filter((row) => Math.abs(row.balance) > 0.005);
+  const router = useRouter()
+  const { color } = useUI()
+  const { currentUser } = useAuth()
+  const { data: balances, isLoading, isError, refetch } = useOpenBalances(currentUser?.id)
+
+  const candidates = useMemo(() => {
+    if (!balances) return []
+    const grouped = new Map<string, OpenBalance[]>()
+    for (const b of balances) {
+      if (b.signedAmountMinor === 0) continue
+      const existing = grouped.get(b.counterpartyId) || []
+      existing.push(b)
+      grouped.set(b.counterpartyId, existing)
+    }
+    const groups: CounterpartyGroup[] = []
+    for (const [counterpartyId, entries] of grouped) {
+      groups.push({
+        counterpartyId,
+        counterpartyName: entries[0].counterpartyId,
+        entries,
+      })
+    }
+    return groups
+  }, [balances])
 
   const goBack = () => {
     if (router.canGoBack()) {
-      router.back();
+      router.back()
     } else {
-      router.replace(SHELL_HREFS.home);
+      router.replace(SHELL_HREFS.home)
     }
-  };
+  }
+
+  const handleSelectCounterparty = (group: CounterpartyGroup) => {
+    if (group.entries.length === 1) {
+      const entry = group.entries[0]
+      router.replace({
+        pathname: "/settle/[id]",
+        params: {
+          id: group.counterpartyId,
+          contextType: entry.context.type,
+          ...(entry.context.type === "group"
+            ? { groupId: entry.context.groupId }
+            : { friendshipId: entry.context.friendshipId }),
+          currency: entry.currency,
+          amountMinor: String(Math.abs(entry.signedAmountMinor)),
+          isOwedToYou: entry.signedAmountMinor > 0 ? "true" : "false",
+        },
+      })
+    }
+  }
 
   return (
     <CoralScreen>
@@ -58,7 +106,7 @@ export default function NewSettlementScreen(): JSX.Element {
           >
             Could not load balances.
           </Text>
-          <CoralButton label="Try again" variant="secondary" onPress={refetchAll} />
+          <CoralButton label="Try again" variant="secondary" onPress={() => refetch()} />
         </View>
       ) : isLoading ? (
         <View style={{ minHeight: 280, alignItems: "center", justifyContent: "center" }}>
@@ -79,25 +127,27 @@ export default function NewSettlementScreen(): JSX.Element {
           </View>
         </EmptyState>
       ) : (
-        candidates.map(({ friend, balance }) => {
-          const isOwed = balance > 0;
+        candidates.map((group) => {
+          const total = group.entries.reduce((sum, e) => sum + e.signedAmountMinor, 0)
+          const isOwed = total > 0
+          const currency = group.entries[0].currency
           return (
             <MoneyRow
-              key={friend.id}
-              avatar={<AppUserAvatar user={friend} size="sm" />}
-              title={friend.name}
+              key={group.counterpartyId}
+              avatar={<AppUserAvatar user={{ id: group.counterpartyId, name: group.counterpartyName, initials: group.counterpartyName.charAt(0).toUpperCase() }} size="sm" />}
+              title={group.counterpartyName}
               subtitle={
                 isOwed
-                  ? `${friend.name.split(" ")[0]} pays you`
-                  : `You pay ${friend.name.split(" ")[0]}`
+                  ? `${group.counterpartyName.split(" ")[0]} pays you`
+                  : `You pay ${group.counterpartyName.split(" ")[0]}`
               }
-              amount={formatAmount(Math.abs(balance), preferredCurrency.code)}
+              amount={formatAmount(Math.abs(total) / 100, currency)}
               amountTone={isOwed ? "positive" : "negative"}
-              onPress={() => router.replace(settlementHref(friend.id))}
+              onPress={() => handleSelectCounterparty(group)}
             />
-          );
+          )
         })
       )}
     </CoralScreen>
-  );
+  )
 }

@@ -11,6 +11,14 @@ export function useRecurringExpenses(userId: string | undefined) {
   });
 }
 
+export function useGroupRecurringExpenses(groupId: string | undefined) {
+  return useQuery({
+    queryKey: queryKeys.recurring.groupList(groupId!),
+    queryFn: () => recurringApi.fetchGroupRecurringExpenses(groupId!),
+    enabled: !!groupId,
+  });
+}
+
 export function useRecurringExpense(id: string | undefined) {
   return useQuery({
     queryKey: queryKeys.recurring.detail(id!),

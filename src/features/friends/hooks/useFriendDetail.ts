@@ -10,7 +10,7 @@ import { useUserExpenses } from "@/features/expenses/queries/useExpenses";
 import {
   useAllFriendships,
   useFriends,
-  useRemoveFriend,
+  useTransitionFriendship,
 } from "@/features/friends/queries/useFriends";
 import { useGroups } from "@/features/groups/queries/useGroups";
 import { useUserSettlements } from "@/features/settlements/queries/useSettlements";
@@ -60,7 +60,7 @@ export function useFriendDetail(friendId: string) {
     isError: isFriendshipsError,
     refetch: refetchFriendships,
   } = useAllFriendships(currentUser?.id);
-  const { mutateAsync: removeFriend } = useRemoveFriend();
+  const { mutateAsync: transitionFriendship } = useTransitionFriendship();
 
   const balances = useMemo(
     () =>
@@ -269,25 +269,28 @@ export function useFriendDetail(friendId: string) {
           text: "Remove",
           style: "destructive",
           onPress: async () => {
-            try {
-              await removeFriend({ friendshipId: directFriendship.id });
-              Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              toast.show({
-                label: "Friend removed",
-                description: `${friend.name} was removed from your direct friends.`,
-                variant: "success",
-                placement: "top",
-              });
-              router.replace("/people");
-            } catch (error) {
-              toast.show({
-                label: "Could not remove friend",
-                description: error instanceof Error ? error.message : "Please try again.",
-                variant: "danger",
-                placement: "top",
-              });
-            }
-          },
+              try {
+                await transitionFriendship({
+                  counterpartyId: friend.id,
+                  action: "remove",
+                });
+                Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                toast.show({
+                  label: "Friend removed",
+                  description: `${friend.name} was removed from your direct friends.`,
+                  variant: "success",
+                  placement: "top",
+                });
+                router.replace("/people");
+              } catch (error) {
+                toast.show({
+                  label: "Could not remove friend",
+                  description: error instanceof Error ? error.message : "Please try again.",
+                  variant: "danger",
+                  placement: "top",
+                });
+              }
+            },
         },
       ]
     );

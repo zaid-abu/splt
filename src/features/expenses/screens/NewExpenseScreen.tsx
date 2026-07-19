@@ -46,11 +46,10 @@ import { SplitMethodSelector } from "@/features/expenses/components/SplitMethodS
 import { ParticipantsEditor } from "@/features/expenses/components/ParticipantsEditor";
 
 export default function NewExpenseScreen(): JSX.Element {
-  const {
-    groupId: initialGroupId,
-    friendId: initialFriendId,
-    expenseId,
-  } = useLocalSearchParams<ExpenseNewRouteParams>();
+  const rawParams = useLocalSearchParams<ExpenseNewRouteParams>();
+  const initialGroupId = rawParams.groupId;
+  const initialFriendId = rawParams.friendId;
+  const expenseId = (rawParams as Record<string, string | undefined>).expenseId;
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { currentUser } = useAuth();

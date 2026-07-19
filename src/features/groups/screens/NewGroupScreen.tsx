@@ -16,7 +16,7 @@ import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useCreateGroup } from "@/features/groups/queries/useGroups";
-import { useFriends, useAddFriend } from "@/features/friends/queries/useFriends";
+import { useFriends } from "@/features/friends/queries/useFriends";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useAuth } from "@/context/AppContext";
 import type { Currency, User } from "@/types";
@@ -58,7 +58,6 @@ export default function NewGroupScreen(): JSX.Element {
   const { isDarkMode } = useTheme();
   const { mutateAsync: createGroup } = useCreateGroup();
   const { data: friends = [] } = useFriends(currentUser?.id);
-  const { mutateAsync: addFriend } = useAddFriend();
   const { toast } = useAppToast();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -116,37 +115,15 @@ export default function NewGroupScreen(): JSX.Element {
 
     setLoading(true);
     try {
-      const friendIds = new Set(friends.map((f) => f.id));
-      const usersToAddNow = selectedUsers.filter((u) => friendIds.has(u.id));
-      const strangersToInvite = selectedUsers.filter((u) => !friendIds.has(u.id));
-
       const group = await createGroup({
+        clientOperationId: `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
         name: name.trim(),
-        description: undefined,
         icon,
         currency: currency.code,
-        createdBy: currentUser.id,
-        members: [
-          { userId: currentUser.id, user: currentUser, balance: 0 },
-          ...usersToAddNow.map((u) => ({ userId: u.id, user: u, balance: 0 })),
-        ],
+        inviteeIds: selectedUsers.map((u) => u.id),
       });
 
-      for (const stranger of strangersToInvite) {
-        await addFriend({ userId: currentUser.id, friendId: stranger.id, groupId: group.id });
-      }
-
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-      if (strangersToInvite.length > 0) {
-        toast.show({
-          label: "Requests Sent",
-          description:
-            "Non-friends will be added to the group once they accept your friend request.",
-          variant: "success",
-          placement: "top",
-        });
-      }
 
       isNavigating.current = true;
       router.replace("/home");

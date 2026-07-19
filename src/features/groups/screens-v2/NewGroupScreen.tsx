@@ -1,119 +1,101 @@
-import { useState, useRef, useCallback, useMemo } from "react";
-import { View, ScrollView, Pressable, Text, Keyboard } from "react-native";
-import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import * as Haptics from "expo-haptics";
-import * as icons from "lucide-react-native";
-import { useRouter } from "expo-router";
+import { useState, useRef } from "react"
+import { View, ScrollView, Pressable, Text, Keyboard } from "react-native"
+import { BottomSheetModal } from "@gorhom/bottom-sheet"
+import * as Haptics from "expo-haptics"
+import * as icons from "lucide-react-native"
+import { useRouter, useLocalSearchParams } from "expo-router"
 
-import { CoralScreen } from "@/components/coral/CoralScreen";
-import { CoralTopBar } from "@/components/coral/CoralTopBar";
-import { CoralField } from "@/components/coral/CoralField";
-import { CoralButton } from "@/components/coral/CoralButton";
-import { CoralSelect, type SelectOption } from "@/components/coral/CoralSelect";
-import { Eyebrow } from "@/components/coral/Eyebrow";
-import { useCoralColors } from "@/components/coral/useCoral";
-import { MoneyRow } from "@/components/coral/MoneyRow";
-import { CoralSnackbar } from "@/components/coral/CoralSnackbar";
+import { CoralScreen } from "@/components/coral/CoralScreen"
+import { CoralTopBar } from "@/components/coral/CoralTopBar"
+import { CoralField } from "@/components/coral/CoralField"
+import { CoralButton } from "@/components/coral/CoralButton"
+import { CoralSelect, type SelectOption } from "@/components/coral/CoralSelect"
+import { Eyebrow } from "@/components/coral/Eyebrow"
+import { useCoralColors } from "@/components/coral/useCoral"
+import { MoneyRow } from "@/components/coral/MoneyRow"
+import { CoralSnackbar } from "@/components/coral/CoralSnackbar"
 
-import { useCreateGroup } from "@/features/groups/queries/useGroups";
-import { useFriends, useAddFriend } from "@/features/friends/queries/useFriends";
-import { useAuth } from "@/context/AppContext";
-import { useUIStore } from "@/store/useUIStore";
-import { useAppToast } from "@/hooks/useAppToast";
-import { AppUserAvatar } from "@/components/ui/MemberAvatar";
-import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
-import { GROUP_ICONS } from "@/constants/icons";
-import type { User } from "@/types";
-import { CURRENCIES } from "@/types";
+import { useCreateGroup } from "@/features/groups/queries/useGroups"
+import { useFriends } from "@/features/friends/queries/useFriends"
+import { useAuth } from "@/context/AppContext"
+import { useUIStore } from "@/store/useUIStore"
+import { useAppToast } from "@/hooks/useAppToast"
+import { AppUserAvatar } from "@/components/ui/MemberAvatar"
+import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet"
+import { GROUP_ICONS } from "@/constants/icons"
+import type { User } from "@/types"
+import { CURRENCIES } from "@/types"
 
 export default function NewGroupScreen() {
-  const router = useRouter();
-  const coral = useCoralColors();
-  const { currentUser } = useAuth();
-  const { mutateAsync: createGroup } = useCreateGroup();
-  const { data: friends = [] } = useFriends(currentUser.id);
-  const { mutateAsync: addFriend } = useAddFriend();
-  const { toast } = useAppToast();
-  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
+  const router = useRouter()
+  const { resume } = useLocalSearchParams<{ resume?: string }>()
+  const coral = useCoralColors()
+  const { currentUser } = useAuth()
+  const { mutateAsync: createGroup, isPending } = useCreateGroup()
+  const { data: friends = [] } = useFriends(currentUser.id)
+  const { toast } = useAppToast()
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency)
 
-  const searchSheetRef = useRef<BottomSheetModal>(null);
+  const searchSheetRef = useRef<BottomSheetModal>(null)
 
-  const [name, setName] = useState("");
-  const [nameError, setNameError] = useState("");
-  const [icon, setIcon] = useState("Home");
-  const [currencyCode, setCurrencyCode] = useState(preferredCurrency.code ?? "USD");
-  const [loading, setLoading] = useState(false);
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
-  const [snackbar, setSnackbar] = useState({ visible: false, message: "" });
+  const [name, setName] = useState("")
+  const [nameError, setNameError] = useState("")
+  const [icon, setIcon] = useState("Home")
+  const [currencyCode, setCurrencyCode] = useState(preferredCurrency.code ?? "USD")
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([])
+  const [snackbar, setSnackbar] = useState({ visible: false, message: "" })
+
+  const operationId = useRef(crypto.randomUUID())
 
   const handleAddUser = (user: User) => {
     if (!selectedUsers.find((u) => u.id === user.id)) {
-      setSelectedUsers([...selectedUsers, user]);
+      setSelectedUsers([...selectedUsers, user])
     }
-    searchSheetRef.current?.dismiss();
-  };
+    searchSheetRef.current?.dismiss()
+  }
 
   const handleRemoveUser = (userId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setSelectedUsers(selectedUsers.filter((u) => u.id !== userId));
-  };
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    setSelectedUsers(selectedUsers.filter((u) => u.id !== userId))
+  }
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      setNameError("Group name is required");
-      return;
+      setNameError("Group name is required")
+      return
     }
 
-    setLoading(true);
     try {
-      const friendIds = new Set(friends.map((f) => f.id));
-      const usersToAddNow = selectedUsers.filter((u) => friendIds.has(u.id));
-      const strangersToInvite = selectedUsers.filter((u) => !friendIds.has(u.id));
-
       const group = await createGroup({
+        clientOperationId: operationId.current,
         name: name.trim(),
-        description: undefined,
         icon,
         currency: currencyCode,
-        createdBy: currentUser.id,
-        members: [
-          { userId: currentUser.id, user: currentUser, balance: 0 },
-          ...usersToAddNow.map((u) => ({ userId: u.id, user: u, balance: 0 })),
-        ],
-      });
+        inviteeIds: selectedUsers.map((u) => u.id),
+      })
 
-      for (const stranger of strangersToInvite) {
-        await addFriend({ userId: currentUser.id, friendId: stranger.id, groupId: group.id });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      operationId.current = crypto.randomUUID()
+
+      if (resume === "expense") {
+        router.replace({ pathname: "/expense/new", params: { groupId: group.id } })
+      } else {
+        router.replace(`/group/${group.id}`)
       }
-
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-      if (strangersToInvite.length > 0) {
-        toast.show({
-          label: "Requests Sent",
-          description:
-            "Non-friends will be added to the group once they accept your friend request.",
-          variant: "success",
-          placement: "top",
-        });
-      }
-
-      router.replace(`/group/${group.id}`);
     } catch {
       toast.show({
         label: "Error",
         description: "Failed to create group. Please try again.",
         variant: "danger",
         placement: "top",
-      });
-      setLoading(false);
+      })
     }
-  };
+  }
 
   const currencyOptions: SelectOption[] = CURRENCIES.map((c) => ({
     label: `${c.symbol} ${c.code}`,
     value: c.code,
-  }));
+  }))
 
   return (
     <CoralScreen contentContainerStyle={{ gap: 12 }}>
@@ -124,8 +106,8 @@ export default function NewGroupScreen() {
         placeholder="e.g. Day trip to Warsaw"
         value={name}
         onChangeText={(v) => {
-          setNameError("");
-          setName(v);
+          setNameError("")
+          setName(v)
         }}
         error={nameError}
         autoCapitalize="words"
@@ -138,14 +120,14 @@ export default function NewGroupScreen() {
         contentContainerStyle={{ gap: 10 }}
       >
         {GROUP_ICONS.map((i) => {
-          const Ico = (icons as any)[i] || icons.HelpCircle;
-          const isSelected = icon === i;
+          const Ico = (icons as any)[i] || icons.HelpCircle
+          const isSelected = icon === i
           return (
             <Pressable
               key={i}
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                setIcon(i);
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+                setIcon(i)
               }}
             >
               <View
@@ -167,7 +149,7 @@ export default function NewGroupScreen() {
                 />
               </View>
             </Pressable>
-          );
+          )
         })}
       </ScrollView>
 
@@ -226,8 +208,8 @@ export default function NewGroupScreen() {
           label="+ Add participant"
           variant="secondary"
           onPress={() => {
-            Keyboard.dismiss();
-            searchSheetRef.current?.present();
+            Keyboard.dismiss()
+            searchSheetRef.current?.present()
           }}
         />
       </View>
@@ -237,8 +219,8 @@ export default function NewGroupScreen() {
       <CoralButton
         label="Create group"
         onPress={handleCreate}
-        disabled={!name.trim() || loading}
-        loading={loading}
+        disabled={!name.trim() || isPending}
+        loading={isPending}
       />
 
       <Text
@@ -266,5 +248,5 @@ export default function NewGroupScreen() {
         onAction={() => setSnackbar({ visible: false, message: "" })}
       />
     </CoralScreen>
-  );
+  )
 }

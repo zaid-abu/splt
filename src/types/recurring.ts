@@ -17,6 +17,7 @@ export interface RecurringExpense {
   paidByUserId: string;
   title: string;
   amount: number | null;
+  amountMinor?: number;
   currencyCode: string;
   splitMethod: RecurringSplitMethod;
   splitConfig: RecurringSplitConfig | null;

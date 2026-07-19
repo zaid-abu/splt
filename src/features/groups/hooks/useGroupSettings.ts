@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "expo-router";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
@@ -6,17 +6,20 @@ import { useAuth } from "@/context/AppContext";
 import { useUIStore } from "@/store/useUIStore";
 import {
   useGroups,
-  useUpdateGroup,
-  useDeleteGroup,
-  useAddGroupMembers,
+  useUpdateGroupSettings,
+  useArchiveGroup,
+  useInviteMembers,
   useRemoveGroupMember,
+  useLeaveGroup,
 } from "@/features/groups/queries/useGroups";
 import { useGroupExpenses } from "@/features/expenses/queries/useExpenses";
 import { useGroupSettlements } from "@/features/settlements/queries/useSettlements";
-import { useFriends, useAddFriend } from "@/features/friends/queries/useFriends";
+import { useFriends } from "@/features/friends/queries/useFriends";
 import * as balancesUtil from "@/features/settlements/utils/balances";
 import { useAppToast } from "@/hooks/useAppToast";
+import { getGroupPermissions } from "@/features/permissions/contracts";
 import type { Group, SplitMethod } from "@/types";
+import type { GroupPermissions } from "@/features/permissions/contracts";
 
 export interface UseGroupSettingsReturn {
   group: Group | undefined;
@@ -34,10 +37,15 @@ export interface UseGroupSettingsReturn {
   setSimplifyDebts: (v: boolean) => void;
   defaultSplitMethod: SplitMethod;
   setDefaultSplitMethod: (v: SplitMethod) => void;
+  newExpenseAlerts: boolean;
+  setNewExpenseAlerts: (v: boolean) => void;
   loading: boolean;
   isLoading: boolean;
   friends: any[];
   balances: Map<string, number>;
+  permissions: GroupPermissions | null;
+  currentMember: Group["members"][number] | null;
+  blockingBalances: { userId: string; userName: string; amount: number }[];
   deleteSheetRef: React.RefObject<BottomSheetModal | null>;
   leaveSheetRef: React.RefObject<BottomSheetModal | null>;
   removeMemberSheetRef: React.RefObject<BottomSheetModal | null>;
@@ -57,31 +65,30 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
   const { currentUser } = useAuth();
   const { toast } = useAppToast();
 
-  const { mutateAsync: updateGroup } = useUpdateGroup();
-  const { mutateAsync: deleteGroup } = useDeleteGroup();
+  const { mutateAsync: updateGroupSettings } = useUpdateGroupSettings();
+  const { mutateAsync: archiveGroup } = useArchiveGroup();
   const { mutateAsync: removeGroupMember } = useRemoveGroupMember();
-  const { mutateAsync: addGroupMembers } = useAddGroupMembers();
+  const { mutateAsync: inviteMembers } = useInviteMembers();
+  const { mutateAsync: leaveGroup } = useLeaveGroup();
 
   const { data: groups = [] } = useGroups(currentUser?.id);
   const { data: expenses = [], isLoading: isLoadingExpenses } = useGroupExpenses(groupId);
   const { data: settlements = [], isLoading: isLoadingSettlements } = useGroupSettlements(groupId);
   const { data: friends = [], isLoading: isLoadingFriends } = useFriends(currentUser?.id);
-  const { mutateAsync: addFriend } = useAddFriend();
 
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const convertCurrency = useUIStore((s) => s.convertCurrency);
 
   const group = groups.find((item) => item.id === groupId);
 
-  const [name, setName] = useState(group?.name ?? "");
+  const [name, setName] = useState("");
   const [nameError, setNameError] = useState("");
-  const [description, setDescription] = useState(group?.description ?? "");
-  const [icon, setIcon] = useState(group?.icon ?? "Home");
-  const [currencyCode, setCurrencyCode] = useState(group?.currency ?? "USD");
-  const [simplifyDebts, setSimplifyDebts] = useState(group?.simplifyDebts ?? false);
-  const [defaultSplitMethod, setDefaultSplitMethod] = useState<SplitMethod>(
-    (group as any)?.defaultSplitMethod ?? "equal"
-  );
+  const [description, setDescription] = useState("");
+  const [icon, setIcon] = useState("Home");
+  const [currencyCode, setCurrencyCode] = useState("USD");
+  const [simplifyDebts, setSimplifyDebts] = useState(false);
+  const [defaultSplitMethod, setDefaultSplitMethod] = useState<SplitMethod>("equal");
+  const [newExpenseAlerts, setNewExpenseAlerts] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const deleteSheetRef = useRef<BottomSheetModal>(null);
@@ -89,6 +96,99 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
   const [memberToRemove, setMemberToRemove] = useState<{ id: string; name: string } | null>(null);
   const removeMemberSheetRef = useRef<BottomSheetModal>(null);
   const searchSheetRef = useRef<BottomSheetModal>(null);
+
+  const initializedForGroupId = useRef<string | null>(null);
+  const formTouched = useRef(false);
+
+  useEffect(() => {
+    if (!group) return;
+    if (initializedForGroupId.current === group.id) return;
+    if (formTouched.current) return;
+
+    initializedForGroupId.current = group.id;
+    setName(group.name ?? "");
+    setNameError("");
+    setDescription(group.description ?? "");
+    setIcon(group.icon ?? "Home");
+    setCurrencyCode(group.currency ?? "USD");
+    setSimplifyDebts(group.simplifyDebts ?? false);
+    setDefaultSplitMethod((group as any)?.defaultSplitMethod ?? "equal");
+  }, [group]);
+
+  const markTouched = useCallback(() => {
+    formTouched.current = true;
+  }, []);
+
+  const handleSetName = useCallback(
+    (v: string) => {
+      markTouched();
+      setNameError("");
+      setName(v);
+    },
+    [markTouched]
+  );
+
+  const handleSetDescription = useCallback(
+    (v: string) => {
+      markTouched();
+      setDescription(v);
+    },
+    [markTouched]
+  );
+
+  const handleSetIcon = useCallback(
+    (v: string) => {
+      markTouched();
+      setIcon(v);
+    },
+    [markTouched]
+  );
+
+  const handleSetCurrencyCode = useCallback(
+    (v: string) => {
+      markTouched();
+      setCurrencyCode(v);
+    },
+    [markTouched]
+  );
+
+  const handleSetSimplifyDebts = useCallback(
+    (v: boolean) => {
+      markTouched();
+      setSimplifyDebts(v);
+    },
+    [markTouched]
+  );
+
+  const handleSetDefaultSplitMethod = useCallback(
+    (v: SplitMethod) => {
+      markTouched();
+      setDefaultSplitMethod(v);
+    },
+    [markTouched]
+  );
+
+  const handleSetNewExpenseAlerts = useCallback(
+    (v: boolean) => {
+      markTouched();
+      setNewExpenseAlerts(v);
+    },
+    [markTouched]
+  );
+
+  const currentMember = useMemo(() => {
+    if (!group || !currentUser) return null;
+    return group.members.find((m) => m.userId === currentUser.id) ?? null;
+  }, [group, currentUser]);
+
+  const permissions = useMemo((): GroupPermissions | null => {
+    if (!group || !currentUser) return null;
+    return getGroupPermissions({
+      currentUserId: currentUser.id,
+      createdBy: group.createdBy,
+      memberIds: group.members.map((m) => m.userId),
+    });
+  }, [group, currentUser]);
 
   const balances = useMemo(
     () =>
@@ -103,6 +203,24 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
     [groupId, expenses, settlements, group, preferredCurrency, convertCurrency]
   );
 
+  const blockingBalances = useMemo(() => {
+    if (!group) return [];
+    const result: { userId: string; userName: string; amount: number }[] = [];
+    for (const [userId, amount] of balances) {
+      if (Math.abs(amount) > 0.01) {
+        const member = group.members.find((m) => m.userId === userId);
+        result.push({ userId, userName: member?.user?.name ?? userId, amount });
+      }
+    }
+    return result;
+  }, [balances, group]);
+
+  useEffect(() => {
+    if (!currentMember) return;
+    if (initializedForGroupId.current !== group?.id) return;
+    setNewExpenseAlerts(currentMember.newExpenseAlerts ?? false);
+  }, [currentMember, group?.id]);
+
   const isLoading = isLoadingExpenses || isLoadingSettlements || isLoadingFriends;
 
   const handleSave = useCallback(async () => {
@@ -112,19 +230,23 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
     }
     setLoading(true);
     try {
-      await updateGroup({
-        id: group!.id,
-        updates: {
-          name: name.trim(),
-          description: description.trim() || undefined,
-          icon,
-          currency: currencyCode,
-          simplifyDebts,
-          defaultSplitMethod,
-        },
+      await updateGroupSettings({
+        groupId: group!.id,
+        name: name.trim(),
+        icon,
+        currency: currencyCode,
+        newExpenseAlerts,
       });
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.back();
+      formTouched.current = false;
+      initializedForGroupId.current = null;
+      toast.show({
+        label: "Saved",
+        description: "Group settings updated.",
+        variant: "success",
+        placement: "top",
+      });
+      setLoading(false);
     } catch {
       toast.show({
         label: "Error",
@@ -134,18 +256,7 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
       });
       setLoading(false);
     }
-  }, [
-    name,
-    description,
-    icon,
-    currencyCode,
-    simplifyDebts,
-    defaultSplitMethod,
-    group,
-    updateGroup,
-    router,
-    toast,
-  ]);
+  }, [name, icon, currencyCode, newExpenseAlerts, group, updateGroupSettings, toast]);
 
   const handleRemoveMemberClick = useCallback(
     (userId: string, userName: string) => {
@@ -192,26 +303,14 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
       if (!group) return;
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 
-      const isFriend = friends.some((f) => f.id === user.id);
-
       try {
-        if (isFriend) {
-          await addGroupMembers({ groupId: group.id, userIds: [user.id] });
-          toast.show({
-            label: "Member Added",
-            description: `${user.name} was added to the group.`,
-            variant: "success",
-            placement: "top",
-          });
-        } else {
-          await addFriend({ userId: currentUser.id, friendId: user.id, groupId: group.id });
-          toast.show({
-            label: "Request Sent",
-            description: `Friend request sent to ${user.name}. They will be added to the group once accepted.`,
-            variant: "success",
-            placement: "top",
-          });
-        }
+        await inviteMembers({ groupId: group.id, userIds: [user.id] });
+        toast.show({
+          label: "Member Added",
+          description: `${user.name} was added to the group.`,
+          variant: "success",
+          placement: "top",
+        });
       } catch {
         toast.show({
           label: "Error",
@@ -221,14 +320,15 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
         });
       }
     },
-    [group, friends, addGroupMembers, addFriend, currentUser.id, toast]
+    [group, inviteMembers, toast]
   );
 
   const handleDeleteGroup = useCallback(async () => {
+    if (!group) return;
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     try {
-      await deleteGroup(group!.id);
-      router.replace("/home");
+      await archiveGroup(group.id);
+      router.replace("/circles?segment=groups");
     } catch {
       toast.show({
         label: "Error",
@@ -237,13 +337,14 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
         placement: "top",
       });
     }
-  }, [group, deleteGroup, router, toast]);
+  }, [group, archiveGroup, router, toast]);
 
   const handleLeaveGroup = useCallback(async () => {
+    if (!group) return;
     try {
-      await removeGroupMember({ groupId: group!.id, userId: currentUser.id });
+      await leaveGroup(group.id);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace("/home");
+      router.replace("/circles?segment=groups");
     } catch {
       toast.show({
         label: "Error",
@@ -252,7 +353,7 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
         placement: "top",
       });
     }
-  }, [group, removeGroupMember, currentUser.id, router, toast]);
+  }, [group, leaveGroup, router, toast]);
 
   const handleBack = useCallback(() => {
     router.back();
@@ -261,23 +362,28 @@ export function useGroupSettings(groupId: string): UseGroupSettingsReturn {
   return {
     group,
     name,
-    setName,
+    setName: handleSetName,
     nameError,
     setNameError,
     description,
-    setDescription,
+    setDescription: handleSetDescription,
     icon,
-    setIcon,
+    setIcon: handleSetIcon,
     currencyCode,
-    setCurrencyCode,
+    setCurrencyCode: handleSetCurrencyCode,
     simplifyDebts,
-    setSimplifyDebts,
+    setSimplifyDebts: handleSetSimplifyDebts,
     defaultSplitMethod,
-    setDefaultSplitMethod,
+    setDefaultSplitMethod: handleSetDefaultSplitMethod,
+    newExpenseAlerts,
+    setNewExpenseAlerts: handleSetNewExpenseAlerts,
     loading,
     isLoading,
     friends,
     balances,
+    permissions,
+    currentMember,
+    blockingBalances,
     deleteSheetRef,
     leaveSheetRef,
     removeMemberSheetRef,

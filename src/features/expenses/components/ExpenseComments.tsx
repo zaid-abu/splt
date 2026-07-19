@@ -1,17 +1,23 @@
 import type { JSX } from "react";
 import { useState } from "react";
-import { View, Pressable, TextInput, Text } from "react-native";
+import { View, Pressable, TextInput, Text, ActivityIndicator } from "react-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useUI } from "@/components/ui";
 import { MoneyRow, Eyebrow, useCoralColors } from "@/components/coral";
-import { useExpenseComments, useAddComment } from "@/features/expenses/queries/useComments";
+import { useAppToast } from "@/hooks/useAppToast";
+import {
+  useExpenseComments,
+  useAddComment,
+  useDeleteComment,
+} from "@/features/expenses/queries/useComments";
 
 interface ExpenseCommentsProps {
   expenseId: string;
   currentUserId: string;
+  groupCreatedBy?: string;
 }
 
 function fallbackUser(comment: any) {
@@ -34,25 +40,88 @@ function commentDate(createdAt: string) {
   });
 }
 
-export function ExpenseComments({ expenseId, currentUserId }: ExpenseCommentsProps): JSX.Element {
+export function ExpenseComments({
+  expenseId,
+  currentUserId,
+  groupCreatedBy,
+}: ExpenseCommentsProps): JSX.Element {
   const { color, radius } = useUI();
   const coral = useCoralColors();
+  const { toast } = useAppToast();
   const { data: comments = [], isLoading, isError, refetch } = useExpenseComments(expenseId);
   const { mutateAsync: addComment } = useAddComment();
+  const { mutateAsync: deleteComment } = useDeleteComment();
   const [text, setText] = useState("");
   const [sending, setSending] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const handleSend = async () => {
     if (!text.trim() || sending) return;
     setSending(true);
+    const currentText = text;
     try {
-      await addComment({ expenseId, userId: currentUserId, text: text.trim() });
+      await addComment({ expenseId, userId: currentUserId, text: currentText.trim() });
       setText("");
     } catch {
-      /* handled by query client */
+      setText(currentText);
+      toast.show({
+        label: "Failed to add comment",
+        description: "Please try again.",
+        variant: "danger",
+        placement: "top",
+      });
     }
     setSending(false);
   };
+
+  const handleDelete = async (commentId: string) => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setDeletingId(commentId);
+    try {
+      await deleteComment({ commentId, expenseId });
+    } catch {
+      /* handled by query client */
+    }
+    setDeletingId(null);
+  };
+
+  const canDeleteComment = (commentUserId: string) => {
+    if (commentUserId === currentUserId) return true;
+    if (groupCreatedBy && currentUserId === groupCreatedBy) return true;
+    return false;
+  };
+
+  if (isLoading) {
+    return (
+      <View style={{ marginBottom: 28 }}>
+        <Eyebrow style={{ marginTop: 0 }}>Comments</Eyebrow>
+        <View
+          style={{
+            backgroundColor: coral.surface, borderRadius: 16, borderWidth: 1,
+            borderColor: coral.border, paddingVertical: 24, alignItems: "center",
+          }}
+        >
+          <ActivityIndicator size="small" color={coral.muted} />
+        </View>
+      </View>
+    );
+  }
+
+  if (isError) {
+    return (
+      <View style={{ marginBottom: 28 }}>
+        <Eyebrow style={{ marginTop: 0 }}>Comments</Eyebrow>
+        <View
+          style={{
+            backgroundColor: coral.surface, borderRadius: 16, borderWidth: 1,
+            borderColor: coral.border, paddingVertical: 24, alignItems: "center",
+          }}
+        >
+          <ErrorState onRetry={() => refetch()} />
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={{ marginBottom: 28 }}>
@@ -66,11 +135,7 @@ export function ExpenseComments({ expenseId, currentUserId }: ExpenseCommentsPro
           overflow: "hidden",
         }}
       >
-        {isError ? (
-          <View style={{ paddingVertical: 24, alignItems: "center" }}>
-            <ErrorState onRetry={() => refetch()} />
-          </View>
-        ) : comments.length === 0 && !isLoading ? (
+        {comments.length === 0 ? (
           <View style={{ paddingVertical: 24, alignItems: "center" }}>
             <Text
               style={{
@@ -83,26 +148,49 @@ export function ExpenseComments({ expenseId, currentUserId }: ExpenseCommentsPro
             </Text>
           </View>
         ) : (
-          comments.map((comment) => (
-            <MoneyRow
-              key={comment.id}
-              avatar={<AppUserAvatar user={fallbackUser(comment)} size="sm" />}
-              title={comment.user?.name ?? "Unknown"}
-              subtitle={comment.text}
-              amount=""
-              rightElement={
-                <Text
-                  style={{
-                    fontSize: 11,
-                    color: color.muted,
-                    fontFamily: "InstrumentSans_500Medium",
-                  }}
-                >
-                  {commentDate(comment.created_at)}
-                </Text>
-              }
-            />
-          ))
+          comments.map((comment) => {
+            const isDeleting = deletingId === comment.id;
+            const showDelete = !isDeleting && canDeleteComment(comment.userId);
+
+            return (
+              <MoneyRow
+                key={comment.id}
+                avatar={<AppUserAvatar user={fallbackUser(comment)} size="sm" />}
+                title={comment.user?.name ?? "Unknown"}
+                subtitle={comment.text}
+                amount=""
+                rightElement={
+                  <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                    <Text
+                      style={{
+                        fontSize: 11,
+                        color: color.muted,
+                        fontFamily: "InstrumentSans_500Medium",
+                      }}
+                    >
+                      {commentDate(comment.created_at)}
+                    </Text>
+                    {showDelete && (
+                      <Pressable
+                        accessibilityRole="button"
+                        onPress={() => handleDelete(comment.id)}
+                        hitSlop={8}
+                        style={({ pressed }) => ({
+                          opacity: pressed ? 0.6 : 1,
+                          padding: 4,
+                        })}
+                      >
+                        <icons.Trash2 size={14} color={coral.negative} strokeWidth={1.5} />
+                      </Pressable>
+                    )}
+                    {isDeleting && (
+                      <ActivityIndicator size="small" color={coral.muted} />
+                    )}
+                  </View>
+                }
+              />
+            );
+          })
         )}
 
         <View
@@ -149,11 +237,15 @@ export function ExpenseComments({ expenseId, currentUserId }: ExpenseCommentsPro
               opacity: pressed ? 0.7 : 1,
             })}
           >
-            <icons.Send
-              size={16}
-              color={text.trim() ? color.textInverse : color.muted}
-              strokeWidth={2}
-            />
+            {sending ? (
+              <ActivityIndicator size="small" color={color.muted} />
+            ) : (
+              <icons.Send
+                size={16}
+                color={text.trim() ? color.textInverse : color.muted}
+                strokeWidth={2}
+              />
+            )}
           </Pressable>
         </View>
       </View>
