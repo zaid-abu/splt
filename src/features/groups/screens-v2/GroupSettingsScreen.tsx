@@ -113,7 +113,7 @@ export default function GroupSettingsScreen() {
     const lines = blockingBalances.map(
       (b) => `${b.userName}: ${b.amount > 0 ? "+" : ""}${b.amount.toFixed(2)}`
     )
-    return `\n\nOutstanding balances in ${group.currency}:\n${lines.join("\n")}`
+    return `\n\nOutstanding balances in ${group?.currency ?? ""}:\n${lines.join("\n")}`
   }
 
   return (

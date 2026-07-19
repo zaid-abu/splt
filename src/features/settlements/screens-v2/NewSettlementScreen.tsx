@@ -15,6 +15,7 @@ import { AppUserAvatar } from "@/components/ui/MemberAvatar"
 import { useUI } from "@/components/ui"
 import { SHELL_HREFS } from "@/features/navigation/shell"
 import { useOpenBalances } from "@/features/balances/queries/useBalances"
+import { useFriendsList } from "@/features/friends/hooks/useFriendsList"
 import { useAuth } from "@/context/AppContext"
 import type { OpenBalance } from "@/features/money/types"
 import { formatAmount } from "@/components/ui/AmountDisplay"
@@ -31,6 +32,15 @@ export default function NewSettlementScreen(): JSX.Element {
   const { color } = useUI()
   const { currentUser } = useAuth()
   const { data: balances, isLoading, isError, refetch } = useOpenBalances(currentUser?.id)
+  const { friendRows } = useFriendsList()
+
+  const friendNameMap = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const row of friendRows) {
+      map.set(row.friend.id, row.friend.name)
+    }
+    return map
+  }, [friendRows])
 
   const candidates = useMemo(() => {
     if (!balances) return []
@@ -45,12 +55,12 @@ export default function NewSettlementScreen(): JSX.Element {
     for (const [counterpartyId, entries] of grouped) {
       groups.push({
         counterpartyId,
-        counterpartyName: entries[0].counterpartyId,
+        counterpartyName: friendNameMap.get(counterpartyId) || counterpartyId,
         entries,
       })
     }
     return groups
-  }, [balances])
+  }, [balances, friendNameMap])
 
   const goBack = () => {
     if (router.canGoBack()) {

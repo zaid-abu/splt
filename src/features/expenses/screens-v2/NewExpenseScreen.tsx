@@ -1,5 +1,6 @@
 import type { JSX } from "react"
 import { useCallback, useMemo, useRef, useState } from "react"
+import { randomUUID } from "@/utils/randomUUID"
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -35,7 +36,8 @@ import type { ExpenseNewRouteParams } from "@/types/navigation"
 import { useExpenseComposer } from "@/features/expenses/hooks/useExpenseComposer"
 import type { ComposerParticipant } from "@/features/expenses/hooks/useExpenseComposer"
 import { ExpenseSplitEditor } from "@/features/expenses/components/ExpenseSplitEditor"
-import { parseMinorInput } from "@/features/money/splits"
+import { parseMinorInput, minorToMajor } from "@/features/money/splits"
+import { formatAmount, getCurrencySymbol } from "@/components/ui/AmountDisplay"
 import type { MoneyContext, ReceiptMimeType } from "@/features/money/types"
 import { expensesApi } from "@/features/expenses/services/api"
 import { ExpenseCreateSuccess } from "@/features/expenses/components/ExpenseCreateSuccess"
@@ -67,7 +69,7 @@ export default function NewExpenseScreenV2(): JSX.Element {
   const [showReceiptSheet, setShowReceiptSheet] = useState(false)
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
   const [createdExpenseId, setCreatedExpenseId] = useState<string | null>(null)
-  const [operationId] = useState(() => crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  const [operationId] = useState(() => randomUUID())
   const submitCounterRef = useRef(0)
 
   const {
@@ -463,6 +465,20 @@ export default function NewExpenseScreenV2(): JSX.Element {
     closeScreen()
   }, [closeScreen])
 
+  const handleViewExpense = useCallback(() => {
+    if (createdExpenseId) {
+      router.push(`/expense/${createdExpenseId}`)
+    }
+  }, [createdExpenseId, router])
+
+  const handleBackToGroup = useCallback(() => {
+    if (composer.context?.type === "group") {
+      router.push(`/group/${composer.context.groupId}`)
+    } else {
+      closeScreen()
+    }
+  }, [composer.context, closeScreen, router])
+
   const currencyOptions = CURRENCIES.map((c) => ({
     label: `${c.symbol} ${c.code}`,
     value: c.code,
@@ -489,6 +505,57 @@ export default function NewExpenseScreenV2(): JSX.Element {
     year: "numeric",
   })
 
+  const todayDateString = new Date().toDateString() === composer.date.toDateString() ? "Today" : dateString
+
+  const contextName = selectedGroup?.name || selectedFriends.map((f: any) => f.name.split(" ")[0]).join(", ")
+  const categoryLabel = EXPENSE_CATEGORIES.find((c) => c.key === composer.category)?.label || composer.category
+  const formattedContext = composer.category
+    ? `${contextName} · ${categoryLabel} · ${dateString}`
+    : `${contextName} · ${dateString}`
+
+  const splitResult = calculateResult()
+  const totalMajor = splitResult ? minorToMajor(splitResult.totalMinor, composer.currency) : 0
+  const totalDisplay = totalMajor > 0
+    ? formatAmount(totalMajor, composer.currency)
+    : getCurrencySymbol(composer.currency) + "0.00"
+
+  const symbol = getCurrencySymbol(composer.currency)
+
+  const payerName =
+    composer.paidBy === currentUser.id
+      ? "You"
+      : participants.find((p) => p.userId === composer.paidBy)?.name || "Select payer"
+  const paidByMeta = totalMajor > 0 ? `Covered ${totalDisplay}` : ""
+
+  const SPLIT_METHOD_LABELS: Record<string, string> = {
+    equal: "Equally",
+    custom: "Exact amounts",
+    percentage: "By percentage",
+    shares: "By shares",
+  }
+  const splitMethodLabel = SPLIT_METHOD_LABELS[composer.splitMethod] || composer.splitMethod
+  const splitCountLabel = `${participants.length} included`
+
+  const nonPayerParticipants = participants.filter((p) => p.userId !== composer.paidBy)
+  const noteText =
+    nonPayerParticipants.length > 0 && splitResult
+      ? nonPayerParticipants
+          .map((p) => {
+            const s = splitResult.splits.find((sp) => sp.userId === p.userId)
+            const amt = s
+              ? formatAmount(minorToMajor(s.amountMinor, composer.currency), composer.currency)
+              : "$0"
+            return p.userId === currentUser.id ? `you owe ${amt}` : `${p.name} owes you ${amt}`
+          })
+          .join(" · ")
+      : ""
+
+  const receiptLabel = composer.receipt
+    ? receiptMimeLabel || "Receipt attached"
+    : isUploadingReceipt
+      ? "Uploading..."
+      : "Add a receipt"
+
   return (
     <CoralScreen scroll={false}>
       <CoralTopBar
@@ -504,11 +571,7 @@ export default function NewExpenseScreenV2(): JSX.Element {
           })()}
           currency={composer.currency}
           paidByUserId={composer.paidBy}
-          paidByUserName={
-            composer.paidBy === currentUser.id
-              ? "You"
-              : participants.find((p) => p.userId === composer.paidBy)?.name || "Someone"
-          }
+          paidByUserName={payerName}
           currentUserId={currentUser.id}
           splits={(() => {
             const r = calculateResult()
@@ -516,7 +579,10 @@ export default function NewExpenseScreenV2(): JSX.Element {
           })()}
           expenseId={createdExpenseId}
           groupId={composer.context?.type === "group" ? composer.context.groupId : undefined}
+          groupName={contextName}
           onReturn={handleReturn}
+          onViewExpense={handleViewExpense}
+          onBackToGroup={handleBackToGroup}
           onUndoSuccess={handleUndoSuccess}
         />
       ) : (
@@ -774,32 +840,106 @@ export default function NewExpenseScreenV2(): JSX.Element {
             </View>
           ) : (
             <View style={{ gap: 16, paddingTop: 22 }}>
-              {canChangeContext && (
-                <View
+              <View style={{ alignItems: "center", paddingTop: 4, paddingBottom: 8 }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+                  <Text
+                    style={{
+                      fontFamily: "IBMPlexMono_600SemiBold",
+                      fontSize: 40,
+                      color: coral.foreground,
+                      letterSpacing: -0.04 * 40,
+                    }}
+                  >
+                    {symbol}
+                  </Text>
+                  <TextInput
+                    placeholder="0.00"
+                    placeholderTextColor={coral.muted}
+                    value={composer.amountInput}
+                    onChangeText={setAmount}
+                    keyboardType="decimal-pad"
+                    style={{
+                      fontFamily: "IBMPlexMono_600SemiBold",
+                      fontSize: 43,
+                      color: coral.foreground,
+                      letterSpacing: -0.04 * 43,
+                      minWidth: 120,
+                      textAlign: "left",
+                      padding: 0,
+                    }}
+                  />
+                </View>
+                <Text
                   style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 12,
-                    padding: 14,
-                    borderRadius: 16,
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 13,
+                    color: coral.muted,
+                    marginTop: 8,
+                  }}
+                >
+                  {formattedContext}
+                </Text>
+              </View>
+
+              <View style={{ gap: 6 }}>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_500Medium",
+                    fontSize: 13,
+                    color: coral.muted,
+                  }}
+                >
+                  Description
+                </Text>
+                <TextInput
+                  placeholder="e.g. Dinner at Farzi"
+                  placeholderTextColor={coral.muted}
+                  value={composer.description}
+                  onChangeText={setDescription}
+                  style={{
                     borderWidth: 1,
                     borderColor: coral.border,
+                    paddingHorizontal: 15,
+                    minHeight: 54,
+                    borderRadius: 14,
+                    fontSize: 16,
+                    fontFamily: "InstrumentSans_400Regular",
+                    color: coral.foreground,
+                    backgroundColor: coral.surface,
                   }}
+                />
+              </View>
+
+              {canChangeContext && (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={handleChangeContext}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 10,
+                    padding: 12,
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: coral.border,
+                    backgroundColor: coral.surface,
+                    opacity: pressed ? 0.7 : 1,
+                  })}
                 >
                   {selectedGroup ? (
                     <View
                       style={{
-                        width: 44,
-                        height: 44,
+                        width: 40,
+                        height: 40,
                         borderRadius: 12,
                         borderWidth: 1,
                         borderColor: coral.border,
-                        backgroundColor: coral.surface,
+                        backgroundColor: coral.bg,
                         alignItems: "center",
                         justifyContent: "center",
                       }}
                     >
-                      <icons.Globe size={20} color={coral.foreground} strokeWidth={1.5} />
+                      <icons.Globe size={18} color={coral.muted} strokeWidth={1.5} />
                     </View>
                   ) : (
                     <View style={{ flexDirection: "row" }}>
@@ -822,143 +962,91 @@ export default function NewExpenseScreenV2(): JSX.Element {
                   <View style={{ flex: 1 }}>
                     <Text
                       style={{
-                        fontFamily: "InstrumentSans_600SemiBold",
-                        fontSize: 12,
+                        fontFamily: "InstrumentSans_500Medium",
+                        fontSize: 11,
                         color: coral.muted,
                         textTransform: "uppercase",
                         letterSpacing: 0.8,
                       }}
                     >
-                      {selectedGroup ? "Group" : "Friends"}
+                      {selectedGroup ? "Group" : "Friend"}
                     </Text>
                     <Text
                       style={{
                         fontFamily: "InstrumentSans_600SemiBold",
-                        fontSize: 17,
+                        fontSize: 16,
                         color: coral.foreground,
-                        marginTop: 2,
+                        marginTop: 1,
                       }}
                     >
-                      {selectedGroup
-                        ? selectedGroup.name
-                        : selectedFriends.map((f: any) => f.name.split(" ")[0]).join(", ")}
-                    </Text>
-                    <Text
-                      style={{
-                        fontFamily: "InstrumentSans_400Regular",
-                        fontSize: 13,
-                        color: coral.muted,
-                        marginTop: 2,
-                      }}
-                    >
-                      {participants.length} people
+                      {contextName}
                     </Text>
                   </View>
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={handleChangeContext}
-                    hitSlop={8}
-                    style={({ pressed }) => ({
-                      paddingHorizontal: 14,
-                      height: 38,
-                      borderRadius: 14,
-                      borderWidth: 1,
-                      borderColor: coral.border,
-                      backgroundColor: coral.surface,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      opacity: pressed ? 0.7 : 1,
-                    })}
+                  <Text
+                    style={{
+                      fontFamily: "InstrumentSans_500Medium",
+                      fontSize: 13,
+                      color: coral.accent,
+                    }}
                   >
-                    <Text
-                      style={{
-                        fontFamily: "InstrumentSans_600SemiBold",
-                        fontSize: 13,
-                        color: coral.foreground,
-                      }}
-                    >
-                      Change
-                    </Text>
-                  </Pressable>
-                </View>
+                    Change
+                  </Text>
+                </Pressable>
               )}
 
-              <View style={{ gap: 7 }}>
-                <Text
-                  style={{
-                    fontFamily: "InstrumentSans_500Medium",
-                    fontSize: 13,
-                    letterSpacing: 0.02 * 13,
-                    color: coral.muted,
-                  }}
-                >
-                  What was it?
-                </Text>
-                <TextInput
-                  placeholder="e.g. Villa groceries"
-                  placeholderTextColor={coral.muted}
-                  value={composer.description}
-                  onChangeText={setDescription}
-                  style={{
-                    borderWidth: 1,
-                    borderColor: coral.border,
-                    paddingHorizontal: 15,
-                    minHeight: 54,
-                    borderRadius: 14,
-                    fontSize: 16,
-                    fontFamily: "InstrumentSans_400Regular",
-                    color: coral.foreground,
-                    backgroundColor: coral.surface,
-                  }}
-                />
-              </View>
-
-              <View style={{ gap: 7 }}>
-                <Text
-                  style={{
-                    fontFamily: "InstrumentSans_500Medium",
-                    fontSize: 13,
-                    letterSpacing: 0.02 * 13,
-                    color: coral.muted,
-                  }}
-                >
-                  Amount
-                </Text>
-                <View style={{ flexDirection: "row", gap: 8 }}>
-                  <View style={{ width: 120 }}>
-                    <CoralSelect
-                      options={currencyOptions}
-                      value={composer.currency}
-                      onValueChange={(value) => {
-                        confirmCurrency(value)
-                        const curr = CURRENCIES.find((c) => c.code === value)
-                        if (curr && !selectedGroup) setCurrency(curr)
-                      }}
-                      placeholder="Currency"
-                    />
-                  </View>
-                  <TextInput
-                    placeholder="0.00"
-                    placeholderTextColor={coral.muted}
-                    value={composer.amountInput}
-                    onChangeText={setAmount}
-                    keyboardType="decimal-pad"
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setShowPayerSheet(true)}
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 15,
+                  minHeight: 54,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: coral.border,
+                  backgroundColor: coral.surface,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text
                     style={{
-                      flex: 1,
-                      borderWidth: 1,
-                      borderColor: coral.border,
-                      paddingHorizontal: 15,
-                      minHeight: 54,
-                      borderRadius: 14,
-                      fontSize: 20,
-                      fontFamily: "IBMPlexMono_600SemiBold",
-                      color: coral.foreground,
-                      backgroundColor: coral.surface,
-                      textAlign: "right",
+                      fontFamily: "InstrumentSans_500Medium",
+                      fontSize: 11,
+                      color: coral.muted,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.8,
+                      marginBottom: 2,
                     }}
-                  />
+                  >
+                    Paid by
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "InstrumentSans_600SemiBold",
+                      fontSize: 16,
+                      color: coral.foreground,
+                    }}
+                  >
+                    {payerName}
+                  </Text>
                 </View>
-              </View>
+                {paidByMeta ? (
+                  <Text
+                    style={{
+                      fontFamily: "InstrumentSans_500Medium",
+                      fontSize: 13,
+                      color: coral.muted,
+                      marginRight: 8,
+                    }}
+                  >
+                    {paidByMeta}
+                  </Text>
+                ) : null}
+                <icons.ChevronDown size={16} color={coral.muted} />
+              </Pressable>
 
               <ExpenseSplitEditor
                 state={composer}
@@ -968,134 +1056,105 @@ export default function NewExpenseScreenV2(): JSX.Element {
                 onApply={handleApplySplit}
               />
 
-              <View style={{ gap: 7 }}>
-                <Text
-                  style={{
-                    fontFamily: "InstrumentSans_500Medium",
-                    fontSize: 13,
-                    letterSpacing: 0.02 * 13,
-                    color: coral.muted,
-                  }}
-                >
-                  Paid by
-                </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setShowPayerSheet(true)}
-                  style={({ pressed }) => ({
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingHorizontal: 15,
-                    minHeight: 54,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: coral.border,
-                    backgroundColor: coral.surface,
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                >
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setShowDateSheet(true)}
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 15,
+                  minHeight: 54,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: coral.border,
+                  backgroundColor: coral.surface,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <View style={{ flex: 1 }}>
                   <Text
                     style={{
-                      fontFamily: "InstrumentSans_400Regular",
+                      fontFamily: "InstrumentSans_500Medium",
+                      fontSize: 11,
+                      color: coral.muted,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.8,
+                      marginBottom: 2,
+                    }}
+                  >
+                    Date
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "InstrumentSans_600SemiBold",
                       fontSize: 16,
                       color: coral.foreground,
                     }}
                   >
-                    {composer.paidBy === currentUser.id
-                      ? "You"
-                      : participants.find((p) => p.userId === composer.paidBy)?.name || "Select payer"}
+                    {todayDateString}
                   </Text>
-                  <icons.ChevronDown size={16} color={coral.muted} />
-                </Pressable>
-              </View>
-
-              <View style={{ gap: 7 }}>
+                </View>
                 <Text
                   style={{
-                    fontFamily: "InstrumentSans_500Medium",
+                    fontFamily: "InstrumentSans_400Regular",
                     fontSize: 13,
-                    letterSpacing: 0.02 * 13,
                     color: coral.muted,
+                    marginRight: 8,
                   }}
                 >
-                  Date
+                  {dateString}
                 </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setShowDateSheet(true)}
-                  style={({ pressed }) => ({
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingHorizontal: 15,
-                    minHeight: 54,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: coral.border,
-                    backgroundColor: coral.surface,
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                >
+                <icons.ChevronDown size={16} color={coral.muted} />
+              </Pressable>
+
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setShowCategorySheet(true)}
+                style={({ pressed }) => ({
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 15,
+                  minHeight: 54,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: coral.border,
+                  backgroundColor: coral.surface,
+                  opacity: pressed ? 0.7 : 1,
+                })}
+              >
+                <View style={{ flex: 1 }}>
                   <Text
                     style={{
-                      fontFamily: "InstrumentSans_400Regular",
+                      fontFamily: "InstrumentSans_500Medium",
+                      fontSize: 11,
+                      color: coral.muted,
+                      textTransform: "uppercase",
+                      letterSpacing: 0.8,
+                      marginBottom: 2,
+                    }}
+                  >
+                    Category
+                  </Text>
+                  <Text
+                    style={{
+                      fontFamily: "InstrumentSans_600SemiBold",
                       fontSize: 16,
                       color: coral.foreground,
                     }}
                   >
-                    {dateString}
+                    {categoryLabel}
                   </Text>
-                  <icons.ChevronDown size={16} color={coral.muted} />
-                </Pressable>
-              </View>
+                </View>
+                <icons.ChevronDown size={16} color={coral.muted} />
+              </Pressable>
 
-              <View style={{ gap: 7 }}>
+              <View style={{ gap: 6 }}>
                 <Text
                   style={{
                     fontFamily: "InstrumentSans_500Medium",
                     fontSize: 13,
-                    letterSpacing: 0.02 * 13,
-                    color: coral.muted,
-                  }}
-                >
-                  Category
-                </Text>
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => setShowCategorySheet(true)}
-                  style={({ pressed }) => ({
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingHorizontal: 15,
-                    minHeight: 54,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: coral.border,
-                    backgroundColor: coral.surface,
-                    opacity: pressed ? 0.7 : 1,
-                  })}
-                >
-                  <Text
-                    style={{
-                      fontFamily: "InstrumentSans_400Regular",
-                      fontSize: 16,
-                      color: coral.foreground,
-                    }}
-                  >
-                    {EXPENSE_CATEGORIES.find((c) => c.key === composer.category)?.label || composer.category}
-                  </Text>
-                  <icons.ChevronDown size={16} color={coral.muted} />
-                </Pressable>
-              </View>
-
-              <View style={{ gap: 7 }}>
-                <Text
-                  style={{
-                    fontFamily: "InstrumentSans_500Medium",
-                    fontSize: 13,
-                    letterSpacing: 0.02 * 13,
                     color: coral.muted,
                   }}
                 >
@@ -1124,7 +1183,7 @@ export default function NewExpenseScreenV2(): JSX.Element {
                           color: coral.accentInk,
                         }}
                       >
-                        {receiptMimeLabel || "Receipt"}
+                        {receiptLabel}
                       </Text>
                     </View>
                     <Pressable
@@ -1168,21 +1227,34 @@ export default function NewExpenseScreenV2(): JSX.Element {
                         color: coral.muted,
                       }}
                     >
-                      {isUploadingReceipt ? "Uploading..." : "Add receipt"}
+                      {receiptLabel}
                     </Text>
                   </Pressable>
                 )}
               </View>
 
-              <View style={{ marginTop: 8 }}>
+              <View style={{ marginTop: 4 }}>
                 <CoralButton
-                  label="Add expense"
+                  label={`Add expense — ${totalDisplay}`}
                   onPress={handleSubmit}
                   variant="primary"
                   disabled={isSubmitting || composer.status === "submitting"}
                   loading={isSubmitting || composer.status === "submitting"}
                 />
               </View>
+
+              {noteText ? (
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 13,
+                    color: coral.muted,
+                    textAlign: "center",
+                  }}
+                >
+                  {noteText}
+                </Text>
+              ) : null}
             </View>
           )}
         </ScrollView>

@@ -339,7 +339,7 @@ export function useFriendsList() {
         ]
       );
     },
-    [removeFriend, toast]
+    [transitionFriendship, toast]
   );
 
   const handlePrimaryFriendAction = useCallback(

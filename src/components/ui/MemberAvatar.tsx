@@ -10,7 +10,13 @@ import { Image, View } from "react-native";
 import { Typography } from "heroui-native";
 
 import { useUI } from "@/components/ui";
-import type { User } from "@/types";
+
+interface UserAvatarShape {
+  id: string;
+  name?: string;
+  initials: string;
+  avatar?: string;
+}
 
 type AvatarTone = {
   fill: string;
@@ -47,7 +53,7 @@ function getPaletteIndex(seed: string): number {
   return Math.abs(hash) % AVATAR_PALETTE.length;
 }
 
-function getTone(user: User, mutedColor: string, balance?: number): AvatarTone {
+function getTone(user: UserAvatarShape, mutedColor: string, balance?: number): AvatarTone {
   if (balance !== undefined) {
     if (balance > 0) {
       return {
@@ -143,12 +149,12 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
 }
 
 interface AppUserAvatarProps {
-  user: User;
+  user: UserAvatarShape;
   size?: AvatarSize;
   balance?: number;
 }
 
-export function AvatarStack({ users, max = 4 }: { users: User[]; max?: number }): JSX.Element {
+export function AvatarStack({ users, max = 4 }: { users: UserAvatarShape[]; max?: number }): JSX.Element {
   const visible = users.slice(0, max);
   const overflow = users.length - max;
   const dims = getSize("sm");

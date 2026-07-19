@@ -1,4 +1,4 @@
-import { useCallback, useState, type ReactNode } from "react";
+import { useCallback, useState, type JSX, type ReactNode } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { UserPlus } from "lucide-react-native";
@@ -12,9 +12,9 @@ import {
   CoralSearchField,
   CoralSegment,
   CoralTopBar,
-  Eyebrow,
   LargeTitle,
   MoneyRow,
+  useCoralColors,
 } from "@/components/coral";
 import { useUI } from "@/components/ui";
 import { useAuth } from "@/context/AppContext";
@@ -210,7 +210,7 @@ export default function CirclesScreen(): JSX.Element {
         onChangeText={setSearch}
         onClear={() => setSearch("")}
         placeholder={placeholder}
-        style={{ marginTop: 14, marginBottom: 8 }}
+        style={{ marginTop: 0, marginBottom: 14 }}
       />
 
       {snapshot.isInitialLoading ? (
@@ -254,45 +254,55 @@ export default function CirclesScreen(): JSX.Element {
 
           {needsAttentionGroupSections && needsAttentionGroupSections.length > 0 && (
             <>
-              <Eyebrow>Needs attention</Eyebrow>
-              {needsAttentionGroupSections.map((section) => {
-                const { text: amountText, tone } = groupAmount(section);
-                return (
-                  <MoneyRow
-                    key={section.group.id}
-                    avatar={<GroupIconBadge group={section.group} size="sm" />}
-                    title={section.group.name}
-                    subtitle={groupSubtitle(section)}
-                    amount={amountText}
-                    amountTone={tone}
-                    onPress={() =>
-                      router.push({ pathname: "/group/[id]", params: { id: section.group.id } })
-                    }
-                  />
-                );
-              })}
+              <SectionHeading
+                title="Needs attention"
+                meta={String(needsAttentionGroupSections.length)}
+              />
+              <ContentList>
+                {needsAttentionGroupSections.map((section) => {
+                  const { text: amountText, tone } = groupAmount(section);
+                  return (
+                    <MoneyRow
+                      key={section.group.id}
+                      avatar={<GroupIconBadge group={section.group} size="sm" />}
+                      title={section.group.name}
+                      subtitle={groupSubtitle(section)}
+                      amount={amountText}
+                      amountTone={tone}
+                      onPress={() =>
+                        router.push({ pathname: "/group/[id]", params: { id: section.group.id } })
+                      }
+                    />
+                  );
+                })}
+              </ContentList>
             </>
           )}
 
           {allGroupSections && allGroupSections.length > 0 && (
             <>
-              <Eyebrow>All groups</Eyebrow>
-              {allGroupSections.map((section) => {
-                const { text: amountText, tone } = groupAmount(section);
-                return (
-                  <MoneyRow
-                    key={section.group.id}
-                    avatar={<GroupIconBadge group={section.group} size="sm" />}
-                    title={section.group.name}
-                    subtitle={groupSubtitle(section)}
-                    amount={amountText}
-                    amountTone={tone}
-                    onPress={() =>
-                      router.push({ pathname: "/group/[id]", params: { id: section.group.id } })
-                    }
-                  />
-                );
-              })}
+              <SectionHeading
+                title="All groups"
+                meta={`${allGroupSections.length} groups`}
+              />
+              <ContentList>
+                {allGroupSections.map((section) => {
+                  const { text: amountText, tone } = groupAmount(section);
+                  return (
+                    <MoneyRow
+                      key={section.group.id}
+                      avatar={<GroupIconBadge group={section.group} size="sm" />}
+                      title={section.group.name}
+                      subtitle={groupSubtitle(section)}
+                      amount={amountText}
+                      amountTone={tone}
+                      onPress={() =>
+                        router.push({ pathname: "/group/[id]", params: { id: section.group.id } })
+                      }
+                    />
+                  );
+                })}
+              </ContentList>
             </>
           )}
 
@@ -327,23 +337,28 @@ export default function CirclesScreen(): JSX.Element {
             if (rows.length === 0) return null;
             return (
               <View key={classification}>
-                <Eyebrow>{CLASSIFICATION_LABELS[classification]}</Eyebrow>
-                {rows.map((section) => {
-                  const { text: amountText, tone } = personAmount(section);
-                  return (
-                    <MoneyRow
-                      key={section.user.id}
-                      avatar={<AppUserAvatar user={section.user} size="sm" />}
-                      title={section.user.name}
-                      subtitle={personSubtitle(section)}
-                      amount={amountText}
-                      amountTone={tone}
-                      onPress={() =>
-                        router.push({ pathname: "/friend/[id]", params: { id: section.user.id } })
-                      }
-                    />
-                  );
-                })}
+                <SectionHeading
+                  title={CLASSIFICATION_LABELS[classification]}
+                  meta={String(rows.length)}
+                />
+                <ContentList>
+                  {rows.map((section) => {
+                    const { text: amountText, tone } = personAmount(section);
+                    return (
+                      <MoneyRow
+                        key={section.user.id}
+                        avatar={<AppUserAvatar user={section.user} size="sm" />}
+                        title={section.user.name}
+                        subtitle={personSubtitle(section)}
+                        amount={amountText}
+                        amountTone={tone}
+                        onPress={() =>
+                          router.push({ pathname: "/friend/[id]", params: { id: section.user.id } })
+                        }
+                      />
+                    );
+                  })}
+                </ContentList>
               </View>
             );
           })}
@@ -376,6 +391,63 @@ export default function CirclesScreen(): JSX.Element {
   );
 }
 
+function SectionHeading({ title, meta }: { title: string; meta?: string }) {
+  const coral = useCoralColors();
+
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        alignItems: "flex-end",
+        justifyContent: "space-between",
+        gap: 12,
+        marginTop: 20,
+        marginBottom: 8,
+        marginHorizontal: 2,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_600SemiBold",
+          fontSize: 15,
+          color: coral.foreground,
+        }}
+      >
+        {title}
+      </Text>
+      {meta ? (
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_400Regular",
+            fontSize: 12,
+            color: coral.muted,
+          }}
+        >
+          {meta}
+        </Text>
+      ) : null}
+    </View>
+  );
+}
+
+function ContentList({ children }: { children: ReactNode }) {
+  const coral = useCoralColors();
+
+  return (
+    <View
+      style={{
+        borderWidth: 1,
+        borderColor: coral.border,
+        borderRadius: 16,
+        backgroundColor: coral.surface,
+        overflow: "hidden",
+      }}
+    >
+      {children}
+    </View>
+  );
+}
+
 function RequestsSection({
   requests,
   onAccept,
@@ -385,7 +457,7 @@ function RequestsSection({
   onAccept: (friendshipId: string) => void;
   onDecline: (friendshipId: string) => void;
 }) {
-  const { color } = useUI();
+  const coral = useCoralColors();
 
   return (
     <View style={{ marginBottom: 8 }}>
@@ -398,13 +470,13 @@ function RequestsSection({
           marginBottom: 10,
         }}
       >
-        <UserPlus size={16} color={color.muted} />
+        <UserPlus size={16} color={coral.muted} />
         <Text
           style={{
             fontFamily: "InstrumentSans_600SemiBold",
             fontSize: 14,
             letterSpacing: 0.14,
-            color: color.muted,
+            color: coral.muted,
           }}
         >
           Friend requests
@@ -416,10 +488,10 @@ function RequestsSection({
           style={{
             flexDirection: "row",
             alignItems: "center",
-            minHeight: 68,
+            minHeight: 64,
             paddingVertical: 10,
-            paddingHorizontal: 2,
-            gap: 12,
+            paddingHorizontal: 12,
+            gap: 11,
           }}
         >
           <AppUserAvatar user={req.user} size="sm" />
@@ -428,9 +500,9 @@ function RequestsSection({
               numberOfLines={1}
               style={{
                 fontFamily: "InstrumentSans_600SemiBold",
-                fontSize: 16,
-                letterSpacing: -0.08,
-                color: color.text,
+                fontSize: 14,
+                letterSpacing: -0.01 * 14,
+                color: coral.foreground,
               }}
             >
               {req.user.name}
@@ -439,9 +511,9 @@ function RequestsSection({
               numberOfLines={1}
               style={{
                 fontFamily: "InstrumentSans_400Regular",
-                fontSize: 13,
-                lineHeight: 18.85,
-                color: color.muted,
+                fontSize: 12,
+                lineHeight: 12 * 1.4,
+                color: coral.muted,
                 marginTop: 3,
               }}
             >

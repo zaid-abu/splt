@@ -14,11 +14,7 @@ import { useAuth } from "@/context/AppContext";
 import { useExpenseSnapshot } from "@/features/expenses/hooks/useExpenseSnapshot";
 import { ExpenseComments } from "@/features/expenses/components/ExpenseComments";
 import { formatAmount, getCurrencySymbol } from "@/components/ui/AmountDisplay";
-import { CoralScreen } from "@/components/coral/CoralScreen";
-import { CoralTopBar } from "@/components/coral/CoralTopBar";
-import { Eyebrow } from "@/components/coral/Eyebrow";
-import { MoneyRow } from "@/components/coral/MoneyRow";
-import { useCoralColors } from "@/components/coral/useCoral";
+import { CoralButton, CoralScreen, CoralTopBar, Eyebrow, MoneyRow, useCoralColors } from "@/components/coral";
 import { expensesApi } from "@/features/expenses/services/api";
 import { useDeleteExpense } from "@/features/expenses/queries/useExpenses";
 import { useAppToast } from "@/hooks/useAppToast";
@@ -196,7 +192,7 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
   return (
     <CoralScreen contentContainerStyle={{ paddingBottom: 40 }}>
       <CoralTopBar
-        title={expense.title}
+        title="Expense"
         onBack={() => {
           Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           router.back();
@@ -214,11 +210,21 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
 
       <Text
         style={{
+          fontFamily: "InstrumentSans_600SemiBold", fontSize: 20, color: coral.foreground,
+          textAlign: "center", marginTop: 8, marginBottom: 4,
+        }}
+        numberOfLines={1}
+      >
+        {expense.title}
+      </Text>
+
+      <Text
+        style={{
           fontFamily: "IBMPlexMono_600SemiBold", fontSize: 52, letterSpacing: -0.03 * 52,
           color: coral.foreground, textAlign: "center", marginTop: 35,
         }}
       >
-        {formatAmount(expense.amountMinor, expense.currency)}
+        {formatAmount(minorToMajor(expense.amountMinor, expense.currency), expense.currency)}
       </Text>
 
       <Text
@@ -243,7 +249,7 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
               fontVariant: ["tabular-nums"],
             }}
           >
-            {formatAmount(myShareMinor, expense.currency)}
+            {formatAmount(minorToMajor(myShareMinor, expense.currency), expense.currency)}
           </Text>
           <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 12, color: coral.muted, marginTop: 5 }}>
             Your share
@@ -282,7 +288,7 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
             You lent
           </Text>
           <Text style={{ fontFamily: "IBMPlexMono_600SemiBold", fontSize: 18, color: coral.positive }}>
-            {formatAmount(youLentMinor, expense.currency)}
+            {formatAmount(minorToMajor(youLentMinor, expense.currency), expense.currency)}
           </Text>
         </View>
       )}
@@ -300,7 +306,7 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
             You borrowed
           </Text>
           <Text style={{ fontFamily: "IBMPlexMono_600SemiBold", fontSize: 18, color: coral.negative }}>
-            {formatAmount(youBorrowedMinor, expense.currency)}
+            {formatAmount(minorToMajor(youBorrowedMinor, expense.currency), expense.currency)}
           </Text>
         </View>
       )}
@@ -359,8 +365,8 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
         }
 
         const displayAmount = isPayer
-          ? formatAmount(expense.amountMinor - split.amountMinor, expense.currency)
-          : formatAmount(split.amountMinor, expense.currency);
+          ? formatAmount(minorToMajor(expense.amountMinor - split.amountMinor, expense.currency), expense.currency)
+          : formatAmount(minorToMajor(split.amountMinor, expense.currency), expense.currency);
 
         return (
           <MoneyRow

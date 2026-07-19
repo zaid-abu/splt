@@ -9,6 +9,9 @@ export type SettleRouteParams = {
   currency?: string;
   expenseId?: string;
   returnTo?: string;
+  contextType?: string;
+  amountMinor?: string;
+  isOwedToYou?: string;
 };
 
 export type GroupSettleRouteParams = {

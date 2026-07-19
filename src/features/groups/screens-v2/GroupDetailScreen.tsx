@@ -1,8 +1,9 @@
 import type { JSX } from "react"
-import { View, Text, ActivityIndicator, Pressable } from "react-native"
+import { useMemo, useCallback, useState } from "react"
+import { View, Text, ActivityIndicator, Pressable, ScrollView } from "react-native"
 import { useLocalSearchParams, useRouter } from "expo-router"
 import type { GroupRouteParams } from "@/types/navigation"
-import { Settings } from "lucide-react-native"
+import { Settings, Plus, ArrowLeftRight, Calendar, ChevronRight } from "lucide-react-native"
 import * as Haptics from "expo-haptics"
 
 import { useAuth } from "@/context/AppContext"
@@ -20,9 +21,12 @@ import {
   StatPair,
   CoralSegment,
   CoralButton,
+  CoralSearchField,
+  BalanceHero,
 } from "@/components/coral"
 import { useUI } from "@/components/ui"
-import type { User } from "@/types"
+import { useCoralColors } from "@/components/coral/useCoral"
+import type { User, Expense } from "@/types"
 import type { ScheduleReadItem, ScheduleSections } from "@/features/recurring/services/readAdapter"
 
 function LoadingState() {
@@ -88,6 +92,43 @@ function NotFoundState({ onGoBack }: { onGoBack: () => void }) {
   )
 }
 
+function SectionHeading({ title, meta }: { title: string; meta?: string }) {
+  const coral = useCoralColors()
+  return (
+    <View
+      style={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "baseline",
+        marginTop: 28,
+        marginBottom: 10,
+        paddingHorizontal: 2,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_600SemiBold",
+          fontSize: 15,
+          color: coral.foreground,
+        }}
+      >
+        {title}
+      </Text>
+      {meta ? (
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_400Regular",
+            fontSize: 12,
+            color: coral.muted,
+          }}
+        >
+          {meta}
+        </Text>
+      ) : null}
+    </View>
+  )
+}
+
 function formatSignedAmount(amount: number, currencyCode: string): string {
   if (amount > 0) return `+${formatAmount(amount, currencyCode)}`
   return formatAmount(amount, currencyCode)
@@ -96,6 +137,17 @@ function formatSignedAmount(amount: number, currencyCode: string): string {
 function formatDate(iso: string): string {
   const d = new Date(iso)
   return d.toLocaleDateString(undefined, { month: "short", day: "numeric" })
+}
+
+function groupExpensesByMonth(expenses: Expense[]): Map<string, Expense[]> {
+  const groups = new Map<string, Expense[]>()
+  for (const exp of expenses) {
+    const d = new Date(exp.date)
+    const key = `${d.toLocaleDateString(undefined, { year: "numeric", month: "long" })}`
+    if (!groups.has(key)) groups.set(key, [])
+    groups.get(key)!.push(exp)
+  }
+  return groups
 }
 
 const VIEW_OPTIONS = [

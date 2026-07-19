@@ -25,11 +25,8 @@ export function ProfileHeader({ name, email, onEdit }: ProfileHeaderProps): JSX.
           user={{
             id: "",
             name,
-            email,
             avatar: undefined,
             initials: name.charAt(0),
-            defaultCurrency: "",
-            setupState: "complete",
           }}
           size="lg"
         />

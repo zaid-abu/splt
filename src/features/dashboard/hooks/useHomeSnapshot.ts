@@ -102,8 +102,7 @@ export function useHomeSnapshot(userId: string): SnapshotState<HomeSnapshotData>
   const allHaveData = queries.every((q) => !!q.data || q.isFetched)
   const anyData = queries.some((q) => !!q.data)
 
-  const hasNeverFetched = queries.every((q) => !q.isFetched && !q.data)
-  const isInitialLoading = hasNeverFetched || (isLoadingAny && !anyData)
+  const isInitialLoading = isLoadingAny && !anyData
   const isRefreshing = isLoadingAny && anyData
   const isStaleOffline = isErrorAny && anyData && allHaveData
 

@@ -30,7 +30,7 @@ describe("notificationsApi.sendReminder", () => {
     expect(rpc).toHaveBeenCalledWith("send_balance_reminder", {
       p_client_operation_id: "op-1",
       p_group_id: "g-1",
-      p_friendship_id: null,
+      p_friendship_id: "",
       p_currency: "USD",
       p_message: "Please settle up",
     })
@@ -50,10 +50,10 @@ describe("notificationsApi.sendReminder", () => {
 
     expect(rpc).toHaveBeenCalledWith("send_balance_reminder", {
       p_client_operation_id: "op-2",
-      p_group_id: null,
+      p_group_id: "",
       p_friendship_id: "f-1",
       p_currency: "EUR",
-      p_message: null,
+      p_message: "",
     })
     expect(result).toBe("n-2")
   })

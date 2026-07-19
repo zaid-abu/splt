@@ -16,6 +16,7 @@ import { useUI } from "@/components/ui"
 import { useAuth } from "@/context/AppContext"
 import { useOpenBalances } from "@/features/balances/queries/useBalances"
 import { useFriendsList } from "@/features/friends/hooks/useFriendsList"
+import { useGroupDetails } from "@/features/groups/queries/useGroups"
 import {
   useSettlementFlow,
   type DeterminedSettlement,
@@ -108,6 +109,10 @@ export default function SettlementScreenV2(): JSX.Element {
   const { selection, isLoading: selectionLoading } = useHydratedSelection(currentUser?.id)
   const flow = useSettlementFlow(currentUser?.id)
 
+  const groupId = selection?.context.type === "group" ? selection.context.groupId : undefined
+  const { data: group } = useGroupDetails(groupId)
+  const groupName = group?.name
+
   if (selectionLoading) {
     return (
       <CoralScreen>
@@ -148,13 +153,13 @@ export default function SettlementScreenV2(): JSX.Element {
     <CoralScreen>
       <CoralTopBar title="Settle up" onBack={() => router.back()} />
       {flow.state.step === "compose" && (
-        <ComposeView flow={flow} color={color} insets={insets} />
+        <ComposeView flow={flow} color={color} insets={insets} groupName={groupName} />
       )}
       {flow.state.step === "review" && (
-        <ReviewView flow={flow} color={color} insets={insets} />
+        <ReviewView flow={flow} color={color} insets={insets} groupName={groupName} />
       )}
       {flow.state.step === "success" && (
-        <SuccessView flow={flow} color={color} insets={insets} router={router} />
+        <SuccessView flow={flow} color={color} insets={insets} router={router} groupName={groupName} />
       )}
     </CoralScreen>
   )
@@ -164,10 +169,12 @@ function ComposeView({
   flow,
   color,
   insets,
+  groupName,
 }: {
   flow: ReturnType<typeof useSettlementFlow>
   color: any
   insets: any
+  groupName?: string
 }) {
   if (flow.state.step !== "compose") return null
   const { selection, amountInput, method, note } = flow.state
@@ -183,7 +190,7 @@ function ComposeView({
       }}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={{ alignItems: "center", paddingTop: 24, gap: 24 }}>
+      <View style={{ alignItems: "center", paddingTop: 24, gap: 8 }}>
         <Text
           style={{
             fontFamily: "InstrumentSans_500Medium",
@@ -201,6 +208,7 @@ function ComposeView({
             alignItems: "center",
             justifyContent: "center",
             gap: 4,
+            marginTop: 12,
           }}
         >
           <Text
@@ -231,7 +239,18 @@ function ComposeView({
           />
         </View>
 
-        <View style={{ flexDirection: "row", gap: 8 }}>
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_400Regular",
+            fontSize: 12,
+            color: color.muted,
+            textAlign: "center",
+          }}
+        >
+          Full open balance{groupName ? ` across ${groupName}` : ""}
+        </Text>
+
+        <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
           {AMOUNT_PRESETS.map((preset) => (
             <Pressable
               key={preset.label}
@@ -264,7 +283,33 @@ function ComposeView({
         </View>
       </View>
 
-      <View style={{ paddingHorizontal: 22, marginTop: 32, gap: 8 }}>
+      {groupName ? (
+        <View style={{ paddingHorizontal: 22, marginTop: 32, gap: 8 }}>
+          <Text
+            style={{
+              fontSize: 12,
+              fontFamily: "IBMPlexSans_600SemiBold",
+              color: color.muted,
+              textTransform: "uppercase",
+              letterSpacing: 0.8,
+            }}
+          >
+            Applies to
+          </Text>
+          <View
+            style={{
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: color.border,
+              overflow: "hidden",
+            }}
+          >
+            <ReviewRow label="Group" value={groupName} color={color} />
+          </View>
+        </View>
+      ) : null}
+
+      <View style={{ paddingHorizontal: 22, marginTop: groupName ? 8 : 32, gap: 8 }}>
         <Text
           style={{
             fontSize: 12,
@@ -403,10 +448,12 @@ function ReviewView({
   flow,
   color,
   insets,
+  groupName,
 }: {
   flow: ReturnType<typeof useSettlementFlow>
   color: any
   insets: any
+  groupName?: string
 }) {
   if (flow.state.step !== "review") return null
   const { selection, amountMinor, method, note, resultingMinor } = flow.state
@@ -443,6 +490,7 @@ function ReviewView({
               : `You pay ${selection.counterpartyName.split(" ")[0]}`
           }
           value={`${amountWhole.toFixed(2)} ${selection.currency}`}
+          note={[methodLabel, groupName].filter(Boolean).join(" - ")}
         />
 
         <View
@@ -455,17 +503,18 @@ function ReviewView({
         >
           <ReviewRow label="From" value={selection.isOwedToYou ? selection.counterpartyName : "You"} color={color} />
           <ReviewRow label="To" value={selection.isOwedToYou ? "You" : selection.counterpartyName} color={color} />
-          {selection.context.type === "group" && (
-            <ReviewRow label="Group" value={selection.context.groupId} color={color} />
-          )}
+          {groupName ? (
+            <ReviewRow label="Group" value={groupName} color={color} />
+          ) : null}
           <ReviewRow label="Method" value={methodLabel} color={color} />
           {note ? <ReviewRow label="Note" value={note} color={color} /> : null}
+          <ReviewRow
+            label="Balance after"
+            value={`${isPositiveResult ? "+" : ""}${resultingWhole.toFixed(2)} ${selection.currency}${resultingWhole === 0 ? " - settled" : ""}`}
+            color={color}
+            valueTone={resultingWhole === 0 ? "credit" : undefined}
+          />
         </View>
-
-        <BalanceHero
-          label="Resulting balance"
-          value={`${isPositiveResult ? "+" : ""}${resultingWhole.toFixed(2)} ${selection.currency}`}
-        />
       </View>
 
       <View
@@ -478,17 +527,148 @@ function ReviewView({
         }}
       >
         <CoralButton
-          label="Confirm payment"
+          label="Record settlement"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
             flow.submit()
           }}
         />
         <CoralButton
-          label="Edit"
+          label="Change details"
           variant="text"
           onPress={() => flow.goBackToCompose()}
         />
+      </View>
+    </ScrollView>
+  )
+}
+
+function SuccessView({
+  flow,
+  color,
+  insets,
+  router,
+  groupName,
+}: {
+  flow: ReturnType<typeof useSettlementFlow>
+  color: any
+  insets: any
+  router: any
+  groupName?: string
+}) {
+  if (flow.state.step !== "success") return null
+  const { settlement, resultingMinor, selection } = flow.state
+  const amountWhole = settlement.amountMinor / 100
+  const resultingWhole = resultingMinor / 100
+  const methodLabel =
+    METHOD_LABELS.find((m) => m.key === settlement.method)?.label || settlement.method
+  const isPositiveResult = resultingWhole >= 0
+
+  const directionText = selection.isOwedToYou
+    ? `${selection.counterpartyName.split(" ")[0]} paid you`
+    : `You paid ${selection.counterpartyName.split(" ")[0]}`
+
+  const introText = `${directionText} ${amountWhole.toFixed(2)} in ${methodLabel.toLowerCase()}.${groupName ? ` Your ${groupName} balance is now settled.` : ""}`
+
+  return (
+    <ScrollView
+      contentContainerStyle={{
+        paddingBottom: Math.max(insets.bottom, 16) + 120,
+        alignItems: "center",
+        paddingTop: 32,
+        paddingHorizontal: 22,
+        gap: 24,
+      }}
+    >
+      <View
+        style={{
+          width: 80,
+          height: 80,
+          borderRadius: 40,
+          backgroundColor: "#4CAF82",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <icons.Check size={40} color="#fff" strokeWidth={2.5} />
+      </View>
+
+      <View style={{ alignItems: "center", gap: 8 }}>
+        <Text
+          style={{
+            fontFamily: "Sora_600SemiBold",
+            fontSize: 24,
+            color: color.text,
+            textAlign: "center",
+          }}
+        >
+          Settlement recorded
+        </Text>
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_400Regular",
+            fontSize: 14,
+            color: color.muted,
+            textAlign: "center",
+            lineHeight: 20,
+            maxWidth: 280,
+          }}
+        >
+          {introText}
+        </Text>
+      </View>
+
+      <View
+        style={{
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: color.border,
+          overflow: "hidden",
+          width: "100%",
+        }}
+      >
+        <ReviewRow
+          label="Recorded amount"
+          value={`${amountWhole.toFixed(2)} ${settlement.currency}`}
+          color={color}
+        />
+        <ReviewRow
+          label="Direction"
+          value={directionText}
+          color={color}
+        />
+        <ReviewRow
+          label="Method"
+          value={`${methodLabel}${settlement.method === "cash" ? " - external" : ""}`}
+          color={color}
+        />
+        <ReviewRow
+          label="Result"
+          value={`${isPositiveResult ? "+" : ""}${resultingWhole.toFixed(2)} ${settlement.currency}${resultingWhole === 0 ? " open balance" : ""}`}
+          color={color}
+          valueTone={resultingWhole === 0 ? "credit" : undefined}
+        />
+      </View>
+
+      <View style={{ width: "100%", gap: 8, marginTop: 16 }}>
+        <CoralButton
+          label="View relationship"
+          variant="primary"
+          onPress={() => router.replace({ pathname: "/friend/[id]", params: { id: selection.counterpartyId } })}
+        />
+        {groupName ? (
+          <CoralButton
+            label={`Back to ${groupName}`}
+            variant="secondary"
+            onPress={() => router.replace({ pathname: "/group/[id]", params: { id: selection.context.groupId } })}
+          />
+        ) : (
+          <CoralButton
+            label="Done"
+            variant="secondary"
+            onPress={() => router.back()}
+          />
+        )}
       </View>
     </ScrollView>
   )
@@ -498,10 +678,12 @@ function ReviewRow({
   label,
   value,
   color,
+  valueTone,
 }: {
   label: string
   value: string
   color: any
+  valueTone?: "credit" | "debt" | undefined
 }) {
   return (
     <View
@@ -528,112 +710,11 @@ function ReviewRow({
         style={{
           fontSize: 14,
           fontFamily: "IBMPlexSans_600SemiBold",
-          color: color.text,
+          color: valueTone === "credit" ? "#4CAF82" : valueTone === "debt" ? "#E85D5D" : color.text,
         }}
       >
         {value}
       </Text>
     </View>
-  )
-}
-
-function SuccessView({
-  flow,
-  color,
-  insets,
-  router,
-}: {
-  flow: ReturnType<typeof useSettlementFlow>
-  color: any
-  insets: any
-  router: any
-}) {
-  if (flow.state.step !== "success") return null
-  const { settlement, resultingMinor } = flow.state
-  const amountWhole = settlement.amountMinor / 100
-  const resultingWhole = resultingMinor / 100
-  const methodLabel =
-    METHOD_LABELS.find((m) => m.key === settlement.method)?.label || settlement.method
-  const isPositiveResult = resultingWhole >= 0
-
-  return (
-    <ScrollView
-      contentContainerStyle={{
-        paddingBottom: Math.max(insets.bottom, 16) + 120,
-        alignItems: "center",
-        paddingTop: 32,
-        paddingHorizontal: 22,
-        gap: 24,
-      }}
-    >
-      <View
-        style={{
-          width: 80,
-          height: 80,
-          borderRadius: 40,
-          backgroundColor: "#4CAF82",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <icons.Check size={40} color="#fff" strokeWidth={2.5} />
-      </View>
-
-      <Text
-        style={{
-          fontFamily: "Sora_600SemiBold",
-          fontSize: 24,
-          color: color.text,
-          textAlign: "center",
-        }}
-      >
-        Payment recorded
-      </Text>
-
-      <BalanceHero
-        label="Amount"
-        value={`${amountWhole.toFixed(2)} ${settlement.currency}`}
-      />
-
-      <View
-        style={{
-          borderRadius: 12,
-          borderWidth: 1,
-          borderColor: color.border,
-          overflow: "hidden",
-          width: "100%",
-        }}
-      >
-        <ReviewRow
-          label="From"
-          value={settlement.fromUser?.name || settlement.fromUserId}
-          color={color}
-        />
-        <ReviewRow
-          label="To"
-          value={settlement.toUser?.name || settlement.toUserId}
-          color={color}
-        />
-        <ReviewRow label="Method" value={methodLabel} color={color} />
-      </View>
-
-      <BalanceHero
-        label="Resulting balance"
-        value={`${isPositiveResult ? "+" : ""}${resultingWhole.toFixed(2)} ${settlement.currency}`}
-      />
-
-      <View style={{ width: "100%", gap: 8, marginTop: 16 }}>
-        <CoralButton
-          label="Back to person"
-          variant="primary"
-          onPress={() => router.replace({ pathname: "/friend/[id]", params: { id: settlement.toUserId } })}
-        />
-        <CoralButton
-          label="Done"
-          variant="secondary"
-          onPress={() => router.back()}
-        />
-      </View>
-    </ScrollView>
   )
 }

@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef } from "react"
 import { View, Text, Pressable, ActivityIndicator } from "react-native"
+import { randomUUID } from "@/utils/randomUUID"
 import { useRouter } from "expo-router"
 import { Share } from "react-native"
 import * as Haptics from "expo-haptics"
@@ -139,7 +140,7 @@ export default function NewFriendScreen() {
   const handleShareInvite = async () => {
     setIsCreatingInvite(true)
     try {
-      const opId = crypto.randomUUID()
+      const opId = randomUUID()
       const link = await invitationsApi.createFriendInvite(opId)
       await Share.share({
         message: `Join me on Splt! Use this invite link: ${link.rawToken}`,

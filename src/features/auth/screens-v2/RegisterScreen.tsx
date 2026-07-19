@@ -14,7 +14,6 @@ import { LargeTitle } from "@/components/coral/LargeTitle";
 import { useCoralColors } from "@/components/coral/useCoral";
 import { useAuth } from "@/context/AppContext";
 import { useSignUp } from "@/features/auth/hooks/useAuthMutations";
-import { PasswordStrengthMeter } from "@/components/forms/PasswordStrengthMeter";
 import { registerSchema, type RegisterFormData } from "@/validation/schemas";
 import { useAppToast } from "@/hooks/useAppToast";
 
@@ -26,19 +25,15 @@ export default function RegisterScreen(): JSX.Element {
   const { mutateAsync: signUp, isPending } = useSignUp();
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     control,
     handleSubmit,
-    watch,
     formState: { errors },
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
-    defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
+    defaultValues: { name: "", email: "", password: "" },
   });
-
-  const watchedPassword = watch("password");
 
   const onSubmit = async (data: RegisterFormData): Promise<void> => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -90,7 +85,7 @@ export default function RegisterScreen(): JSX.Element {
           name="name"
           render={({ field: { onChange, onBlur, value } }) => (
             <CoralField
-              label="Full name"
+              label="Name"
               placeholder="John Doe"
               autoCapitalize="words"
               autoComplete="name"
@@ -161,60 +156,16 @@ export default function RegisterScreen(): JSX.Element {
               <Eye size={20} color={coral.muted} strokeWidth={1.6} />
             )}
           </Pressable>
-          <View style={{ marginTop: -6 }}>
-            <PasswordStrengthMeter password={watchedPassword || ""} />
-          </View>
           <Text
             style={{
               fontFamily: "InstrumentSans_400Regular",
               fontSize: 12,
               color: coral.muted,
-              marginTop: 4,
+              marginTop: 8,
             }}
           >
-            Use 8 to 72 characters with at least one number or symbol.
+            Use at least 8 characters with a number or symbol.
           </Text>
-        </View>
-
-        <View>
-          <Controller
-            control={control}
-            name="confirmPassword"
-            render={({ field: { onChange, onBlur, value } }) => (
-              <CoralField
-                label="Confirm password"
-                placeholder="Repeat your password"
-                secureTextEntry={!showConfirmPassword}
-                autoComplete="new-password"
-                returnKeyType="done"
-                error={errors.confirmPassword?.message}
-                onChangeText={onChange}
-                onBlur={onBlur}
-                value={value}
-                style={{ paddingRight: 44 }}
-              />
-            )}
-          />
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={showConfirmPassword ? "Hide password" : "Show password"}
-            onPress={() => {
-              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              setShowConfirmPassword(!showConfirmPassword);
-            }}
-            style={{
-              position: "absolute",
-              right: 12,
-              top: 38,
-              padding: 4,
-            }}
-          >
-            {showConfirmPassword ? (
-              <EyeOff size={20} color={coral.muted} strokeWidth={1.6} />
-            ) : (
-              <Eye size={20} color={coral.muted} strokeWidth={1.6} />
-            )}
-          </Pressable>
         </View>
 
         <View style={{ marginTop: 8 }}>
@@ -225,44 +176,15 @@ export default function RegisterScreen(): JSX.Element {
             loading={isPending}
           />
         </View>
-      </View>
 
-      <View
-        style={{
-          flexDirection: "row",
-          justifyContent: "center",
-          alignItems: "center",
-          gap: 6,
-          marginTop: 32,
-        }}
-      >
-        <Text
-          style={{
-            fontFamily: "InstrumentSans_400Regular",
-            fontSize: 16,
-            color: coral.muted,
-          }}
-        >
-          Already have an account?
-        </Text>
-        <Pressable
+        <CoralButton
+          label="Already have an account? Sign in"
+          variant="secondary"
           onPress={() => {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             router.push("/(auth)/login");
           }}
-          hitSlop={8}
-          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-        >
-          <Text
-            style={{
-              fontFamily: "InstrumentSans_600SemiBold",
-              fontSize: 16,
-              color: coral.accent,
-            }}
-          >
-            Sign in
-          </Text>
-        </Pressable>
+        />
       </View>
     </CoralScreen>
   );

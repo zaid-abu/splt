@@ -60,7 +60,7 @@ export function ExpenseComments({
     setSending(true);
     const currentText = text;
     try {
-      await addComment({ expenseId, userId: currentUserId, text: currentText.trim() });
+      await addComment({ expenseId, text: currentText.trim() });
       setText("");
     } catch {
       setText(currentText);
@@ -168,7 +168,7 @@ export function ExpenseComments({
                         fontFamily: "InstrumentSans_500Medium",
                       }}
                     >
-                      {commentDate(comment.created_at)}
+                      {commentDate(comment.createdAt.toISOString())}
                     </Text>
                     {showDelete && (
                       <Pressable

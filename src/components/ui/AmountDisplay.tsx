@@ -11,7 +11,6 @@ import { View } from "react-native";
 
 import type { Currency } from "@/types";
 import { CURRENCIES } from "@/types";
-
 export function getCurrencySymbol(code: string): string {
   return CURRENCIES.find((c: Currency) => c.code === code)?.symbol ?? code;
 }

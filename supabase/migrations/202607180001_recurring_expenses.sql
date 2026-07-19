@@ -359,7 +359,7 @@ BEGIN
     PERFORM cron.schedule(
       'generate-due-recurring-expenses',
       '0 2 * * *',
-      $$SELECT public.generate_due_recurring_expenses(current_date)$$
+      $cron$SELECT public.generate_due_recurring_expenses(current_date)$cron$
     );
   END IF;
 END;

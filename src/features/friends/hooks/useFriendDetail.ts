@@ -294,7 +294,7 @@ export function useFriendDetail(friendId: string) {
         },
       ]
     );
-  }, [directFriendship, friend, removeFriend, router, toast]);
+  }, [directFriendship, friend, transitionFriendship, router, toast]);
 
   const recentActivity = sharedActivities[0] ?? null;
   const lastActivityCopy = recentActivity

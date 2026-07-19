@@ -30,7 +30,7 @@ export const CommentsService = {
       .order("created_at", { ascending: true });
 
     if (error) throw error;
-    return (data ?? []).map(mapExpenseCommentWithUser);
+    return (data ?? []).map((row) => mapExpenseCommentWithUser(row as typeof row & { user?: Pick<User, "id" | "name" | "initials"> | null }));
   },
 
   async addComment(expenseId: string, text: string): Promise<ExpenseCommentWithUser> {
@@ -51,7 +51,7 @@ export const CommentsService = {
       .single();
 
     if (error) throw error;
-    return mapExpenseCommentWithUser(data);
+    return mapExpenseCommentWithUser(data as typeof data & { user?: Pick<User, "id" | "name" | "initials"> | null });
   },
 
   async deleteComment(commentId: string): Promise<void> {

@@ -61,7 +61,7 @@ describe("groupsApi.inviteMembers", () => {
 
     const result = await groupsApi.inviteMembers("g-1", ["u2", "u3"])
 
-    expect(rpc).toHaveBeenCalledWith("invite_group_members", {
+    expect(rpc).toHaveBeenCalledWith("invite_group_members_v2", {
       p_group_id: "g-1",
       p_invitee_ids: ["u2", "u3"],
     })
@@ -75,7 +75,7 @@ describe("groupsApi.respondToInvitation", () => {
 
     const result = await groupsApi.respondToInvitation("inv-1", "accept")
 
-    expect(rpc).toHaveBeenCalledWith("respond_to_group_invitation", {
+    expect(rpc).toHaveBeenCalledWith("respond_group_invitation", {
       p_invitation_id: "inv-1",
       p_decision: "accept",
     })
@@ -85,7 +85,7 @@ describe("groupsApi.respondToInvitation", () => {
   it("calls RPC with decline", async () => {
     rpc.mockResolvedValueOnce({ data: "declined", error: null })
     await groupsApi.respondToInvitation("inv-1", "decline")
-    expect(rpc).toHaveBeenCalledWith("respond_to_group_invitation", {
+    expect(rpc).toHaveBeenCalledWith("respond_group_invitation", {
       p_invitation_id: "inv-1",
       p_decision: "decline",
     })
@@ -116,10 +116,10 @@ describe("groupsApi.updateSettings", () => {
 
     await groupsApi.updateSettings(input)
 
-    expect(rpc).toHaveBeenCalledWith("update_group_settings", {
+    expect(rpc).toHaveBeenCalledWith("update_group_settings_v2", {
       p_group_id: "g-1",
       p_name: "Updated Group",
-      p_kind: null,
+      p_kind: "",
       p_icon: "Star",
       p_currency: "EUR",
       p_new_expense_alerts: true,
@@ -131,7 +131,7 @@ describe("groupsApi.removeMember", () => {
   it("calls remove_group_member RPC", async () => {
     rpc.mockResolvedValueOnce({ data: null, error: null })
     await groupsApi.removeMember("g-1", "u2")
-    expect(rpc).toHaveBeenCalledWith("remove_group_member", {
+    expect(rpc).toHaveBeenCalledWith("remove_group_member_v2", {
       p_group_id: "g-1",
       p_user_id: "u2",
     })
@@ -142,7 +142,7 @@ describe("groupsApi.leaveGroup", () => {
   it("calls leave_group RPC", async () => {
     rpc.mockResolvedValueOnce({ data: null, error: null })
     await groupsApi.leaveGroup("g-1")
-    expect(rpc).toHaveBeenCalledWith("leave_group", {
+    expect(rpc).toHaveBeenCalledWith("leave_group_v2", {
       p_group_id: "g-1",
     })
   })
@@ -152,7 +152,7 @@ describe("groupsApi.archiveGroup", () => {
   it("calls archive_group RPC", async () => {
     rpc.mockResolvedValueOnce({ data: null, error: null })
     await groupsApi.archiveGroup("g-1")
-    expect(rpc).toHaveBeenCalledWith("archive_group", {
+    expect(rpc).toHaveBeenCalledWith("archive_group_v2", {
       p_group_id: "g-1",
     })
   })

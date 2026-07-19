@@ -8,6 +8,8 @@ export interface ScheduleReadItem {
   state: "needs-review" | "active" | "paused";
   scheduledDate: string;
   href: Href;
+  title: string;
+  nextDueLabel: string;
 }
 
 export interface RecurringReadInput {
@@ -63,6 +65,8 @@ export function buildScheduleSections(
       state: "needs-review",
       scheduledDate: occ.scheduledFor,
       href: recurringHref(re.id),
+      title: re.title,
+      nextDueLabel: new Date(occ.scheduledFor).toLocaleDateString(),
     });
   }
 
@@ -75,6 +79,8 @@ export function buildScheduleSections(
         state: "paused",
         scheduledDate: re.nextRunDate,
         href: recurringHref(re.id),
+        title: re.title,
+        nextDueLabel: new Date(re.nextRunDate).toLocaleDateString(),
       });
     } else if (re.status === "active" && !pendingRecurringIds.has(re.id)) {
       active.push({
@@ -84,6 +90,8 @@ export function buildScheduleSections(
         state: "active",
         scheduledDate: re.nextRunDate,
         href: recurringHref(re.id),
+        title: re.title,
+        nextDueLabel: new Date(re.nextRunDate).toLocaleDateString(),
       });
     }
   }

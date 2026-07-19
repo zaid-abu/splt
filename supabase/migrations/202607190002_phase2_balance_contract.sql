@@ -222,3 +222,33 @@ as $$
       )
   )
 $$;
+
+-- ── 7. fetch_open_balances ───────────────────────────────────────────────────
+-- Thin wrapper around get_open_balances that splits context_id into
+-- context_group_id / context_friendship_id for the TS service layer.
+
+create or replace function public.fetch_open_balances()
+returns table (
+  counterparty_id uuid,
+  context_type text,
+  context_group_id uuid,
+  context_friendship_id uuid,
+  currency text,
+  signed_amount_minor bigint,
+  last_activity_at timestamptz
+)
+language sql
+security definer
+set search_path = public, pg_temp
+stable
+as $$
+  select
+    ob.counterparty_id,
+    ob.context_type,
+    case when ob.context_type = 'group' then ob.context_id else null end,
+    case when ob.context_type = 'direct' then ob.context_id else null end,
+    ob.currency,
+    ob.signed_amount_minor,
+    ob.last_activity_at
+  from public.get_open_balances() ob
+$$;

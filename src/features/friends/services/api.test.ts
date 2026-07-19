@@ -30,7 +30,7 @@ describe("FriendsService.searchExactEmail", () => {
 
     const result = await FriendsService.searchExactEmail("alice@example.com")
 
-    expect(rpc).toHaveBeenCalledWith("search_user_by_email", {
+    expect(rpc).toHaveBeenCalledWith("search_user_by_exact_email", {
       p_email: "alice@example.com",
     })
     expect(result).toEqual({

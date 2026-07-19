@@ -12,7 +12,7 @@ jest.mock("@/context/AppContext", () => ({
 
 jest.mock("@/store/useUIStore", () => ({
   useUIStore: (selector: any) => {
-    const store = { isDarkMode: false, preferredCurrency: { code: "USD" }, convertCurrency: jest.fn() }
+    const store = { isDarkMode: false, preferredCurrency: { code: "USD" }, convertCurrency: (amount: number) => amount }
     return selector(store)
   },
 }))
@@ -218,7 +218,7 @@ describe("MoneyMapScreen", () => {
     })
     await renderScreen()
     expect(screen.getByText("Across all your circles")).toBeTruthy()
-    expect(screen.getByText("You're owed 5000.00 \u00B7 You owe 0.00")).toBeTruthy()
+    expect(screen.getByText("You're owed 50.00 \u00B7 You owe 0.00")).toBeTruthy()
   })
 
   it("shows attention rows and routes to friend detail", async () => {

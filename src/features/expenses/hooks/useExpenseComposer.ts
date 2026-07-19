@@ -1,5 +1,5 @@
 import { useReducer, useCallback, useEffect, useRef } from "react"
-import type { MoneyContext, MoneySplitMethod, SplitSourceValue } from "@/features/money/types"
+import type { MoneyContext, MoneySplitMethod, SplitSource, SplitSourceValue } from "@/features/money/types"
 import { calculateSplits, parseMinorInput, validateSplitSources } from "@/features/money/splits"
 import type { ExpenseCategory } from "@/types"
 

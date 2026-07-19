@@ -21,7 +21,7 @@ import { useUI, IconButton } from "@/components/ui";
 import { useAuth } from "@/context/AppContext";
 import { useExpenseForm } from "@/features/expenses/hooks/useExpenseForm";
 import {
-  useAddExpense,
+  useCreateExpense,
   useExpenseDetails,
   useUpdateExpense,
   useUserExpenses,
@@ -57,7 +57,7 @@ export default function NewExpenseScreen(): JSX.Element {
   const { data: friends = [] } = useFriends(currentUser?.id);
   const { data: expenses = [] } = useUserExpenses(currentUser?.id);
   const { data: expenseDetail } = useExpenseDetails(expenseId);
-  const { mutateAsync: addExpense } = useAddExpense();
+  const { mutateAsync: addExpense } = useCreateExpense();
   const { mutateAsync: updateExpense } = useUpdateExpense();
   const preferredCurrency = useUIStore((state) => state.preferredCurrency);
   const setCurrency = useUIStore((state) => state.setCurrency);

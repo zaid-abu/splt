@@ -614,6 +614,18 @@ export interface Database {
         };
         Returns: number;
       };
+      fetch_open_balances: {
+        Args: Record<string, never>;
+        Returns: {
+          counterparty_id: string;
+          context_type: string;
+          context_group_id: string;
+          context_friendship_id: string;
+          currency: string;
+          signed_amount_minor: number;
+          last_activity_at: string;
+        }[];
+      };
       get_open_balances: {
         Args: Record<string, never>;
         Returns: {

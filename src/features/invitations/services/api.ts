@@ -20,7 +20,7 @@ export const invitationsApi = {
 
     if (error) throw error
 
-    const result = data as {
+    const result = data as unknown as {
       invite_id: string
       raw_token: string
       expires_at: string
@@ -48,14 +48,14 @@ export const invitationsApi = {
 
     if (error) throw error
 
-    const result = data as {
-      state: "valid" | "expired" | "revoked" | "redeemed" | "self" | "blocked"
+    const result = data as unknown as {
+      state: string
       inviter_id?: string
       expires_at?: string
     }
 
     return {
-      state: result.state,
+      state: result.state as InviteResolution["state"],
       inviterId: result.inviter_id,
       expiresAt: result.expires_at ? new Date(result.expires_at) : undefined,
     }

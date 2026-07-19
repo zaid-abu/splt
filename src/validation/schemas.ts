@@ -38,17 +38,11 @@ export const passwordFormSchema = z
     path: ["confirmPassword"],
   });
 
-export const registerSchema = z
-  .object({
-    name: nameValidator,
-    email: emailValidator,
-    password: accountPasswordValidator,
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords do not match.",
-    path: ["confirmPassword"],
-  });
+export const registerSchema = z.object({
+  name: nameValidator,
+  email: emailValidator,
+  password: accountPasswordValidator,
+});
 
 export type RegisterFormData = z.infer<typeof registerSchema>;
 export type PasswordFormData = z.infer<typeof passwordFormSchema>;

@@ -271,8 +271,13 @@ jest.mock("@/features/groups/hooks/useGroupSettings", () => ({
   useGroupSettings: jest.fn(),
 }))
 
+jest.mock("@/utils/randomUUID", () => ({
+  randomUUID: jest.fn(),
+}))
+
 import NewGroupScreen from "./NewGroupScreen"
 import { useCreateGroup } from "@/features/groups/queries/useGroups"
+import { randomUUID } from "@/utils/randomUUID"
 
 const mockMutateAsync = jest.fn()
 const mockUuid1 = "00000000-0000-0000-0000-000000000001"
@@ -284,7 +289,7 @@ beforeEach(() => {
     mutateAsync: mockMutateAsync,
     isPending: false,
   })
-  jest.spyOn(crypto, "randomUUID").mockReturnValueOnce(mockUuid1)
+  ;(randomUUID as Mock).mockReturnValue(mockUuid1)
 })
 
 describe("creates group atomically", () => {

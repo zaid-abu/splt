@@ -59,18 +59,18 @@ export const groupsApi = {
     const { data, error } = await supabase.rpc("create_group_v2", {
       p_client_operation_id: input.clientOperationId,
       p_name: input.name,
-      p_kind: input.kind ?? null,
+      p_kind: input.kind ?? "",
       p_icon: input.icon,
       p_currency: input.currency,
       p_invitee_ids: input.inviteeIds,
     })
 
     if (error) throw error
-    return data as Group
+    return data as unknown as Group
   },
 
   async inviteMembers(groupId: string, inviteeIds: string[]): Promise<string[]> {
-    const { data, error } = await supabase.rpc("invite_group_members", {
+    const { data, error } = await supabase.rpc("invite_group_members_v2", {
       p_group_id: groupId,
       p_invitee_ids: inviteeIds,
     })
@@ -80,7 +80,7 @@ export const groupsApi = {
   },
 
   async respondToInvitation(id: string, decision: "accept" | "decline"): Promise<string> {
-    const { data, error } = await supabase.rpc("respond_to_group_invitation", {
+    const { data, error } = await supabase.rpc("respond_group_invitation", {
       p_invitation_id: id,
       p_decision: decision,
     })
@@ -98,10 +98,10 @@ export const groupsApi = {
   },
 
   async updateSettings(input: UpdateGroupSettingsInput): Promise<void> {
-    const { error } = await supabase.rpc("update_group_settings", {
+    const { error } = await supabase.rpc("update_group_settings_v2", {
       p_group_id: input.groupId,
       p_name: input.name,
-      p_kind: input.kind ?? null,
+      p_kind: input.kind ?? "",
       p_icon: input.icon,
       p_currency: input.currency,
       p_new_expense_alerts: input.newExpenseAlerts,
@@ -111,7 +111,7 @@ export const groupsApi = {
   },
 
   async removeMember(groupId: string, userId: string): Promise<void> {
-    const { error } = await supabase.rpc("remove_group_member", {
+    const { error } = await supabase.rpc("remove_group_member_v2", {
       p_group_id: groupId,
       p_user_id: userId,
     })
@@ -120,7 +120,7 @@ export const groupsApi = {
   },
 
   async leaveGroup(groupId: string): Promise<void> {
-    const { error } = await supabase.rpc("leave_group", {
+    const { error } = await supabase.rpc("leave_group_v2", {
       p_group_id: groupId,
     })
 
@@ -128,7 +128,7 @@ export const groupsApi = {
   },
 
   async archiveGroup(groupId: string): Promise<void> {
-    const { error } = await supabase.rpc("archive_group", {
+    const { error } = await supabase.rpc("archive_group_v2", {
       p_group_id: groupId,
     })
 

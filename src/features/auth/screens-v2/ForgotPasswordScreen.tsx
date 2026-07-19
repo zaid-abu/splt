@@ -1,11 +1,11 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import type { JSX } from "react";
 import { useEffect, useState } from "react";
-import { View, Text, Pressable } from "react-native";
+import { View, Text } from "react-native";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as Haptics from "expo-haptics";
-import { Mail, CreditCard } from "lucide-react-native";
+import { Mail } from "lucide-react-native";
 import { CoralScreen } from "@/components/coral/CoralScreen";
 import { CoralTopBar } from "@/components/coral/CoralTopBar";
 import { CoralButton } from "@/components/coral/CoralButton";
@@ -91,7 +91,7 @@ export default function ForgotPasswordScreen(): JSX.Element {
 
   return (
     <CoralScreen>
-      <CoralTopBar title="Reset password" onBack={() => router.back()} />
+      <CoralTopBar title="Password recovery" onBack={() => router.back()} />
 
       {sent ? (
         <View style={{ alignItems: "center", paddingTop: 12 }}>
@@ -161,22 +161,6 @@ export default function ForgotPasswordScreen(): JSX.Element {
         </View>
       ) : (
         <>
-          <View
-            style={{
-              alignSelf: "center",
-              width: 72,
-              height: 72,
-              borderRadius: 20,
-              backgroundColor: coral.accentSoft,
-              alignItems: "center",
-              justifyContent: "center",
-              marginTop: 16,
-              marginBottom: 24,
-            }}
-          >
-            <CreditCard size={36} color={coral.accent} strokeWidth={1.5} />
-          </View>
-
           <LargeTitle style={{ textAlign: "center", marginTop: 0 }}>
             Reset your password.
           </LargeTitle>
@@ -201,7 +185,7 @@ export default function ForgotPasswordScreen(): JSX.Element {
               name="email"
               render={({ field: { onChange, onBlur, value } }) => (
                 <CoralField
-                  label="Email"
+                  label="Account email"
                   placeholder="hello@splt.app"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -217,37 +201,37 @@ export default function ForgotPasswordScreen(): JSX.Element {
 
             <View style={{ marginTop: 8 }}>
               <CoralButton
-                label="Send reset link"
+                label="Send recovery link"
                 variant="primary"
                 onPress={handleSubmit(onSubmit, onInvalid)}
                 loading={isPending}
               />
             </View>
-          </View>
-        </>
-      )}
 
-      <View style={{ flexDirection: "row", justifyContent: "center", marginTop: 32 }}>
-        <Pressable
-          onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-            router.back();
-          }}
-          hitSlop={8}
-          style={({ pressed }) => ({ opacity: pressed ? 0.6 : 1 })}
-        >
+            <CoralButton
+              label="Back to sign in"
+              variant="secondary"
+              onPress={() => {
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                router.back();
+              }}
+            />
+          </View>
+
           <Text
             style={{
-              fontFamily: "InstrumentSans_600SemiBold",
-              fontSize: 16,
-              color: coral.accent,
-              textDecorationLine: "underline",
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 13,
+              color: coral.muted,
+              textAlign: "center",
+              marginTop: 24,
+              lineHeight: 20,
             }}
           >
-            Back to Sign in
+            The recovery link expires after 60 minutes and can be requested again.
           </Text>
-        </Pressable>
-      </View>
+        </>
+      )}
     </CoralScreen>
   );
 }

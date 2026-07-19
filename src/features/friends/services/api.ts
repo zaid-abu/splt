@@ -106,14 +106,14 @@ export const FriendsService = {
   },
 
   async searchExactEmail(email: string): Promise<UserSearchResult> {
-    const { data, error } = await supabase.rpc("search_user_by_email", {
+    const { data, error } = await supabase.rpc("search_user_by_exact_email", {
       p_email: email,
     })
 
     if (error) throw error
 
-    const result = data as {
-      state: "found" | "not_found" | "blocked"
+    const result = data as unknown as {
+      state: string
       user_id?: string
       name?: string
       initials?: string
@@ -121,7 +121,7 @@ export const FriendsService = {
     }
 
     return {
-      state: result.state,
+      state: result.state as UserSearchResult["state"],
       userId: result.user_id,
       name: result.name,
       initials: result.initials,

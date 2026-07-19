@@ -14,6 +14,10 @@ export interface SplitSource {
   shareUnits?: number;
 }
 
+export type SplitSourceValue = Partial<
+  Pick<SplitSource, "amountMinor" | "percentageUnits" | "shareUnits">
+>;
+
 export interface OpenBalance {
   counterpartyId: string;
   context: MoneyContext;

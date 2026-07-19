@@ -42,14 +42,23 @@ export function CoralSegment({ options, selected, onSelect }: CoralSegmentProps)
               backgroundColor: isActive ? coral.surface : "transparent",
               alignItems: "center",
               justifyContent: "center",
+              ...(isActive
+                ? {
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.08,
+                    shadowRadius: 5,
+                    elevation: 3,
+                  }
+                : {}),
             }}
           >
             <Text
               style={{
                 fontFamily: "InstrumentSans_600SemiBold",
                 fontSize: 13,
-                fontWeight: isActive ? "600" : "400",
-                color: coral.foreground,
+                fontWeight: "600",
+                color: isActive ? coral.foreground : coral.muted,
               }}
             >
               {option.label}

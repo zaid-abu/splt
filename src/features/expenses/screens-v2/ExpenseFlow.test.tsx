@@ -157,7 +157,7 @@ jest.mock("@/components/ui", () => ({
 
 jest.mock("@/components/ui/AmountDisplay", () => ({
   getCurrencySymbol: (code: string) => (code === "USD" ? "$" : code),
-  formatAmount: (amountMinor: number) => `$${(amountMinor / 100).toFixed(2)}`,
+  formatAmount: (amount: number) => `$${amount.toFixed(2)}`,
   AmountDisplay: () => null,
 }))
 
@@ -880,7 +880,7 @@ describe("ExpenseComments component", () => {
 
   it("shows delete button for comment author", async () => {
     mockUseExpenseComments.mockReturnValue({
-      data: [{ id: "c1", expenseId: "e1", userId: "me", text: "My comment", created_at: new Date().toISOString() }],
+      data: [{ id: "c1", expenseId: "e1", userId: "me", text: "My comment", createdAt: new Date() }],
       isLoading: false, isError: false, refetch: jest.fn(),
     })
     await render(React.createElement(ExpenseComments, { ...baseProps, groupCreatedBy: "other" }))
@@ -889,7 +889,7 @@ describe("ExpenseComments component", () => {
 
   it("shows delete button for group creator on group expense", async () => {
     mockUseExpenseComments.mockReturnValue({
-      data: [{ id: "c2", expenseId: "e1", userId: "other", text: "Their comment", created_at: new Date().toISOString() }],
+      data: [{ id: "c2", expenseId: "e1", userId: "other", text: "Their comment", createdAt: new Date() }],
       isLoading: false, isError: false, refetch: jest.fn(),
     })
     await render(React.createElement(ExpenseComments, { ...baseProps, groupCreatedBy: "me" }))

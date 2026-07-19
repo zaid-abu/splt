@@ -25,21 +25,22 @@ export function MoneyRow({
 }: MoneyRowProps) {
   const coral = useCoralColors();
 
-  const amountColor = {
-    neutral: coral.foreground,
-    positive: coral.positive,
-    negative: coral.negative,
-  }[amountTone];
+  const pillColors: Record<string, { bg: string; fg: string }> = {
+    neutral: { bg: coral.bg, fg: coral.muted },
+    positive: { bg: coral.positiveSoft, fg: coral.positive },
+    negative: { bg: coral.negativeSoft, fg: coral.negative },
+  };
+  const pc = pillColors[amountTone];
 
   const content = (
     <View
       style={{
-        minHeight: 68,
+        minHeight: 64,
         paddingVertical: 10,
-        paddingHorizontal: 2,
+        paddingHorizontal: 12,
         flexDirection: "row",
         alignItems: "center",
-        gap: 12,
+        gap: 11,
       }}
     >
       {avatar}
@@ -48,8 +49,8 @@ export function MoneyRow({
           numberOfLines={1}
           style={{
             fontFamily: "InstrumentSans_600SemiBold",
-            fontSize: 16,
-            letterSpacing: -0.005 * 16,
+            fontSize: 14,
+            letterSpacing: -0.01 * 14,
             color: coral.foreground,
           }}
         >
@@ -60,8 +61,8 @@ export function MoneyRow({
             numberOfLines={1}
             style={{
               fontFamily: "InstrumentSans_400Regular",
-              fontSize: 13,
-              lineHeight: 13 * 1.45,
+              fontSize: 12,
+              lineHeight: 12 * 1.4,
               color: coral.muted,
               marginTop: 3,
             }}
@@ -70,16 +71,30 @@ export function MoneyRow({
           </Text>
         ) : null}
       </View>
-      <Text
+      <View
         style={{
-          fontFamily: "IBMPlexMono_600SemiBold",
-          fontVariant: ["tabular-nums"],
-          letterSpacing: -0.01 * 16,
-          color: amountColor,
+          minHeight: 30,
+          paddingVertical: 4,
+          paddingHorizontal: 9,
+          borderRadius: 999,
+          backgroundColor: pc.bg,
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
-        {amount}
-      </Text>
+        <Text
+          style={{
+            fontFamily: "IBMPlexMono_600SemiBold",
+            fontSize: 11,
+            lineHeight: 11 * 1.1,
+            fontVariant: ["tabular-nums"],
+            letterSpacing: -0.01 * 11,
+            color: pc.fg,
+          }}
+        >
+          {amount}
+        </Text>
+      </View>
       {rightElement}
     </View>
   );

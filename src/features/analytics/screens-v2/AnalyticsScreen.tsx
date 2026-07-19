@@ -21,9 +21,8 @@ import * as icons from "lucide-react-native";
 const PERIOD_OPTIONS = [
   { label: "Week", value: "week" },
   { label: "Month", value: "month" },
-  { label: "3 Months", value: "3mo" },
+  { label: "3 months", value: "3mo" },
   { label: "Year", value: "year" },
-  { label: "All Time", value: "all" },
 ];
 
 export default function AnalyticsScreen() {

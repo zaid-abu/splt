@@ -1,5 +1,6 @@
 import { useState, useRef } from "react"
 import { View, ScrollView, Pressable, Text, Keyboard } from "react-native"
+import { randomUUID } from "@/utils/randomUUID"
 import { BottomSheetModal } from "@gorhom/bottom-sheet"
 import * as Haptics from "expo-haptics"
 import * as icons from "lucide-react-native"
@@ -45,7 +46,7 @@ export default function NewGroupScreen() {
   const [selectedUsers, setSelectedUsers] = useState<User[]>([])
   const [snackbar, setSnackbar] = useState({ visible: false, message: "" })
 
-  const operationId = useRef(crypto.randomUUID())
+  const operationId = useRef(randomUUID())
 
   const handleAddUser = (user: User) => {
     if (!selectedUsers.find((u) => u.id === user.id)) {
@@ -75,7 +76,7 @@ export default function NewGroupScreen() {
       })
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      operationId.current = crypto.randomUUID()
+      operationId.current = randomUUID()
 
       if (resume === "expense") {
         router.replace({ pathname: "/expense/new", params: { groupId: group.id } })

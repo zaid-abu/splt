@@ -197,7 +197,7 @@ export default function VerifyEmailScreen(): JSX.Element {
 
       <View style={{ gap: 12 }}>
         <CoralButton
-          label="Verify and continue"
+          label="Verify email"
           variant="primary"
           onPress={handleVerify}
           loading={isVerifying}
@@ -212,6 +212,19 @@ export default function VerifyEmailScreen(): JSX.Element {
           disabled={cooldown > 0}
         />
       </View>
+
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_400Regular",
+          fontSize: 13,
+          color: coral.muted,
+          textAlign: "center",
+          marginTop: 24,
+          lineHeight: 20,
+        }}
+      >
+        Your setup progress belongs to this account and is safe if you leave this screen.
+      </Text>
     </CoralScreen>
   );
 }
