@@ -2,7 +2,6 @@ import { forwardRef } from "react";
 import type { ForwardedRef } from "react";
 import { View, TextInput, Text } from "react-native";
 import type { TextInputProps } from "react-native";
-import { useUI } from "@/components/ui";
 import { useCoralColors } from "./useCoral";
 
 type CoralFieldProps = TextInputProps & {
@@ -14,7 +13,6 @@ export const CoralField = forwardRef(function CoralField(
   { label, error, style, ...props }: CoralFieldProps,
   ref: ForwardedRef<TextInput>
 ) {
-  const { color } = useUI();
   const coral = useCoralColors();
 
   return (
@@ -25,7 +23,7 @@ export const CoralField = forwardRef(function CoralField(
             fontFamily: "InstrumentSans_500Medium",
             fontSize: 13,
             letterSpacing: 0.02 * 13,
-            color: color.muted,
+            color: coral.muted,
           }}
         >
           {label}
@@ -33,18 +31,18 @@ export const CoralField = forwardRef(function CoralField(
       ) : null}
       <TextInput
         ref={ref}
-        placeholderTextColor={color.muted}
+        placeholderTextColor={coral.muted}
         style={[
           {
             fontFamily: "InstrumentSans_400Regular",
             minHeight: 54,
             borderWidth: 1,
-            borderColor: error ? coral.negative : color.border,
+            borderColor: error ? coral.negative : coral.border,
             borderRadius: 14,
-            backgroundColor: color.surface,
+            backgroundColor: coral.surface,
             paddingHorizontal: 15,
             fontSize: 16,
-            color: color.text,
+            color: coral.foreground,
           },
           style,
         ]}
