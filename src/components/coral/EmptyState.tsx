@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { View, Text } from "react-native";
-import { useUI } from "@/components/ui";
 import { useCoralColors } from "./useCoral";
 
 type EmptyStateProps = {
@@ -11,7 +10,6 @@ type EmptyStateProps = {
 };
 
 export function EmptyState({ visual, title, subtitle, children }: EmptyStateProps) {
-  const { color } = useUI();
   const coral = useCoralColors();
 
   return (
@@ -41,7 +39,7 @@ export function EmptyState({ visual, title, subtitle, children }: EmptyStateProp
           fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 18,
           fontWeight: "600",
-          color: color.text,
+          color: coral.foreground,
           textAlign: "center",
           marginBottom: subtitle ? 8 : 0,
         }}
@@ -53,7 +51,7 @@ export function EmptyState({ visual, title, subtitle, children }: EmptyStateProp
           style={{
             fontFamily: "InstrumentSans_400Regular",
             fontSize: 15,
-            color: color.muted,
+            color: coral.muted,
             textAlign: "center",
             lineHeight: 21,
             maxWidth: 280,

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { View, Text, Pressable } from "react-native";
-import { useUI } from "@/components/ui";
 import { useCoralColors } from "./useCoral";
 
 type GroupTileProps = {
@@ -20,7 +19,6 @@ export function GroupTile({
   balanceTone = "neutral",
   style,
 }: GroupTileProps) {
-  const { color } = useUI();
   const coral = useCoralColors();
 
   const content = (
@@ -29,8 +27,8 @@ export function GroupTile({
         {
           minHeight: 160,
           borderWidth: 1,
-          borderColor: color.border,
-          backgroundColor: color.surface,
+          borderColor: coral.border,
+          backgroundColor: coral.surface,
           borderRadius: 16,
           padding: 17,
           flexDirection: "column",
@@ -65,7 +63,7 @@ export function GroupTile({
           fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 17,
           fontWeight: "600",
-          color: color.text,
+          color: coral.foreground,
           marginTop: "auto",
         }}
       >
@@ -76,7 +74,7 @@ export function GroupTile({
           style={{
             fontFamily: "InstrumentSans_400Regular",
             fontSize: 12,
-            color: color.muted,
+            color: coral.muted,
             marginTop: 5,
           }}
         >
