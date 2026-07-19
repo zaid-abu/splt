@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { View, TextInput, Pressable } from "react-native";
 import type { TextInputProps } from "react-native";
 import { Search, XCircle } from "lucide-react-native";
-import { useUI } from "@/components/ui";
+import { useCoralColors } from "./useCoral";
 
 type CoralSearchFieldProps = TextInputProps & {
   value: string;
@@ -19,27 +19,27 @@ export function CoralSearchField({
   style,
   ...props
 }: CoralSearchFieldProps) {
-  const { color } = useUI();
+  const coral = useCoralColors();
 
   return (
     <View
       style={{
         flexDirection: "row",
         alignItems: "center",
-        backgroundColor: color.surface,
+        backgroundColor: coral.surface,
         borderWidth: 1,
-        borderColor: color.border,
+        borderColor: coral.border,
         borderRadius: 14,
         minHeight: 48,
         paddingHorizontal: 14,
         gap: 9,
       }}
     >
-      <Search size={19} color={color.muted} strokeWidth={1.7} />
+      <Search size={19} color={coral.muted} strokeWidth={1.7} />
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        placeholderTextColor={color.muted}
+        placeholderTextColor={coral.muted}
         autoCapitalize="none"
         autoCorrect={false}
         style={[
@@ -47,7 +47,7 @@ export function CoralSearchField({
             flex: 1,
             fontFamily: "InstrumentSans_400Regular",
             fontSize: 16,
-            color: color.text,
+            color: coral.foreground,
             padding: 0,
           },
           style,
@@ -57,7 +57,7 @@ export function CoralSearchField({
       {rightElement ??
         (value.length > 0 && onClear ? (
           <Pressable accessibilityRole="button" onPress={onClear} hitSlop={8}>
-            <XCircle size={19} color={color.muted} strokeWidth={1.7} />
+            <XCircle size={19} color={coral.muted} strokeWidth={1.7} />
           </Pressable>
         ) : null)}
     </View>
