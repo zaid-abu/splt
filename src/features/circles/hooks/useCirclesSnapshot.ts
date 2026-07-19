@@ -37,6 +37,9 @@ export interface PersonSection {
   friendship: Friendship | null
   classification: "mixed" | "owes-you" | "you-owe" | "settled"
   topBalance: OpenBalance | null
+  sharedGroupCount: number
+  topBalanceContextLabel: string | null
+  lastActivityAt: Date | null
 }
 
 export interface CirclesData {
@@ -206,11 +209,21 @@ export function useCirclesSnapshot(userId: string, search: string): SnapshotStat
               (f.userId === userId && f.friendId === u.id) ||
               (f.friendId === userId && f.userId === u.id)
           ) ?? null
+        const sharedGroupCount = new Set(
+          balances.filter((balance) => balance.context.type === "group").map((balance) => balance.context.groupId)
+        ).size
+        const topBalance = balances[0] ?? null
         return {
           user: u,
           friendship,
           classification,
-          topBalance: balances[0] ?? null,
+          topBalance,
+          sharedGroupCount,
+          topBalanceContextLabel:
+            topBalance?.context.type === "group"
+              ? membershipByGroup.get(topBalance.context.groupId)?.name ?? null
+              : null,
+          lastActivityAt: topBalance?.lastActivityAt ?? null,
         }
       })
       .sort((a, b) => {

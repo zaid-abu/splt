@@ -16,7 +16,6 @@ import {
   MoneyRow,
   useCoralColors,
 } from "@/components/coral";
-import { useUI } from "@/components/ui";
 import { useAuth } from "@/context/AppContext";
 import {
   useCirclesSnapshot,
@@ -26,6 +25,7 @@ import {
 } from "@/features/circles/hooks/useCirclesSnapshot";
 import { parseCircleSegment, type CircleSegment } from "@/features/navigation/shell";
 import { useTransitionFriendship } from "@/features/friends/queries/useFriends";
+import { formatActivityDate } from "@/utils/date";
 
 const SEGMENTS = [
   { label: "Groups", value: "groups" },
@@ -54,17 +54,16 @@ function signedAmount(amountMajor: number, currency: string): string {
   return `${currency} ${isZeroDecimal ? "0" : "0.00"}`;
 }
 
+function pluralize(count: number, singular: string, plural: string): string {
+  return `${count} ${count === 1 ? singular : plural}`;
+}
+
 function groupSubtitle(section: GroupSection): string {
   const { group, balance } = section;
   if (balance === null || balance.signedAmountMinor === 0) {
-    return `${group.members.length} people · Settled`;
+    return `${pluralize(group.members.length, "person", "people")} · no open balances`;
   }
-  const absMajor = Math.abs(balance.signedAmountMinor) / 100;
-  const formatted = formatAmount(absMajor, balance.currency);
-  if (balance.signedAmountMinor > 0) {
-    return `${group.members.length} people · You are owed ${formatted}`;
-  }
-  return `${group.members.length} people · You owe ${formatted}`;
+  return `${pluralize(group.members.length, "person", "people")} · active ${formatActivityDate(balance.lastActivityAt).toLowerCase()}`;
 }
 
 function groupAmount(section: GroupSection): {
@@ -83,16 +82,30 @@ function groupAmount(section: GroupSection): {
 }
 
 function personSubtitle(section: PersonSection): string {
-  const { user, classification, topBalance } = section;
+  const { user, classification, topBalance, sharedGroupCount, topBalanceContextLabel, lastActivityAt } = section;
   if (classification === "mixed") return "Mixed balance";
+  const activityLabel = lastActivityAt ? ` · active ${formatActivityDate(lastActivityAt).toLowerCase()}` : "";
   if ((classification === "owes-you" || classification === "you-owe") && topBalance) {
     const absMajor = Math.abs(topBalance.signedAmountMinor) / 100;
     const formatted = formatAmount(absMajor, topBalance.currency);
     const firstName = user.name.split(" ")[0];
-    if (classification === "owes-you") return `${firstName} owes you ${formatted}`;
-    return `You owe ${firstName} ${formatted}`;
+    if (classification === "owes-you") {
+      if (sharedGroupCount > 1) {
+        return `${firstName} owes you across ${pluralize(sharedGroupCount, "group", "groups")}${activityLabel}`;
+      }
+      return topBalanceContextLabel
+        ? `${firstName} owes you from ${topBalanceContextLabel}${activityLabel}`
+        : `${firstName} owes you ${formatted}${activityLabel}`;
+    }
+    if (sharedGroupCount > 1) {
+      return `You owe across ${pluralize(sharedGroupCount, "group", "groups")}${activityLabel}`;
+    }
+    return topBalanceContextLabel
+      ? `You owe from ${topBalanceContextLabel}${activityLabel}`
+      : `You owe ${firstName} ${formatted}${activityLabel}`;
   }
-  return "Settled";
+  if (sharedGroupCount > 1) return `${pluralize(sharedGroupCount, "shared group", "shared groups")} · settled`;
+  return `Settled${activityLabel}`;
 }
 
 function personAmount(section: PersonSection): {
@@ -122,7 +135,7 @@ const CLASSIFICATION_ORDER = ["owes-you", "mixed", "you-owe", "settled"] as cons
 export default function CirclesScreen(): JSX.Element {
   const params = useLocalSearchParams<{ segment?: string | string[] }>();
   const router = useRouter();
-  const { color } = useUI();
+  const coral = useCoralColors();
   const { currentUser } = useAuth();
   const segment = parseCircleSegment(params.segment);
 
@@ -186,18 +199,20 @@ export default function CirclesScreen(): JSX.Element {
   return (
     <CoralScreen>
       <CoralTopBar title="Circles" />
-      <LargeTitle>Your circles.</LargeTitle>
       <Text
         style={{
-          fontFamily: "InstrumentSans_400Regular",
-          fontSize: 15,
-          lineHeight: 22,
-          color: color.muted,
-          marginBottom: 16,
+          fontFamily: "InstrumentSans_600SemiBold",
+          fontSize: 12,
+          letterSpacing: 0.08 * 12,
+          textTransform: "uppercase",
+          color: coral.muted,
+          marginTop: 4,
+          marginBottom: 8,
         }}
       >
-        Groups and people with shared money.
+        Your network
       </Text>
+      <LargeTitle style={{ marginTop: 0, marginBottom: 8 }}>Circles</LargeTitle>
 
       <CoralSegment
         options={[...SEGMENTS]}
@@ -215,7 +230,7 @@ export default function CirclesScreen(): JSX.Element {
 
       {snapshot.isInitialLoading ? (
         <CenteredState>
-          <ActivityIndicator color={color.text} accessibilityLabel={`Loading ${segment}`} />
+          <ActivityIndicator color={coral.foreground} accessibilityLabel={`Loading ${segment}`} />
         </CenteredState>
       ) : snapshot.isError && !snapshot.data ? (
         <CenteredState>
@@ -223,7 +238,7 @@ export default function CirclesScreen(): JSX.Element {
             style={{
               fontFamily: "InstrumentSans_600SemiBold",
               fontSize: 18,
-              color: color.text,
+              color: coral.foreground,
             }}
           >
             Could not load {segment}.
@@ -233,13 +248,13 @@ export default function CirclesScreen(): JSX.Element {
       ) : !hasData && !hasSearch ? (
         <CenteredState>
           <Text
-            style={{
-              fontFamily: "InstrumentSans_400Regular",
-              fontSize: 15,
-              color: color.muted,
-            }}
-          >
-            {segment === "groups" ? "No groups yet." : "No people yet."}
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 15,
+                color: coral.muted,
+              }}
+            >
+              {segment === "groups" ? "No groups yet." : "No people yet."}
           </Text>
         </CenteredState>
       ) : segment === "groups" ? (
@@ -309,13 +324,13 @@ export default function CirclesScreen(): JSX.Element {
           {hasSearch && !needsAttentionGroupSections?.length && !allGroupSections?.length && (
             <CenteredState>
               <Text
-                style={{
-                  fontFamily: "InstrumentSans_400Regular",
-                  fontSize: 15,
-                  color: color.muted,
-                }}
-              >
-                No groups match your search.
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 15,
+                color: coral.muted,
+              }}
+            >
+              No groups match your search.
               </Text>
             </CenteredState>
           )}
@@ -367,13 +382,13 @@ export default function CirclesScreen(): JSX.Element {
             (!snapshot.data?.personSections || snapshot.data.personSections.length === 0) && (
               <CenteredState>
                 <Text
-                  style={{
-                    fontFamily: "InstrumentSans_400Regular",
-                    fontSize: 15,
-                    color: color.muted,
-                  }}
-                >
-                  No people match your search.
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 15,
+                color: coral.muted,
+              }}
+            >
+              No people match your search.
                 </Text>
               </CenteredState>
             )}

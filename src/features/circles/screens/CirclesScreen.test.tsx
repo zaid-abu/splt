@@ -359,7 +359,7 @@ describe("CirclesScreen", () => {
       (useCirclesSnapshot as Mock).mockReturnValue(makeSnapshot({ data: groupsData }));
       await render(<CirclesScreen />);
 
-      fireEvent.press(screen.getByRole("button", { name: /Lake house.*You owe.*USD 12.50/i }));
+      fireEvent.press(screen.getByRole("button", { name: /Lake house.*active/i }));
       expect(mockPush).toHaveBeenCalledWith({
         pathname: "/group/[id]",
         params: { id: "g1" },
@@ -380,6 +380,9 @@ describe("CirclesScreen", () => {
         signedAmountMinor: 400,
         lastActivityAt: new Date(),
       },
+      sharedGroupCount: 1,
+      topBalanceContextLabel: "EIPP eipp",
+      lastActivityAt: new Date(),
     };
 
     const youOweSection: PersonSection = {
@@ -393,6 +396,9 @@ describe("CirclesScreen", () => {
         signedAmountMinor: -2000,
         lastActivityAt: new Date(),
       },
+      sharedGroupCount: 1,
+      topBalanceContextLabel: "Apartment",
+      lastActivityAt: new Date(),
     };
 
     const mixedSection: PersonSection = {
@@ -406,6 +412,9 @@ describe("CirclesScreen", () => {
         signedAmountMinor: 1500,
         lastActivityAt: new Date(),
       },
+      sharedGroupCount: 2,
+      topBalanceContextLabel: null,
+      lastActivityAt: new Date(),
     };
 
     const settledSection: PersonSection = {
@@ -413,6 +422,9 @@ describe("CirclesScreen", () => {
       friendship: null,
       classification: "settled",
       topBalance: null,
+      sharedGroupCount: 2,
+      topBalanceContextLabel: null,
+      lastActivityAt: null,
     };
 
     const peopleData: CirclesData = {
@@ -455,7 +467,7 @@ describe("CirclesScreen", () => {
     it("navigates for you-owe person", async () => {
       await render(<CirclesScreen />);
 
-      fireEvent.press(screen.getByRole("button", { name: /Bob.*You owe.*USD 20.00/i }));
+      fireEvent.press(screen.getByRole("button", { name: /Bob.*You owe from Apartment/i }));
       expect(mockPush).toHaveBeenCalledWith({
         pathname: "/friend/[id]",
         params: { id: "u3" },
@@ -494,7 +506,7 @@ describe("CirclesScreen", () => {
       (useCirclesSnapshot as Mock).mockReturnValue(makeSnapshot({ data }));
       await render(<CirclesScreen />);
 
-      fireEvent.press(screen.getByRole("button", { name: /Lake house.*You are owed/i }));
+      fireEvent.press(screen.getByRole("button", { name: /Lake house.*active/i }));
       expect(mockPush).toHaveBeenCalledWith({
         pathname: "/group/[id]",
         params: { id: "g1" },
@@ -514,6 +526,9 @@ describe("CirclesScreen", () => {
           signedAmountMinor: 400,
           lastActivityAt: new Date(),
         },
+        sharedGroupCount: 1,
+        topBalanceContextLabel: "EIPP eipp",
+        lastActivityAt: new Date(),
       };
       const data: CirclesData = {
         pendingRequests: [],
