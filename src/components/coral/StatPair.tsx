@@ -1,5 +1,4 @@
 import { View, Text } from "react-native";
-import { useUI } from "@/components/ui";
 import { useCoralColors } from "./useCoral";
 
 type StatItem = {
@@ -14,12 +13,11 @@ type StatPairProps = {
 };
 
 export function StatPair({ left, right }: StatPairProps) {
-  const { color } = useUI();
   const coral = useCoralColors();
 
   const renderStat = (stat: StatItem) => {
     const valueColor = {
-      neutral: color.text,
+      neutral: coral.foreground,
       positive: coral.positive,
       negative: coral.negative,
     }[stat.tone ?? "neutral"];
@@ -28,9 +26,9 @@ export function StatPair({ left, right }: StatPairProps) {
       <View
         style={{
           flex: 1,
-          backgroundColor: color.surface,
+          backgroundColor: coral.surface,
           borderWidth: 1,
-          borderColor: color.border,
+          borderColor: coral.border,
           borderRadius: 14,
           padding: 14,
         }}
@@ -50,7 +48,7 @@ export function StatPair({ left, right }: StatPairProps) {
           style={{
             fontFamily: "InstrumentSans_400Regular",
             fontSize: 12,
-            color: color.muted,
+            color: coral.muted,
             marginTop: 5,
           }}
         >

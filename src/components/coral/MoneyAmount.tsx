@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { Text } from "react-native";
 import type { TextStyle } from "react-native";
-import { useUI } from "@/components/ui";
 import { useCoralColors } from "./useCoral";
 
 type MoneyAmountProps = {
@@ -19,11 +18,10 @@ const SIZE_MAP = {
 } as const;
 
 export function MoneyAmount({ children, tone = "neutral", size = "md", style }: MoneyAmountProps) {
-  const { color } = useUI();
   const coral = useCoralColors();
 
   const toneColor = {
-    neutral: color.text,
+    neutral: coral.foreground,
     positive: coral.positive,
     negative: coral.negative,
     inverse: coral.balanceForeground,

@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { View, Text, Pressable } from "react-native";
-import { useUI } from "@/components/ui";
 import { useCoralColors } from "./useCoral";
 
 type MoneyRowProps = {
@@ -24,11 +23,10 @@ export function MoneyRow({
   rightElement,
   accessibilityLabel,
 }: MoneyRowProps) {
-  const { color } = useUI();
   const coral = useCoralColors();
 
   const amountColor = {
-    neutral: color.text,
+    neutral: coral.foreground,
     positive: coral.positive,
     negative: coral.negative,
   }[amountTone];
@@ -52,7 +50,7 @@ export function MoneyRow({
             fontFamily: "InstrumentSans_600SemiBold",
             fontSize: 16,
             letterSpacing: -0.005 * 16,
-            color: color.text,
+            color: coral.foreground,
           }}
         >
           {title}
@@ -64,7 +62,7 @@ export function MoneyRow({
               fontFamily: "InstrumentSans_400Regular",
               fontSize: 13,
               lineHeight: 13 * 1.45,
-              color: color.muted,
+              color: coral.muted,
               marginTop: 3,
             }}
           >
