@@ -20,7 +20,6 @@ export function LargeTitle({ children, style }: LargeTitleProps) {
           fontSize: isIOS ? 36 : 32,
           lineHeight: (isIOS ? 36 : 32) * 1.08,
           letterSpacing: -0.025 * (isIOS ? 36 : 32),
-          fontWeight: "600",
           color: colors.foreground,
           marginTop: isIOS ? 20 : 16,
           marginBottom: 8,

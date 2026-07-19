@@ -56,7 +56,6 @@ export function CoralButton({
           fontSize: 16,
           letterSpacing: 0.02 * 16,
           color: styles.fg,
-          fontWeight: "600",
           textDecorationLine: variant === "text" ? "underline" : "none",
         }}
       >

@@ -38,7 +38,6 @@ export function EmptyState({ visual, title, subtitle, children }: EmptyStateProp
         style={{
           fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 18,
-          fontWeight: "600",
           color: coral.foreground,
           textAlign: "center",
           marginBottom: subtitle ? 8 : 0,

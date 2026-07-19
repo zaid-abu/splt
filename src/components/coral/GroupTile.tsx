@@ -62,7 +62,6 @@ export function GroupTile({
         style={{
           fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 17,
-          fontWeight: "600",
           color: coral.foreground,
           marginTop: "auto",
         }}

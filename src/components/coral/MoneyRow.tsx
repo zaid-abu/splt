@@ -74,7 +74,6 @@ export function MoneyRow({
         style={{
           fontFamily: "IBMPlexMono_600SemiBold",
           fontVariant: ["tabular-nums"],
-          fontWeight: "600",
           letterSpacing: -0.01 * 16,
           color: amountColor,
         }}

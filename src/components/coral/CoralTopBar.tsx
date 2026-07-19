@@ -71,7 +71,6 @@ export function CoralTopBar({ title = "", onBack, leftElement, rightElement }: C
           flex: 1,
           fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 18,
-          fontWeight: "600",
           letterSpacing: -0.01 * 18,
           color: coral.foreground,
           textAlign: "center",
