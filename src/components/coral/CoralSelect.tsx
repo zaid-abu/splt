@@ -1,7 +1,7 @@
 import React, { useCallback, useState } from "react";
 import { View, Text, Pressable } from "react-native";
 import { ChevronDown, Check } from "lucide-react-native";
-import { useUI } from "@/components/ui";
+import { useCoralColors } from "./useCoral";
 import { CoralSheet } from "./CoralSheet";
 
 export type SelectOption = { value: string; label: string };
@@ -21,7 +21,7 @@ export function CoralSelect({
   placeholder = "Select...",
   label,
 }: CoralSelectProps) {
-  const { color } = useUI();
+  const coral = useCoralColors();
   const [isOpen, setIsOpen] = useState(false);
 
   const selectedLabel = options.find((o) => o.value === value)?.label;
@@ -43,7 +43,7 @@ export function CoralSelect({
             fontSize: 13,
             fontWeight: "500",
             letterSpacing: 0.02 * 13,
-            color: color.muted,
+            color: coral.muted,
           }}
         >
           {label}
@@ -56,9 +56,9 @@ export function CoralSelect({
         style={({ pressed }) => ({
           minHeight: 48,
           borderWidth: 1,
-          borderColor: color.border,
+          borderColor: coral.border,
           borderRadius: 14,
-          backgroundColor: color.surface,
+          backgroundColor: coral.surface,
           paddingHorizontal: 15,
           flexDirection: "row",
           alignItems: "center",
@@ -72,13 +72,13 @@ export function CoralSelect({
           style={{
             fontFamily: "InstrumentSans_400Regular",
             fontSize: 16,
-            color: selectedLabel ? color.text : color.muted,
+            color: selectedLabel ? coral.foreground : coral.muted,
             flex: 1,
           }}
         >
           {selectedLabel ?? placeholder}
         </Text>
-        <ChevronDown size={18} color={color.muted} strokeWidth={1.6} />
+        <ChevronDown size={18} color={coral.muted} strokeWidth={1.6} />
       </Pressable>
 
       <CoralSheet visible={isOpen} onClose={() => setIsOpen(false)}>
@@ -97,7 +97,7 @@ export function CoralSelect({
                   paddingHorizontal: 16,
                   paddingVertical: 14,
                   borderRadius: 12,
-                  backgroundColor: pressed ? color.border : "transparent",
+                  backgroundColor: pressed ? coral.border : "transparent",
                 })}
               >
                 <Text
@@ -106,12 +106,12 @@ export function CoralSelect({
                       ? "InstrumentSans_600SemiBold"
                       : "InstrumentSans_400Regular",
                     fontSize: 16,
-                    color: color.text,
+                    color: coral.foreground,
                   }}
                 >
                   {option.label}
                 </Text>
-                {isSelected ? <Check size={18} color={color.text} strokeWidth={2} /> : null}
+                {isSelected ? <Check size={18} color={coral.foreground} strokeWidth={2} /> : null}
               </Pressable>
             );
           })}
