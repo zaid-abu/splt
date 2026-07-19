@@ -118,10 +118,12 @@ export function nextHomeScheduleItem(
   timeZone: string
 ): ScheduleReadItem | null {
   const sections = buildScheduleSections(input, timeZone);
-  const all = [...sections.needsReview, ...sections.active, ...sections.paused];
-  if (all.length === 0) return null;
+  const prioritized = [sections.needsReview, sections.active, sections.paused].find(
+    (items) => items.length > 0
+  );
+  if (!prioritized) return null;
 
-  return all.reduce((best, item) => {
+  return prioritized.reduce((best, item) => {
     const bestDate = localDate(best.scheduledDate, timeZone);
     const itemDate = localDate(item.scheduledDate, timeZone);
     if (itemDate < bestDate) return item;

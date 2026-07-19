@@ -1,31 +1,54 @@
-import { useState, useCallback } from "react"
-import type { JSX } from "react"
-import { ActivityIndicator, FlatList, RefreshControl, Text, View, Pressable } from "react-native"
-import { useRouter } from "expo-router"
-import { BellOff } from "lucide-react-native"
-import * as Haptics from "expo-haptics"
+import { useState, useCallback } from "react";
+import type { JSX } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  View,
+  Pressable,
+  Platform,
+} from "react-native";
+import { useRouter } from "expo-router";
+import { BellOff } from "lucide-react-native";
+import * as Haptics from "expo-haptics";
 
-import { CoralButton } from "@/components/coral/CoralButton"
-import { CoralScreen } from "@/components/coral/CoralScreen"
-import { CoralTopBar } from "@/components/coral/CoralTopBar"
-import { EmptyState } from "@/components/coral/EmptyState"
-import { LargeTitle } from "@/components/coral/LargeTitle"
-import { MoneyRow } from "@/components/coral/MoneyRow"
-import { useCoralColors } from "@/components/coral/useCoral"
-import { useUI } from "@/components/ui"
-import { useAuth } from "@/context/AppContext"
-import { useNotifications } from "@/features/notifications/queries/useNotifications"
-import { useTransitionFriendship } from "@/features/friends/queries/useFriends"
-import { useRespondToInvitation } from "@/features/groups/queries/useGroups"
-import type { AppNotification } from "@/types"
+import { CoralButton } from "@/components/coral/CoralButton";
+import { CoralScreen } from "@/components/coral/CoralScreen";
+import { CoralTopBar } from "@/components/coral/CoralTopBar";
+import { EmptyState } from "@/components/coral/EmptyState";
+import { LargeTitle } from "@/components/coral/LargeTitle";
+import { MoneyRow } from "@/components/coral/MoneyRow";
+import { useCoralColors } from "@/components/coral/useCoral";
+import { useUI } from "@/components/ui";
+import { useAuth } from "@/context/AppContext";
+import { useNotifications } from "@/features/notifications/queries/useNotifications";
+import { useTransitionFriendship } from "@/features/friends/queries/useFriends";
+import { useRespondToInvitation } from "@/features/groups/queries/useGroups";
+import type { AppNotification } from "@/types";
 
 function formatRelativeDate(date: Date): string {
-  const now = new Date()
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24))
-  if (diffDays === 0) return "Today"
-  if (diffDays === 1) return "Yesterday"
-  if (diffDays < 7) return `${diffDays} days ago`
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" })
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+function formatReminderSubtitle(notification: AppNotification): string {
+  const payload = notification.data as Record<string, unknown> | undefined;
+  const currency = typeof payload?.currency === "string" ? payload.currency : null;
+  const message =
+    typeof payload?.message === "string" && payload.message.trim().length > 0
+      ? payload.message
+      : notification.subtitle;
+  const context = notification.groupId
+    ? "Group"
+    : notification.friendshipId
+      ? "Friend"
+      : "Reminder";
+  return [context, currency, message].filter(Boolean).join(" · ");
 }
 
 function NotificationActions({
@@ -34,12 +57,12 @@ function NotificationActions({
   onDecline,
   working,
 }: {
-  kind: "friend_request" | "group_invite"
-  onAccept: () => void
-  onDecline: () => void
-  working: boolean
+  kind: "friend_request" | "group_invite";
+  onAccept: () => void;
+  onDecline: () => void;
+  working: boolean;
 }) {
-  const { color, radius } = useUI()
+  const { color, radius } = useUI();
 
   return (
     <View style={{ flexDirection: "row", gap: 12, marginTop: 10 }}>
@@ -48,7 +71,7 @@ function NotificationActions({
         disabled={working}
         style={({ pressed }) => ({
           flex: 1,
-          height: 44,
+          minHeight: Platform.OS === "ios" ? 44 : 48,
           borderRadius: radius.pill,
           backgroundColor: color.text,
           alignItems: "center",
@@ -75,7 +98,7 @@ function NotificationActions({
         disabled={working}
         style={({ pressed }) => ({
           flex: 1,
-          height: 44,
+          minHeight: Platform.OS === "ios" ? 44 : 48,
           borderRadius: radius.pill,
           backgroundColor: "transparent",
           borderWidth: 1,
@@ -96,109 +119,111 @@ function NotificationActions({
         </Text>
       </Pressable>
     </View>
-  )
+  );
 }
 
 export default function NotificationsV2Screen(): JSX.Element {
-  const router = useRouter()
-  const coral = useCoralColors()
-  const { color } = useUI()
-  const { currentUser } = useAuth()
+  const router = useRouter();
+  const coral = useCoralColors();
+  const { color } = useUI();
+  const { currentUser } = useAuth();
   const {
     data: notifications = [],
     isLoading,
     isRefetching,
     isError,
     refetch,
-  } = useNotifications(currentUser?.id)
+  } = useNotifications(currentUser?.id);
 
-  const { mutateAsync: transitionFriendship } = useTransitionFriendship()
-  const { mutateAsync: respondToInvitation } = useRespondToInvitation()
+  const { mutateAsync: transitionFriendship } = useTransitionFriendship();
+  const { mutateAsync: respondToInvitation } = useRespondToInvitation();
 
-  const [workingId, setWorkingId] = useState<string | null>(null)
+  const [workingId, setWorkingId] = useState<string | null>(null);
 
   const handleAcceptFriend = useCallback(
     async (notification: AppNotification) => {
-      if (!notification.actorId) return
-      setWorkingId(notification.id)
+      if (!notification.actorId) return;
+      setWorkingId(notification.id);
       try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-        await transitionFriendship({ counterpartyId: notification.actorId, action: "accept" })
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-        await refetch()
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await transitionFriendship({ counterpartyId: notification.actorId, action: "accept" });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await refetch();
       } finally {
-        setWorkingId(null)
+        setWorkingId(null);
       }
     },
     [transitionFriendship, refetch]
-  )
+  );
 
   const handleDeclineFriend = useCallback(
     async (notification: AppNotification) => {
-      if (!notification.actorId) return
-      setWorkingId(notification.id)
+      if (!notification.actorId) return;
+      setWorkingId(notification.id);
       try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-        await transitionFriendship({ counterpartyId: notification.actorId, action: "decline" })
-        await refetch()
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await transitionFriendship({ counterpartyId: notification.actorId, action: "decline" });
+        await refetch();
       } finally {
-        setWorkingId(null)
+        setWorkingId(null);
       }
     },
     [transitionFriendship, refetch]
-  )
+  );
 
   function resolveInvitationId(notification: AppNotification): string {
-    const fromData = (notification.data as Record<string, unknown> | undefined)
-    return (fromData?.invitation_id as string) ?? (fromData?.invitationId as string) ?? notification.id
+    const fromData = notification.data as Record<string, unknown> | undefined;
+    return (
+      (fromData?.invitation_id as string) ?? (fromData?.invitationId as string) ?? notification.id
+    );
   }
 
   const handleAcceptInvite = useCallback(
     async (notification: AppNotification) => {
-      setWorkingId(notification.id)
+      setWorkingId(notification.id);
       try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-        await respondToInvitation({ id: resolveInvitationId(notification), decision: "accept" })
-        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-        await refetch()
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await respondToInvitation({ id: resolveInvitationId(notification), decision: "accept" });
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        await refetch();
       } finally {
-        setWorkingId(null)
+        setWorkingId(null);
       }
     },
     [respondToInvitation, refetch]
-  )
+  );
 
   const handleDeclineInvite = useCallback(
     async (notification: AppNotification) => {
-      setWorkingId(notification.id)
+      setWorkingId(notification.id);
       try {
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-        await respondToInvitation({ id: resolveInvitationId(notification), decision: "decline" })
-        await refetch()
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        await respondToInvitation({ id: resolveInvitationId(notification), decision: "decline" });
+        await refetch();
       } finally {
-        setWorkingId(null)
+        setWorkingId(null);
       }
     },
     [respondToInvitation, refetch]
-  )
+  );
 
   const handleNavPerson = useCallback(
     (actorId?: string) => {
       if (actorId) {
-        router.push(`/friend/${actorId}`)
+        router.push(`/friend/${actorId}`);
       }
     },
     [router]
-  )
+  );
 
   const handleNavExpense = useCallback(
     (expenseId?: string) => {
       if (expenseId) {
-        router.push(`/expense/${expenseId}`)
+        router.push(`/expense/${expenseId}`);
       }
     },
     [router]
-  )
+  );
 
   if (isError) {
     return (
@@ -217,19 +242,19 @@ export default function NotificationsV2Screen(): JSX.Element {
           <CoralButton label="Try again" variant="secondary" onPress={() => void refetch()} />
         </View>
       </CoralScreen>
-    )
+    );
   }
 
   const pendingNotifications = notifications.filter(
-    (n) => n.kind === "friend_request" || n.kind === "group_invite",
-  )
+    (n) => n.kind === "friend_request" || n.kind === "group_invite"
+  );
   const earlierNotifications = notifications.filter(
-    (n) => n.kind !== "friend_request" && n.kind !== "group_invite",
-  )
+    (n) => n.kind !== "friend_request" && n.kind !== "group_invite"
+  );
 
   function renderNotificationRow(item: AppNotification) {
-    const dateLabel = formatRelativeDate(item.date)
-    const isWorking = workingId === item.id
+    const dateLabel = formatRelativeDate(item.date);
+    const isWorking = workingId === item.id;
 
     if (item.kind === "friend_request") {
       return (
@@ -260,7 +285,7 @@ export default function NotificationsV2Screen(): JSX.Element {
             working={isWorking}
           />
         </View>
-      )
+      );
     }
 
     if (item.kind === "group_invite") {
@@ -292,24 +317,29 @@ export default function NotificationsV2Screen(): JSX.Element {
             working={isWorking}
           />
         </View>
-      )
+      );
     }
 
-    const onPress = item.kind === "balance_reminder"
-      ? () => handleNavPerson(item.actorId)
-      : item.kind === "expense_added"
-        ? () => handleNavExpense(item.expenseId)
-        : undefined
+    const onPress =
+      item.kind === "balance_reminder"
+        ? () => handleNavPerson(item.actorId)
+        : item.kind === "expense_added"
+          ? () => handleNavExpense(item.expenseId)
+          : undefined;
 
     return (
       <MoneyRow
         title={item.title}
-        subtitle={`${item.subtitle} · ${dateLabel}`}
+        subtitle={
+          item.kind === "balance_reminder"
+            ? `${formatReminderSubtitle(item)} · ${dateLabel}`
+            : `${item.subtitle} · ${dateLabel}`
+        }
         amount=""
         amountTone="neutral"
         onPress={onPress}
       />
-    )
+    );
   }
 
   const renderEmpty = () => {
@@ -318,7 +348,7 @@ export default function NotificationsV2Screen(): JSX.Element {
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator color={color.text} accessibilityLabel="Loading notifications" />
         </View>
-      )
+      );
     }
     return (
       <EmptyState
@@ -326,8 +356,8 @@ export default function NotificationsV2Screen(): JSX.Element {
         title="All caught up!"
         subtitle="You have no new notifications right now."
       />
-    )
-  }
+    );
+  };
 
   return (
     <CoralScreen scroll={false}>
@@ -363,11 +393,31 @@ export default function NotificationsV2Screen(): JSX.Element {
             </Text>
             {pendingNotifications.length > 0 && (
               <>
-                <View style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 8, paddingHorizontal: 2 }}>
-                  <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 15, color: coral.foreground }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "flex-end",
+                    justifyContent: "space-between",
+                    marginBottom: 8,
+                    paddingHorizontal: 2,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "InstrumentSans_600SemiBold",
+                      fontSize: 15,
+                      color: coral.foreground,
+                    }}
+                  >
                     Needs a response
                   </Text>
-                  <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 12, color: coral.muted }}>
+                  <Text
+                    style={{
+                      fontFamily: "InstrumentSans_400Regular",
+                      fontSize: 12,
+                      color: coral.muted,
+                    }}
+                  >
                     {pendingNotifications.length} new
                   </Text>
                 </View>
@@ -437,5 +487,5 @@ export default function NotificationsV2Screen(): JSX.Element {
         }
       />
     </CoralScreen>
-  )
+  );
 }

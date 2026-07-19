@@ -254,7 +254,7 @@ describe("buildScheduleSections", () => {
 });
 
 describe("nextHomeScheduleItem", () => {
-  it("returns earliest item across all sections", () => {
+  it("prefers needs-review items over active ones", () => {
     const reLate = makeRecurring({
       id: "re-late",
       status: "active",
@@ -279,7 +279,8 @@ describe("nextHomeScheduleItem", () => {
     const result = nextHomeScheduleItem(input, TZ);
 
     expect(result).not.toBeNull();
-    expect(result!.id).toBe("re-early");
+    expect(result!.id).toBe("occ-1");
+    expect(result!.state).toBe("needs-review");
   });
 
   it("prefers needs-review when it is earliest", () => {
@@ -293,6 +294,27 @@ describe("nextHomeScheduleItem", () => {
       recurringExpenseId: "re-1",
       status: "pending",
       scheduledFor: "2026-01-01T00:00:00Z",
+    });
+
+    const input: RecurringReadInput = { recurringExpenses: [re], occurrences: [occ] };
+    const result = nextHomeScheduleItem(input, TZ);
+
+    expect(result).not.toBeNull();
+    expect(result!.id).toBe("occ-1");
+    expect(result!.state).toBe("needs-review");
+  });
+
+  it("prefers pending schedule items over active ones", () => {
+    const re = makeRecurring({
+      id: "re-1",
+      status: "active",
+      nextRunDate: "2026-01-01T00:00:00Z",
+    });
+    const occ = makeOccurrence({
+      id: "occ-1",
+      recurringExpenseId: "re-1",
+      status: "pending",
+      scheduledFor: "2026-03-01T00:00:00Z",
     });
 
     const input: RecurringReadInput = { recurringExpenses: [re], occurrences: [occ] };
