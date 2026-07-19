@@ -4,7 +4,6 @@ import { View, Text, Pressable, Platform } from "react-native";
 import { BlurView } from "expo-blur";
 import { ChevronLeft } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useUI } from "@/components/ui";
 import { useUIStore } from "@/store/useUIStore";
 import { useCoralColors } from "./useCoral";
 import { CoralBlurTargetContext } from "./CoralBlurContext";
@@ -20,7 +19,6 @@ export function CoralTopBar({ title = "", onBack, leftElement, rightElement }: C
   const insets = useSafeAreaInsets();
   const blurTarget = useContext(CoralBlurTargetContext);
   const isDark = useUIStore((s) => s.isDarkMode);
-  const { color } = useUI();
   const coral = useCoralColors();
   const isIOS = Platform.OS === "ios";
 
@@ -34,7 +32,7 @@ export function CoralTopBar({ title = "", onBack, leftElement, rightElement }: C
     paddingBottom: 8,
     paddingHorizontal: isIOS ? 18 : 20,
     borderBottomWidth: 1,
-    borderBottomColor: color.border,
+    borderBottomColor: coral.border,
   };
 
   const inner = (
@@ -62,7 +60,7 @@ export function CoralTopBar({ title = "", onBack, leftElement, rightElement }: C
             justifyContent: "center",
           }}
         >
-          <ChevronLeft size={24} color={color.text} strokeWidth={1.8} />
+          <ChevronLeft size={24} color={coral.foreground} strokeWidth={1.8} />
         </Pressable>
       ) : (
         <View style={{ width: isIOS ? 44 : 48 }} />
