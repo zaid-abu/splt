@@ -1,16 +1,46 @@
 import type { JSX } from "react";
-import { Pressable, ScrollView, View } from "react-native";
-import { Typography } from "heroui-native";
+import { useEffect, useRef, useState } from "react";
+import { Pressable, ScrollView, View, Text, TextInput } from "react-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
-import { Card } from "@/components/ui/Card";
-import { SearchField, useUI } from "@/components/ui";
+import { useCoralColors } from "@/components/coral/useCoral";
+import { CoralSegment } from "@/components/coral/CoralSegment";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
-import { SelectionMark } from "@/features/expenses/components/SelectionMark";
-import { SegmentedTabs } from "@/features/expenses/components/SegmentedTabs";
-import { styles } from "@/features/expenses/utils/styles";
 import type { User, Group } from "@/types";
+
+function Pill({ label, onRemove }: { label: string; onRemove: () => void }) {
+  const coral = useCoralColors();
+  return (
+    <Pressable
+      onPress={onRemove}
+      style={({ pressed }) => ({
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 6,
+        paddingLeft: 10,
+        paddingRight: 8,
+        height: 36,
+        borderRadius: 999,
+        backgroundColor: coral.accentSoft,
+        borderWidth: 1,
+        borderColor: coral.accent,
+        opacity: pressed ? 0.7 : 1,
+      })}
+    >
+      <Text
+        style={{
+          fontFamily: "InstrumentSans_600SemiBold",
+          fontSize: 13,
+          color: coral.accentInk,
+        }}
+      >
+        {label}
+      </Text>
+      <icons.X size={14} color={coral.accentInk} strokeWidth={2} />
+    </Pressable>
+  );
+}
 
 export function ContextPicker({
   selectionTab,
@@ -24,6 +54,7 @@ export function ContextPicker({
   selectedGroupId,
   setSelectedGroupId,
   selectedFriends,
+  singleFriendSelection = false,
 }: {
   selectionTab: "friends" | "groups";
   setSelectionTab: (value: "friends" | "groups") => void;
@@ -36,61 +67,124 @@ export function ContextPicker({
   selectedGroupId: string;
   setSelectedGroupId: (value: string | ((prev: string) => string)) => void;
   selectedFriends: User[];
+  singleFriendSelection?: boolean;
 }): JSX.Element {
-  const { color, radius, space, shadow } = useUI();
+  const coral = useCoralColors();
+  const searchRef = useRef<TextInput>(null);
+  const [focused, setFocused] = useState(false);
   const rows = selectionTab === "friends" ? filteredFriends : filteredGroups;
 
+  useEffect(() => {
+    const timer = setTimeout(() => searchRef.current?.focus(), 300);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
-    <View style={styles.contextBlock}>
-      <Card style={styles.contextIntro}>
-        <View style={styles.contextIntroIcon}>
-          <icons.ReceiptText size={22} color={color.text} strokeWidth={1.8} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Typography style={styles.contextIntroTitle}>Who is this expense with?</Typography>
-          <Typography style={styles.contextIntroText}>
-            Choose one group or any number of friends before entering the amount.
-          </Typography>
-        </View>
-      </Card>
-
-      <SearchField
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        onClear={() => setSearchQuery("")}
+    <View style={{ gap: 14, paddingTop: 8 }}>
+      <CoralSegment
+        options={[
+          { label: "Friends", value: "friends" },
+          { label: "Groups", value: "groups" },
+        ]}
+        selected={selectionTab}
+        onSelect={(v) => setSelectionTab(v as "friends" | "groups")}
       />
-      <SegmentedTabs value={selectionTab} onChange={setSelectionTab} />
 
-      {selectedFriends.length > 0 && !selectedGroupId ? (
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          gap: 10,
+          borderWidth: 1,
+          borderColor: focused ? coral.accent : coral.border,
+          borderRadius: 14,
+          paddingHorizontal: 14,
+          height: 48,
+          backgroundColor: coral.surface,
+        }}
+      >
+        <icons.Search size={18} color={coral.muted} strokeWidth={1.5} />
+        <TextInput
+          ref={searchRef}
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          placeholder={selectionTab === "friends" ? "Search friends..." : "Search groups..."}
+          placeholderTextColor={coral.muted}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          style={{
+            flex: 1,
+            fontFamily: "InstrumentSans_400Regular",
+            fontSize: 16,
+            color: coral.foreground,
+            padding: 0,
+          }}
+        />
+        {searchQuery.length > 0 ? (
+          <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
+            <icons.XCircle size={18} color={coral.muted} strokeWidth={1.5} />
+          </Pressable>
+        ) : null}
+      </View>
+
+      {selectedFriends.length > 0 && selectionTab === "friends" ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.selectedChipRow}>
+          <View style={{ flexDirection: "row", gap: 8 }}>
             {selectedFriends.map((friend) => (
-              <Pressable
+              <Pill
                 key={friend.id}
-                accessibilityRole="button"
-                onPress={() =>
-                  setSelectedFriendIds((prev) => prev.filter((friendId) => friendId !== friend.id))
+                label={friend.name.split(" ")[0]}
+                onRemove={() =>
+                  setSelectedFriendIds((prev) => prev.filter((id) => id !== friend.id))
                 }
-                style={({ pressed }) => [styles.selectedChip, pressed && styles.pressed]}
-              >
-                <AppUserAvatar user={friend} size="sm" />
-                <Typography style={styles.selectedChipText}>{friend.name.split(" ")[0]}</Typography>
-                <icons.X size={15} color={color.muted} strokeWidth={1.9} />
-              </Pressable>
+              />
             ))}
           </View>
         </ScrollView>
       ) : null}
 
-      <View style={styles.listCard}>
+      {selectedGroupId ? (
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <Pill
+            label={filteredGroups.find((g) => g.id === selectedGroupId)?.name ?? ""}
+            onRemove={() => setSelectedGroupId("")}
+          />
+        </View>
+      ) : null}
+
+      <View
+        style={{
+          backgroundColor: coral.surface,
+          borderWidth: 1,
+          borderColor: coral.border,
+          borderRadius: 16,
+          overflow: "hidden",
+        }}
+      >
         {rows.length === 0 ? (
-          <View style={styles.emptyList}>
-            <Typography style={styles.emptyTitle}>No matches</Typography>
-            <Typography style={styles.emptyText}>Try a different search term.</Typography>
+          <View style={{ paddingVertical: 48, alignItems: "center", gap: 4 }}>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 15,
+                color: coral.foreground,
+              }}
+            >
+              No matches
+            </Text>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 13,
+                color: coral.muted,
+              }}
+            >
+              Try a different search term.
+            </Text>
           </View>
         ) : null}
 
@@ -105,25 +199,65 @@ export function ContextPicker({
                     Haptics.selectionAsync();
                     setSelectedGroupId("");
                     setSelectedFriendIds((prev) =>
-                      prev.includes(friend.id)
-                        ? prev.filter((friendId) => friendId !== friend.id)
-                        : [...prev, friend.id]
+                      singleFriendSelection
+                        ? (prev[0] === friend.id ? [] : [friend.id])
+                        : prev.includes(friend.id)
+                          ? prev.filter((id) => id !== friend.id)
+                          : [...prev, friend.id]
                     );
+                    setSearchQuery("");
+                    searchRef.current?.focus();
                   }}
-                  style={({ pressed }) => [
-                    styles.contextRow,
-                    index < filteredFriends.length - 1 && styles.rowDivider,
-                    pressed && styles.rowPressed,
-                  ]}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                    paddingHorizontal: 14,
+                    minHeight: 58,
+                    borderBottomWidth: index < filteredFriends.length - 1 ? 1 : 0,
+                    borderBottomColor: coral.border,
+                    opacity: pressed ? 0.65 : 1,
+                  })}
                 >
-                  <AppUserAvatar user={friend} size="md" />
-                  <View style={styles.rowText}>
-                    <Typography numberOfLines={1} style={styles.rowTitle}>
+                  <AppUserAvatar user={friend} size="sm" />
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        fontFamily: "InstrumentSans_600SemiBold",
+                        fontSize: 15,
+                        color: coral.foreground,
+                      }}
+                    >
                       {friend.name}
-                    </Typography>
-                    <Typography style={styles.rowMeta}>Friend</Typography>
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: "InstrumentSans_400Regular",
+                        fontSize: 12,
+                        color: coral.muted,
+                        marginTop: 1,
+                      }}
+                    >
+                      Friend
+                    </Text>
                   </View>
-                  <SelectionMark selected={selected} />
+                  <View
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 12,
+                      borderWidth: 2,
+                      borderColor: selected ? coral.accent : coral.border,
+                      backgroundColor: selected ? coral.accent : "transparent",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {selected ? (
+                      <icons.Check size={14} color={coral.inkOnAccent} strokeWidth={3} />
+                    ) : null}
+                  </View>
                 </Pressable>
               );
             })
@@ -138,22 +272,56 @@ export function ContextPicker({
                     setSelectedFriendIds([]);
                     setSelectedGroupId((prev) => (prev === group.id ? "" : group.id));
                   }}
-                  style={({ pressed }) => [
-                    styles.contextRow,
-                    index < filteredGroups.length - 1 && styles.rowDivider,
-                    pressed && styles.rowPressed,
-                  ]}
+                  style={({ pressed }) => ({
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                    paddingHorizontal: 14,
+                    minHeight: 58,
+                    borderBottomWidth: index < filteredGroups.length - 1 ? 1 : 0,
+                    borderBottomColor: coral.border,
+                    opacity: pressed ? 0.65 : 1,
+                  })}
                 >
-                  <GroupIconBadge group={group} size="md" />
-                  <View style={styles.rowText}>
-                    <Typography numberOfLines={1} style={styles.rowTitle}>
+                  <GroupIconBadge group={group} size="sm" />
+                  <View style={{ flex: 1, minWidth: 0 }}>
+                    <Text
+                      numberOfLines={1}
+                      style={{
+                        fontFamily: "InstrumentSans_600SemiBold",
+                        fontSize: 15,
+                        color: coral.foreground,
+                      }}
+                    >
                       {group.name}
-                    </Typography>
-                    <Typography style={styles.rowMeta}>
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: "InstrumentSans_400Regular",
+                        fontSize: 12,
+                        color: coral.muted,
+                        marginTop: 1,
+                      }}
+                    >
                       {group.members.length} members · {group.currency}
-                    </Typography>
+                    </Text>
                   </View>
-                  <SelectionMark selected={selected} />
+                  <View
+                    style={{
+                      width: 24,
+                      height: 24,
+                      borderRadius: 12,
+                      borderWidth: 2,
+                      borderColor: selected ? coral.accent : coral.border,
+                      backgroundColor: selected ? coral.accent : "transparent",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    {selected ? (
+                      <icons.Check size={14} color={coral.inkOnAccent} strokeWidth={3} />
+                    ) : null}
+                  </View>
                 </Pressable>
               );
             })}

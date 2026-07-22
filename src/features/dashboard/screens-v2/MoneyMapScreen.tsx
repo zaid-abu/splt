@@ -1,4 +1,4 @@
-import { useCallback, Fragment } from "react";
+import { useCallback, Fragment, useState } from "react";
 import type { JSX } from "react";
 import { View, Text, ActivityIndicator, Pressable, RefreshControl, ScrollView } from "react-native";
 import { Bell, CircleUserRound } from "lucide-react-native";
@@ -15,17 +15,12 @@ import { getGreeting } from "@/utils/date";
 import {
   CoralScreen,
   CoralTopBar,
-  LargeTitle,
   BalanceHero,
   MoneyRow,
   CoralButton,
   useCoralColors,
 } from "@/components/coral";
-import type {
-  AttentionRow,
-  GroupLedgerRow,
-  MovementRow,
-} from "@/features/dashboard/hooks/useHomeSnapshot";
+import type { CircleRow } from "@/features/dashboard/hooks/useHomeSnapshot";
 
 function formatSignedAmount(amountMinor: number, currencyCode: string): string {
   const major = minorToMajor(amountMinor, currencyCode);
@@ -115,7 +110,8 @@ export default function MoneyMapScreen(): JSX.Element | null {
   const snapshot = useHomeSnapshot(currentUser?.id ?? "");
   const coral = useCoralColors();
   const storeCurrency = useUIStore((s) => s.preferredCurrency);
-  const convertCurrency = useUIStore((s) => s.convertCurrency);
+  const [showSettled, setShowSettled] = useState(false);
+
   const onRefresh = useCallback(() => {
     void snapshot.refresh();
   }, [snapshot.refresh]);
@@ -139,6 +135,7 @@ export default function MoneyMapScreen(): JSX.Element | null {
               fontFamily: "InstrumentSans_600SemiBold",
               fontSize: 15,
               color: coral.accent,
+              marginTop: 8,
             }}
           >
             Tap to retry
@@ -168,30 +165,20 @@ export default function MoneyMapScreen(): JSX.Element | null {
   const userName = currentUser?.name?.split(" ")[0] ?? "there";
   const preferredCurrency = storeCurrency.code;
 
-  const groupLedgerConverted = data.groupLedger.map((row) => {
-    const major = minorToMajor(row.netSignedMinor, row.group.currency);
-    const converted = convertCurrency(major, row.group.currency, preferredCurrency);
-    return { ...row, convertedMinor: Math.round(converted * 100) };
-  });
+  const unsettledCircles = data.circleBalances.filter((c) => c.netSignedMinor !== 0);
+  const settledCircles = data.circleBalances.filter((c) => c.netSignedMinor === 0);
+  const visibleCircles = showSettled ? data.circleBalances : unsettledCircles;
 
-  const netSigned = groupLedgerConverted.reduce((sum, row) => sum + row.convertedMinor, 0);
-  const totalOwed = groupLedgerConverted.reduce(
-    (sum, row) => sum + Math.max(0, row.convertedMinor),
-    0
-  );
-  const totalOwe = groupLedgerConverted.reduce(
-    (sum, row) => sum + Math.abs(Math.min(0, row.convertedMinor)),
-    0
-  );
+  const netSigned = data.circleBalances.reduce((sum, c) => sum + c.netSignedMinor, 0);
+  const netSignedMajor = minorToMajor(netSigned, preferredCurrency);
 
-  function handleAttentionPress(row: AttentionRow) {
+  function handleCirclePress(row: CircleRow) {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push(`/friend/${row.counterpartyId}`);
-  }
-
-  function handleGroupPress(row: GroupLedgerRow) {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    router.push(`/group/${row.group.id}`);
+    if (row.type === "group") {
+      router.push(`/group/${row.id}`);
+    } else {
+      router.push(`/friend/${row.id}`);
+    }
   }
 
   function handleSchedulePress(id: string) {
@@ -199,31 +186,32 @@ export default function MoneyMapScreen(): JSX.Element | null {
     router.push(`/recurring/${id}`);
   }
 
-  function handleMovementPress(row: MovementRow) {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    if (row.type === "expense") {
-      router.push(`/expense/${row.id.replace("exp-", "")}`);
-    } else {
-      if (row.groupId) {
-        router.push(`/group/${row.groupId}`);
-        return;
-      }
-      if (row.counterpartyId) {
-        router.push(`/friend/${row.counterpartyId}`);
-      }
-    }
-  }
-
-  const netSignedMajor = minorToMajor(netSigned, preferredCurrency);
-  const totalOwedMajor = minorToMajor(totalOwed, preferredCurrency);
-  const totalOweMajor = minorToMajor(totalOwe, preferredCurrency);
   const heroValue =
     netSignedMajor >= 0
       ? `+${formatAmount(netSignedMajor, preferredCurrency)}`
       : formatAmount(netSignedMajor, preferredCurrency);
 
+  let heroNote = "All settled up across your circles";
+  if (netSignedMajor > 0) {
+    heroNote = "Overall, you are owed money";
+  } else if (netSignedMajor < 0) {
+    heroNote = "Overall, you owe money";
+  }
+
+  const attentionCount = data.attentionRows.length;
+  const scheduleCount = data.nextSchedule ? 1 : 0;
+
+  let introText = "Everything is up to date across your circles.";
+  if (attentionCount > 0 && scheduleCount > 0) {
+    introText = `${attentionCount} balance${attentionCount > 1 ? "s" : ""} and ${scheduleCount} bill need attention.`;
+  } else if (attentionCount > 0) {
+    introText = `${attentionCount} balance${attentionCount > 1 ? "s" : ""} need attention.`;
+  } else if (scheduleCount > 0) {
+    introText = `1 bill needs attention.`;
+  }
+
   return (
-    <CoralScreen>
+    <CoralScreen contentContainerStyle={{ paddingBottom: 110 }}>
       <CoralTopBar
         leftElement={
           <Pressable
@@ -294,9 +282,10 @@ export default function MoneyMapScreen(): JSX.Element | null {
         }
         contentContainerStyle={{ paddingBottom: 110 }}
       >
+        {/* Kicker */}
         <Text
           style={{
-            fontFamily: "InstrumentSans_600SemiBold",
+            fontFamily: "InstrumentSans_700Bold",
             fontSize: 12,
             color: coral.muted,
             marginBottom: 4,
@@ -305,9 +294,32 @@ export default function MoneyMapScreen(): JSX.Element | null {
           {getFormattedDate()}
         </Text>
 
-        <LargeTitle>
+        {/* Title */}
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_600SemiBold",
+            fontSize: 30,
+            lineHeight: 34,
+            letterSpacing: -0.035 * 30,
+            color: coral.foreground,
+            marginBottom: 6,
+          }}
+        >
           {greeting}, {userName}.
-        </LargeTitle>
+        </Text>
+
+        {/* Intro */}
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_400Regular",
+            fontSize: 15,
+            lineHeight: 20,
+            color: coral.muted,
+            marginBottom: 18,
+          }}
+        >
+          {introText}
+        </Text>
 
         {snapshot.isStaleOffline ? (
           <View
@@ -334,7 +346,7 @@ export default function MoneyMapScreen(): JSX.Element | null {
           </View>
         ) : null}
 
-        {data.isFirstUse ? (
+        {data.isFirstUse || (data.groupLedger.length === 0 && !data.nextSchedule) ? (
           <View style={{ gap: 12, marginTop: 12 }}>
             <CoralButton
               label="Create Group"
@@ -354,145 +366,106 @@ export default function MoneyMapScreen(): JSX.Element | null {
           </View>
         ) : (
           <>
+            {/* Hero */}
             <BalanceHero
               label="Across your circles"
               value={heroValue}
-              note={`You're owed ${formatAmount(totalOwedMajor, preferredCurrency)} \u00B7 You owe ${formatAmount(totalOweMajor, preferredCurrency)}`}
-            >
-              {data.heroBalances.length > 0 ? (
-                <View style={{ marginTop: 14, gap: 8 }}>
-                  {data.heroBalances.slice(0, 2).map((row) => (
-                    <View
-                      key={row.counterpartyId}
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        gap: 12,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          fontFamily: "InstrumentSans_600SemiBold",
-                          fontSize: 13,
-                          color: coral.balanceForeground,
-                          opacity: 0.9,
-                        }}
-                      >
-                        {row.user.name}
-                      </Text>
-                      <Text
-                        style={{
-                          fontFamily: "IBMPlexMono_600SemiBold",
-                          fontSize: 12,
-                          color: coral.balanceForeground,
-                          opacity: 0.88,
-                        }}
-                      >
-                        {formatSignedAmount(row.signedAmountMinor, row.currency)}
-                      </Text>
-                    </View>
-                  ))}
-                  {data.heroBalances.length > 2 ? (
-                    <Text
-                      style={{
-                        fontFamily: "InstrumentSans_400Regular",
-                        fontSize: 12,
-                        color: coral.balanceForeground,
-                        opacity: 0.72,
-                      }}
-                    >
-                      +{data.heroBalances.length - 2} more
-                    </Text>
-                  ) : null}
-                </View>
-              ) : null}
-            </BalanceHero>
+              note={heroNote}
+            />
 
-            {data.attentionRows.length > 0 && (
+            {/* Where you stand section */}
+            {visibleCircles.length > 0 && (
               <>
-                <SectionHeading title="Needs attention" meta={`${data.attentionRows.length}`} />
+                <SectionHeading
+                  title="Where you stand"
+                  meta={`${unsettledCircles.length} active`}
+                />
                 <SectionCard>
-                  {data.attentionRows.map((row, idx) => {
-                    const isOwe = row.type === "owe";
+                  {visibleCircles.map((row, idx) => {
+                    const major = minorToMajor(Math.abs(row.netSignedMinor), preferredCurrency);
+                    const absVal = formatAmount(major, preferredCurrency);
+                    const isOwed = row.netSignedMinor >= 0;
+                    const subtitle = isOwed
+                      ? `Owed ${absVal}`
+                      : `You owe ${absVal}`;
+
                     return (
-                      <Fragment key={`attention-${row.counterpartyId}`}>
+                      <Fragment key={`${row.type}-${row.id}`}>
                         {idx > 0 ? <Separator /> : null}
                         <MoneyRow
-                          title={row.user.name}
-                          subtitle={
-                            isOwe
-                              ? `You owe ${formatAmount(minorToMajor(Math.abs(row.signedAmountMinor), row.currency), row.currency)}`
-                              : `Owes you ${formatAmount(minorToMajor(row.signedAmountMinor, row.currency), row.currency)}`
-                          }
-                          amount={formatSignedAmount(
-                            isOwe ? -Math.abs(row.signedAmountMinor) : row.signedAmountMinor,
-                            row.currency
-                          )}
-                          amountTone={isOwe ? "negative" : "positive"}
-                          onPress={() => handleAttentionPress(row)}
+                          title={row.name}
+                          subtitle={subtitle}
+                          amount={formatSignedAmount(row.netSignedMinor, preferredCurrency)}
+                          amountTone={isOwed ? "positive" : "negative"}
+                          onPress={() => handleCirclePress(row)}
                         />
                       </Fragment>
                     );
                   })}
                 </SectionCard>
+                {settledCircles.length > 0 && !showSettled && (
+                  <Pressable
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setShowSettled(true);
+                    }}
+                    style={({ pressed }) => ({
+                      marginTop: 8,
+                      paddingVertical: 12,
+                      alignItems: "center",
+                      opacity: pressed ? 0.65 : 1,
+                    })}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "InstrumentSans_600SemiBold",
+                        fontSize: 14,
+                        color: coral.accent,
+                      }}
+                    >
+                      Show settled circles ({settledCircles.length})
+                    </Text>
+                  </Pressable>
+                )}
+                {showSettled && settledCircles.length > 0 && (
+                  <Pressable
+                    onPress={() => {
+                      Haptics.selectionAsync();
+                      setShowSettled(false);
+                    }}
+                    style={({ pressed }) => ({
+                      marginTop: 8,
+                      paddingVertical: 12,
+                      alignItems: "center",
+                      opacity: pressed ? 0.65 : 1,
+                    })}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: "InstrumentSans_600SemiBold",
+                        fontSize: 14,
+                        color: coral.muted,
+                      }}
+                    >
+                      Hide settled circles
+                    </Text>
+                  </Pressable>
+                )}
               </>
             )}
 
-            {data.groupLedger.length > 0 && (
-              <>
-                <SectionHeading
-                  title="Where you stand"
-                  meta={`${data.groupLedger.length} circle${data.groupLedger.length !== 1 ? "s" : ""}`}
-                />
-                <SectionCard>
-                  {data.groupLedger.map((row, idx) => (
-                    <Fragment key={`group-${row.group.id}`}>
-                      {idx > 0 ? <Separator /> : null}
-                      <MoneyRow
-                        title={row.group.name}
-                        subtitle={row.netSignedMinor >= 0 ? "You're owed" : "You owe"}
-                        amount={formatSignedAmount(row.netSignedMinor, row.group.currency)}
-                        amountTone={row.netSignedMinor >= 0 ? "positive" : "negative"}
-                        onPress={() => handleGroupPress(row)}
-                      />
-                    </Fragment>
-                  ))}
-                </SectionCard>
-              </>
-            )}
-
+            {/* Next up section */}
             {data.nextSchedule && (
               <>
                 <SectionHeading title="Next up" meta="Upcoming" />
                 <SectionCard>
                   <MoneyRow
                     title={data.nextSchedule.title}
-                    subtitle={data.nextSchedule.nextDueLabel ?? "Upcoming"}
-                    amount=""
+                    subtitle={data.nextSchedule.nextDueLabel ?? "Review soon"}
+                    amount="Review"
                     amountTone="neutral"
                     onPress={() => handleSchedulePress(data.nextSchedule!.id)}
                   />
-                </SectionCard>
-              </>
-            )}
-
-            {!data.nextSchedule && data.recentMovement.length > 0 && (
-              <>
-                <SectionHeading title="Recent movement" />
-                <SectionCard>
-                  {data.recentMovement.map((row, idx) => (
-                    <Fragment key={`movement-${row.id}`}>
-                      {idx > 0 ? <Separator /> : null}
-                      <MoneyRow
-                        title={row.description}
-                        subtitle={row.counterpartyName}
-                        amount={formatAmount(row.amount, row.currency)}
-                        amountTone={row.type === "expense" ? "negative" : "positive"}
-                        onPress={() => handleMovementPress(row)}
-                      />
-                    </Fragment>
-                  ))}
                 </SectionCard>
               </>
             )}

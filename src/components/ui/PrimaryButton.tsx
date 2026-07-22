@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Pressable } from "react-native";
 import type { ViewStyle } from "react-native";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 interface PrimaryButtonProps {
   children: ReactNode;

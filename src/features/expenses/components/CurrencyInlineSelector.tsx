@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { Pressable, ScrollView, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  Pressable, ScrollView, View , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { CURRENCIES } from "@/types";
 import { QUICK_CURRENCIES } from "@/features/expenses/constants";
@@ -26,13 +25,13 @@ export function CurrencyInlineSelector({
     <View style={styles.currencySelector}>
       <View style={styles.currencyCurrent}>
         <View style={styles.currencySymbol}>
-          <Typography style={styles.currencySymbolText}>{selectedCurrency.symbol}</Typography>
+          <Text style={styles.currencySymbolText}>{selectedCurrency.symbol}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Typography style={styles.currencyName}>{selectedCurrency.code}</Typography>
-          <Typography style={styles.currencyMeta} numberOfLines={1}>
+          <Text style={styles.currencyName}>{selectedCurrency.code}</Text>
+          <Text style={styles.currencyMeta} numberOfLines={1}>
             {disabled ? "Locked to group currency" : selectedCurrency.name}
-          </Typography>
+          </Text>
         </View>
       </View>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
@@ -55,11 +54,11 @@ export function CurrencyInlineSelector({
                   pressed && styles.pressed,
                 ]}
               >
-                <Typography
+                <Text
                   style={[styles.currencyChipText, active && styles.currencyChipTextActive]}
                 >
                   {currency.code}
-                </Typography>
+                </Text>
               </Pressable>
             );
           })}

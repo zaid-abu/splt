@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
-import { View } from "react-native";
-import { Typography } from "heroui-native";
+import {  View , Text } from "react-native";
 import * as icons from "lucide-react-native";
-import { useUI, IconButton } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
+import { IconButton } from "@/components/ui/IconButton";
 
 interface ScreenHeaderProps {
   title: string;
@@ -32,9 +32,9 @@ export function ScreenHeader({
         {onBackPress && (
           <IconButton icon={icons.ArrowLeft} onPress={onBackPress} accessibilityLabel="Go back" />
         )}
-        <Typography
+        <Text
           style={{
-            fontFamily: "Sora_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             fontSize: 28,
             lineHeight: 30,
             color: color.textStrong,
@@ -43,7 +43,7 @@ export function ScreenHeader({
           numberOfLines={1}
         >
           {title}
-        </Typography>
+        </Text>
       </View>
       {rightAction}
     </View>

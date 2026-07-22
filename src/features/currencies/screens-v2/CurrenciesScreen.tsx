@@ -9,17 +9,29 @@ import { CoralTopBar } from "@/components/coral/CoralTopBar";
 import { useCoralColors } from "@/components/coral/useCoral";
 import { useUIStore } from "@/store/useUIStore";
 import { CURRENCIES, type Currency } from "@/types";
+import { useAuth } from "@/context/AppContext";
+import { AuthService } from "@/services/api/auth";
 
 export default function CurrenciesScreen(): JSX.Element {
   const router = useRouter();
   const coral = useCoralColors();
+  const { currentUser } = useAuth();
   const preferredCurrency = useUIStore((s) => s.preferredCurrency);
   const exchangeRates = useUIStore((s) => s.exchangeRates);
   const setCurrency = useUIStore((s) => s.setCurrency);
 
-  const handleSelectCurrency = (currency: Currency) => {
+  const handleSelectCurrency = async (currency: Currency) => {
     Haptics.selectionAsync();
     setCurrency(currency);
+    if (currentUser?.id && currency.code !== currentUser.defaultCurrency) {
+      try {
+        await AuthService.updateProfile(currentUser.id, {
+          defaultCurrency: currency.code,
+        });
+      } catch {
+        // server sync is non-blocking; local preference is already set
+      }
+    }
   };
 
   const getExchangeLabel = (code: string): string => {

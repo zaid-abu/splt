@@ -1,5 +1,14 @@
 import { render, act, fireEvent } from "@testing-library/react-native"
 
+import NewFriendScreen from "./NewFriendScreen"
+import InviteRedemptionScreen from "./InviteRedemptionScreen"
+import { invitationsApi } from "@/features/invitations/services/api"
+import { clearPendingInviteToken } from "@/features/invitations/services/pendingInvite"
+
+import { Alert } from "react-native"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import FriendDetailScreen from "./FriendDetailScreen"
+
 const mockReplace = jest.fn()
 const mockBack = jest.fn()
 const mockPush = jest.fn()
@@ -141,11 +150,6 @@ jest.mock("@/components/ui/AmountDisplay", () => ({
   getCurrencySymbol: (code: string) => code === "USD" ? "$" : code,
 }))
 
-import NewFriendScreen from "./NewFriendScreen"
-import InviteRedemptionScreen from "./InviteRedemptionScreen"
-import { invitationsApi } from "@/features/invitations/services/api"
-import { clearPendingInviteToken } from "@/features/invitations/services/pendingInvite"
-
 const createFriendInvite = invitationsApi.createFriendInvite as jest.Mock
 const resolveFriendInvite = invitationsApi.resolveFriendInvite as jest.Mock
 const redeemFriendInvite = invitationsApi.redeemFriendInvite as jest.Mock
@@ -160,7 +164,7 @@ describe("add flow", () => {
 
     const { getByPlaceholderText, getByText, findByText } = await render(<NewFriendScreen />)
 
-    await fireEvent.changeText(getByPlaceholderText(/exact email/i), "missing@example.com")
+    await fireEvent.changeText(getByPlaceholderText(/email/i), "missing@example.com")
     await fireEvent.press(getByText("Search"))
 
     expect(mockSearchFriends).toHaveBeenCalledWith("missing@example.com")
@@ -172,7 +176,7 @@ describe("add flow", () => {
 
     const { getByPlaceholderText, getByText, findByText } = await render(<NewFriendScreen />)
 
-    await fireEvent.changeText(getByPlaceholderText(/exact email/i), "me@test.com")
+    await fireEvent.changeText(getByPlaceholderText(/email/i), "me@test.com")
     await fireEvent.press(getByText("Search"))
 
     expect(await findByText(/your own email/i)).toBeTruthy()
@@ -183,11 +187,11 @@ describe("add flow", () => {
 
     const { getByPlaceholderText, getByText, findByText } = await render(<NewFriendScreen />)
 
-    await fireEvent.changeText(getByPlaceholderText(/exact email/i), "alice@example.com")
+    await fireEvent.changeText(getByPlaceholderText(/email/i), "alice@example.com")
     await fireEvent.press(getByText("Search"))
 
     expect(await findByText("Alice")).toBeTruthy()
-    expect(getByText("Send Friend Request")).toBeTruthy()
+    expect(getByText("Send friend request")).toBeTruthy()
   })
 
   it("shows blocked state when search returns blocked", async () => {
@@ -195,7 +199,7 @@ describe("add flow", () => {
 
     const { getByPlaceholderText, getByText, findByText } = await render(<NewFriendScreen />)
 
-    await fireEvent.changeText(getByPlaceholderText(/exact email/i), "blocked@example.com")
+    await fireEvent.changeText(getByPlaceholderText(/email/i), "blocked@example.com")
     await fireEvent.press(getByText("Search"))
 
     expect(await findByText(/unavailable/i)).toBeTruthy()
@@ -204,7 +208,7 @@ describe("add flow", () => {
   it("validates email format before search", async () => {
     const { getByPlaceholderText, getByText } = await render(<NewFriendScreen />)
 
-    await fireEvent.changeText(getByPlaceholderText(/exact email/i), "not-an-email")
+    await fireEvent.changeText(getByPlaceholderText(/email/i), "not-an-email")
     await fireEvent.press(getByText("Search"))
 
     expect(mockSearchFriends).not.toHaveBeenCalled()
@@ -300,7 +304,7 @@ describe("share invite", () => {
 
     const { getByText } = await render(<NewFriendScreen />)
 
-    await fireEvent.press(getByText("Share Invite Link"))
+    await fireEvent.press(getByText("Share invite link"))
 
     expect(createFriendInvite).toHaveBeenCalled()
   })
@@ -322,7 +326,7 @@ describe("rate limiting", () => {
     const { getByPlaceholderText, getByText, findByText } = await render(<NewFriendScreen />)
 
     for (let i = 0; i < 10; i++) {
-      await fireEvent.changeText(getByPlaceholderText(/exact email/i), `user${i}@example.com`)
+      await fireEvent.changeText(getByPlaceholderText(/email/i), `user${i}@example.com`)
       await fireEvent.press(getByText("Search"))
       await findByText(/no user/i)
     }
@@ -330,10 +334,6 @@ describe("rate limiting", () => {
     expect(mockSearchFriends).toHaveBeenCalledTimes(10)
   })
 })
-
-import { Alert } from "react-native"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import FriendDetailScreen from "./FriendDetailScreen"
 
 function renderWithQuery(ui: React.ReactElement) {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })

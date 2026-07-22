@@ -1,7 +1,6 @@
 import type { JSX } from "react";
 import { View } from "react-native";
-import { useCoralColors } from "@/components/coral";
-import { Eyebrow } from "@/components/coral";
+import { useCoralColors , Eyebrow } from "@/components/coral";
 import { ActivityItem } from "@/features/activity/components/ActivityItem";
 import type { Activity } from "@/types";
 

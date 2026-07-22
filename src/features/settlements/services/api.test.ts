@@ -1,3 +1,7 @@
+import { supabase } from "@/services/supabase/client"
+import { settlementsApi } from "./api"
+import type { SettlementMutationInput } from "@/features/money/types"
+
 const mockReturns = jest.fn().mockResolvedValue({ data: null, error: null })
 
 jest.mock("@/services/supabase/client", () => ({
@@ -12,10 +16,6 @@ jest.mock("@/services/supabase/client", () => ({
     })),
   },
 }))
-
-import { supabase } from "@/services/supabase/client"
-import { settlementsApi } from "./api"
-import type { SettlementMutationInput } from "@/features/money/types"
 
 const rpc = supabase.rpc as jest.Mock
 
@@ -65,7 +65,7 @@ describe("settlementsApi.createSettlement", () => {
       p_client_operation_id: "op-1",
       p_counterparty_id: "u2",
       p_group_id: "g-1",
-      p_friendship_id: "",
+      p_friendship_id: null,
       p_amount_minor: 1000,
       p_currency: "USD",
       p_method: "cash",
@@ -96,7 +96,7 @@ describe("settlementsApi.createSettlement", () => {
     expect(rpc).toHaveBeenCalledWith("create_settlement_v2", {
       p_client_operation_id: "op-2",
       p_counterparty_id: "u2",
-      p_group_id: "",
+      p_group_id: null,
       p_friendship_id: "f-1",
       p_amount_minor: 500,
       p_currency: "USD",

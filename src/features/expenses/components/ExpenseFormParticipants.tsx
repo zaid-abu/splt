@@ -1,7 +1,6 @@
 import React from "react";
-import { View, TextInput, Pressable } from "react-native";
+import { View, TextInput, Pressable, Text, Switch } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Typography, Checkbox } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -67,7 +66,7 @@ export function ExpenseSelectionTabs({
             placeholderTextColor={color.muted}
             style={{
               flex: 1,
-              fontFamily: "IBMPlexSans_500Medium",
+              fontFamily: "InstrumentSans_500Medium",
               color: color.text,
               fontSize: 16,
               padding: 0,
@@ -111,16 +110,16 @@ export function ExpenseSelectionTabs({
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
-                <Typography
+                <Text
                   style={{
                     color: active ? color.textInverse : color.text,
                     fontSize: 14,
                     textTransform: "capitalize",
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                   }}
                 >
                   {tab}
-                </Typography>
+                </Text>
               </Pressable>
             );
           })}
@@ -155,15 +154,15 @@ export function ExpenseSelectionTabs({
                   })}
                 >
                   <AppUserAvatar user={f} size="sm" />
-                  <Typography
+                  <Text
                     style={{
                       fontSize: 14,
                       color: color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                     }}
                   >
                     {f.name.split(" ")[0]}
-                  </Typography>
+                  </Text>
                   <icons.X size={16} color={color.muted} strokeWidth={1.8} />
                 </Pressable>
               ))}
@@ -186,15 +185,15 @@ export function ExpenseSelectionTabs({
               borderColor: color.border,
             }}
           >
-            <Typography
+            <Text
               style={{
                 color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
+                fontFamily: "InstrumentSans_500Medium",
                 textAlign: "center",
               }}
             >
               No matching {selectionTab} found.
-            </Typography>
+            </Text>
           </View>
         ) : (
           <View
@@ -233,25 +232,25 @@ export function ExpenseSelectionTabs({
                   >
                     <AppUserAvatar user={f} size="md" />
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Typography
+                      <Text
                         style={{
                           fontSize: 15,
                           color: color.text,
-                          fontFamily: "IBMPlexSans_600SemiBold",
+                          fontFamily: "InstrumentSans_600SemiBold",
                         }}
                       >
                         {f.name}
-                      </Typography>
-                      <Typography
+                      </Text>
+                      <Text
                         style={{
                           fontSize: 13,
                           color: color.muted,
-                          fontFamily: "IBMPlexSans_500Medium",
+                          fontFamily: "InstrumentSans_500Medium",
                           marginTop: 2,
                         }}
                       >
                         Friend
-                      </Typography>
+                      </Text>
                     </View>
                     <View
                       style={{
@@ -311,25 +310,25 @@ export function ExpenseSelectionTabs({
                       <GroupIcon size={18} color={color.text} strokeWidth={1.8} />
                     </View>
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                      <Typography
+                      <Text
                         style={{
                           fontSize: 15,
                           color: color.text,
-                          fontFamily: "IBMPlexSans_600SemiBold",
+                          fontFamily: "InstrumentSans_600SemiBold",
                         }}
                       >
                         {g.name}
-                      </Typography>
-                      <Typography
+                      </Text>
+                      <Text
                         style={{
                           fontSize: 13,
                           color: color.muted,
-                          fontFamily: "IBMPlexSans_500Medium",
+                          fontFamily: "InstrumentSans_500Medium",
                           marginTop: 2,
                         }}
                       >
                         {g.members.length} members • {g.currency}
-                      </Typography>
+                      </Text>
                     </View>
                     <View
                       style={{
@@ -407,39 +406,39 @@ export function ExpenseFormParticipants({
           marginBottom: 16,
         }}
       >
-        <Typography
+        <Text
           style={{
             fontSize: 11,
             letterSpacing: 1.2,
             color: color.muted,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             textTransform: "uppercase",
           }}
         >
           Participants
-        </Typography>
+        </Text>
 
         {splitMethod === "custom" && parsedAmount > 0 && (
-          <Typography
+          <Text
             style={{
               fontSize: 12,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               color: remainingCustom === 0 ? color.success : color.danger,
             }}
           >
             Remaining: {formatAmount(remainingCustom, expenseCurrency)}
-          </Typography>
+          </Text>
         )}
         {splitMethod === "percentage" && parsedAmount > 0 && (
-          <Typography
+          <Text
             style={{
               fontSize: 12,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               color: remainingPercent === 0 ? color.success : color.danger,
             }}
           >
             Remaining: {remainingPercent.toFixed(1)}%
-          </Typography>
+          </Text>
         )}
       </View>
 
@@ -468,30 +467,28 @@ export function ExpenseFormParticipants({
                 opacity: isIncluded ? 1 : 0.5,
               }}
             >
-              <Checkbox
-                isSelected={isIncluded}
-                onSelectedChange={(v) => {
+              <Switch
+                value={isIncluded}
+                onValueChange={(v) => {
                   Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
                   setIncluded((prev) => ({ ...prev, [u.id]: v }));
                 }}
                 style={{ marginRight: 16 }}
-              >
-                <Checkbox.Indicator />
-              </Checkbox>
+              />
 
               <AppUserAvatar user={u} size="sm" />
 
-              <Typography
+              <Text
                 style={{
                   flex: 1,
                   marginLeft: 12,
                   fontSize: 15,
                   color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                 }}
               >
                 {u.id === currentUserId ? "You" : u.name}
-              </Typography>
+              </Text>
 
               {splitMethod === "equal" && isIncluded && parsedAmount > 0 && (
                 <View
@@ -504,15 +501,15 @@ export function ExpenseFormParticipants({
                     borderRadius: radius.pill,
                   }}
                 >
-                  <Typography
+                  <Text
                     style={{
                       fontSize: 13,
                       color: color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                     }}
                   >
                     {formatAmount(equalShare, expenseCurrency)}
-                  </Typography>
+                  </Text>
                 </View>
               )}
 
@@ -533,7 +530,7 @@ export function ExpenseFormParticipants({
                       borderColor: color.border,
                       fontSize: 15,
                       color: color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                       textAlign: "right",
                     }}
                   />
@@ -558,20 +555,20 @@ export function ExpenseFormParticipants({
                         borderColor: color.border,
                         fontSize: 15,
                         color: color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
+                        fontFamily: "InstrumentSans_600SemiBold",
                         textAlign: "right",
                       }}
                     />
                   </View>
-                  <Typography
+                  <Text
                     style={{
                       fontSize: 14,
                       color: color.muted,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                     }}
                   >
                     %
-                  </Typography>
+                  </Text>
                 </View>
               )}
             </View>

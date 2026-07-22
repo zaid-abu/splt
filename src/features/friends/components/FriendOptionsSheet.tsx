@@ -1,6 +1,5 @@
 import React, { type ComponentType } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui";
 
@@ -51,28 +50,28 @@ export function OptionRow({
         <Icon size={20} color={itemColor} strokeWidth={1.8} />
       </View>
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Typography
+        <Text
           style={{
             fontSize: 16,
             lineHeight: 21,
             color: itemColor,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
           }}
         >
           {label}
-        </Typography>
-        <Typography
+        </Text>
+        <Text
           numberOfLines={2}
           style={{
             marginTop: 2,
             fontSize: 13,
             lineHeight: 18,
             color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
           }}
         >
           {description}
-        </Typography>
+        </Text>
       </View>
     </Pressable>
   );

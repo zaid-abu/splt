@@ -474,6 +474,14 @@ export default function NotificationsV2Screen(): JSX.Element {
                 </View>
               </>
             )}
+            
+            <View style={{ marginTop: 20, marginBottom: 20 }}>
+              <CoralButton
+                label="Notification settings"
+                variant="secondary"
+                onPress={() => router.push("/profile/notifications")}
+              />
+            </View>
           </>
         }
         ListEmptyComponent={notifications.length === 0 ? renderEmpty : null}

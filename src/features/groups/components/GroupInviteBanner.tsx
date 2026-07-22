@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui";
@@ -46,27 +45,27 @@ export function GroupInviteBanner({
         >
           <icons.UserPlus size={24} color={color.text} strokeWidth={1.5} />
         </View>
-        <Typography
+        <Text
           style={{
             fontSize: 16,
             color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             marginBottom: 4,
           }}
         >
           Share this group
-        </Typography>
-        <Typography
+        </Text>
+        <Text
           style={{
             fontSize: 14,
             color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
             textAlign: "center",
             marginBottom: 16,
           }}
         >
           Invite friends to join &quot;{groupName}&quot; and split expenses together.
-        </Typography>
+        </Text>
         <Pressable
           accessibilityRole="button"
           onPress={() => {
@@ -83,15 +82,15 @@ export function GroupInviteBanner({
             opacity: pressed ? 0.8 : 1,
           })}
         >
-          <Typography
+          <Text
             style={{
               fontSize: 14,
               color: color.textInverse,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
             }}
           >
             Add Members
-          </Typography>
+          </Text>
         </Pressable>
       </View>
     </View>

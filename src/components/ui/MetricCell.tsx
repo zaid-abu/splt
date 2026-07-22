@@ -1,6 +1,5 @@
-import { View } from "react-native";
-import { Typography } from "heroui-native";
-import { useUI } from "@/components/ui";
+import {  View , Text } from "react-native";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 interface MetricCellProps {
   label: string;
@@ -30,30 +29,30 @@ export function MetricCell({ label, value, tone = "neutral" }: MetricCellProps):
         borderColor: color.border,
       }}
     >
-      <Typography
+      <Text
         numberOfLines={1}
         style={{
           fontSize: 11,
           color: color.muted,
-          fontFamily: "IBMPlexSans_600SemiBold",
+          fontFamily: "InstrumentSans_600SemiBold",
           textTransform: "uppercase",
           letterSpacing: 0.8,
           marginBottom: 5,
         }}
       >
         {label}
-      </Typography>
-      <Typography
+      </Text>
+      <Text
         numberOfLines={1}
         adjustsFontSizeToFit
         style={{
           fontSize: 16,
           color: valueColors[tone],
-          fontFamily: "IBMPlexSans_600SemiBold",
+          fontFamily: "InstrumentSans_600SemiBold",
         }}
       >
         {value}
-      </Typography>
+      </Text>
     </View>
   );
 }

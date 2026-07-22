@@ -11,6 +11,7 @@ import { AppLoader } from "@/components/ui/AppLoader";
 import { ErrorState } from "@/components/ui/ErrorState";
 import { useAuth } from "@/context/AppContext";
 import { useExpenseSnapshot } from "@/features/expenses/hooks/useExpenseSnapshot";
+import { useFriendsList } from "@/features/friends/hooks/useFriendsList";
 import { ExpenseComments } from "@/features/expenses/components/ExpenseComments";
 import { formatAmount, getCurrencySymbol } from "@/components/ui/AmountDisplay";
 import { CoralButton, CoralScreen, CoralTopBar, Eyebrow, MoneyRow, useCoralColors } from "@/components/coral";
@@ -40,9 +41,8 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
   const { toast } = useAppToast();
 
   const snapshot = useExpenseSnapshot(id);
-  const { data, isInitialLoading, isError, error, isNotFound, refresh } = snapshot;
+  const { data, isInitialLoading, isError, isNotFound, refresh } = snapshot;
   const [deleteLoading, setDeleteLoading] = useState(false);
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [receiptLoading, setReceiptLoading] = useState(false);
   const deleteSheetRef = useRef<BottomSheetModal>(null);
   const settleSheetRef = useRef<BottomSheetModal>(null);
@@ -65,7 +65,6 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
     setReceiptLoading(true);
     try {
       const signedUrl = await expensesApi.createReceiptSignedUrl(id, data.receiptUrl);
-      setReceiptUrl(signedUrl);
       const canOpen = await Linking.canOpenURL(signedUrl);
       if (canOpen) {
         await Linking.openURL(signedUrl);
@@ -79,7 +78,7 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
     } finally {
       setReceiptLoading(false);
     }
-  }, [data?.receiptUrl, id, toast]);
+  }, [data, id, toast]);
 
   const handleDeletePress = useCallback(() => {
     Haptics.selectionAsync();
@@ -113,20 +112,37 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
     settleSheetRef.current?.present();
   }, []);
 
+  const { friendRows } = useFriendsList();
   const handleSettleSelect = useCallback(
     (counterpartyId: string) => {
       Haptics.selectionAsync();
       settleSheetRef.current?.dismiss();
       const candidate = data?.settlementCandidates.find((c) => c.counterpartyId === counterpartyId);
       if (!candidate) return;
-      const symbol = getCurrencySymbol(candidate.currency);
-      const major = minorToMajor(Math.abs(candidate.signedAmountMinor), candidate.currency);
-      const routeParams = candidate.context.type === "group"
-        ? `?groupId=${candidate.context.groupId}`
-        : "";
-      router.push(`/settle/${candidate.counterpartyId}${routeParams}` as any);
+
+      let friendshipId: string | undefined;
+      if (candidate.context.type === "direct") {
+        friendshipId = candidate.context.friendshipId;
+        if (!friendshipId) {
+          const row = friendRows.find((r) => r.friend.id === counterpartyId);
+          friendshipId = row?.friendship?.id;
+        }
+      }
+
+      router.push({
+        pathname: "/settle/[id]",
+        params: {
+          id: candidate.counterpartyId,
+          contextType: candidate.context.type,
+          groupId: candidate.context.type === "group" ? candidate.context.groupId : undefined,
+          friendshipId,
+          currency: candidate.currency,
+          amountMinor: String(Math.abs(candidate.signedAmountMinor)),
+          isOwedToYou: candidate.signedAmountMinor > 0 ? "true" : "false",
+        },
+      } as any);
     },
-    [data, router]
+    [data, router, friendRows]
   );
 
   if (isInitialLoading) {
@@ -170,7 +186,7 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
     );
   }
 
-  const { expense, permissions, settlementCandidates } = data;
+  const { expense, settlementCandidates } = data;
   const group = expense.groupId ? groups.find((g) => g.id === expense.groupId) : undefined;
   const paidByName = expense.paidByUser.name.split(" ")[0];
   const paidByMe = expense.paidBy === currentUser.id;
@@ -418,13 +434,13 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
           <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 20, color: coral.foreground, marginBottom: 12 }}>
             Settle with
           </Text>
-          {settlementCandidates.map((candidate) => {
+          {settlementCandidates.map((candidate, idx) => {
             const isPositive = candidate.signedAmountMinor > 0;
             const major = minorToMajor(Math.abs(candidate.signedAmountMinor), candidate.currency);
             const symbol = getCurrencySymbol(candidate.currency);
             return (
               <Pressable
-                key={candidate.counterpartyId}
+                key={`${candidate.counterpartyId}-${idx}`}
                 accessibilityRole="button"
                 onPress={() => handleSettleSelect(candidate.counterpartyId)}
                 style={({ pressed }) => ({

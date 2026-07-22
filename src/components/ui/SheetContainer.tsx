@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRef, forwardRef, useImperativeHandle } from "react";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 interface SheetContainerProps {
   children: ReactNode;

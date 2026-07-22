@@ -1,6 +1,41 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
 import type { Mock } from "jest-mock"
 
+jest.mock("react-native-reanimated", () => {
+  const { View: RNView } = jest.requireActual("react-native")
+
+  const Animated = ({ children, style, ...props }: any) => (
+    <RNView style={style} {...props}>{children}</RNView>
+  )
+  Animated.View = Animated
+
+  return {
+    __esModule: true,
+    default: Animated,
+    useSharedValue: (v: any) => ({ value: v }),
+    useAnimatedStyle: (cb: any) => cb?.() ?? {},
+    withSpring: (v: any) => v,
+    withTiming: (v: any) => v,
+    FadeIn: { duration: () => ({}) },
+    FadeOut: { duration: () => ({}) },
+  }
+})
+
+import NewGroupScreen from "./NewGroupScreen"
+import { useCreateGroup } from "@/features/groups/queries/useGroups"
+import { randomUUID } from "@/utils/randomUUID"
+
+import GroupDetailScreen from "./GroupDetailScreen"
+import { useGroupSnapshot } from "@/features/groups/hooks/useGroupSnapshot"
+import type { GroupSnapshotData, SnapshotState } from "@/features/groups/hooks/useGroupSnapshot"
+import type { OpenBalance } from "@/features/money/types"
+import type { Expense, User, Group } from "@/types"
+
+// ── Settings screen (Task 15) ──────────────────────────────────────────────
+
+import GroupSettingsScreen from "./GroupSettingsScreen"
+import { useGroupSettings } from "@/features/groups/hooks/useGroupSettings"
+
 const mockReplace = jest.fn()
 const mockPush = jest.fn()
 const mockBack = jest.fn()
@@ -275,10 +310,6 @@ jest.mock("@/utils/randomUUID", () => ({
   randomUUID: jest.fn(),
 }))
 
-import NewGroupScreen from "./NewGroupScreen"
-import { useCreateGroup } from "@/features/groups/queries/useGroups"
-import { randomUUID } from "@/utils/randomUUID"
-
 const mockMutateAsync = jest.fn()
 const mockUuid1 = "00000000-0000-0000-0000-000000000001"
 
@@ -416,13 +447,6 @@ jest.mock("@/features/groups/hooks/useGroupSnapshot", () => ({
   useGroupSnapshot: jest.fn(),
 }))
 
-import GroupDetailScreen from "./GroupDetailScreen"
-import { useGroupSnapshot } from "@/features/groups/hooks/useGroupSnapshot"
-import type { Mock } from "jest-mock"
-import type { GroupSnapshotData, SnapshotState } from "@/features/groups/hooks/useGroupSnapshot"
-import type { OpenBalance } from "@/features/money/types"
-import type { Expense, User, Group } from "@/types"
-
 const mockUser: User = {
   id: "u1",
   name: "Alice",
@@ -538,7 +562,7 @@ describe("detail screen with snapshot views", () => {
     mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "unknown" })
     ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
     await render(<GroupDetailScreen />)
-    expect(screen.getByText("Balances")).toBeTruthy()
+    expect(screen.getByText("People")).toBeTruthy()
   })
 
   it("selecting Expenses calls router.setParams", async () => {
@@ -552,7 +576,7 @@ describe("detail screen with snapshot views", () => {
     ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
     await render(<GroupDetailScreen />)
     expect(screen.getByText("Alice")).toBeTruthy()
-    expect(screen.getByText(/Owes/)).toBeTruthy()
+    expect(screen.getByText("Alice owes 20.00")).toBeTruthy()
   })
 
   it("pairwise person row navigates to /friend/[id]", async () => {
@@ -568,11 +592,12 @@ describe("detail screen with snapshot views", () => {
     expect(screen.getByText("Dinner")).toBeTruthy()
   })
 
-  it("expenses view shows all expenses with share info", async () => {
+  it("expenses view shows each expense's net impact on your balance", async () => {
     mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "expenses" })
     ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
     await render(<GroupDetailScreen />)
     expect(screen.getByText("Dinner")).toBeTruthy()
+    expect(screen.getByText("+40.00")).toBeTruthy()
   })
 
   it("schedule view shows empty state when no recurring expenses", async () => {
@@ -640,7 +665,7 @@ describe("detail screen with snapshot views", () => {
   it("add expense button navigates with group ID", async () => {
     ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
     await render(<GroupDetailScreen />)
-    fireEvent.press(screen.getByLabelText("Add an expense"))
+    fireEvent.press(screen.getByText("Add"))
     expect(mockPush).toHaveBeenCalledWith("/expense/new?groupId=g-1")
   })
 
@@ -656,12 +681,6 @@ describe("detail screen with snapshot views", () => {
     expect(screen.getByText(/View-only/)).toBeTruthy()
   })
 })
-
-// ── Settings screen (Task 15) ──────────────────────────────────────────────
-
-import GroupSettingsScreen from "./GroupSettingsScreen"
-import { useGroupSettings } from "@/features/groups/hooks/useGroupSettings"
-import type { Mock } from "jest-mock"
 
 function makeSettings(overrides: Record<string, any> = {}) {
   const base = {

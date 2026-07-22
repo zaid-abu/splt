@@ -1,9 +1,8 @@
-import { Typography } from "heroui-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import type { JSX, ReactNode } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import { KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator } from "react-native";
+import {  KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator , Text } from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";
@@ -86,9 +85,9 @@ export default function AuthFormLayout({
               entering={FadeInDown.delay(200).duration(600).springify()}
               style={{ marginBottom: 40 }}
             >
-              <Typography
+              <Text
                 style={{
-                  fontFamily: "Sora_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                   fontSize: 40,
                   color: color.textStrong,
                   lineHeight: 46,
@@ -97,17 +96,17 @@ export default function AuthFormLayout({
                 }}
               >
                 {title}
-              </Typography>
-              <Typography
+              </Text>
+              <Text
                 style={{
-                  fontFamily: "IBMPlexSans_400Regular",
+                  fontFamily: "InstrumentSans_400Regular",
                   fontSize: 17,
                   color: color.muted,
                   lineHeight: 24,
                 }}
               >
                 {subtitle}
-              </Typography>
+              </Text>
             </Animated.View>
 
             <Animated.View
@@ -149,15 +148,15 @@ export default function AuthFormLayout({
                   }}
                 >
                   {isPending && <ActivityIndicator color={color.textInverse} />}
-                  <Typography
+                  <Text
                     style={{
                       fontSize: 16,
                       color: color.textInverse,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                     }}
                   >
                     {isPending ? submitLoadingLabel || submitLabel : submitLabel}
-                  </Typography>
+                  </Text>
                 </View>
               </PressableScale>
             </Animated.View>

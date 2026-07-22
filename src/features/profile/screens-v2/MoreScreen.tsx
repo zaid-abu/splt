@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { Bell, ChevronRight, TrendingUp, Wallet } from "lucide-react-native";
+import { Bell, ChevronRight, BarChart2, Coins, Download, Sun, CircleHelp } from "lucide-react-native";
 
 import {
   CoralButton,
@@ -187,7 +187,7 @@ export default function MoreScreen(): JSX.Element {
   ).length;
 
   return (
-    <CoralScreen>
+    <CoralScreen contentContainerStyle={{ paddingBottom: 110 }}>
       <CoralTopBar title="More" />
 
       <Text
@@ -226,7 +226,7 @@ export default function MoreScreen(): JSX.Element {
               <AppUserAvatar user={currentUser} size="sm" />
             ) : undefined
           }
-          onPress={() => router.push("/profile/edit")}
+          onPress={() => router.push("/profile")}
         />
         <CardRow
           title="Notifications"
@@ -255,7 +255,7 @@ export default function MoreScreen(): JSX.Element {
           subtitle="Spending trends and categories"
           left={
             <IconBox>
-              <TrendingUp size={20} color={coral.avatarInk} strokeWidth={1.5} />
+              <BarChart2 size={20} color={coral.avatarInk} strokeWidth={1.5} />
             </IconBox>
           }
           onPress={() => router.push(SHELL_HREFS.analytics)}
@@ -265,39 +265,49 @@ export default function MoreScreen(): JSX.Element {
           subtitle={`${preferredCurrency.code} - ${preferredCurrency.name}`}
           left={
             <IconBox>
-              <Wallet size={20} color={coral.avatarInk} strokeWidth={1.5} />
+              <Coins size={20} color={coral.avatarInk} strokeWidth={1.5} />
+            </IconBox>
+          }
+          onPress={() => router.push(SHELL_HREFS.currencies)}
+        />
+        <CardRow
+          title="Export data"
+          subtitle="Download transaction history"
+          left={
+            <IconBox>
+              <Download size={20} color={coral.avatarInk} strokeWidth={1.5} />
             </IconBox>
           }
           isLast
-          onPress={() => router.push(SHELL_HREFS.currencies)}
+          onPress={() => router.push("/profile/export")}
         />
       </CardContainer>
 
-      <SectionHeading title="Appearance" />
+      <SectionHeading title="Preferences and support" />
 
       <CardContainer>
-        <View style={{ padding: 12, gap: 10 }}>
-          <Text
-            style={{
-              fontFamily: "InstrumentSans_400Regular",
-              fontSize: 13,
-              lineHeight: 19,
-              color: coral.muted,
-            }}
-          >
-            Choose how Splt looks on this device.
-          </Text>
-          <CoralSegment
-            options={[...APPEARANCE_OPTIONS]}
-            selected={theme}
-            onSelect={(value) => setTheme(value as ThemePreference)}
-          />
-        </View>
+        <CardRow
+          title="Appearance"
+          subtitle="Theme and styling preferences"
+          left={
+            <IconBox>
+              <Sun size={20} color={coral.avatarInk} strokeWidth={1.5} />
+            </IconBox>
+          }
+          onPress={() => router.push("/profile/appearance")}
+        />
+        <CardRow
+          title="Help and support"
+          subtitle="FAQs, guides, and legal notices"
+          left={
+            <IconBox>
+              <CircleHelp size={20} color={coral.avatarInk} strokeWidth={1.5} />
+            </IconBox>
+          }
+          isLast
+          onPress={() => router.push("/help")}
+        />
       </CardContainer>
-
-      <View style={{ marginTop: 30, marginBottom: 18 }}>
-        <CoralButton label="Sign out" variant="danger" onPress={() => signOut()} />
-      </View>
     </CoralScreen>
   );
 }

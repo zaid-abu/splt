@@ -13,6 +13,7 @@ import {
   orderBalances,
   classifyPersonBalances,
 } from "@/features/money/balances";
+import { minorToMajor, getScale } from "@/features/money/splits";
 import { nextHomeScheduleItem } from "@/features/recurring/services/readAdapter";
 import { useUIStore } from "@/store/useUIStore";
 import type { User, Group, Expense, AppNotification, Activity } from "@/types";
@@ -52,6 +53,18 @@ export interface GroupLedgerRow {
   netSignedMinor: number;
 }
 
+export interface CircleRow {
+  id: string;
+  type: "group" | "person";
+  name: string;
+  subtitle: string;
+  netSignedMinor: number;
+  /** only for person rows */
+  user?: User;
+  /** only for group rows */
+  group?: Group;
+}
+
 export interface MovementRow {
   id: string;
   type: "expense" | "settlement";
@@ -68,6 +81,7 @@ export interface HomeSnapshotData {
   heroBalances: HeroBalance[];
   attentionRows: AttentionRow[];
   groupLedger: GroupLedgerRow[];
+  circleBalances: CircleRow[];
   nextSchedule?: ScheduleReadItem;
   recentMovement: MovementRow[];
   notifications: AppNotification[];
@@ -198,9 +212,65 @@ export function useHomeSnapshot(userId: string): SnapshotState<HomeSnapshotData>
       const groupBalances = orderedOpenBalances.filter(
         (ob) => ob.context.type === "group" && ob.context.groupId === g.id
       );
-      const netSignedMinor = groupBalances.reduce((sum, ob) => sum + ob.signedAmountMinor, 0);
+
+      // Group by currency and sum per currency
+      const byCurrency = new Map<string, number>();
+      for (const ob of groupBalances) {
+        byCurrency.set(ob.currency, (byCurrency.get(ob.currency) || 0) + ob.signedAmountMinor);
+      }
+
+      // Convert each currency sum to preferred currency
+      const targetScale = getScale(preferredCurrency.code);
+      let netSignedMinor = 0;
+      for (const [currency, amountMinor] of byCurrency) {
+        const major = minorToMajor(amountMinor, currency);
+        const converted = convertCurrency(major, currency, preferredCurrency.code);
+        netSignedMinor += Math.round(converted * Math.pow(10, targetScale));
+      }
+
       return { group: g, netSignedMinor };
     });
+
+    const personBalances: { user: User; netSignedMinor: number }[] = [];
+    for (const [cid, userOpenBalances] of balancesByUser) {
+      const user = friendById.get(cid);
+      if (!user) continue;
+
+      // Only include direct/friendship balances — group balances
+      // are already captured in groupLedger
+      const directBalances = userOpenBalances.filter(
+        (ob) => ob.context.type === "direct"
+      );
+      if (directBalances.length === 0) continue;
+
+      const targetScale = getScale(preferredCurrency.code);
+      let netSignedMinor = 0;
+      for (const ob of directBalances) {
+        const major = minorToMajor(ob.signedAmountMinor, ob.currency);
+        const converted = convertCurrency(major, ob.currency, preferredCurrency.code);
+        netSignedMinor += Math.round(converted * Math.pow(10, targetScale));
+      }
+      personBalances.push({ user, netSignedMinor });
+    }
+
+    const circleBalances: CircleRow[] = [
+      ...groupLedger.map((g) => ({
+        id: g.group.id,
+        type: "group" as const,
+        name: g.group.name,
+        subtitle: "",
+        netSignedMinor: g.netSignedMinor,
+        group: g.group,
+      })),
+      ...personBalances.map((p) => ({
+        id: p.user.id,
+        type: "person" as const,
+        name: p.user.name,
+        subtitle: "",
+        netSignedMinor: p.netSignedMinor,
+        user: p.user,
+      })),
+    ].sort((a, b) => Math.abs(b.netSignedMinor) - Math.abs(a.netSignedMinor));
 
     const recentExpenseMovements: MovementRow[] = expenses
       .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
@@ -248,6 +318,7 @@ export function useHomeSnapshot(userId: string): SnapshotState<HomeSnapshotData>
       heroBalances,
       attentionRows,
       groupLedger,
+      circleBalances,
       nextSchedule: nextSchedule ?? undefined,
       recentMovement,
       notifications,

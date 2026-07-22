@@ -53,6 +53,34 @@ export default function WelcomeScreen(): JSX.Element {
             Splt
           </Text>
         </View>
+        
+        {/* Welcome Orbit Art */}
+        <View style={{ width: "100%", height: 180, position: "relative", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+          <View style={{ width: 174, height: 174, borderRadius: 87, borderWidth: 1, borderColor: coral.border, position: "absolute", opacity: 0.5 }} />
+          <View style={{ width: 82, height: 82, borderRadius: 41, backgroundColor: coral.accentSoft, position: "absolute", left: "20%", top: "10%", opacity: 0.8 }} />
+          <View style={{ width: 72, height: 72, borderRadius: 36, backgroundColor: coral.positiveSoft, position: "absolute", right: "20%", bottom: "10%", opacity: 0.8 }} />
+          <View style={{
+            position: "absolute",
+            width: 140,
+            height: 60,
+            backgroundColor: coral.surface,
+            borderWidth: 1,
+            borderColor: coral.border,
+            borderRadius: 12,
+            padding: 10,
+            transform: [{ rotate: "-3deg" }],
+            shadowColor: coral.foreground,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.08,
+            shadowRadius: 6,
+            elevation: 3,
+            justifyContent: "center"
+          }}>
+            <Text style={{ fontFamily: "IBMPlexMono_600SemiBold", fontSize: 16, color: coral.foreground }}>$84.00</Text>
+            <View style={{ height: 4, width: "60%", backgroundColor: coral.muted, opacity: 0.3, marginTop: 6, borderRadius: 2 }} />
+            <View style={{ height: 4, width: "40%", backgroundColor: coral.muted, opacity: 0.3, marginTop: 4, borderRadius: 2 }} />
+          </View>
+        </View>
 
         <LargeTitle style={{ textAlign: "center", marginTop: 0 }}>
           Shared money, made lighter.

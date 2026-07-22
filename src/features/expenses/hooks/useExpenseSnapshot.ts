@@ -101,6 +101,7 @@ export function useExpenseSnapshot(
   ])
 
   const isNotFound = !isLoadingAny && data === undefined && !!(expenseQuery.isFetched)
+  const isExpenseError = expenseQuery.isError
   const isRestricted = data !== undefined && !data.permissions.canEdit
 
   const refreshImpl = useCallback(async () => {
@@ -121,7 +122,7 @@ export function useExpenseSnapshot(
     isInitialLoading,
     isRefreshing,
     isStaleOffline,
-    isError: isErrorAny,
+    isError: isExpenseError,
     error: firstError,
     isNotFound,
     isRestricted,

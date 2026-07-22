@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { Pressable, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  Pressable, View , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { styles } from "@/features/expenses/utils/styles";
 
@@ -29,9 +28,9 @@ export function SegmentedTabs({
               pressed && styles.pressed,
             ]}
           >
-            <Typography style={[styles.segmentText, active && styles.segmentTextActive]}>
+            <Text style={[styles.segmentText, active && styles.segmentTextActive]}>
               {tab === "friends" ? "Friends" : "Groups"}
-            </Typography>
+            </Text>
           </Pressable>
         );
       })}

@@ -1,9 +1,8 @@
 import type { JSX, ReactNode } from "react";
-import { Pressable, ActivityIndicator } from "react-native";
+import {  Pressable, ActivityIndicator , Text } from "react-native";
 import type { ViewStyle } from "react-native";
-import { Typography } from "heroui-native";
 import * as Haptics from "expo-haptics";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 interface HapticButtonProps {
   children: ReactNode;
@@ -60,9 +59,9 @@ export function HapticButton({
       })}
     >
       {loading && <ActivityIndicator color={textColor} />}
-      <Typography style={{ fontSize: 16, color: textColor, fontFamily: "IBMPlexSans_600SemiBold" }}>
+      <Text style={{ fontSize: 16, color: textColor, fontFamily: "InstrumentSans_600SemiBold" }}>
         {children}
-      </Typography>
+      </Text>
     </Pressable>
   );
 }

@@ -1,6 +1,5 @@
 import React from "react";
-import { View, ScrollView, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, ScrollView, Pressable , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
@@ -77,15 +76,15 @@ export function ExpenseFormSelectors({
                   color={isSelected ? color.textInverse : color.textStrong}
                   strokeWidth={isSelected ? 2 : 1.5}
                 />
-                <Typography
+                <Text
                   style={{
                     fontSize: 15,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                     color: isSelected ? "#FFFFFF" : color.textStrong,
                   }}
                 >
                   {cat.label}
-                </Typography>
+                </Text>
               </Pressable>
             );
           })}
@@ -127,15 +126,15 @@ export function ExpenseFormSelectors({
                 })}
               >
                 <AppUserAvatar user={u} size="md" />
-                <Typography
+                <Text
                   style={{
                     fontSize: 15,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                     color: isSelected ? color.textInverse : color.textStrong,
                   }}
                 >
                   {u.id === currentUserId ? "You" : u.name.split(" ")[0]}
-                </Typography>
+                </Text>
               </Pressable>
             );
           })}
@@ -172,15 +171,15 @@ export function ExpenseFormSelectors({
                   opacity: pressed ? 0.5 : 1,
                 })}
               >
-                <Typography
+                <Text
                   style={{
                     fontSize: 15,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                     color: isSelected ? color.textStrong : color.muted,
                   }}
                 >
                   {method.label}
-                </Typography>
+                </Text>
               </Pressable>
             );
           })}

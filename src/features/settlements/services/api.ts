@@ -7,9 +7,9 @@ const settlementSelect = "*, fromUser:users!from_user_id(*), toUser:users!to_use
 
 function getGroupAndFriendship(context: SettlementMutationInput["context"]) {
   if (context.type === "group") {
-    return { groupId: context.groupId, friendshipId: "" };
+    return { groupId: context.groupId, friendshipId: null };
   }
-  return { groupId: "", friendshipId: context.friendshipId };
+  return { groupId: null, friendshipId: context.friendshipId };
 }
 
 export const settlementsApi = {
@@ -43,8 +43,8 @@ export const settlementsApi = {
     const { data, error } = await supabase.rpc("create_settlement_v2", {
       p_client_operation_id: input.clientOperationId,
       p_counterparty_id: input.counterpartyId,
-      p_group_id: groupId,
-      p_friendship_id: friendshipId,
+      p_group_id: groupId as any,
+      p_friendship_id: friendshipId as any,
       p_amount_minor: input.amountMinor,
       p_currency: input.currency,
       p_method: input.method,

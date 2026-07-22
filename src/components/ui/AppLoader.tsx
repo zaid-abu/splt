@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { useEffect } from "react";
-import { View, StyleSheet } from "react-native";
+import {  View, StyleSheet , Text } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,8 +9,7 @@ import Animated, {
   withSequence,
   Easing,
 } from "react-native-reanimated";
-import { Typography } from "heroui-native";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 interface AppLoaderProps {
   fullScreen?: boolean;
@@ -51,7 +50,7 @@ export function AppLoader({ fullScreen = false }: AppLoaderProps): JSX.Element {
   return (
     <View style={[styles.container, fullScreen && { flex: 1, backgroundColor: color.bg }]}>
       <Animated.View style={[styles.box, { borderColor: color.brand }, animatedStyle]} />
-      <Typography style={[styles.text, { color: color.brand }]}>LOADING</Typography>
+      <Text style={[styles.text, { color: color.brand }]}>LOADING</Text>
     </View>
   );
 }
@@ -70,7 +69,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   text: {
-    fontFamily: "Sora_600SemiBold",
+    fontFamily: "InstrumentSans_600SemiBold",
     fontSize: 16,
     letterSpacing: 4,
     textTransform: "uppercase",

@@ -1,7 +1,6 @@
 import type { JSX } from "react";
 import { forwardRef, useCallback } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
@@ -54,31 +53,31 @@ export const DashboardSettleSheet = forwardRef<BottomSheetModal, DashboardSettle
             paddingBottom: Math.max(insets.bottom, 24),
           }}
         >
-          <Typography
+          <Text
             style={{
               fontSize: 22,
               color: color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               marginBottom: 20,
             }}
           >
             Settle up
-          </Typography>
+          </Text>
 
           {owedUsers.length > 0 && (
             <View style={{ marginBottom: 16 }}>
-              <Typography
+              <Text
                 style={{
                   fontSize: 13,
                   color: color.muted,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                   marginBottom: 8,
                   textTransform: "uppercase",
                   letterSpacing: 1.2,
                 }}
               >
                 Collect from
-              </Typography>
+              </Text>
               {owedUsers.map((user) => (
                 <Pressable
                   key={user.id}
@@ -99,26 +98,26 @@ export const DashboardSettleSheet = forwardRef<BottomSheetModal, DashboardSettle
                 >
                   <AppUserAvatar user={user} size="sm" />
                   <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Typography
+                    <Text
                       style={{
                         fontSize: 15,
                         color: color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
+                        fontFamily: "InstrumentSans_600SemiBold",
                       }}
                     >
                       {user.name}
-                    </Typography>
-                    <Typography
+                    </Text>
+                    <Text
                       style={{
                         fontSize: 13,
                         color: color.success,
-                        fontFamily: "IBMPlexSans_500Medium",
+                        fontFamily: "InstrumentSans_500Medium",
                         marginTop: 1,
                       }}
                     >
                       Owes you{" "}
                       {formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), currencyCode)}
-                    </Typography>
+                    </Text>
                   </View>
                   <icons.ChevronRight size={18} color={color.muted} strokeWidth={1.75} />
                 </Pressable>
@@ -128,18 +127,18 @@ export const DashboardSettleSheet = forwardRef<BottomSheetModal, DashboardSettle
 
           {oweUsers.length > 0 && (
             <View>
-              <Typography
+              <Text
                 style={{
                   fontSize: 13,
                   color: color.muted,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                   marginBottom: 8,
                   textTransform: "uppercase",
                   letterSpacing: 1.2,
                 }}
               >
                 Pay back
-              </Typography>
+              </Text>
               {oweUsers.map((user) => (
                 <Pressable
                   key={user.id}
@@ -160,26 +159,26 @@ export const DashboardSettleSheet = forwardRef<BottomSheetModal, DashboardSettle
                 >
                   <AppUserAvatar user={user} size="sm" />
                   <View style={{ flex: 1, marginLeft: 12 }}>
-                    <Typography
+                    <Text
                       style={{
                         fontSize: 15,
                         color: color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
+                        fontFamily: "InstrumentSans_600SemiBold",
                       }}
                     >
                       {user.name}
-                    </Typography>
-                    <Typography
+                    </Text>
+                    <Text
                       style={{
                         fontSize: 13,
                         color: color.danger,
-                        fontFamily: "IBMPlexSans_500Medium",
+                        fontFamily: "InstrumentSans_500Medium",
                         marginTop: 1,
                       }}
                     >
                       You owe{" "}
                       {formatAmount(Math.abs(perUserBalances.get(user.id) ?? 0), currencyCode)}
-                    </Typography>
+                    </Text>
                   </View>
                   <icons.ChevronRight size={18} color={color.muted} strokeWidth={1.75} />
                 </Pressable>

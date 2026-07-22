@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from "react";
-import { Keyboard, StyleSheet, View } from "react-native";
+import {   Keyboard, StyleSheet, View , Pressable , Text } from "react-native";
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -8,7 +8,6 @@ import {
 } from "@gorhom/bottom-sheet";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
-import { PressableFeedback, Typography } from "heroui-native";
 import { useUI } from "@/components/ui";
 import { useUIStore } from "@/store/useUIStore";
 
@@ -31,7 +30,7 @@ function createCurrencyStyles(
       fontSize: 11,
       letterSpacing: 1.2,
       color: color.muted,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
       textTransform: "uppercase",
     },
     triggerContainer: {
@@ -66,7 +65,7 @@ function createCurrencyStyles(
     triggerSymbolText: {
       fontSize: 16,
       color: color.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     triggerTextWrap: {
       flex: 1,
@@ -75,12 +74,12 @@ function createCurrencyStyles(
     triggerCodeText: {
       fontSize: 16,
       color: color.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     triggerNameText: {
       fontSize: 14,
       color: color.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     triggerAdornment: {
       flexDirection: "row",
@@ -90,7 +89,7 @@ function createCurrencyStyles(
     triggerChangeText: {
       fontSize: 13,
       color: color.brand,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     modalContent: {
       flex: 1,
@@ -103,14 +102,14 @@ function createCurrencyStyles(
     modalTitle: {
       fontSize: 24,
       color: color.text,
-      fontFamily: "Sora_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     modalSubtitle: {
       marginTop: 8,
       fontSize: 14,
       lineHeight: 20,
       color: color.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     searchCard: {
       height: 52,
@@ -129,7 +128,7 @@ function createCurrencyStyles(
       paddingVertical: 0,
       fontSize: 16,
       color: color.text,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     listContent: {
       paddingBottom: 40,
@@ -140,7 +139,7 @@ function createCurrencyStyles(
       fontSize: 11,
       letterSpacing: 1.2,
       color: color.muted,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
       textTransform: "uppercase",
     },
     itemContainer: {
@@ -189,7 +188,7 @@ function createCurrencyStyles(
     symbolText: {
       fontSize: 16,
       color: color.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     symbolTextSelected: {
       color: color.textInverse,
@@ -207,13 +206,13 @@ function createCurrencyStyles(
     codeText: {
       fontSize: 16,
       color: color.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     nameText: {
       marginTop: 3,
       fontSize: 14,
       color: color.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     metaPill: {
       paddingHorizontal: 10,
@@ -226,7 +225,7 @@ function createCurrencyStyles(
     metaPillText: {
       fontSize: 11,
       color: color.muted,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
       textTransform: "uppercase",
       letterSpacing: 1,
     },
@@ -251,13 +250,13 @@ function createCurrencyStyles(
     emptyTitle: {
       fontSize: 16,
       color: color.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     emptyText: {
       marginTop: 6,
       fontSize: 14,
       color: color.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
       textAlign: "center",
     },
   });
@@ -291,7 +290,7 @@ const CurrencyListItem = memo(
     const isCurrent = emphasis === "current";
 
     return (
-      <PressableFeedback
+      <Pressable
         accessibilityRole="button"
         onPress={() => {
           Haptics.selectionAsync();
@@ -313,26 +312,26 @@ const CurrencyListItem = memo(
                 isSelected && styles.symbolShellSelected,
               ]}
             >
-              <Typography style={[styles.symbolText, isSelected && styles.symbolTextSelected]}>
+              <Text style={[styles.symbolText, isSelected && styles.symbolTextSelected]}>
                 {currency.symbol}
-              </Typography>
+              </Text>
             </View>
 
             <View style={styles.textContainer}>
               <View style={styles.codeRow}>
-                <Typography style={styles.codeText}>{currency.code}</Typography>
+                <Text style={styles.codeText}>{currency.code}</Text>
                 {isCurrent && !isSelected ? (
                   <View style={styles.metaPill}>
-                    <Typography style={styles.metaPillText}>Current</Typography>
+                    <Text style={styles.metaPillText}>Current</Text>
                   </View>
                 ) : null}
                 {emphasis === "popular" && !isCurrent && !isSelected ? (
                   <View style={styles.metaPill}>
-                    <Typography style={styles.metaPillText}>Popular</Typography>
+                    <Text style={styles.metaPillText}>Popular</Text>
                   </View>
                 ) : null}
               </View>
-              <Typography style={styles.nameText}>{currency.name}</Typography>
+              <Text style={styles.nameText}>{currency.name}</Text>
             </View>
           </View>
 
@@ -344,7 +343,7 @@ const CurrencyListItem = memo(
             <icons.ChevronRight size={18} color={color.muted} strokeWidth={1.75} />
           )}
         </View>
-      </PressableFeedback>
+      </Pressable>
     );
   },
   (prevProps, nextProps) =>
@@ -468,7 +467,7 @@ export function CurrencySelector({
   const renderItem = useCallback(
     ({ item }: { item: CurrencyListEntry }) => {
       if (item.type === "section") {
-        return <Typography style={styles.sectionLabel}>{item.label}</Typography>;
+        return <Text style={styles.sectionLabel}>{item.label}</Text>;
       }
 
       return (
@@ -486,9 +485,9 @@ export function CurrencySelector({
 
   return (
     <View style={styles.container}>
-      {label ? <Typography style={styles.label}>{label}</Typography> : null}
+      {label ? <Text style={styles.label}>{label}</Text> : null}
 
-      <PressableFeedback accessibilityRole="button" onPress={handlePresentModalPress}>
+      <Pressable accessibilityRole="button" onPress={handlePresentModalPress}>
         <View
           style={{
             borderRadius: radius.lg,
@@ -501,24 +500,24 @@ export function CurrencySelector({
           <View style={[styles.triggerContainer, { backgroundColor: "transparent" }]}>
             <View style={styles.triggerLeft}>
               <View style={styles.triggerSymbolShell}>
-                <Typography style={styles.triggerSymbolText}>{selectedCurrency.symbol}</Typography>
+                <Text style={styles.triggerSymbolText}>{selectedCurrency.symbol}</Text>
               </View>
 
               <View style={styles.triggerTextWrap}>
-                <Typography style={styles.triggerCodeText}>{selectedCurrency.code}</Typography>
-                <Typography numberOfLines={1} style={styles.triggerNameText}>
+                <Text style={styles.triggerCodeText}>{selectedCurrency.code}</Text>
+                <Text numberOfLines={1} style={styles.triggerNameText}>
                   {selectedCurrency.name}
-                </Typography>
+                </Text>
               </View>
             </View>
 
             <View style={styles.triggerAdornment}>
-              <Typography style={styles.triggerChangeText}>Change</Typography>
+              <Text style={styles.triggerChangeText}>Change</Text>
               <icons.ChevronDown size={18} color={color.muted} strokeWidth={1.75} />
             </View>
           </View>
         </View>
-      </PressableFeedback>
+      </Pressable>
 
       <BottomSheetModal
         ref={bottomSheetModalRef}
@@ -535,10 +534,10 @@ export function CurrencySelector({
       >
         <View style={styles.modalContent}>
           <View style={styles.headerBlock}>
-            <Typography style={styles.modalTitle}>Select currency</Typography>
-            <Typography style={styles.modalSubtitle}>
+            <Text style={styles.modalTitle}>Select currency</Text>
+            <Text style={styles.modalSubtitle}>
               This sets the default money format for the group or expense.
-            </Typography>
+            </Text>
           </View>
 
           <View style={styles.searchCard}>
@@ -554,13 +553,13 @@ export function CurrencySelector({
               style={styles.searchInput}
             />
             {search.length > 0 ? (
-              <PressableFeedback
+              <Pressable
                 accessibilityRole="button"
                 hitSlop={8}
                 onPress={() => setSearch("")}
               >
                 <icons.XCircle size={18} color={color.muted} strokeWidth={1.75} />
-              </PressableFeedback>
+              </Pressable>
             ) : null}
           </View>
 
@@ -573,10 +572,10 @@ export function CurrencySelector({
             contentContainerStyle={styles.listContent}
             ListEmptyComponent={
               <View style={styles.emptyCard}>
-                <Typography style={styles.emptyTitle}>No currencies found</Typography>
-                <Typography style={styles.emptyText}>
+                <Text style={styles.emptyTitle}>No currencies found</Text>
+                <Text style={styles.emptyText}>
                   Try a different code, name, or symbol.
-                </Typography>
+                </Text>
               </View>
             }
           />

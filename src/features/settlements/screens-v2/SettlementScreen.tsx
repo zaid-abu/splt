@@ -1,4 +1,4 @@
-import { useMemo, type JSX } from "react"
+import { useEffect, useMemo, type JSX } from "react"
 import {
   View,
   ScrollView,
@@ -16,7 +16,7 @@ import { useUI } from "@/components/ui"
 import { useAuth } from "@/context/AppContext"
 import { useOpenBalances } from "@/features/balances/queries/useBalances"
 import { useFriendsList } from "@/features/friends/hooks/useFriendsList"
-import { useGroupDetails } from "@/features/groups/queries/useGroups"
+import { useGroupDetails, useGroups } from "@/features/groups/queries/useGroups"
 import {
   useSettlementFlow,
   type DeterminedSettlement,
@@ -30,6 +30,8 @@ import {
 } from "@/components/coral"
 import type { SettleRouteParams } from "@/types/navigation"
 import type { MoneyContext } from "@/features/money/types"
+import { getCurrencySymbol, formatAmount } from "@/components/ui/AmountDisplay"
+import { minorToMajor } from "@/features/money/splits"
 
 const METHOD_LABELS: { key: SettlementMethod; label: string }[] = [
   { key: "cash", label: "Cash" },
@@ -50,28 +52,52 @@ function useHydratedSelection(userId?: string): {
   const params = useLocalSearchParams<SettleRouteParams>()
   const { data: balances, isLoading: balancesLoading } = useOpenBalances(userId)
   const { friendRows, isLoading: friendsLoading } = useFriendsList()
+  const { data: groups, isLoading: groupsLoading } = useGroups(userId)
+
+  const userNameMap = useMemo(() => {
+    const map = new Map<string, { name: string; avatar?: string }>()
+    for (const row of friendRows) {
+      map.set(row.friend.id, { name: row.friend.name, avatar: row.friend.avatar })
+    }
+    if (groups) {
+      for (const group of groups) {
+        for (const member of group.members) {
+          if (!map.has(member.user.id)) {
+            map.set(member.user.id, { name: member.user.name, avatar: member.user.avatar })
+          }
+        }
+      }
+    }
+    return map
+  }, [friendRows, groups])
 
   return useMemo(() => {
-    if (balancesLoading || friendsLoading || !params.id) {
-      return { selection: null, isLoading: balancesLoading || friendsLoading }
+    if (balancesLoading || friendsLoading || groupsLoading || !params.id) {
+      return { selection: null, isLoading: true }
     }
 
-    if (params.contextType && params.currency && params.amountMinor) {
-      const context: MoneyContext =
-        params.contextType === "group" && params.groupId
-          ? { type: "group", groupId: params.groupId }
-          : params.friendshipId
-            ? { type: "direct", friendshipId: params.friendshipId }
-            : { type: "direct", friendshipId: params.id }
+    const userDetails = userNameMap.get(params.id)
 
+    if (params.contextType && params.currency && params.amountMinor) {
       const isOwedToYou = params.isOwedToYou === "true"
       const signedAmountMinor = parseInt(params.amountMinor, 10) || 0
-      const friend = friendRows.find((r) => r.friend.id === params.id)
+
+      const friendshipRow = params.friendshipId ? undefined : friendRows.find((r) => r.friend.id === params.id)
+      const resolvedFriendshipId = params.friendshipId || friendshipRow?.friendship?.id || ""
+      const context: MoneyContext | null =
+        params.contextType === "group" && params.groupId
+          ? { type: "group", groupId: params.groupId }
+          : resolvedFriendshipId
+            ? { type: "direct", friendshipId: resolvedFriendshipId }
+            : null
+
+      if (!context) return { selection: null, isLoading: false }
+
       return {
         selection: {
           counterpartyId: params.id,
-          counterpartyName: friend?.friend.name || params.id,
-          counterpartyAvatar: friend?.friend.avatar,
+          counterpartyName: userDetails?.name || params.id,
+          counterpartyAvatar: userDetails?.avatar,
           context,
           currency: params.currency,
           signedAmountMinor: isOwedToYou ? signedAmountMinor : -signedAmountMinor,
@@ -84,12 +110,11 @@ function useHydratedSelection(userId?: string): {
     const balance = balances?.find((b) => b.counterpartyId === params.id)
     if (!balance) return { selection: null, isLoading: false }
 
-    const friend = friendRows.find((r) => r.friend.id === params.id)
     return {
       selection: {
         counterpartyId: params.id,
-        counterpartyName: friend?.friend.name || params.id,
-        counterpartyAvatar: friend?.friend.avatar,
+        counterpartyName: userDetails?.name || params.id,
+        counterpartyAvatar: userDetails?.avatar,
         context: balance.context,
         currency: balance.currency,
         signedAmountMinor: balance.signedAmountMinor,
@@ -97,7 +122,7 @@ function useHydratedSelection(userId?: string): {
       },
       isLoading: false,
     }
-  }, [balances, balancesLoading, friendRows, friendsLoading, params])
+  }, [balances, balancesLoading, friendRows, friendsLoading, groupsLoading, params, userNameMap])
 }
 
 export default function SettlementScreenV2(): JSX.Element {
@@ -113,9 +138,15 @@ export default function SettlementScreenV2(): JSX.Element {
   const { data: group } = useGroupDetails(groupId)
   const groupName = group?.name
 
+  useEffect(() => {
+    if (selection && flow.state.step === "loading") {
+      flow.startCompose(selection)
+    }
+  }, [flow, selection])
+
   if (selectionLoading) {
     return (
-      <CoralScreen>
+      <CoralScreen scroll={false}>
         <CoralTopBar title="Settle up" onBack={() => router.back()} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <ActivityIndicator color={color.text} />
@@ -126,14 +157,14 @@ export default function SettlementScreenV2(): JSX.Element {
 
   if (!selection) {
     return (
-      <CoralScreen>
+      <CoralScreen scroll={false}>
         <CoralTopBar title="Settle up" onBack={() => router.back()} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 16 }}>
           <icons.CheckCircle2 size={64} color="#4CAF82" strokeWidth={1.5} />
           <Text
             style={{
               fontSize: 22,
-              fontFamily: "Sora_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               color: color.text,
             }}
           >
@@ -145,12 +176,8 @@ export default function SettlementScreenV2(): JSX.Element {
     )
   }
 
-  if (flow.state.step === "loading" && selection) {
-    flow.startCompose(selection)
-  }
-
   return (
-    <CoralScreen>
+    <CoralScreen scroll={false}>
       <CoralTopBar title="Settle up" onBack={() => router.back()} />
       {flow.state.step === "compose" && (
         <ComposeView flow={flow} color={color} insets={insets} groupName={groupName} />
@@ -177,7 +204,7 @@ function ComposeView({
   groupName?: string
 }) {
   if (flow.state.step !== "compose") return null
-  const { selection, amountInput, method, note } = flow.state
+  const { selection, amountInput, method, note, composeError } = flow.state
   const maxMinor = Math.abs(selection.signedAmountMinor)
   const directionWords = selection.isOwedToYou
     ? `${selection.counterpartyName.split(" ")[0]} pays you`
@@ -191,6 +218,20 @@ function ComposeView({
       keyboardShouldPersistTaps="handled"
     >
       <View style={{ alignItems: "center", paddingTop: 24, gap: 8 }}>
+        {composeError ? (
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_500Medium",
+              fontSize: 13,
+              color: color.negative,
+              textAlign: "center",
+              marginBottom: 8,
+              paddingHorizontal: 22,
+            }}
+          >
+            {composeError}
+          </Text>
+        ) : null}
         <Text
           style={{
             fontFamily: "InstrumentSans_500Medium",
@@ -218,17 +259,17 @@ function ComposeView({
               color: color.text,
             }}
           >
-            $
+            {getCurrencySymbol(selection.currency)}
           </Text>
           <TextInput
             value={amountInput}
             onChangeText={flow.setAmountInput}
-            keyboardType="number-pad"
+            keyboardType="decimal-pad"
             placeholder="0"
             placeholderTextColor={color.muted}
             style={{
               fontSize: 40,
-              fontFamily: "Sora_600SemiBold",
+          fontFamily: "InstrumentSans_600SemiBold",
               color: amountInput ? color.text : color.muted,
               letterSpacing: -1,
               textAlign: "center",
@@ -273,7 +314,7 @@ function ComposeView({
                 style={{
                   fontSize: 13,
                   color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                 }}
               >
                 {preset.label}
@@ -288,7 +329,7 @@ function ComposeView({
           <Text
             style={{
               fontSize: 12,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               color: color.muted,
               textTransform: "uppercase",
               letterSpacing: 0.8,
@@ -313,7 +354,7 @@ function ComposeView({
         <Text
           style={{
             fontSize: 12,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             color: color.muted,
             textTransform: "uppercase",
             letterSpacing: 0.8,
@@ -377,7 +418,7 @@ function ComposeView({
                 <Text
                   style={{
                     fontSize: 15,
-                    fontFamily: "IBMPlexSans_500Medium",
+                    fontFamily: "InstrumentSans_500Medium",
                     color: isActive ? color.text : color.muted,
                     flex: 1,
                   }}
@@ -405,7 +446,7 @@ function ComposeView({
             padding: 16,
             borderRadius: 999,
             fontSize: 15,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
             color: color.text,
           }}
         />
@@ -431,7 +472,7 @@ function ComposeView({
         <Text
           style={{
             fontSize: 12,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
             color: color.muted,
             textAlign: "center",
             lineHeight: 16,
@@ -457,8 +498,8 @@ function ReviewView({
 }) {
   if (flow.state.step !== "review") return null
   const { selection, amountMinor, method, note, resultingMinor } = flow.state
-  const amountWhole = amountMinor / 100
-  const resultingWhole = resultingMinor / 100
+  const amountWhole = minorToMajor(amountMinor, selection.currency)
+  const resultingWhole = minorToMajor(resultingMinor, selection.currency)
   const methodLabel = METHOD_LABELS.find((m) => m.key === method)?.label || method
   const isPositiveResult = resultingWhole >= 0
 
@@ -489,7 +530,7 @@ function ReviewView({
               ? `${selection.counterpartyName.split(" ")[0]} pays you`
               : `You pay ${selection.counterpartyName.split(" ")[0]}`
           }
-          value={`${amountWhole.toFixed(2)} ${selection.currency}`}
+          value={`${formatAmount(amountWhole, selection.currency)} ${selection.currency}`}
           note={[methodLabel, groupName].filter(Boolean).join(" - ")}
         />
 
@@ -510,7 +551,7 @@ function ReviewView({
           {note ? <ReviewRow label="Note" value={note} color={color} /> : null}
           <ReviewRow
             label="Balance after"
-            value={`${isPositiveResult ? "+" : ""}${resultingWhole.toFixed(2)} ${selection.currency}${resultingWhole === 0 ? " - settled" : ""}`}
+            value={`${isPositiveResult ? "+" : ""}${formatAmount(resultingWhole, selection.currency)} ${selection.currency}${resultingWhole === 0 ? " - settled" : ""}`}
             color={color}
             valueTone={resultingWhole === 0 ? "credit" : undefined}
           />
@@ -558,8 +599,8 @@ function SuccessView({
 }) {
   if (flow.state.step !== "success") return null
   const { settlement, resultingMinor, selection } = flow.state
-  const amountWhole = settlement.amountMinor / 100
-  const resultingWhole = resultingMinor / 100
+  const amountWhole = minorToMajor(settlement.amountMinor, selection.currency)
+  const resultingWhole = minorToMajor(resultingMinor, selection.currency)
   const methodLabel =
     METHOD_LABELS.find((m) => m.key === settlement.method)?.label || settlement.method
   const isPositiveResult = resultingWhole >= 0
@@ -568,7 +609,7 @@ function SuccessView({
     ? `${selection.counterpartyName.split(" ")[0]} paid you`
     : `You paid ${selection.counterpartyName.split(" ")[0]}`
 
-  const introText = `${directionText} ${amountWhole.toFixed(2)} in ${methodLabel.toLowerCase()}.${groupName ? ` Your ${groupName} balance is now settled.` : ""}`
+  const introText = `${directionText} ${formatAmount(amountWhole, selection.currency)} in ${methodLabel.toLowerCase()}.${groupName ? ` Your ${groupName} balance is now settled.` : ""}`
 
   return (
     <ScrollView
@@ -596,7 +637,7 @@ function SuccessView({
       <View style={{ alignItems: "center", gap: 8 }}>
         <Text
           style={{
-            fontFamily: "Sora_600SemiBold",
+          fontFamily: "InstrumentSans_600SemiBold",
             fontSize: 24,
             color: color.text,
             textAlign: "center",
@@ -629,7 +670,7 @@ function SuccessView({
       >
         <ReviewRow
           label="Recorded amount"
-          value={`${amountWhole.toFixed(2)} ${settlement.currency}`}
+          value={`${formatAmount(amountWhole, settlement.currency)} ${settlement.currency}`}
           color={color}
         />
         <ReviewRow
@@ -644,7 +685,7 @@ function SuccessView({
         />
         <ReviewRow
           label="Result"
-          value={`${isPositiveResult ? "+" : ""}${resultingWhole.toFixed(2)} ${settlement.currency}${resultingWhole === 0 ? " open balance" : ""}`}
+          value={`${isPositiveResult ? "+" : ""}${formatAmount(resultingWhole, settlement.currency)} ${settlement.currency}${resultingWhole === 0 ? " open balance" : ""}`}
           color={color}
           valueTone={resultingWhole === 0 ? "credit" : undefined}
         />
@@ -700,7 +741,7 @@ function ReviewRow({
         style={{
           flex: 1,
           fontSize: 14,
-          fontFamily: "IBMPlexSans_500Medium",
+          fontFamily: "InstrumentSans_500Medium",
           color: color.muted,
         }}
       >
@@ -709,7 +750,7 @@ function ReviewRow({
       <Text
         style={{
           fontSize: 14,
-          fontFamily: "IBMPlexSans_600SemiBold",
+          fontFamily: "InstrumentSans_600SemiBold",
           color: valueTone === "credit" ? "#4CAF82" : valueTone === "debt" ? "#E85D5D" : color.text,
         }}
       >

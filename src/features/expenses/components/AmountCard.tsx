@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { TextInput, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  TextInput, View , Text } from "react-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { Card } from "@/components/ui/Card";
 import { useUI } from "@/components/ui";
@@ -32,13 +31,13 @@ export function AmountCard({
       <View style={styles.amountHeader}>
         <CategoryIconBadge category={category} size="md" />
         <View style={{ flex: 1 }}>
-          <Typography style={styles.amountKicker}>Amount</Typography>
-          <Typography style={styles.amountHint}>Enter the total paid before splitting.</Typography>
+          <Text style={styles.amountKicker}>Amount</Text>
+          <Text style={styles.amountHint}>Enter the total paid before splitting.</Text>
         </View>
       </View>
 
       <View style={styles.amountInputRow}>
-        <Typography style={styles.currencyCode}>{currency}</Typography>
+        <Text style={styles.currencyCode}>{currency}</Text>
         <TextInput
           value={amount}
           onChangeText={onAmountChange}
@@ -50,16 +49,16 @@ export function AmountCard({
         />
       </View>
       {amountError && (
-        <Typography
+        <Text
           style={{
             marginTop: 4,
             color: color.danger,
             fontSize: 13,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
           }}
         >
           {amountError}
-        </Typography>
+        </Text>
       )}
 
       <TextInput
@@ -72,16 +71,16 @@ export function AmountCard({
         style={[styles.titleInput, titleError ? { borderColor: color.danger } : undefined]}
       />
       {titleError && (
-        <Typography
+        <Text
           style={{
             marginTop: 4,
             color: color.danger,
             fontSize: 13,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
           }}
         >
           {titleError}
-        </Typography>
+        </Text>
       )}
     </Card>
   );

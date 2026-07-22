@@ -1,5 +1,4 @@
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
 import { EmptyState, useUI } from "@/components/ui";
@@ -65,15 +64,15 @@ export function FriendsEmpty({
                   opacity: pressed ? 0.75 : 1,
                 })}
               >
-                <Typography
+                <Text
                   style={{
                     fontSize: 14,
                     color: hasActiveFilters ? color.text : color.textInverse,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                   }}
                 >
                   {hasActiveFilters ? "Clear filters" : "Add friend"}
-                </Typography>
+                </Text>
               </Pressable>
             </View>
           </View>

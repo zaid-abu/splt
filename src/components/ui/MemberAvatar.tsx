@@ -1,15 +1,7 @@
-/**
- * AppUserAvatar
- *
- * Warm, softly framed avatars that match the stacked-list UI language.
- * Supports remote images with initials fallback and semantic balance tinting.
- */
-import type { AvatarSize } from "heroui-native";
 import type { JSX } from "react";
-import { Image, View } from "react-native";
-import { Typography } from "heroui-native";
+import { Image, View, Text } from "react-native";
 
-import { useUI } from "@/components/ui";
+import { useCoralColors } from "@/components/coral/useCoral";
 
 interface UserAvatarShape {
   id: string;
@@ -21,26 +13,27 @@ interface UserAvatarShape {
 type AvatarTone = {
   fill: string;
   text: string;
+  ring: string;
 };
 
 const AVATAR_PALETTE: AvatarTone[] = [
-  { fill: "#F5E7DD", text: "#9A5F3E" },
-  { fill: "#EFE4D6", text: "#8C6B43" },
-  { fill: "#E8EEE6", text: "#5F7A5D" },
-  { fill: "#E3ECEB", text: "#4B7772" },
-  { fill: "#E6E8F1", text: "#5C648F" },
-  { fill: "#EFE3E8", text: "#926177" },
-  { fill: "#ECE4DE", text: "#7F6552" },
-  { fill: "#E6EBE2", text: "#6A7A58" },
+  { fill: "#FEF0E5", text: "#B4693C", ring: "#F5DDCC" },
+  { fill: "#F6EFE5", text: "#9A7A56", ring: "#E8DCC8" },
+  { fill: "#EAF1E8", text: "#5F8A6D", ring: "#CDE0D4" },
+  { fill: "#E4EFEF", text: "#4D8682", ring: "#C4DAD9" },
+  { fill: "#E8EAF2", text: "#5D6D9E", ring: "#C8D0E2" },
+  { fill: "#F1E6ED", text: "#9E6F84", ring: "#DFC8D4" },
+  { fill: "#EEE8E3", text: "#8B735D", ring: "#D9CFC5" },
+  { fill: "#E0EDEA", text: "#4B7A72", ring: "#C2D8D3" },
 ];
 
 const SIZE_MAP = {
-  sm: { size: 32, radius: 12, font: 12, inset: 2 },
-  md: { size: 48, radius: 18, font: 16, inset: 2 },
-  lg: { size: 64, radius: 22, font: 22, inset: 3 },
+  sm: { size: 36, radius: 14, font: 13 },
+  md: { size: 52, radius: 20, font: 18 },
+  lg: { size: 80, radius: 32, font: 28 },
 } as const;
 
-function getSize(size: AvatarSize | undefined) {
+function getSize(size: any | undefined) {
   return SIZE_MAP[(size as keyof typeof SIZE_MAP) || "md"] || SIZE_MAP.md;
 }
 
@@ -49,63 +42,45 @@ function getPaletteIndex(seed: string): number {
   for (let i = 0; i < seed.length; i += 1) {
     hash = seed.charCodeAt(i) + ((hash << 5) - hash);
   }
-
   return Math.abs(hash) % AVATAR_PALETTE.length;
 }
 
-function getTone(user: UserAvatarShape, mutedColor: string, balance?: number): AvatarTone {
+function getTone(user: UserAvatarShape, balance?: number): AvatarTone {
   if (balance !== undefined) {
-    if (balance > 0) {
-      return {
-        fill: "#E5F3EA",
-        text: "#3F7F61",
-      };
-    }
-
-    if (balance < 0) {
-      return {
-        fill: "#F8E6E3",
-        text: "#B25B52",
-      };
-    }
-
-    return {
-      fill: "#F0ECE7",
-      text: mutedColor,
-    };
+    if (balance > 0) return { fill: "#DCF0E4", text: "#3A7A56", ring: "#C2E0CC" };
+    if (balance < 0) return { fill: "#FEE7E4", text: "#B25B52", ring: "#F5CECC" };
+    return { fill: "#EEEDE8", text: "#8A8882", ring: "#DDDCD7" };
   }
-
   return AVATAR_PALETTE[getPaletteIndex(user.id)];
 }
 
-function AvatarFallback({
-  initials,
-  fontSize,
-  textColor,
-}: {
-  initials: string;
-  fontSize: number;
-  textColor: string;
-}): JSX.Element {
+function Initials({ initials, fontSize, color }: { initials: string; fontSize: number; color: string }) {
+  const display = initials.length <= 2 ? initials : initials.slice(0, 2);
   return (
-    <Typography
+    <Text
       style={{
-        color: textColor,
-        fontFamily: "IBMPlexSans_600SemiBold",
+        color,
+        fontFamily: "InstrumentSans_600SemiBold",
         fontSize,
-        letterSpacing: -0.3,
+        letterSpacing: -0.5,
+        lineHeight: fontSize * 1.1,
       }}
     >
-      {initials}
-    </Typography>
+      {display}
+    </Text>
   );
+}
+
+interface AppUserAvatarProps {
+  user: UserAvatarShape;
+  size?: any;
+  balance?: number;
 }
 
 export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps): JSX.Element {
   const dims = getSize(size);
-  const { color, radius: ru, space, shadow } = useUI();
-  const tone = getTone(user, color.muted, balance);
-  const contentRadius = Math.max(dims.radius - dims.inset, 10);
+  const coral = useCoralColors();
+  const tone = getTone(user, balance);
 
   return (
     <View
@@ -113,52 +88,32 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
         width: dims.size,
         height: dims.size,
         borderRadius: dims.radius,
-        backgroundColor: color.control,
+        backgroundColor: tone.fill,
         borderWidth: 1,
-        borderColor: color.border,
-        padding: dims.inset,
+        borderColor: tone.ring,
+        alignItems: "center",
+        justifyContent: "center",
         overflow: "hidden",
       }}
     >
-      <View
-        style={{
-          flex: 1,
-          borderRadius: contentRadius,
-          backgroundColor: tone.fill,
-          alignItems: "center",
-          justifyContent: "center",
-          overflow: "hidden",
-        }}
-      >
-        {user.avatar ? (
-          <Image
-            source={{ uri: user.avatar }}
-            resizeMode="cover"
-            style={{
-              width: "100%",
-              height: "100%",
-              borderRadius: contentRadius,
-            }}
-          />
-        ) : (
-          <AvatarFallback initials={user.initials} fontSize={dims.font} textColor={tone.text} />
-        )}
-      </View>
+      {user.avatar ? (
+        <Image
+          source={{ uri: user.avatar }}
+          resizeMode="cover"
+          style={{ width: "100%", height: "100%" }}
+        />
+      ) : (
+        <Initials initials={user.initials} fontSize={dims.font} color={tone.text} />
+      )}
     </View>
   );
-}
-
-interface AppUserAvatarProps {
-  user: UserAvatarShape;
-  size?: AvatarSize;
-  balance?: number;
 }
 
 export function AvatarStack({ users, max = 4 }: { users: UserAvatarShape[]; max?: number }): JSX.Element {
   const visible = users.slice(0, max);
   const overflow = users.length - max;
   const dims = getSize("sm");
-  const { color, radius: ru, space, shadow } = useUI();
+  const coral = useCoralColors();
 
   return (
     <View style={{ flexDirection: "row", alignItems: "center" }}>
@@ -166,11 +121,11 @@ export function AvatarStack({ users, max = 4 }: { users: UserAvatarShape[]; max?
         <View
           key={user.id}
           style={{
-            marginLeft: idx === 0 ? 0 : -10,
+            marginLeft: idx === 0 ? 0 : -12,
             zIndex: visible.length - idx,
-            borderRadius: dims.radius + 2,
-            borderWidth: 2,
-            borderColor: color.bg,
+            borderRadius: dims.radius + 3,
+            borderWidth: 2.5,
+            borderColor: coral.bg,
           }}
         >
           <AppUserAvatar user={user} size="sm" />
@@ -182,33 +137,24 @@ export function AvatarStack({ users, max = 4 }: { users: UserAvatarShape[]; max?
           style={{
             width: dims.size,
             height: dims.size,
-            marginLeft: -10,
-            borderRadius: dims.radius + 2,
-            borderWidth: 2,
-            borderColor: color.bg,
-            backgroundColor: color.control,
-            padding: 2,
+            marginLeft: -12,
+            borderRadius: dims.radius,
+            borderWidth: 2.5,
+            borderColor: coral.bg,
+            backgroundColor: coral.surface,
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
-          <View
+          <Text
             style={{
-              flex: 1,
-              borderRadius: dims.radius,
-              backgroundColor: "#F0ECE7",
-              alignItems: "center",
-              justifyContent: "center",
+              color: coral.muted,
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 11,
             }}
           >
-            <Typography
-              style={{
-                color: color.muted,
-                fontFamily: "IBMPlexSans_600SemiBold",
-                fontSize: 11,
-              }}
-            >
-              +{overflow}
-            </Typography>
-          </View>
+            +{overflow}
+          </Text>
         </View>
       )}
     </View>

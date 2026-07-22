@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { Pressable, TextInput, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  Pressable, TextInput, View , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
@@ -67,14 +66,14 @@ export function ParticipantsEditor({
               remainingBalanced ? styles.statusPillSuccess : styles.statusPillDanger,
             ]}
           >
-            <Typography
+            <Text
               style={[
                 styles.remainingText,
                 { color: remainingBalanced ? color.success : color.danger },
               ]}
             >
               {remainingText}
-            </Typography>
+            </Text>
           </View>
         ) : null
       }
@@ -110,19 +109,19 @@ export function ParticipantsEditor({
               </Pressable>
               <AppUserAvatar user={participant} size="sm" />
               <View style={styles.participantText}>
-                <Typography numberOfLines={1} style={styles.rowTitle}>
+                <Text numberOfLines={1} style={styles.rowTitle}>
                   {participant.id === currentUserId ? "You" : participant.name}
-                </Typography>
-                <Typography style={styles.rowMeta}>
+                </Text>
+                <Text style={styles.rowMeta}>
                   {isIncluded ? "Included" : "Excluded"}
-                </Typography>
+                </Text>
               </View>
 
               {splitMethod === "equal" && isIncluded && parsedAmount > 0 ? (
                 <View style={styles.sharePill}>
-                  <Typography style={styles.shareText}>
+                  <Text style={styles.shareText}>
                     {formatAmount(equalShare, expenseCurrency)}
-                  </Typography>
+                  </Text>
                 </View>
               ) : null}
 
@@ -153,7 +152,7 @@ export function ParticipantsEditor({
                     keyboardType="decimal-pad"
                     style={styles.percentInput}
                   />
-                  <Typography style={styles.percentSymbol}>%</Typography>
+                  <Text style={styles.percentSymbol}>%</Text>
                 </View>
               ) : null}
             </View>

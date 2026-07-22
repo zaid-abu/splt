@@ -2,7 +2,7 @@ import type { JSX, ReactNode } from "react";
 import { View, Platform } from "react-native";
 import type { ViewStyle } from "react-native";
 import { BlurView } from "expo-blur";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 import { useUIStore } from "@/store/useUIStore";
 
 interface CardProps {

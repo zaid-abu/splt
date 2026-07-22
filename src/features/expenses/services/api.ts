@@ -15,10 +15,13 @@ const MAX_RECEIPT_BYTES = 10_485_760;
 
 function toSplitsJson(splits: ExpenseMutationInput["splits"]) {
   return splits.map((s) => ({
-    user_id: s.userId,
-    amount_minor: s.amountMinor,
-    percentage: s.percentageUnits ?? null,
-    shares: s.shareUnits ?? null,
+    // Keep this payload aligned with the JSON contract consumed by the
+    // create/update expense RPCs. Database column names are snake_case, but
+    // the RPC receives the domain-shaped camelCase object.
+    userId: s.userId,
+    amountMinor: s.amountMinor,
+    percentageUnits: s.percentageUnits ?? null,
+    shareUnits: s.shareUnits ?? null,
     position: s.position,
   }));
 }
@@ -33,9 +36,9 @@ function extractRpcError(error: unknown): never {
 
 function getGroupAndFriendship(context: ExpenseMutationInput["context"]) {
   if (context.type === "group") {
-    return { groupId: context.groupId, friendshipId: "" };
+    return { groupId: context.groupId, friendshipId: null };
   }
-  return { groupId: "", friendshipId: context.friendshipId };
+  return { groupId: null, friendshipId: context.friendshipId };
 }
 
 export const expensesApi = {
@@ -91,8 +94,8 @@ export const expensesApi = {
 
     const { data, error } = await supabase.rpc("create_expense_v2", {
       p_client_operation_id: input.clientOperationId,
-      p_group_id: groupId,
-      p_friendship_id: friendshipId,
+      p_group_id: groupId as any,
+      p_friendship_id: friendshipId as any,
       p_title: input.title,
       p_amount_minor: input.amountMinor,
       p_currency: input.currency,
@@ -101,7 +104,7 @@ export const expensesApi = {
       p_split_method: input.splitMethod,
       p_date: input.date.toISOString(),
       p_notes: input.notes ?? "",
-      p_receipt_key: input.receiptKey ?? "",
+      p_receipt_key: (input.receiptKey || null) as any,
       p_splits: toSplitsJson(input.splits),
     });
 
@@ -123,7 +126,7 @@ export const expensesApi = {
       p_split_method: input.splitMethod,
       p_date: input.date.toISOString(),
       p_notes: input.notes ?? "",
-      p_receipt_key: input.receiptKey ?? "",
+      p_receipt_key: (input.receiptKey || null) as any,
       p_splits: toSplitsJson(input.splits),
     });
 

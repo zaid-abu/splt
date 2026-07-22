@@ -1,5 +1,7 @@
 import { useReducer, useCallback, useRef } from "react"
 import { useCreateSettlement } from "@/features/settlements/queries/useSettlements"
+import { parseMinorInput, minorToMajor } from "@/features/money/splits"
+import { randomUUID } from "@/utils/randomUUID"
 import type { Settlement } from "@/types"
 import type { MoneyContext, SettlementMutationInput } from "@/features/money/types"
 
@@ -23,6 +25,7 @@ export type SettlementFlowState =
       amountInput: string
       method: SettlementMethod
       note: string
+      composeError?: string
     }
   | {
       step: "review"
@@ -42,6 +45,7 @@ export type SettlementFlowAction =
   | { type: "GO_TO_REVIEW" }
   | { type: "GO_BACK_TO_COMPOSE"; reason?: string }
   | { type: "SUBMIT_SUCCESS"; settlement: Settlement; resultingMinor: number }
+  | { type: "UPDATE_BALANCE"; signedAmountMinor: number }
 
 export function settlementFlowReducer(state: SettlementFlowState, action: SettlementFlowAction): SettlementFlowState {
   switch (action.type) {
@@ -49,25 +53,32 @@ export function settlementFlowReducer(state: SettlementFlowState, action: Settle
       return {
         step: "compose",
         selection: action.selection,
-        amountInput: String(Math.abs(action.selection.signedAmountMinor)),
+        amountInput: minorToMajor(Math.abs(action.selection.signedAmountMinor), action.selection.currency).toString(),
         method: "cash",
         note: "",
+        composeError: undefined,
       }
     case "SET_AMOUNT":
       if (state.step !== "compose") return state
-      return { ...state, amountInput: action.amountInput }
+      return { ...state, amountInput: action.amountInput, composeError: undefined }
     case "SET_METHOD":
       if (state.step !== "compose" && state.step !== "review") return state
       return { ...state, method: action.method }
     case "SET_NOTE":
       if (state.step !== "compose" && state.step !== "review") return state
       return { ...state, note: action.note }
-    case "GO_TO_REVIEW":
+    case "GO_TO_REVIEW": {
       if (state.step !== "compose") return state
-      const parsed = parseInt(state.amountInput, 10)
-      if (isNaN(parsed) || parsed <= 0) return state
+      if (!state.amountInput || state.amountInput === "0") return state
+      let parsedMinor: number
+      try {
+        parsedMinor = parseMinorInput(state.amountInput, state.selection.currency)
+      } catch {
+        return state
+      }
+      if (parsedMinor <= 0) return state
       const maxMinor = Math.abs(state.selection.signedAmountMinor)
-      const clamped = Math.min(parsed, maxMinor)
+      const clamped = Math.min(parsedMinor, maxMinor)
       const resulting = state.selection.isOwedToYou
         ? state.selection.signedAmountMinor - clamped
         : state.selection.signedAmountMinor + clamped
@@ -79,6 +90,7 @@ export function settlementFlowReducer(state: SettlementFlowState, action: Settle
         note: state.note,
         resultingMinor: resulting,
       }
+    }
     case "GO_BACK_TO_COMPOSE": {
       if (state.step !== "review" && state.step !== "success") return state
       const sel = state.step === "success" ? state.selection : state.selection
@@ -87,9 +99,10 @@ export function settlementFlowReducer(state: SettlementFlowState, action: Settle
       return {
         step: "compose",
         selection: sel,
-        amountInput: String(Math.abs(sel.signedAmountMinor)),
+        amountInput: minorToMajor(Math.abs(sel.signedAmountMinor), sel.currency).toString(),
         method: m,
         note: n,
+        composeError: "reason" in action ? action.reason : undefined,
       }
     }
     case "SUBMIT_SUCCESS":
@@ -99,6 +112,14 @@ export function settlementFlowReducer(state: SettlementFlowState, action: Settle
         settlement: action.settlement,
         resultingMinor: action.resultingMinor,
         selection: state.selection,
+      }
+    case "UPDATE_BALANCE":
+      if (state.step !== "compose") return state
+      return {
+        ...state,
+        selection: { ...state.selection, signedAmountMinor: action.signedAmountMinor },
+        amountInput: minorToMajor(Math.abs(action.signedAmountMinor), state.selection.currency).toString(),
+        composeError: "Balance changed. Please review and resubmit.",
       }
     default:
       return state
@@ -115,7 +136,7 @@ export function useSettlementFlow(currentUserId?: string) {
   }, [])
 
   const setAmountInput = useCallback((amountInput: string) => {
-    const cleaned = amountInput.replace(/[^0-9]/g, "")
+    const cleaned = amountInput.replace(/[^0-9.]/g, "")
     if (cleaned.length > 15) return
     dispatch({ type: "SET_AMOUNT", amountInput: cleaned })
   }, [])
@@ -141,7 +162,7 @@ export function useSettlementFlow(currentUserId?: string) {
     clientOpCounter.current += 1
     const { selection, amountMinor, method, note } = state
     const input: SettlementMutationInput = {
-      clientOperationId: `settle_${currentUserId}_${Date.now()}_${clientOpCounter.current}`,
+      clientOperationId: randomUUID(),
       counterpartyId: selection.counterpartyId,
       context: selection.context,
       amountMinor,
@@ -149,12 +170,24 @@ export function useSettlementFlow(currentUserId?: string) {
       method,
       note: note || undefined,
     }
-    const settlement = await createSettlement(input)
-    const resulting = selection.isOwedToYou
-      ? selection.signedAmountMinor - amountMinor
-      : selection.signedAmountMinor + amountMinor
-    dispatch({ type: "SUBMIT_SUCCESS", settlement, resultingMinor: resulting })
-  }, [state, currentUserId, createSettlement])
+    try {
+      const settlement = await createSettlement(input)
+      const resulting = selection.isOwedToYou
+        ? selection.signedAmountMinor - amountMinor
+        : selection.signedAmountMinor + amountMinor
+      dispatch({ type: "SUBMIT_SUCCESS", settlement, resultingMinor: resulting })
+    } catch (e: any) {
+      const errMsg = e?.message || e?.code || "Settlement failed"
+      console.warn("[settlement] submit error:", errMsg, JSON.stringify(input))
+      const match = errMsg.match(/^BALANCE_CHANGED:(-?\d+)$/)
+      if (match) {
+        const currentMinor = parseInt(match[1], 10)
+        dispatch({ type: "UPDATE_BALANCE", signedAmountMinor: currentMinor })
+      } else {
+        dispatch({ type: "GO_BACK_TO_COMPOSE", reason: errMsg })
+      }
+    }
+  }, [state, createSettlement])
 
   const reset = useCallback(() => {
     dispatch({ type: "GO_BACK_TO_COMPOSE" })

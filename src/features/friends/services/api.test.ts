@@ -1,3 +1,6 @@
+import { supabase } from "@/services/supabase/client"
+import { FriendsService } from "./api"
+
 jest.mock("@/services/supabase/client", () => ({
   supabase: {
     rpc: jest.fn(),
@@ -10,9 +13,6 @@ jest.mock("@/services/supabase/client", () => ({
     })),
   },
 }))
-
-import { supabase } from "@/services/supabase/client"
-import { FriendsService } from "./api"
 
 const rpc = supabase.rpc as jest.Mock
 const from = supabase.from as jest.Mock

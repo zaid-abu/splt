@@ -109,7 +109,7 @@ export default function NewRecurringScreen(): JSX.Element {
     : [];
 
   return (
-    <CoralScreen>
+    <CoralScreen scroll={false}>
       <CoralTopBar
         title={mode === "create" ? "Add recurring" : "Edit recurring"}
         onBack={() => handleBack()}

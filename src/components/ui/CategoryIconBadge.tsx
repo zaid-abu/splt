@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { View } from "react-native";
 import * as icons from "lucide-react-native";
 
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 import { EXPENSE_CATEGORIES } from "@/types";
 import type { ExpenseCategory } from "@/types";
 

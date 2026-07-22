@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { View, Animated, Text } from "react-native";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 import { useCoralColors } from "@/components/coral";
 
 export function Skeleton({

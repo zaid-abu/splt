@@ -1,5 +1,5 @@
 import type { JSX } from "react"
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { randomUUID } from "@/utils/randomUUID"
 import {
   ActivityIndicator,
@@ -27,15 +27,17 @@ import { CoralSheet } from "@/components/coral/CoralSheet"
 import { useCoralColors } from "@/components/coral/useCoral"
 import { useAuth } from "@/context/AppContext"
 import { useCreateExpense } from "@/features/expenses/queries/useExpenses"
-import { useFriends } from "@/features/friends/queries/useFriends"
+import { useAllFriendships, useFriends } from "@/features/friends/queries/useFriends"
 import { useGroups } from "@/features/groups/queries/useGroups"
 import { useAppToast } from "@/hooks/useAppToast"
 import { useUIStore } from "@/store/useUIStore"
 import { CURRENCIES, EXPENSE_CATEGORIES } from "@/types"
 import type { ExpenseNewRouteParams } from "@/types/navigation"
+import type { User } from "@/types"
 import { useExpenseComposer } from "@/features/expenses/hooks/useExpenseComposer"
 import type { ComposerParticipant } from "@/features/expenses/hooks/useExpenseComposer"
 import { ExpenseSplitEditor } from "@/features/expenses/components/ExpenseSplitEditor"
+import { ContextPicker } from "@/features/expenses/components/ContextPicker"
 import { parseMinorInput, minorToMajor } from "@/features/money/splits"
 import { formatAmount, getCurrencySymbol } from "@/components/ui/AmountDisplay"
 import type { MoneyContext, ReceiptMimeType } from "@/features/money/types"
@@ -52,6 +54,7 @@ export default function NewExpenseScreenV2(): JSX.Element {
   const coral = useCoralColors()
   const { data: groups = [] } = useGroups(currentUser?.id)
   const { data: friends = [] } = useFriends(currentUser?.id)
+  const { data: allFriendships = [] } = useAllFriendships(currentUser?.id)
   const preferredCurrency = useUIStore((state) => state.preferredCurrency)
   const setCurrency = useUIStore((state) => state.setCurrency)
   const { mutateAsync: createExpense } = useCreateExpense()
@@ -102,6 +105,25 @@ export default function NewExpenseScreenV2(): JSX.Element {
     [friends, currentUser.id]
   )
 
+  const friendshipByCounterparty = useMemo(() => {
+    const map = new Map<string, string>()
+    for (const friendship of allFriendships) {
+      if (friendship.status !== "accepted") continue
+      const counterpartyId =
+        friendship.userId === currentUser.id ? friendship.friendId : friendship.userId
+      map.set(counterpartyId, friendship.id)
+    }
+    return map
+  }, [allFriendships, currentUser.id])
+
+  // Direct expenses are backed by one friendship row. Group-only contacts
+  // remain available in the group picker but cannot be used as a direct
+  // expense context.
+  const directFriends = useMemo(
+    () => uniqueFriends.filter((friend) => friendshipByCounterparty.has(friend.id)),
+    [friendshipByCounterparty, uniqueFriends]
+  )
+
   const filteredGroups = useMemo(() => {
     if (!searchQuery.trim()) return groups
     const lowerQuery = searchQuery.toLowerCase()
@@ -109,10 +131,14 @@ export default function NewExpenseScreenV2(): JSX.Element {
   }, [groups, searchQuery])
 
   const filteredFriends = useMemo(() => {
-    if (!searchQuery.trim()) return uniqueFriends
+    if (!searchQuery.trim()) return directFriends
     const lowerQuery = searchQuery.toLowerCase()
-    return uniqueFriends.filter((f: any) => f.name.toLowerCase().includes(lowerQuery))
-  }, [uniqueFriends, searchQuery])
+    return directFriends.filter(
+      (f: any) =>
+        f.name.toLowerCase().includes(lowerQuery) ||
+        (f.email || "").toLowerCase().includes(lowerQuery)
+    )
+  }, [directFriends, searchQuery])
 
   const selectedGroup = selectedGroupId
     ? groups.find((g: any) => g.id === selectedGroupId)
@@ -120,9 +146,9 @@ export default function NewExpenseScreenV2(): JSX.Element {
 
   const selectedFriends = useMemo(() => {
     return selectedFriendIds
-      .map((friendId) => uniqueFriends.find((f: any) => f.id === friendId))
-      .filter(Boolean)
-  }, [uniqueFriends, selectedFriendIds])
+      .map((friendId) => directFriends.find((f: any) => f.id === friendId))
+      .filter((f): f is User => !!f)
+  }, [directFriends, selectedFriendIds])
 
   const participants = useMemo((): ComposerParticipant[] => {
     if (selectedGroup) {
@@ -161,20 +187,60 @@ export default function NewExpenseScreenV2(): JSX.Element {
 
     const context: MoneyContext = selectedGroup
       ? { type: "group", groupId: selectedGroup.id }
-      : { type: "direct", friendshipId: selectedFriendIds[0] }
+      : {
+          type: "direct",
+          friendshipId: friendshipByCounterparty.get(selectedFriendIds[0]) ?? "",
+        }
 
     const currency = selectedGroup
       ? selectedGroup.currency
       : preferredCurrency.code
 
     setContext(context, participants, currency)
-  }, [hasSelection, selectedGroup, selectedFriendIds, participants, preferredCurrency.code, setContext])
+  }, [
+    hasSelection,
+    selectedGroup,
+    selectedFriendIds,
+    participants,
+    preferredCurrency.code,
+    friendshipByCounterparty,
+    setContext,
+  ])
 
   const handleChangeContext = useCallback(() => {
     setContext(undefined as any, [], "USD")
     setSelectedGroupId("")
     setSelectedFriendIds([])
   }, [setContext])
+
+  // Automatically confirm context on mount if navigating from a group or person screen
+  useEffect(() => {
+    if ((initialGroupId || initialFriendId) && hasSelection && !composer.context && participants.length > 0) {
+      const context: MoneyContext = selectedGroup
+        ? { type: "group", groupId: selectedGroup.id }
+        : {
+            type: "direct",
+            friendshipId: friendshipByCounterparty.get(selectedFriendIds[0]) ?? "",
+          }
+
+      const currency = selectedGroup
+        ? selectedGroup.currency
+        : preferredCurrency.code
+
+      setContext(context, participants, currency)
+    }
+  }, [
+    initialGroupId,
+    initialFriendId,
+    hasSelection,
+    selectedGroup,
+    selectedFriendIds,
+    participants,
+    preferredCurrency.code,
+    friendshipByCounterparty,
+    setContext,
+    composer.context,
+  ])
 
   const handleSourceChange = useCallback(
     (userId: string, value: string) => {
@@ -396,16 +462,16 @@ export default function NewExpenseScreenV2(): JSX.Element {
         amountMinor: s.amountMinor,
         percentageUnits:
           composer.splitMethod === "percentage"
-            ? Math.round((composer.splitSources[s.userId]?.percentageUnits ?? 0) * 10000)
+            ? (composer.splitSources[s.userId]?.percentageUnits ?? 0)
             : undefined,
         shareUnits:
           composer.splitMethod === "shares"
-            ? Math.round((composer.splitSources[s.userId]?.shareUnits ?? 0) * 1000000)
+            ? (composer.splitSources[s.userId]?.shareUnits ?? 0)
             : undefined,
         position: s.position,
       }))
 
-      const clientOperationId = `${operationId}-${Date.now()}`
+      const clientOperationId = operationId
 
       const expenseData = {
         clientOperationId,
@@ -597,248 +663,21 @@ export default function NewExpenseScreenV2(): JSX.Element {
             contentContainerStyle={{ paddingBottom: Math.max(insets.bottom, 16) + 120 }}
           >
             {!hasContext ? (
-              <View style={{ paddingTop: 24, gap: 20 }}>
-              <View style={{ flexDirection: "row", gap: 8 }}>
-                <View
-                  style={{
-                    flex: 1,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: coral.border,
-                    overflow: "hidden",
-                  }}
-                >
-                  <View style={{ flexDirection: "row" }}>
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={() => setSelectionTab("friends")}
-                      style={({ pressed }) => ({
-                        flex: 1,
-                        height: 44,
-                        borderRadius: 14,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor:
-                          selectionTab === "friends" ? coral.foreground : "transparent",
-                        opacity: pressed ? 0.8 : 1,
-                      })}
-                    >
-                      <Text
-                        style={{
-                          fontFamily: "InstrumentSans_600SemiBold",
-                          fontSize: 14,
-                          color: selectionTab === "friends" ? coral.surface : coral.foreground,
-                        }}
-                      >
-                        Friends
-                      </Text>
-                    </Pressable>
-                    <Pressable
-                      accessibilityRole="button"
-                      onPress={() => setSelectionTab("groups")}
-                      style={({ pressed }) => ({
-                        flex: 1,
-                        height: 44,
-                        borderRadius: 14,
-                        alignItems: "center",
-                        justifyContent: "center",
-                        backgroundColor:
-                          selectionTab === "groups" ? coral.foreground : "transparent",
-                        opacity: pressed ? 0.8 : 1,
-                      })}
-                    >
-                      <Text
-                        style={{
-                          fontFamily: "InstrumentSans_600SemiBold",
-                          fontSize: 14,
-                          color: selectionTab === "groups" ? coral.surface : coral.foreground,
-                        }}
-                      >
-                        Groups
-                      </Text>
-                    </Pressable>
-                  </View>
-                </View>
-              </View>
-
-              <TextInput
-                placeholder={
-                  selectionTab === "friends" ? "Search friends..." : "Search groups..."
-                }
-                placeholderTextColor={coral.muted}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                style={{
-                  borderWidth: 1,
-                  borderColor: coral.border,
-                  paddingHorizontal: 15,
-                  minHeight: 54,
-                  borderRadius: 14,
-                  fontSize: 16,
-                  fontFamily: "InstrumentSans_400Regular",
-                  color: coral.foreground,
-                  backgroundColor: coral.surface,
-                }}
+              <ContextPicker
+                selectionTab={selectionTab}
+                setSelectionTab={setSelectionTab}
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                filteredFriends={filteredFriends}
+                filteredGroups={filteredGroups}
+                selectedFriendIds={selectedFriendIds}
+                setSelectedFriendIds={setSelectedFriendIds}
+                selectedGroupId={selectedGroupId}
+                setSelectedGroupId={setSelectedGroupId}
+                selectedFriends={selectedFriends}
+                singleFriendSelection
               />
-
-              <View style={{ gap: 4 }}>
-                {selectionTab === "friends"
-                  ? filteredFriends.map((friend: any) => {
-                      const isSelected = selectedFriendIds.includes(friend.id)
-                      return (
-                        <Pressable
-                          key={friend.id}
-                          accessibilityRole="button"
-                          onPress={() => {
-                            Haptics.selectionAsync()
-                            setSelectedFriendIds((prev) =>
-                              isSelected
-                                ? prev.filter((id) => id !== friend.id)
-                                : [...prev, friend.id]
-                            )
-                            setSelectedGroupId("")
-                          }}
-                          style={({ pressed }) => ({
-                            flexDirection: "row",
-                            alignItems: "center",
-                            paddingHorizontal: 14,
-                            paddingVertical: 12,
-                            gap: 12,
-                            borderRadius: 16,
-                            backgroundColor: isSelected ? coral.accentSoft : "transparent",
-                            borderWidth: 1,
-                            borderColor: isSelected ? coral.accent : "transparent",
-                            opacity: pressed ? 0.7 : 1,
-                            minHeight: 68,
-                          })}
-                        >
-                          <AppUserAvatar user={friend} size="md" />
-                          <View style={{ flex: 1 }}>
-                            <Text
-                              style={{
-                                fontFamily: "InstrumentSans_600SemiBold",
-                                fontSize: 15,
-                                color: coral.foreground,
-                              }}
-                            >
-                              {friend.name}
-                            </Text>
-                            <Text
-                              style={{
-                                fontFamily: "InstrumentSans_400Regular",
-                                fontSize: 13,
-                                color: coral.muted,
-                                marginTop: 2,
-                              }}
-                            >
-                              {friend.email}
-                            </Text>
-                          </View>
-                          <View
-                            style={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: 12,
-                              borderWidth: 1,
-                              borderColor: isSelected ? coral.accent : coral.border,
-                              backgroundColor: isSelected ? coral.accent : coral.surface,
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {isSelected && <icons.Check size={14} color={coral.inkOnAccent} />}
-                          </View>
-                        </Pressable>
-                      )
-                    })
-                  : filteredGroups.map((group: any) => {
-                      const isSelected = selectedGroupId === group.id
-                      return (
-                        <Pressable
-                          key={group.id}
-                          accessibilityRole="button"
-                          onPress={() => {
-                            Haptics.selectionAsync()
-                            setSelectedGroupId(isSelected ? "" : group.id)
-                            setSelectedFriendIds([])
-                          }}
-                          style={({ pressed }) => ({
-                            flexDirection: "row",
-                            alignItems: "center",
-                            paddingHorizontal: 14,
-                            paddingVertical: 12,
-                            gap: 12,
-                            borderRadius: 16,
-                            backgroundColor: isSelected ? coral.accentSoft : "transparent",
-                            borderWidth: 1,
-                            borderColor: isSelected ? coral.accent : "transparent",
-                            opacity: pressed ? 0.7 : 1,
-                            minHeight: 68,
-                          })}
-                        >
-                          <View
-                            style={{
-                              width: 48,
-                              height: 48,
-                              borderRadius: 12,
-                              borderWidth: 1,
-                              borderColor: coral.border,
-                              backgroundColor: coral.surface,
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            <Text
-                              style={{
-                                fontFamily: "InstrumentSans_600SemiBold",
-                                fontSize: 18,
-                                color: coral.foreground,
-                              }}
-                            >
-                              {group.name.charAt(0).toUpperCase()}
-                            </Text>
-                          </View>
-                          <View style={{ flex: 1 }}>
-                            <Text
-                              style={{
-                                fontFamily: "InstrumentSans_600SemiBold",
-                                fontSize: 15,
-                                color: coral.foreground,
-                              }}
-                            >
-                              {group.name}
-                            </Text>
-                            <Text
-                              style={{
-                                fontFamily: "InstrumentSans_400Regular",
-                                fontSize: 13,
-                                color: coral.muted,
-                                marginTop: 2,
-                              }}
-                            >
-                              {group.members.length} people
-                            </Text>
-                          </View>
-                          <View
-                            style={{
-                              width: 24,
-                              height: 24,
-                              borderRadius: 12,
-                              borderWidth: 1,
-                              borderColor: isSelected ? coral.accent : coral.border,
-                              backgroundColor: isSelected ? coral.accent : coral.surface,
-                              alignItems: "center",
-                              justifyContent: "center",
-                            }}
-                          >
-                            {isSelected && <icons.Check size={14} color={coral.inkOnAccent} />}
-                          </View>
-                        </Pressable>
-                      )
-                    })}
-              </View>
-            </View>
-          ) : (
+            ) : (
             <View style={{ gap: 16, paddingTop: 22 }}>
               <View style={{ alignItems: "center", paddingTop: 4, paddingBottom: 8 }}>
                 <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>

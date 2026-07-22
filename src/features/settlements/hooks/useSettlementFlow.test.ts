@@ -1,3 +1,6 @@
+import { settlementFlowReducer, type SettlementFlowState } from "./useSettlementFlow"
+import type { MoneyContext } from "@/features/money/types"
+
 jest.mock("@/services/supabase/client", () => ({
   supabase: { rpc: jest.fn(), from: jest.fn() },
 }))
@@ -6,9 +9,6 @@ jest.mock("@tanstack/react-query", () => ({
   useMutation: () => ({ mutateAsync: jest.fn(), isPending: false }),
   useQueryClient: () => ({ invalidateQueries: jest.fn() }),
 }))
-
-import { settlementFlowReducer, type SettlementFlowState } from "./useSettlementFlow"
-import type { MoneyContext } from "@/features/money/types"
 
 const baseSelection = {
   counterpartyId: "u2",
@@ -25,7 +25,7 @@ function composeState(overrides: Partial<SettlementFlowState & { step: "compose"
   return {
     step: "compose",
     selection: baseSelection,
-    amountInput: "1500",
+    amountInput: "15",
     method: "cash",
     note: "",
     ...overrides,
@@ -42,7 +42,7 @@ describe("settlementFlowReducer", () => {
       expect(next.step).toBe("compose")
       if (next.step !== "compose") return
       expect(next.selection.counterpartyName).toBe("Keran")
-      expect(next.amountInput).toBe("1500")
+      expect(next.amountInput).toBe("15")
       expect(next.method).toBe("cash")
       expect(next.note).toBe("")
     })
@@ -120,7 +120,7 @@ describe("settlementFlowReducer", () => {
 
   describe("GO_TO_REVIEW", () => {
     it("transitions from compose to review", () => {
-      const next = settlementFlowReducer(composeState({ amountInput: "1000" }), {
+      const next = settlementFlowReducer(composeState({ amountInput: "10" }), {
         type: "GO_TO_REVIEW",
       })
       expect(next.step).toBe("review")
@@ -134,7 +134,7 @@ describe("settlementFlowReducer", () => {
       const next = settlementFlowReducer(
         composeState({
           selection: { ...baseSelection, signedAmountMinor: -1500, isOwedToYou: false },
-          amountInput: "1000",
+          amountInput: "10",
         }),
         { type: "GO_TO_REVIEW" }
       )
@@ -146,7 +146,7 @@ describe("settlementFlowReducer", () => {
       const next = settlementFlowReducer(
         composeState({
           selection: { ...baseSelection, signedAmountMinor: 1500, isOwedToYou: true },
-          amountInput: "600",
+          amountInput: "6",
         }),
         { type: "GO_TO_REVIEW" }
       )
@@ -156,7 +156,7 @@ describe("settlementFlowReducer", () => {
 
     it("clamps amount to maximum", () => {
       const next = settlementFlowReducer(
-        composeState({ amountInput: "9999" }),
+        composeState({ amountInput: "99" }),
         { type: "GO_TO_REVIEW" }
       )
       if (next.step !== "review") return
@@ -193,7 +193,7 @@ describe("settlementFlowReducer", () => {
       const next = settlementFlowReducer(reviewState, { type: "GO_BACK_TO_COMPOSE" })
       expect(next.step).toBe("compose")
       if (next.step !== "compose") return
-      expect(next.amountInput).toBe("1500")
+      expect(next.amountInput).toBe("15")
       expect(next.method).toBe("cash")
       expect(next.note).toBe("Thanks")
     })

@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { useUI } from "@/components/ui";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
@@ -31,27 +30,27 @@ export function ProfileHeader({ name, email, onEdit }: ProfileHeaderProps): JSX.
           size="lg"
         />
         <View style={{ marginLeft: 16, flex: 1 }}>
-          <Typography
+          <Text
             style={{
               fontSize: 24,
               color: color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               letterSpacing: -0.5,
             }}
             numberOfLines={1}
           >
             {name}
-          </Typography>
-          <Typography
+          </Text>
+          <Text
             style={{
               fontSize: 14,
               color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
+              fontFamily: "InstrumentSans_500Medium",
             }}
             numberOfLines={1}
           >
             {email}
-          </Typography>
+          </Text>
         </View>
         <icons.ChevronRight size={20} color={color.muted} strokeWidth={1.5} />
       </View>

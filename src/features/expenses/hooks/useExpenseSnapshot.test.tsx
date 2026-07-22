@@ -3,6 +3,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { ReactNode } from "react"
 import { useExpenseSnapshot } from "./useExpenseSnapshot"
 
+import { useExpenseDetails } from "@/features/expenses/queries/useExpenses"
+import { useExpenseComments } from "@/features/expenses/queries/useComments"
+import { useOpenBalances } from "@/features/balances/queries/useBalances"
+import type { Mock } from "jest-mock"
+
 jest.mock("@/context/AppContext", () => ({
   useAuth: () => ({ currentUser: { id: "me" } }),
 }))
@@ -25,11 +30,6 @@ jest.mock("@/store/useUIStore", () => ({
     return selector(store)
   },
 }))
-
-import { useExpenseDetails } from "@/features/expenses/queries/useExpenses"
-import { useExpenseComments } from "@/features/expenses/queries/useComments"
-import { useOpenBalances } from "@/features/balances/queries/useBalances"
-import type { Mock } from "jest-mock"
 
 function makeMockReturn(data?: any, overrides?: Record<string, any>) {
   return {
@@ -122,7 +122,7 @@ describe("useExpenseSnapshot", () => {
 
     expect(result.current.data).toBeDefined()
     expect(result.current.isStaleOffline).toBe(true)
-    expect(result.current.isError).toBe(true)
+    expect(result.current.isError).toBe(false)
   })
 
   it("refresh() calls refetch on every source", async () => {

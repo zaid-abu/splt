@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { View, ScrollView, Text, Pressable, Switch } from "react-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
@@ -52,7 +53,6 @@ export default function GroupSettingsScreen() {
     deleteSheetRef,
     leaveSheetRef,
     removeMemberSheetRef,
-    searchSheetRef,
     memberToRemove,
     handleSave,
     handleRemoveMemberClick,
@@ -62,9 +62,11 @@ export default function GroupSettingsScreen() {
     handleLeaveGroup,
   } = useGroupSettings(id || "");
 
+  const [showSearchSheet, setShowSearchSheet] = useState(false);
+
   if (!group) {
     return (
-      <CoralScreen>
+      <CoralScreen scroll={false}>
         <CoralTopBar title="Settings" onBack={() => router.back()} />
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center", paddingTop: 80 }}>
           <Text
@@ -339,7 +341,7 @@ export default function GroupSettingsScreen() {
         <CoralButton
           label="+ Add member"
           variant="secondary"
-          onPress={() => searchSheetRef.current?.present()}
+          onPress={() => setShowSearchSheet(true)}
         />
       )}
 
@@ -414,7 +416,8 @@ export default function GroupSettingsScreen() {
       />
 
       <UserSearchBottomSheet
-        ref={searchSheetRef}
+        visible={showSearchSheet}
+        onClose={() => setShowSearchSheet(false)}
         onSelect={handleAddMember}
         excludeUserIds={group.members.map((m) => m.userId)}
         title="Add to Group"

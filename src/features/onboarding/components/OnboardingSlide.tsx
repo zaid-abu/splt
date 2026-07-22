@@ -1,6 +1,5 @@
 import React from "react";
-import { View, StyleSheet } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, StyleSheet , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
 
@@ -39,43 +38,43 @@ export function OnboardingSlide({ item, width }: OnboardingSlideProps) {
 
       <View style={styles.textContainer}>
         <Animated.View entering={FadeInDown.delay(100).duration(600)}>
-          <Typography
+          <Text
             style={{
               fontSize: 13,
               color: color.muted,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               textTransform: "uppercase",
               letterSpacing: 1.2,
               marginBottom: 12,
             }}
           >
             {item.tagline}
-          </Typography>
+          </Text>
         </Animated.View>
         <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-          <Typography
+          <Text
             style={{
               fontSize: 48,
               color: color.textStrong,
-              fontFamily: "Sora_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               lineHeight: 54,
               marginBottom: 16,
             }}
           >
             {item.title}
-          </Typography>
+          </Text>
         </Animated.View>
         <Animated.View entering={FadeInDown.delay(350).duration(600)}>
-          <Typography
+          <Text
             style={{
               fontSize: 18,
               color: color.muted,
-              fontFamily: "IBMPlexSans_400Regular",
+              fontFamily: "InstrumentSans_400Regular",
               lineHeight: 26,
             }}
           >
             {item.description}
-          </Typography>
+          </Text>
         </Animated.View>
       </View>
     </View>

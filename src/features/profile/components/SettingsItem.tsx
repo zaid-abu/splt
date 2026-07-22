@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { useUI } from "@/components/ui";
 
@@ -62,27 +61,27 @@ export function SettingsItem({
           </View>
         )}
         <View style={{ flex: 1 }}>
-          <Typography
+          <Text
             style={{
               fontSize: 16,
               color: isDanger ? color.danger : color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               letterSpacing: -0.3,
             }}
           >
             {title}
-          </Typography>
+          </Text>
           {subtitle && (
-            <Typography
+            <Text
               style={{
                 fontSize: 13,
                 color: color.muted,
-                fontFamily: "IBMPlexSans_500Medium",
+                fontFamily: "InstrumentSans_500Medium",
                 marginTop: 2,
               }}
             >
               {subtitle}
-            </Typography>
+            </Text>
           )}
         </View>
       </View>

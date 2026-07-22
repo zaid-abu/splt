@@ -1,3 +1,8 @@
+import React from "react"
+import { render } from "@testing-library/react-native"
+
+import { useSettlementFlow } from "@/features/settlements/hooks/useSettlementFlow"
+
 jest.mock("@/services/supabase/client", () => ({
   supabase: { rpc: jest.fn(), from: jest.fn() },
 }))
@@ -45,19 +50,11 @@ jest.mock("react-native-safe-area-context", () => ({
   },
 }))
 
-jest.mock("heroui-native", () => ({
-  Typography: ({ children }: any) => {
-    const { Text } = require("react-native")
-    return <Text>{children}</Text>
-  },
-}))
+
 
 jest.mock("@/hooks/useAppToast", () => ({
   useAppToast: () => ({ toast: { show: jest.fn() } }),
 }))
-
-import React from "react"
-import { render } from "@testing-library/react-native"
 
 jest.mock("@/features/settlements/hooks/useSettlementFlow", () => ({
   useSettlementFlow: jest.fn(),
@@ -162,8 +159,6 @@ jest.mock("@/features/friends/hooks/useFriendsList", () => ({
     refetchAll: jest.fn(),
   }),
 }))
-
-import { useSettlementFlow } from "@/features/settlements/hooks/useSettlementFlow"
 
 const mockUseSettlementFlow = useSettlementFlow as jest.Mock
 

@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View } from "react-native";
-import { Switch } from "heroui-native";
+import {  View , Switch } from "react-native";
 import { Moon, DollarSign } from "lucide-react-native";
 import { useUI } from "@/components/ui";
 import { MoneyRow, Eyebrow, useCoralColors } from "@/components/coral";
@@ -40,7 +39,7 @@ export function ProfilePreferences({
           title="Dark Mode"
           subtitle="Switch between light and dark themes"
           amount=""
-          rightElement={<Switch isSelected={isDarkMode} onSelectedChange={onThemeToggle} />}
+          rightElement={<Switch value={isDarkMode} onValueChange={onThemeToggle} />}
         />
         <MoneyRow
           avatar={<DollarSign size={20} color={color.text} />}

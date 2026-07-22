@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { Pressable } from "react-native";
 import type { ViewStyle } from "react-native";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 type IconType = ComponentType<{ size?: number; color?: string; strokeWidth?: number }>;
 

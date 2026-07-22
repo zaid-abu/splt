@@ -73,7 +73,7 @@ export function SettlementAmount({
                 style={{
                   fontSize: 32,
                   color: color.text,
-                  fontFamily: "IBMPlexSans_500Medium",
+                  fontFamily: "InstrumentSans_500Medium",
                   marginRight: 8,
                 }}
               >
@@ -87,7 +87,7 @@ export function SettlementAmount({
                 placeholderTextColor={color.muted}
                 style={{
                   fontSize: 48,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                   color: amountStr ? color.text : color.muted,
                   letterSpacing: -2,
                   textAlign: "center",
@@ -119,7 +119,7 @@ export function SettlementAmount({
                     style={{
                       fontSize: 13,
                       color: color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                     }}
                   >
                     Full: {formatAmount(Math.abs(netBalance), preferredCurrencyCode)}
@@ -144,7 +144,7 @@ export function SettlementAmount({
                     style={{
                       fontSize: 13,
                       color: color.text,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                     }}
                   >
                     Half: {(Math.abs(netBalance) / 2).toFixed(2)}

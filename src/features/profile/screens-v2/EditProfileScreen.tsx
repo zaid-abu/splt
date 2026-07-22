@@ -104,6 +104,25 @@ export default function EditProfileScreen() {
         Email cannot be changed
       </Text>
 
+      <View style={{ marginTop: 12 }}>
+        <CoralField
+          label="Home currency"
+          value={currentUser.defaultCurrency || "USD"}
+          editable={false}
+          style={{ opacity: 0.6 }}
+        />
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_400Regular",
+            fontSize: 12,
+            color: coral.muted,
+            marginTop: 6,
+          }}
+        >
+          Change in Currencies
+        </Text>
+      </View>
+
       <View style={{ height: 12 }} />
 
       <CoralButton

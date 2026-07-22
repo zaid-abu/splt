@@ -1,12 +1,8 @@
-import { useContext } from "react";
 import type { ComponentProps, ReactNode } from "react";
 import { View, Text, Pressable, Platform } from "react-native";
-import { BlurView } from "expo-blur";
 import { ChevronLeft } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useUIStore } from "@/store/useUIStore";
 import { useCoralColors } from "./useCoral";
-import { CoralBlurTargetContext } from "./CoralBlurContext";
 
 type CoralTopBarProps = {
   title?: string;
@@ -17,8 +13,6 @@ type CoralTopBarProps = {
 
 export function CoralTopBar({ title = "", onBack, leftElement, rightElement }: CoralTopBarProps) {
   const insets = useSafeAreaInsets();
-  const blurTarget = useContext(CoralBlurTargetContext);
-  const isDark = useUIStore((s) => s.isDarkMode);
   const coral = useCoralColors();
   const isIOS = Platform.OS === "ios";
 
@@ -51,6 +45,7 @@ export function CoralTopBar({ title = "", onBack, leftElement, rightElement }: C
       ) : onBack ? (
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel="Back"
           onPress={onBack}
           style={{
             minWidth: isIOS ? 44 : 48,
@@ -86,19 +81,9 @@ export function CoralTopBar({ title = "", onBack, leftElement, rightElement }: C
     </>
   );
 
-  if (!isIOS) {
-    return <View style={[sharedStyle, { backgroundColor: coral.bg }]}>{inner}</View>;
-  }
-
   return (
-    <BlurView
-      intensity={80}
-      tint={isDark ? "dark" : "light"}
-      blurTarget={blurTarget ?? undefined}
-      blurReductionFactor={2}
-      style={[sharedStyle, { backgroundColor: "transparent" }]}
-    >
+    <View style={[sharedStyle, { backgroundColor: coral.surface }]}>
       {inner}
-    </BlurView>
+    </View>
   );
 }

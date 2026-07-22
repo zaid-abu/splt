@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { Pressable, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  Pressable, View , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import dayjs from "dayjs";
 import DateTimePicker from "react-native-ui-datepicker";
@@ -30,8 +29,8 @@ export function DateInlinePicker({
           <icons.Calendar size={18} color={color.text} strokeWidth={1.8} />
         </View>
         <View style={{ flex: 1 }}>
-          <Typography style={styles.detailTitle}>{dayjs(value).format("MMMM D, YYYY")}</Typography>
-          <Typography style={styles.detailMeta}>Expense date</Typography>
+          <Text style={styles.detailTitle}>{dayjs(value).format("MMMM D, YYYY")}</Text>
+          <Text style={styles.detailMeta}>Expense date</Text>
         </View>
         <icons.ChevronDown
           size={18}

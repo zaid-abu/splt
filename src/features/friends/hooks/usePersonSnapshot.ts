@@ -177,7 +177,7 @@ export function usePersonSnapshot(
     const allOpenBalances = aggregateOpenBalances(eventRows, currentUser.id)
 
     const personBalances = allOpenBalances.filter(
-      (ob) => ob.counterpartyId === counterpartyId
+      (ob) => ob.counterpartyId === counterpartyId && ob.signedAmountMinor !== 0
     )
     const orderedPersonBalances = orderBalances(personBalances, preferredCurrency.code)
 

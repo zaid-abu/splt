@@ -1,9 +1,9 @@
+import { useCoralColors } from "@/components/coral";
 import React, { useRef, useCallback } from "react";
-import { View, StyleSheet, Animated, Pressable } from "react-native";
+import {  View, StyleSheet, Animated, Pressable , Text } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { PressableFeedback, Typography, useThemeColor } from "heroui-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui";
@@ -19,9 +19,6 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
   const swipeableRef = useRef<Swipeable>(null);
   const deleteSheetRef = useRef<BottomSheetModal>(null);
   const insets = useSafeAreaInsets();
-  const successColor = useThemeColor("success" as any) as unknown as string;
-  const dangerColor = useThemeColor("danger" as any) as unknown as string;
-  const primaryColor = useThemeColor("primary" as any) as unknown as string;
   const { color } = useUI();
 
   const renderBackdrop = useCallback(
@@ -59,10 +56,10 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
           <Animated.View
             style={[
               styles.actionButton,
-              { backgroundColor: primaryColor || color.text, transform: [{ scale }], opacity },
+              { backgroundColor: color.text, transform: [{ scale }], opacity },
             ]}
           >
-            <PressableFeedback
+            <Pressable
               accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -72,10 +69,10 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               style={styles.actionInner}
             >
               <icons.Bell size={24} color={color.textInverse} />
-              <Typography type="body-xs" className="text-white font-bold mt-1">
+              <Text className="text-white font-bold mt-1" style={{ fontSize: 12 }}>
                 Remind
-              </Typography>
-            </PressableFeedback>
+              </Text>
+            </Pressable>
           </Animated.View>
         )}
 
@@ -83,10 +80,10 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
           <Animated.View
             style={[
               styles.actionButton,
-              { backgroundColor: successColor, transform: [{ scale }], opacity },
+              { backgroundColor: color.success, transform: [{ scale }], opacity },
             ]}
           >
-            <PressableFeedback
+            <Pressable
               accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
@@ -96,10 +93,10 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               style={styles.actionInner}
             >
               <icons.CheckCircle size={24} color={color.textInverse} />
-              <Typography type="body-xs" className="text-white font-bold mt-1">
+              <Text className="text-white font-bold mt-1" style={{ fontSize: 12 }}>
                 Settle
-              </Typography>
-            </PressableFeedback>
+              </Text>
+            </Pressable>
           </Animated.View>
         )}
 
@@ -107,10 +104,10 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
           <Animated.View
             style={[
               styles.actionButton,
-              { backgroundColor: dangerColor, transform: [{ scale }], opacity },
+              { backgroundColor: color.danger, transform: [{ scale }], opacity },
             ]}
           >
-            <PressableFeedback
+            <Pressable
               accessibilityRole="button"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
@@ -120,10 +117,10 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
               style={styles.actionInner}
             >
               <icons.Trash2 size={24} color={color.textInverse} />
-              <Typography type="body-xs" className="text-white font-bold mt-1">
+              <Text className="text-white font-bold mt-1" style={{ fontSize: 12 }}>
                 Delete
-              </Typography>
-            </PressableFeedback>
+              </Text>
+            </Pressable>
           </Animated.View>
         )}
       </View>
@@ -152,26 +149,26 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
         <BottomSheetView
           style={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: insets.bottom + 24 }}
         >
-          <Typography
+          <Text
             style={{
               fontSize: 22,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               color: color.textStrong,
               marginBottom: 8,
             }}
           >
             Delete Item?
-          </Typography>
-          <Typography
+          </Text>
+          <Text
             style={{
               fontSize: 16,
-              fontFamily: "IBMPlexSans_500Medium",
+              fontFamily: "InstrumentSans_500Medium",
               color: color.muted,
               marginBottom: 24,
             }}
           >
             Are you sure you want to delete this? This cannot be undone.
-          </Typography>
+          </Text>
 
           <View style={{ flexDirection: "row", gap: 12 }}>
             <Pressable
@@ -187,15 +184,15 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
                 opacity: pressed ? 0.5 : 1,
               })}
             >
-              <Typography
+              <Text
                 style={{
                   fontSize: 16,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                   color: color.textStrong,
                 }}
               >
                 Cancel
-              </Typography>
+              </Text>
             </Pressable>
             <Pressable
               onPress={() => {
@@ -211,15 +208,15 @@ export function SwipeableRow({ children, onDelete, onSettle, onRemind }: Swipeab
                 opacity: pressed ? 0.8 : 1,
               })}
             >
-              <Typography
+              <Text
                 style={{
                   fontSize: 16,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                   color: color.textInverse,
                 }}
               >
                 Delete
-              </Typography>
+              </Text>
             </Pressable>
           </View>
         </BottomSheetView>

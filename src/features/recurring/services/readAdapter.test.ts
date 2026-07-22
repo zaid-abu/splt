@@ -202,7 +202,7 @@ describe("buildScheduleSections", () => {
     const result = buildScheduleSections(input, TZ);
 
     for (const item of result.needsReview) {
-      expect(item.href).toEqual(itemHref("re-1"));
+      expect(item.href).toEqual({ pathname: "/recurring/[id]/review", params: { id: "re-1" } });
     }
     for (const item of result.active) {
       expect(item.href).toEqual(itemHref("re-1"));

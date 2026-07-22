@@ -1,7 +1,7 @@
+import { Text } from "react-native";
 import type { ReactNode } from "react";
 import type { TextStyle } from "react-native";
-import { Typography } from "heroui-native";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 export function SectionLabel({
   children,
@@ -13,12 +13,12 @@ export function SectionLabel({
   const { color } = useUI();
 
   return (
-    <Typography
+    <Text
       style={[
         {
           fontSize: 11,
           color: color.muted,
-          fontFamily: "IBMPlexSans_600SemiBold",
+          fontFamily: "InstrumentSans_600SemiBold",
           letterSpacing: 1.2,
           textTransform: "uppercase",
         },
@@ -26,6 +26,6 @@ export function SectionLabel({
       ]}
     >
       {children}
-    </Typography>
+    </Text>
   );
 }

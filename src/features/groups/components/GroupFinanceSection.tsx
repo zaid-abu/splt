@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View, Pressable, Text } from "react-native";
-import { Switch } from "heroui-native";
+import {  View, Pressable, Text , Switch } from "react-native";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useUI } from "@/components/ui";
 import { Eyebrow, useCoralColors } from "@/components/coral";
@@ -140,7 +139,7 @@ export function GroupFinanceSection({
               Combine debts to reduce the number of payments between members.
             </Text>
           </View>
-          <Switch isSelected={simplifyDebts} onSelectedChange={onSimplifyDebtsChange} />
+          <Switch value={simplifyDebts} onValueChange={onSimplifyDebtsChange} />
         </View>
       </View>
     </View>

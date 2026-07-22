@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import { View, Pressable, LayoutAnimation } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Pressable, Text } from "react-native";
 import { PieChart } from "react-native-gifted-charts";
 import { EXPENSE_CATEGORIES, ExpenseCategory } from "@/types";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -47,16 +46,16 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
         }}
       >
         <icons.PieChart size={38} color={color.muted} strokeWidth={1.25} />
-        <Typography
+        <Text
           style={{
             marginTop: 12,
             color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
             marginBottom: 16,
           }}
         >
           No category data
-        </Typography>
+        </Text>
         {onLogExpense && (
           <Pressable
             accessibilityRole="button"
@@ -69,15 +68,15 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
               opacity: pressed ? 0.8 : 1,
             })}
           >
-            <Typography
+            <Text
               style={{
                 fontSize: 14,
                 color: color.textInverse,
-                fontFamily: "IBMPlexSans_600SemiBold",
+                fontFamily: "InstrumentSans_600SemiBold",
               }}
             >
               Log an expense
-            </Typography>
+            </Text>
           </Pressable>
         )}
       </View>
@@ -107,10 +106,10 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
         padding: 16,
       }}
     >
-      <Typography
+      <Text
         style={{
           fontSize: 11,
-          fontFamily: "IBMPlexSans_600SemiBold",
+          fontFamily: "InstrumentSans_600SemiBold",
           color: color.text,
           letterSpacing: 1.1,
           textTransform: "uppercase",
@@ -118,7 +117,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
         }}
       >
         Categories
-      </Typography>
+      </Text>
 
       <View style={{ alignItems: "center", justifyContent: "center" }}>
         <PieChart
@@ -130,7 +129,6 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
           focusOnPress
           onPress={(item: any) => {
             Haptics.selectionAsync();
-            LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
             setSelectedCategory((prev) =>
               prev === item.category ? null : (item.category as ExpenseCategory)
             );
@@ -146,11 +144,11 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
 
             return (
               <View style={{ alignItems: "center", justifyContent: "center" }}>
-                <Typography
+                <Text
                   style={{
                     fontSize: 10,
                     color: color.muted,
-                    fontFamily: "IBMPlexSans_500Medium",
+                    fontFamily: "InstrumentSans_500Medium",
                     textTransform: "uppercase",
                     letterSpacing: 0.5,
                     textAlign: "center",
@@ -160,12 +158,12 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                   adjustsFontSizeToFit
                 >
                   {labelText}
-                </Typography>
-                <Typography
+                </Text>
+                <Text
                   style={{
                     fontSize: 18,
                     color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                     marginTop: 2,
                     textAlign: "center",
                     width: 120,
@@ -174,7 +172,7 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                   adjustsFontSizeToFit
                 >
                   {formatAmount(displayTotal, currencyCode)}
-                </Typography>
+                </Text>
               </View>
             );
           }}
@@ -196,7 +194,6 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
               key={item.category}
               onPress={() => {
                 Haptics.selectionAsync();
-                LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
                 setSelectedCategory((prev) => (prev === item.category ? null : item.category));
               }}
               style={{
@@ -230,35 +227,35 @@ export function CategoryBreakdown({ data, totalSpent, currencyCode, onLogExpense
                     }}
                   >
                     <View>
-                      <Typography
+                      <Text
                         style={{
                           fontSize: 15,
                           color: color.text,
-                          fontFamily: "IBMPlexSans_600SemiBold",
+                          fontFamily: "InstrumentSans_600SemiBold",
                         }}
                       >
                         {catInfo?.label || "Other"}
-                      </Typography>
-                      <Typography
+                      </Text>
+                      <Text
                         style={{
                           fontSize: 12,
                           color: color.muted,
-                          fontFamily: "IBMPlexSans_500Medium",
+                          fontFamily: "InstrumentSans_500Medium",
                           marginTop: 2,
                         }}
                       >
                         {percent}% of spending
-                      </Typography>
+                      </Text>
                     </View>
-                    <Typography
+                    <Text
                       style={{
                         fontSize: 15,
                         color: color.text,
-                        fontFamily: "IBMPlexSans_600SemiBold",
+                        fontFamily: "InstrumentSans_600SemiBold",
                       }}
                     >
                       {formatAmount(item.amount, currencyCode)}
-                    </Typography>
+                    </Text>
                   </View>
 
                   <View

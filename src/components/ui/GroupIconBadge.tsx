@@ -1,9 +1,8 @@
-import { Typography } from "heroui-native";
 import type { JSX } from "react";
-import { View } from "react-native";
+import {  View , Text } from "react-native";
 import * as icons from "lucide-react-native";
 
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 import type { Group } from "@/types";
 
 type GroupTone = {
@@ -86,7 +85,7 @@ export function GroupIconBadge({
         {GroupIconComp ? (
           <GroupIconComp size={dims.icon} color={tone.icon} strokeWidth={1.75} />
         ) : (
-          <Typography
+          <Text
             style={{
               fontSize: dims.font,
               color: tone.icon,
@@ -96,7 +95,7 @@ export function GroupIconBadge({
             numberOfLines={1}
           >
             {getFallbackLabel(group)}
-          </Typography>
+          </Text>
         )}
       </View>
     </View>

@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View } from "react-native";
-import { Typography } from "heroui-native";
+import {  View , Text } from "react-native";
 import { Card } from "@/components/ui/Card";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { useUI } from "@/components/ui";
@@ -38,19 +37,19 @@ export function PreviewCard({
     <Card>
       <View style={styles.previewHeader}>
         <View>
-          <Typography style={styles.previewLabel}>Split preview</Typography>
-          <Typography style={styles.previewAmount}>
+          <Text style={styles.previewLabel}>Split preview</Text>
+          <Text style={styles.previewAmount}>
             {amount > 0 ? formatAmount(amount, currency) : "No amount yet"}
-          </Typography>
+          </Text>
         </View>
         <View
           style={[styles.statusPill, balanced ? styles.statusPillSuccess : styles.statusPillDanger]}
         >
-          <Typography
+          <Text
             style={[styles.statusPillText, { color: balanced ? color.success : color.danger }]}
           >
             {status}
-          </Typography>
+          </Text>
         </View>
       </View>
       <View style={styles.previewGrid}>

@@ -1,3 +1,7 @@
+import { supabase } from "@/services/supabase/client"
+import { expensesApi } from "./api"
+import type { ExpenseMutationInput, ReceiptMimeType } from "@/features/money/types"
+
 jest.mock("@/services/supabase/client", () => ({
   supabase: {
     rpc: jest.fn(),
@@ -20,10 +24,6 @@ jest.mock("@/services/supabase/client", () => ({
     })),
   },
 }))
-
-import { supabase } from "@/services/supabase/client"
-import { expensesApi } from "./api"
-import type { ExpenseMutationInput, ReceiptMimeType } from "@/features/money/types"
 
 const rpc = supabase.rpc as jest.Mock
 const getUser = supabase.auth.getUser as jest.Mock
@@ -98,7 +98,7 @@ describe("expensesApi.createExpense", () => {
     expect(rpc).toHaveBeenCalledWith("create_expense_v2", {
       p_client_operation_id: "op-1",
       p_group_id: "g-1",
-      p_friendship_id: "",
+      p_friendship_id: null,
       p_title: "Dinner",
       p_amount_minor: 2500,
       p_currency: "USD",
@@ -107,10 +107,10 @@ describe("expensesApi.createExpense", () => {
       p_split_method: "equal",
       p_date: "2024-01-15T00:00:00.000Z",
       p_notes: "",
-      p_receipt_key: "",
+      p_receipt_key: null,
       p_splits: [
-        { user_id: "u1", amount_minor: 1250, percentage: null, shares: null, position: 0 },
-        { user_id: "u2", amount_minor: 1250, percentage: null, shares: null, position: 1 },
+        { userId: "u1", amountMinor: 1250, percentageUnits: null, shareUnits: null, position: 0 },
+        { userId: "u2", amountMinor: 1250, percentageUnits: null, shareUnits: null, position: 1 },
       ],
     })
     expect(result).toMatchObject({ id: "exp-1", title: "Dinner", groupId: "g-1" })
@@ -139,7 +139,7 @@ describe("expensesApi.createExpense", () => {
     await expensesApi.createExpense(input)
 
     expect(rpc).toHaveBeenCalledWith("create_expense_v2", expect.objectContaining({
-      p_group_id: "",
+      p_group_id: null,
       p_friendship_id: "f-1",
     }))
   })
@@ -168,8 +168,8 @@ describe("expensesApi.createExpense", () => {
 
     expect(rpc).toHaveBeenCalledWith("create_expense_v2", expect.objectContaining({
       p_splits: [
-        { user_id: "u1", amount_minor: 1000, percentage: 50, shares: null, position: 0 },
-        { user_id: "u2", amount_minor: 1000, percentage: 50, shares: null, position: 1 },
+        { userId: "u1", amountMinor: 1000, percentageUnits: 50, shareUnits: null, position: 0 },
+        { userId: "u2", amountMinor: 1000, percentageUnits: 50, shareUnits: null, position: 1 },
       ],
     }))
   })
@@ -198,8 +198,8 @@ describe("expensesApi.createExpense", () => {
 
     expect(rpc).toHaveBeenCalledWith("create_expense_v2", expect.objectContaining({
       p_splits: [
-        { user_id: "u1", amount_minor: 2000, percentage: null, shares: 2, position: 0 },
-        { user_id: "u2", amount_minor: 1000, percentage: null, shares: 1, position: 1 },
+        { userId: "u1", amountMinor: 2000, percentageUnits: null, shareUnits: 2, position: 0 },
+        { userId: "u2", amountMinor: 1000, percentageUnits: null, shareUnits: 1, position: 1 },
       ],
     }))
   })
@@ -284,10 +284,10 @@ describe("expensesApi.updateExpense", () => {
       p_split_method: "equal",
       p_date: "2024-01-16T00:00:00.000Z",
       p_notes: "",
-      p_receipt_key: "",
+      p_receipt_key: null,
       p_splits: [
-        { user_id: "u1", amount_minor: 1500, percentage: null, shares: null, position: 0 },
-        { user_id: "u2", amount_minor: 1500, percentage: null, shares: null, position: 1 },
+        { userId: "u1", amountMinor: 1500, percentageUnits: null, shareUnits: null, position: 0 },
+        { userId: "u2", amountMinor: 1500, percentageUnits: null, shareUnits: null, position: 1 },
       ],
     })
     expect(result).toMatchObject({ id: "exp-1", title: "Updated Dinner", groupId: "g-1" })

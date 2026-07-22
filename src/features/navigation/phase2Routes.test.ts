@@ -127,28 +127,32 @@ describe("settlementHref", () => {
 
   it("returns group settle path for group context", () => {
     const result = settlementHref({
+      counterpartyId: "g1",
       context: { type: "group", groupId: "g1" },
     });
     expect(result.pathname).toBe("/settle/[id]");
-    expect(result.params).toMatchObject({ id: "g1", groupId: "g1" });
+    expect(result.params).toMatchObject({ id: "g1", contextType: "group", groupId: "g1" });
   });
 
   it("returns direct settle path for direct context", () => {
     const result = settlementHref({
+      counterpartyId: "f1",
       context: { type: "direct", friendshipId: "f1" },
     });
     expect(result.pathname).toBe("/settle/[id]");
-    expect(result.params).toMatchObject({ id: "f1", friendshipId: "f1" });
+    expect(result.params).toMatchObject({ id: "f1", contextType: "direct", friendshipId: "f1" });
   });
 
   it("includes returnTo and expenseId when provided", () => {
     const result = settlementHref({
+      counterpartyId: "g1",
       context: { type: "group", groupId: "g1" },
       returnTo: "group",
       expenseId: "e1",
     });
     expect(result.params).toMatchObject({
       id: "g1",
+      contextType: "group",
       groupId: "g1",
       returnTo: "group",
       expenseId: "e1",

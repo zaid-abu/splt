@@ -12,6 +12,7 @@ export type SettleRouteParams = {
   contextType?: string;
   amountMinor?: string;
   isOwedToYou?: string;
+  contexts?: string;
 };
 
 export type GroupSettleRouteParams = {

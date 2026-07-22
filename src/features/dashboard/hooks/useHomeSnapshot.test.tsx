@@ -3,6 +3,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import type { ReactNode } from "react"
 import { useHomeSnapshot } from "./useHomeSnapshot"
 
+import { useGroups } from "@/features/groups/queries/useGroups"
+import { useFriends } from "@/features/friends/queries/useFriends"
+import { useUserExpenses } from "@/features/expenses/queries/useExpenses"
+import { useUserSettlements } from "@/features/settlements/queries/useSettlements"
+import { useOpenBalances } from "@/features/balances/queries/useBalances"
+import { useNotifications } from "@/features/notifications/queries/useNotifications"
+import { useUserActivities } from "@/features/activity/queries/useActivities"
+import { useRecurringExpenses } from "@/features/recurring/queries/useRecurringExpenses"
+import type { Mock } from "jest-mock"
+
 jest.mock("@/context/AppContext", () => ({
   useAuth: () => ({ currentUser: { id: "me" } }),
 }))
@@ -45,16 +55,6 @@ jest.mock("@/store/useUIStore", () => ({
     return selector(store)
   },
 }))
-
-import { useGroups } from "@/features/groups/queries/useGroups"
-import { useFriends } from "@/features/friends/queries/useFriends"
-import { useUserExpenses } from "@/features/expenses/queries/useExpenses"
-import { useUserSettlements } from "@/features/settlements/queries/useSettlements"
-import { useOpenBalances } from "@/features/balances/queries/useBalances"
-import { useNotifications } from "@/features/notifications/queries/useNotifications"
-import { useUserActivities } from "@/features/activity/queries/useActivities"
-import { useRecurringExpenses } from "@/features/recurring/queries/useRecurringExpenses"
-import type { Mock } from "jest-mock"
 
 function makeMockReturn(data?: any, overrides?: Record<string, any>) {
   return {

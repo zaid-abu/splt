@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/queries/keys";
 import { expensesApi } from "@/features/expenses/services/api";
-import { activitiesApi } from "@/features/activity/services/api";
 import type { Expense } from "@/types";
 import type { ExpenseMutationInput } from "@/features/money/types";
 
@@ -39,17 +38,8 @@ export function useCreateExpense() {
         queryClient.invalidateQueries({ queryKey: queryKeys.groupExpenses(newExpense.groupId) });
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
-      activitiesApi.logActivity({
-        type: "expense",
-        expense: { id: newExpense.id } as Expense,
-        groupId: newExpense.groupId,
-        userId: newExpense.paidBy,
-        user: newExpense.paidByUser,
-        description: newExpense.title,
-        amount: newExpense.amount,
-        currency: newExpense.currency,
-        date: newExpense.date,
-      });
+      queryClient.invalidateQueries({ queryKey: ["balances"] });
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
   });
 }
@@ -73,6 +63,8 @@ export function useUpdateExpense() {
         });
       }
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
+      queryClient.invalidateQueries({ queryKey: ["balances"] });
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
     },
   });
 }
@@ -84,6 +76,8 @@ export function useDeleteExpense() {
     mutationFn: (expenseId: string) => expensesApi.deleteExpense(expenseId),
     onSuccess: (_, expenseId) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
+      queryClient.invalidateQueries({ queryKey: ["balances"] });
+      queryClient.invalidateQueries({ queryKey: ["groups"] });
       queryClient.removeQueries({ queryKey: queryKeys.expenseDetails(expenseId) });
     },
   });

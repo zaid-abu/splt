@@ -13,6 +13,7 @@ export type ParsedExpenseContext =
   | { state: "invalid" };
 
 export interface SettlementRouteInput {
+  counterpartyId?: string;
   context?: MoneyContext;
   returnTo?: CircleReturnTarget;
   expenseId?: string;
@@ -68,16 +69,18 @@ export function expenseHref(
 }
 
 export function settlementHref(input?: SettlementRouteInput): Href {
-  if (!input?.context) return "/settle/new";
+  if (!input?.counterpartyId) return "/settle/new";
 
-  const { context, returnTo, expenseId } = input;
-  const params: Record<string, string> = {};
-  if (context.type === "group") {
-    params.id = context.groupId;
-    params.groupId = context.groupId;
-  } else {
-    params.id = context.friendshipId;
-    params.friendshipId = context.friendshipId;
+  const { counterpartyId, context, returnTo, expenseId } = input;
+  const params: Record<string, string> = { id: counterpartyId };
+  if (context) {
+    if (context.type === "group") {
+      params.contextType = "group";
+      params.groupId = context.groupId;
+    } else {
+      params.contextType = "direct";
+      params.friendshipId = context.friendshipId;
+    }
   }
   if (returnTo) params.returnTo = returnTo;
   if (expenseId) params.expenseId = expenseId;

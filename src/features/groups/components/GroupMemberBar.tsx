@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { ScrollView, Pressable, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  ScrollView, Pressable, View , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -73,27 +72,27 @@ export function GroupMemberBar({
               })}
             >
               <AppUserAvatar user={member.user} size="sm" />
-              <Typography
+              <Text
                 numberOfLines={1}
                 style={{
                   fontSize: 14,
                   color: color.text,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                 }}
               >
                 {isMe ? "You" : member.user.name.split(" ")[0]}
-              </Typography>
+              </Text>
               {hasBalance && (
-                <Typography
+                <Text
                   style={{
                     fontSize: 12,
                     color: balance > 0 ? color.success : color.danger,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                     marginLeft: -4,
                   }}
                 >
                   {formatAmount(Math.abs(balance), currency)}
-                </Typography>
+                </Text>
               )}
             </Pressable>
           );

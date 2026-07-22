@@ -1,7 +1,6 @@
 import type { JSX, ReactNode, RefObject } from "react";
 import { useCallback, useRef } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUI } from "@/components/ui";
@@ -77,25 +76,25 @@ export function ConfirmationSheet({
         {children || (
           <>
             <View>
-              <Typography
+              <Text
                 style={{
                   fontSize: 22,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                   color: color.text,
                   marginBottom: 8,
                 }}
               >
                 {title}
-              </Typography>
-              <Typography
+              </Text>
+              <Text
                 style={{
                   fontSize: 16,
-                  fontFamily: "IBMPlexSans_500Medium",
+                  fontFamily: "InstrumentSans_500Medium",
                   color: color.muted,
                 }}
               >
                 {description}
-              </Typography>
+              </Text>
             </View>
 
             <View style={{ flexDirection: "row", gap: 12 }}>
@@ -115,15 +114,15 @@ export function ConfirmationSheet({
                   opacity: pressed ? 0.5 : 1,
                 })}
               >
-                <Typography
+                <Text
                   style={{
                     fontSize: 16,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                     color: color.text,
                   }}
                 >
                   {cancelLabel}
-                </Typography>
+                </Text>
               </Pressable>
 
               <Pressable
@@ -141,15 +140,15 @@ export function ConfirmationSheet({
                   opacity: pressed ? 0.8 : 1,
                 })}
               >
-                <Typography
+                <Text
                   style={{
                     fontSize: 16,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                     color: color.textInverse,
                   }}
                 >
                   {confirmLabel}
-                </Typography>
+                </Text>
               </Pressable>
             </View>
           </>

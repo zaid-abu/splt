@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { Pressable, ScrollView, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  Pressable, ScrollView, View , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { EXPENSE_CATEGORIES } from "@/types";
@@ -38,11 +37,11 @@ export function CategorySelector({
               ]}
             >
               <CategoryIconBadge category={category.key} size="sm" />
-              <Typography
+              <Text
                 style={[styles.categoryChipText, active && styles.categoryChipTextActive]}
               >
                 {category.label.replace(" & Drink", "")}
-              </Typography>
+              </Text>
             </Pressable>
           );
         })}

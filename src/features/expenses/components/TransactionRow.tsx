@@ -1,6 +1,5 @@
 import React, { type JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -85,76 +84,76 @@ export const TransactionRow = React.memo(function TransactionRow({
               justifyContent: "center",
             }}
           >
-            <Typography
+            <Text
               style={{ fontSize: 10, color: color.text, textAlign: "center", lineHeight: 14 }}
             >
               {paidByUser.name.charAt(0).toUpperCase()}
-            </Typography>
+            </Text>
           </View>
         )}
       </View>
 
       <View style={{ flex: 1, marginRight: 10 }}>
-        <Typography
+        <Text
           numberOfLines={1}
           style={{
             fontSize: compact ? 15 : 16,
             color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             letterSpacing: -0.2,
           }}
         >
           {expense.title}
-        </Typography>
-        <Typography
+        </Text>
+        <Text
           numberOfLines={1}
           style={{
             fontSize: compact ? 12 : 14,
             color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
             marginTop: compact ? 1 : 4,
           }}
         >
           {compact
             ? `${paidByName} paid - ${formatActivityDate(expense.date ?? expense.createdAt)}`
             : `${paidByName} paid`}
-        </Typography>
+        </Text>
       </View>
 
       <View style={{ alignItems: "flex-end", flexShrink: 0 }}>
-        <Typography
+        <Text
           style={{
             fontSize: compact ? 15 : 16,
             color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             letterSpacing: -0.2,
           }}
         >
           {formatAmount(expense.amount, expense.currency)}
-        </Typography>
+        </Text>
         {!!subAmountText && (
-          <Typography
+          <Text
             style={{
               fontSize: compact ? 12 : 14,
               color: subAmountColor,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               marginTop: compact ? 1 : 4,
             }}
           >
             {subAmountText}
-          </Typography>
+          </Text>
         )}
         {!subAmountText && !compact && (
-          <Typography
+          <Text
             style={{
               fontSize: 14,
               color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
+              fontFamily: "InstrumentSans_500Medium",
               marginTop: 4,
             }}
           >
             {dateStr}
-          </Typography>
+          </Text>
         )}
       </View>
 

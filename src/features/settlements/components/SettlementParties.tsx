@@ -1,7 +1,6 @@
 import type { JSX } from "react";
-import { View, Pressable, ScrollView } from "react-native";
-import { Text } from "heroui-native";
-import Animated, { FadeInDown, FadeIn, LinearTransition } from "react-native-reanimated";
+import {  View, Pressable, ScrollView , Text } from "react-native";
+import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui";
@@ -72,13 +71,12 @@ export function SettlementParties({
           >
             <Animated.View
               style={{ alignItems: "center", width: 80 }}
-              layout={LinearTransition.springify()}
             >
               <AppUserAvatar user={leftUser} size="lg" />
               <Text
                 style={{
                   fontSize: 13,
-                  fontFamily: "IBMPlexSans_600SemiBold",
+                  fontFamily: "InstrumentSans_600SemiBold",
                   marginTop: 8,
                   color: color.text,
                 }}
@@ -111,7 +109,7 @@ export function SettlementParties({
                   style={{
                     fontSize: 12,
                     color: color.text,
-                    fontFamily: "IBMPlexSans_600SemiBold",
+                    fontFamily: "InstrumentSans_600SemiBold",
                     textTransform: "uppercase",
                     letterSpacing: 1,
                   }}
@@ -123,7 +121,6 @@ export function SettlementParties({
 
             <Animated.View
               style={{ alignItems: "center", width: 80 }}
-              layout={LinearTransition.springify()}
             >
               {isGroupRoute && debtOptions.length > 1 ? (
                 <Pressable
@@ -140,7 +137,7 @@ export function SettlementParties({
                   <Text
                     style={{
                       fontSize: 13,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                       marginTop: 8,
                       color: color.text,
                     }}
@@ -154,7 +151,7 @@ export function SettlementParties({
                   <Text
                     style={{
                       fontSize: 13,
-                      fontFamily: "IBMPlexSans_600SemiBold",
+                      fontFamily: "InstrumentSans_600SemiBold",
                       marginTop: 8,
                       color: color.text,
                     }}
@@ -176,7 +173,7 @@ export function SettlementParties({
                 style={{
                   fontSize: 12,
                   color: color.muted,
-                  fontFamily: "IBMPlexSans_500Medium",
+                  fontFamily: "InstrumentSans_500Medium",
                   marginBottom: 8,
                 }}
               >
@@ -215,7 +212,7 @@ export function SettlementParties({
                       <Text
                         style={{
                           fontSize: 11,
-                          fontFamily: "IBMPlexSans_600SemiBold",
+                          fontFamily: "InstrumentSans_600SemiBold",
                           marginTop: 8,
                           color: isSelected ? color.textInverse : color.text,
                         }}

@@ -1,13 +1,13 @@
-jest.mock("@/services/supabase/client", () => ({
-  supabase: {},
-}));
-
 import {
   buildProfileSeed,
   buildSignUpResult,
   exchangeAuthCallback,
   parseAuthCallbackUrl,
 } from "./auth";
+
+jest.mock("@/services/supabase/client", () => ({
+  supabase: {},
+}));
 
 describe("parseAuthCallbackUrl", () => {
   it("normalizes PKCE callback values", () => {

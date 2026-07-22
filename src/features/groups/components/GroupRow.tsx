@@ -1,6 +1,5 @@
 import React, { type JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -57,39 +56,39 @@ export const GroupRow = React.memo(function GroupRow({
       </View>
 
       <View style={{ flex: 1, marginRight: 10 }}>
-        <Typography
+        <Text
           numberOfLines={1}
           style={{
             fontSize: 15,
             color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             letterSpacing: -0.2,
           }}
         >
           {group.name}
-        </Typography>
-        <Typography
+        </Text>
+        <Text
           style={{
             fontSize: 13,
             color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
             marginTop: 2,
           }}
         >
           {memberCount} participants
-        </Typography>
+        </Text>
       </View>
 
       <View style={{ alignItems: "flex-end" }}>
-        <Typography
+        <Text
           style={{
             fontSize: 13,
             color: subAmountColor,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
           }}
         >
           {subAmountText}
-        </Typography>
+        </Text>
       </View>
 
       <icons.ChevronRight

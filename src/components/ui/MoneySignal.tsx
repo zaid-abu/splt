@@ -1,7 +1,6 @@
 import type { JSX } from "react";
-import { View } from "react-native";
-import { Typography } from "heroui-native";
-import { useUI } from "@/components/ui";
+import {  View , Text } from "react-native";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 interface MoneySignalProps {
   label: string;
@@ -30,29 +29,29 @@ export function MoneySignal({ label, value, tone }: MoneySignalProps): JSX.Eleme
         borderColor: color.border,
       }}
     >
-      <Typography
+      <Text
         numberOfLines={1}
         style={{
           fontSize: 12,
           color: color.muted,
-          fontFamily: "IBMPlexSans_500Medium",
+          fontFamily: "InstrumentSans_500Medium",
         }}
       >
         {label}
-      </Typography>
-      <Typography
+      </Text>
+      <Text
         numberOfLines={1}
         adjustsFontSizeToFit
         style={{
           marginTop: 4,
           fontSize: 18,
           color: toneColor,
-          fontFamily: "IBMPlexSans_600SemiBold",
+          fontFamily: "InstrumentSans_600SemiBold",
           letterSpacing: -0.2,
         }}
       >
         {value}
-      </Typography>
+      </Text>
     </View>
   );
 }

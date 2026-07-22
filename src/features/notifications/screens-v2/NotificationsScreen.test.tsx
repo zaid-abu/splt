@@ -1,6 +1,9 @@
 import { render, fireEvent, screen } from "@testing-library/react-native";
 import type { Mock } from "jest-mock";
 
+import NotificationsV2Screen from "./NotificationsScreen";
+import { useNotifications } from "@/features/notifications/queries/useNotifications";
+
 const mockPush = jest.fn();
 const mockBack = jest.fn();
 
@@ -164,9 +167,6 @@ jest.mock("@/components/coral/EmptyState", () => ({
     );
   },
 }));
-
-import NotificationsV2Screen from "./NotificationsScreen";
-import { useNotifications } from "@/features/notifications/queries/useNotifications";
 
 const mockUseNotifications = useNotifications as Mock;
 

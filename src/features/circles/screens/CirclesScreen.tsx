@@ -1,9 +1,11 @@
 import { useCallback, useState, type JSX, type ReactNode } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator, Text, View, Pressable } from "react-native";
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { UserPlus } from "lucide-react-native";
+import { UserPlus, Plus, UsersRound } from "lucide-react-native";
 
 import { formatAmount } from "@/components/ui/AmountDisplay";
+import { minorToMajor } from "@/features/money/splits";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import {
@@ -12,6 +14,7 @@ import {
   CoralSearchField,
   CoralSegment,
   CoralTopBar,
+  CoralSheet,
   LargeTitle,
   MoneyRow,
   useCoralColors,
@@ -23,7 +26,7 @@ import {
   type PersonSection,
   type RequestItem,
 } from "@/features/circles/hooks/useCirclesSnapshot";
-import { parseCircleSegment, type CircleSegment } from "@/features/navigation/shell";
+import { parseCircleSegment, GLOBAL_ACTIONS, type CircleSegment } from "@/features/navigation/shell";
 import { useTransitionFriendship } from "@/features/friends/queries/useFriends";
 import { formatActivityDate } from "@/utils/date";
 
@@ -61,9 +64,9 @@ function pluralize(count: number, singular: string, plural: string): string {
 function groupSubtitle(section: GroupSection): string {
   const { group, balance } = section;
   if (balance === null || balance.signedAmountMinor === 0) {
-    return `${pluralize(group.members.length, "person", "people")} · no open balances`;
+    return `${pluralize(group.members.length, "person", "people")} - no open balances`;
   }
-  return `${pluralize(group.members.length, "person", "people")} · active ${formatActivityDate(balance.lastActivityAt).toLowerCase()}`;
+  return `${pluralize(group.members.length, "person", "people")} - active ${formatActivityDate(balance.lastActivityAt).toLowerCase()}`;
 }
 
 function groupAmount(section: GroupSection): {
@@ -74,7 +77,7 @@ function groupAmount(section: GroupSection): {
   if (balance === null || balance.signedAmountMinor === 0) {
     return { text: "Settled", tone: "neutral" };
   }
-  const major = balance.signedAmountMinor / 100;
+  const major = minorToMajor(balance.signedAmountMinor, balance.currency);
   return {
     text: signedAmount(major, balance.currency),
     tone: major > 0 ? "positive" : "negative",
@@ -84,9 +87,9 @@ function groupAmount(section: GroupSection): {
 function personSubtitle(section: PersonSection): string {
   const { user, classification, topBalance, sharedGroupCount, topBalanceContextLabel, lastActivityAt } = section;
   if (classification === "mixed") return "Mixed balance";
-  const activityLabel = lastActivityAt ? ` · active ${formatActivityDate(lastActivityAt).toLowerCase()}` : "";
+  const activityLabel = lastActivityAt ? ` - active ${formatActivityDate(lastActivityAt).toLowerCase()}` : "";
   if ((classification === "owes-you" || classification === "you-owe") && topBalance) {
-    const absMajor = Math.abs(topBalance.signedAmountMinor) / 100;
+    const absMajor = minorToMajor(Math.abs(topBalance.signedAmountMinor), topBalance.currency);
     const formatted = formatAmount(absMajor, topBalance.currency);
     const firstName = user.name.split(" ")[0];
     if (classification === "owes-you") {
@@ -104,7 +107,7 @@ function personSubtitle(section: PersonSection): string {
       ? `You owe from ${topBalanceContextLabel}${activityLabel}`
       : `You owe ${firstName} ${formatted}${activityLabel}`;
   }
-  if (sharedGroupCount > 1) return `${pluralize(sharedGroupCount, "shared group", "shared groups")} · settled`;
+  if (sharedGroupCount > 1) return `${pluralize(sharedGroupCount, "shared group", "shared groups")} - settled`;
   return `Settled${activityLabel}`;
 }
 
@@ -116,7 +119,7 @@ function personAmount(section: PersonSection): {
   if (classification === "settled" || !topBalance || topBalance.signedAmountMinor === 0) {
     return { text: "Settled", tone: "neutral" };
   }
-  const major = topBalance.signedAmountMinor / 100;
+  const major = minorToMajor(topBalance.signedAmountMinor, topBalance.currency);
   return {
     text: signedAmount(major, topBalance.currency),
     tone: major > 0 ? "positive" : "negative",
@@ -196,15 +199,28 @@ export default function CirclesScreen(): JSX.Element {
 
   const pendingRequests = snapshot.data?.pendingRequests ?? [];
 
+  const [addSheetVisible, setAddSheetVisible] = useState(false);
+
   return (
-    <CoralScreen>
-      <CoralTopBar title="Circles" />
+    <CoralScreen contentContainerStyle={{ paddingBottom: 110 }}>
+      <CoralTopBar
+        title="Circles"
+        rightElement={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Add group or person"
+            onPress={() => setAddSheetVisible(true)}
+            style={{ width: 48, height: 48, alignItems: "center", justifyContent: "center" }}
+          >
+            <Plus size={24} color={coral.foreground} strokeWidth={1.8} />
+          </Pressable>
+        }
+      />
       <Text
         style={{
           fontFamily: "InstrumentSans_600SemiBold",
           fontSize: 12,
           letterSpacing: 0.08 * 12,
-          textTransform: "uppercase",
           color: coral.muted,
           marginTop: 4,
           marginBottom: 8,
@@ -218,6 +234,7 @@ export default function CirclesScreen(): JSX.Element {
         options={[...SEGMENTS]}
         selected={segment}
         onSelect={(value) => selectSegment(value as CircleSegment)}
+        style={{ marginBottom: 12 }}
       />
 
       <CoralSearchField
@@ -225,7 +242,7 @@ export default function CirclesScreen(): JSX.Element {
         onChangeText={setSearch}
         onClear={() => setSearch("")}
         placeholder={placeholder}
-        style={{ marginTop: 0, marginBottom: 14 }}
+        style={{ marginTop: 0, marginBottom: 16 }}
       />
 
       {snapshot.isInitialLoading ? (
@@ -258,7 +275,7 @@ export default function CirclesScreen(): JSX.Element {
           </Text>
         </CenteredState>
       ) : segment === "groups" ? (
-        <>
+        <Animated.View key="groups" entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)}>
           {pendingRequests.length > 0 && (
             <RequestsSection
               requests={pendingRequests}
@@ -334,9 +351,9 @@ export default function CirclesScreen(): JSX.Element {
               </Text>
             </CenteredState>
           )}
-        </>
+        </Animated.View>
       ) : (
-        <>
+        <Animated.View key="people" entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)}>
           {pendingRequests.length > 0 && (
             <RequestsSection
               requests={pendingRequests}
@@ -392,16 +409,95 @@ export default function CirclesScreen(): JSX.Element {
                 </Text>
               </CenteredState>
             )}
-        </>
+        </Animated.View>
       )}
 
-      <View style={{ marginTop: 20 }}>
-        <CoralButton
-          label={segment === "groups" ? "Create group" : "Add person"}
-          variant="secondary"
-          onPress={() => router.push(segment === "groups" ? "/group/new" : "/friend/new")}
-        />
-      </View>
+      <CoralSheet visible={addSheetVisible} onClose={() => setAddSheetVisible(false)}>
+        <View style={{ paddingHorizontal: 18, paddingBottom: 8 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 22,
+              letterSpacing: -0.025 * 22,
+              color: coral.foreground,
+            }}
+          >
+            Add to your circles
+          </Text>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 14,
+              lineHeight: 20,
+              color: coral.muted,
+              marginTop: 6,
+              marginBottom: 14,
+            }}
+          >
+            Create a new group or add a person.
+          </Text>
+          {GLOBAL_ACTIONS.filter((a) => a.id === "create-group" || a.id === "add-person").map((action) => {
+            const Icon = action.id === "create-group" ? UsersRound : UserPlus;
+            return (
+              <Pressable
+                key={action.id}
+                accessibilityRole="button"
+                accessibilityLabel={action.label}
+                onPress={() => {
+                  setAddSheetVisible(false);
+                  router.push(action.href as any);
+                }}
+                style={({ pressed }) => ({
+                  minHeight: 56,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 13,
+                  paddingHorizontal: 14,
+                  marginBottom: 8,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: coral.border,
+                  backgroundColor: coral.surface,
+                  opacity: pressed ? 0.68 : 1,
+                })}
+              >
+                <Icon size={22} color={coral.foreground} strokeWidth={1.9} />
+                <Text
+                  style={{
+                    flex: 1,
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 16,
+                    color: coral.foreground,
+                  }}
+                >
+                  {action.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Close"
+            onPress={() => setAddSheetVisible(false)}
+            style={({ pressed }) => ({
+              minHeight: 48,
+              alignItems: "center",
+              justifyContent: "center",
+              opacity: pressed ? 0.65 : 1,
+            })}
+          >
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 15,
+                color: coral.muted,
+              }}
+            >
+              Close
+            </Text>
+          </Pressable>
+        </View>
+      </CoralSheet>
     </CoralScreen>
   );
 }
@@ -536,20 +632,38 @@ function RequestsSection({
             </Text>
           </View>
           <View style={{ flexDirection: "row", gap: 8 }}>
-            <View style={{ width: 90 }}>
-              <CoralButton
-                label="Accept"
-                variant="primary"
-                onPress={() => onAccept(req.friendship.id)}
-              />
-            </View>
-            <View style={{ width: 90 }}>
-              <CoralButton
-                label="Decline"
-                variant="secondary"
-                onPress={() => onDecline(req.friendship.id)}
-              />
-            </View>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => onAccept(req.friendship.id)}
+              style={({ pressed }) => ({
+                backgroundColor: coral.accent,
+                borderRadius: 8,
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                opacity: pressed ? 0.78 : 1,
+              })}
+            >
+              <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 13, color: coral.inkOnAccent }}>
+                Accept
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => onDecline(req.friendship.id)}
+              style={({ pressed }) => ({
+                backgroundColor: coral.surface,
+                borderWidth: 1,
+                borderColor: coral.border,
+                borderRadius: 8,
+                paddingVertical: 6,
+                paddingHorizontal: 12,
+                opacity: pressed ? 0.78 : 1,
+              })}
+            >
+              <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 13, color: coral.foreground }}>
+                Decline
+              </Text>
+            </Pressable>
           </View>
         </View>
       ))}

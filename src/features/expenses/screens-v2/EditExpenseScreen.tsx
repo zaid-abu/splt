@@ -25,7 +25,7 @@ import { useUpdateExpense } from "@/features/expenses/queries/useExpenses";
 import { useAppToast } from "@/hooks/useAppToast";
 import { CURRENCIES, EXPENSE_CATEGORIES } from "@/types";
 import { getCurrencySymbol } from "@/components/ui/AmountDisplay";
-import { minorToMajor } from "@/features/money/splits";
+import { parseMinorInput, minorToMajor } from "@/features/money/splits";
 import type { MoneyContext, MoneySplitMethod } from "@/features/money/types";
 import type { ExpenseRouteParams } from "@/types/navigation";
 import { useGroups } from "@/features/groups/queries/useGroups";
@@ -184,11 +184,11 @@ export default function EditExpenseScreen(): JSX.Element {
         amountMinor: s.amountMinor,
         percentageUnits:
           composer.splitMethod === "percentage"
-            ? Math.round((composer.splitSources[s.userId]?.percentageUnits ?? 0) * 10000)
+            ? (composer.splitSources[s.userId]?.percentageUnits ?? 0)
             : undefined,
         shareUnits:
           composer.splitMethod === "shares"
-            ? Math.round((composer.splitSources[s.userId]?.shareUnits ?? 0) * 1000000)
+            ? (composer.splitSources[s.userId]?.shareUnits ?? 0)
             : undefined,
         position: s.position,
       }));
@@ -226,8 +226,12 @@ export default function EditExpenseScreen(): JSX.Element {
     (userId: string, value: string) => {
       const method = composer.splitMethod;
       if (method === "custom") {
-        const amountMinor = Math.round(parseFloat(value || "0") * 100);
-        setSource(userId, { amountMinor });
+        try {
+          const amountMinor = parseMinorInput(value || "0", composer.currency);
+          setSource(userId, { amountMinor });
+        } catch {
+          setSource(userId, { amountMinor: 0 });
+        }
       } else if (method === "percentage") {
         const pct = parseFloat(value) || 0;
         const percentageUnits = Math.round(pct * 10000);

@@ -3,7 +3,7 @@
     "name": "splt",
     "slug": "splt",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
     "scheme": "splt",
     "userInterfaceStyle": "automatic",
@@ -14,10 +14,11 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#F7F6F1"
+        "backgroundColor": "#EFF6FD"
       },
-      "predictiveBackGestureEnabled": false,
-      "package": "com.splt.app"
+      "predictiveBackGestureEnabled": true,
+      "package": "com.splt.app",
+      "experimentalBlurMethod": "dimezisBlurView"
     },
     "plugins": [
       "expo-router",
@@ -26,10 +27,10 @@
         {
           "image": "./assets/images/splash-icon.png",
           "resizeMode": "contain",
-          "backgroundColor": "#F7F6F1",
+          "backgroundColor": "#EFF6FD",
           "dark": {
             "image": "./assets/images/splash-icon-dark.png",
-            "backgroundColor": "#1A1A1A"
+            "backgroundColor": "#091018"
           }
         }
       ],

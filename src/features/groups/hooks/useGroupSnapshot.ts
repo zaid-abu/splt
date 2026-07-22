@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react"
 import { useAuth } from "@/context/AppContext"
-import { useGroups } from "@/features/groups/queries/useGroups"
+import { useGroups, useGroupDetails } from "@/features/groups/queries/useGroups"
 import { useGroupExpenses } from "@/features/expenses/queries/useExpenses"
 import { useGroupSettlements } from "@/features/settlements/queries/useSettlements"
 import { useGroupRecurringExpenses } from "@/features/recurring/queries/useRecurringExpenses"
@@ -52,7 +52,7 @@ export function useGroupSnapshot(
   const { currentUser } = useAuth()
   const preferredCurrency = useUIStore((s) => s.preferredCurrency)
 
-  const groupsQuery = useGroups(currentUser.id)
+  const groupQuery = useGroupDetails(groupId)
   const groupExpensesQuery = useGroupExpenses(groupId)
   const groupSettlementsQuery = useGroupSettlements(groupId)
   const recurringQuery = useGroupRecurringExpenses(groupId)
@@ -60,7 +60,7 @@ export function useGroupSnapshot(
   const activitiesQuery = useUserActivities(currentUser.id)
 
   const queries = [
-    groupsQuery,
+    groupQuery,
     groupExpensesQuery,
     groupSettlementsQuery,
     recurringQuery,
@@ -69,31 +69,28 @@ export function useGroupSnapshot(
   ] as const
 
   const isLoadingAny = queries.some((q) => q.isLoading)
-  const isErrorAny = queries.some((q) => q.isError)
+  const isGroupError = groupQuery.isError
+  const isErrorAny = queries.some((q) => q.isError) // unused, kept for future
   const firstError = queries.find((q) => q.error)?.error ?? null
-  const allHaveData = queries.every((q) => !!q.data || q.isFetched)
+  const allHaveData = queries.every((q) => !!q.data || q.isFetched) && !!groupQuery.data
   const anyData = queries.some((q) => !!q.data)
 
-  const isInitialLoading = isLoadingAny && !anyData
+  const isInitialLoading = !groupQuery.data || (isLoadingAny && !anyData)
   const isRefreshing = isLoadingAny && anyData
   const isStaleOffline = isErrorAny && anyData && allHaveData
 
-  const group = useMemo(
-    () => (groupsQuery.data ?? []).find((g) => g.id === groupId),
-    [groupsQuery.data, groupId]
-  )
+  const group = groupQuery.data
 
   const data = useMemo<GroupSnapshotData | undefined>(() => {
     if (!allHaveData) return undefined
 
-    const groups = groupsQuery.data ?? []
+    const resolvedGroup = groupQuery.data
     const groupExpenses = groupExpensesQuery.data ?? []
     const groupSettlements = groupSettlementsQuery.data ?? []
     const recurringExpenses = recurringQuery.data ?? []
     const notifications = notificationsQuery.data ?? []
     const activities = activitiesQuery.data ?? []
 
-    const resolvedGroup = groups.find((g) => g.id === groupId)
     if (!resolvedGroup) {
       return undefined
     }
@@ -113,43 +110,56 @@ export function useGroupSnapshot(
     }[] = []
 
     for (const exp of groupExpenses) {
-      const paidBy = exp.paidBy
-      for (const split of exp.splits) {
-        if (split.userId === paidBy) continue
-        const amtMinor = split.amountMinor ?? Math.round(split.amount * 100)
-        eventRows.push({
-          counterpartyId: paidBy,
-          context: { type: "group", groupId },
-          currency: exp.currency,
-          signedAmountMinor: amtMinor,
-          date: new Date(exp.date),
-        })
-        eventRows.push({
-          counterpartyId: split.userId,
-          context: { type: "group", groupId },
-          currency: exp.currency,
-          signedAmountMinor: -amtMinor,
-          date: new Date(exp.date),
-        })
+      const context = { type: "group" as const, groupId }
+
+      if (exp.paidBy === currentUser.id) {
+        for (const split of exp.splits) {
+          if (split.userId === currentUser.id) continue
+          const signedAmountMinor = split.amountMinor ?? Math.round(split.amount * 100)
+          eventRows.push({
+            counterpartyId: split.userId,
+            context,
+            currency: exp.currency,
+            signedAmountMinor,
+            date: new Date(exp.date),
+          })
+        }
+        continue
       }
+
+      const mySplit = exp.splits.find((split) => split.userId === currentUser.id)
+      if (!mySplit) continue
+
+      eventRows.push({
+        counterpartyId: exp.paidBy,
+        context,
+        currency: exp.currency,
+        signedAmountMinor: -(mySplit.amountMinor ?? Math.round(mySplit.amount * 100)),
+        date: new Date(exp.date),
+      })
     }
 
     for (const set of groupSettlements) {
-      const amtMinor = set.amountMinor ?? Math.round(set.amount * 100)
-      eventRows.push({
-        counterpartyId: set.fromUserId,
-        context: { type: "group", groupId },
-        currency: set.currency,
-        signedAmountMinor: -amtMinor,
-        date: new Date(set.date),
-      })
-      eventRows.push({
-        counterpartyId: set.toUserId,
-        context: { type: "group", groupId },
-        currency: set.currency,
-        signedAmountMinor: amtMinor,
-        date: new Date(set.date),
-      })
+      const context = { type: "group" as const, groupId }
+      const amountMinor = set.amountMinor ?? Math.round(set.amount * 100)
+
+      if (set.fromUserId === currentUser.id) {
+        eventRows.push({
+          counterpartyId: set.toUserId,
+          context,
+          currency: set.currency,
+          signedAmountMinor: amountMinor,
+          date: new Date(set.date),
+        })
+      } else if (set.toUserId === currentUser.id) {
+        eventRows.push({
+          counterpartyId: set.fromUserId,
+          context,
+          currency: set.currency,
+          signedAmountMinor: -amountMinor,
+          date: new Date(set.date),
+        })
+      }
     }
 
     const openBalances = aggregateOpenBalances(eventRows, currentUser.id)
@@ -180,7 +190,7 @@ export function useGroupSnapshot(
       recentActivity,
     }
   }, [
-    groupsQuery.data,
+    groupQuery.data,
     groupExpensesQuery.data,
     groupSettlementsQuery.data,
     recurringQuery.data,
@@ -191,12 +201,12 @@ export function useGroupSnapshot(
     preferredCurrency.code,
   ])
 
-  const isNotFound = !isLoadingAny && data === undefined && !!(groupsQuery.data ?? []).length
+  const isNotFound = !isLoadingAny && data === undefined && groupQuery.isFetched && !groupQuery.data
   const isRestricted = data !== undefined && !data.permissions.canEdit && !data.permissions.canDelete
 
   const refreshImpl = useCallback(async () => {
     const refetches = [
-      groupsQuery.refetch,
+      groupQuery.refetch,
       groupExpensesQuery.refetch,
       groupSettlementsQuery.refetch,
       recurringQuery.refetch,
@@ -205,7 +215,7 @@ export function useGroupSnapshot(
     ].map((fn) => fn())
     await Promise.all(refetches)
   }, [
-    groupsQuery.refetch,
+    groupQuery.refetch,
     groupExpensesQuery.refetch,
     groupSettlementsQuery.refetch,
     recurringQuery.refetch,
@@ -218,7 +228,7 @@ export function useGroupSnapshot(
     isInitialLoading,
     isRefreshing,
     isStaleOffline,
-    isError: isErrorAny,
+    isError: isGroupError,
     error: firstError,
     isNotFound,
     isRestricted,

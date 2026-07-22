@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { Pressable, ScrollView, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  Pressable, ScrollView, View , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { styles } from "@/features/expenses/utils/styles";
@@ -41,9 +40,9 @@ export function PaidBySelector({
               ]}
             >
               <AppUserAvatar user={participant} size="sm" />
-              <Typography style={[styles.paidByText, active && styles.paidByTextActive]}>
+              <Text style={[styles.paidByText, active && styles.paidByTextActive]}>
                 {participant.id === currentUserId ? "You" : participant.name.split(" ")[0]}
-              </Typography>
+              </Text>
             </Pressable>
           );
         })}

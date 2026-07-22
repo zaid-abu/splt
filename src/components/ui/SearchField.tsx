@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Pressable, TextInput, View } from "react-native";
 import type { TextInputProps } from "react-native";
 import * as icons from "lucide-react-native";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 interface SearchFieldProps extends TextInputProps {
   value: string;
@@ -45,7 +45,7 @@ export function SearchField({
           {
             flex: 1,
             marginLeft: 12,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
             color: color.text,
             fontSize: 16,
             padding: 0,

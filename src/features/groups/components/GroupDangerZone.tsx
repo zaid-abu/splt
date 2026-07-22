@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui";
 
@@ -34,15 +33,15 @@ export function GroupDangerZone({
           opacity: pressed ? 0.65 : 1,
         })}
       >
-        <Typography
+        <Text
           style={{
             fontSize: 16,
             color: color.danger,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
           }}
         >
           Delete Group
-        </Typography>
+        </Text>
       </Pressable>
 
       <Pressable
@@ -63,15 +62,15 @@ export function GroupDangerZone({
           opacity: pressed ? 0.65 : 1,
         })}
       >
-        <Typography
+        <Text
           style={{
             fontSize: 16,
             color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
           }}
         >
           Leave Group
-        </Typography>
+        </Text>
       </Pressable>
     </>
   );

@@ -64,7 +64,7 @@ export function buildScheduleSections(
       groupId: re.groupId,
       state: "needs-review",
       scheduledDate: occ.scheduledFor,
-      href: recurringHref(re.id),
+      href: { pathname: "/recurring/[id]/review", params: { id: re.id } } as Href,
       title: re.title,
       nextDueLabel: new Date(occ.scheduledFor).toLocaleDateString(),
     });

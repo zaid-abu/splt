@@ -1,12 +1,7 @@
 import { useMemo } from "react";
-import { View, LayoutAnimation, Platform, UIManager } from "react-native";
-import { Typography } from "heroui-native";
+import { View, Text } from "react-native";
 import { evaluatePasswordStrength } from "@/utils/passwordStrength";
 import { useUI } from "@/components/ui";
-
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
 
 interface PasswordStrengthMeterProps {
   password: string;
@@ -25,8 +20,6 @@ export function PasswordStrengthMeter({
 
   if (!showMeter) return null;
 
-  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-
   return (
     <View style={{ marginTop: -16, marginBottom: 8 }}>
       <View style={{ flexDirection: "row", gap: 6, marginBottom: 6 }}>
@@ -42,15 +35,15 @@ export function PasswordStrengthMeter({
           />
         ))}
       </View>
-      <Typography
+      <Text
         style={{
           fontSize: 12,
-          fontFamily: "IBMPlexSans_500Medium",
+          fontFamily: "InstrumentSans_500Medium",
           color: LABEL_COLORS[result.score],
         }}
       >
         {result.label}
-      </Typography>
+      </Text>
     </View>
   );
 }

@@ -31,7 +31,7 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
           style={{
             fontSize: 24,
             color: color.text,
-            fontFamily: "Sora_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             marginBottom: 12,
           }}
         >
@@ -41,7 +41,7 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
           style={{
             fontSize: 16,
             color: color.muted,
-            fontFamily: "IBMPlexSans_500Medium",
+            fontFamily: "InstrumentSans_500Medium",
             marginBottom: 24,
           }}
         >
@@ -61,7 +61,7 @@ export function ErrorFallback({ error, retry }: ErrorBoundaryProps): JSX.Element
               style={{
                 color: color.textInverse,
                 fontSize: 16,
-                fontFamily: "IBMPlexSans_600SemiBold",
+                fontFamily: "InstrumentSans_600SemiBold",
               }}
             >
               Try Again

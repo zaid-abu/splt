@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import { View, Text } from "react-native";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 import { useCoralColors } from "@/components/coral";
 
 type IconType = ComponentType<{

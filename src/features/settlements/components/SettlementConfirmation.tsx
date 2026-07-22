@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View, Pressable, TextInput, ScrollView, Text } from "react-native";
-import { Spinner } from "heroui-native";
+import {  View, Pressable, TextInput, ScrollView, Text , ActivityIndicator } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui";
@@ -34,7 +33,7 @@ export function SettlementConfirmation({
     <>
       <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
         <Pressable onPress={onToggleOptional} style={{ padding: 8 }}>
-          <Text style={{ fontSize: 13, color: color.brand, fontFamily: "IBMPlexSans_500Medium" }}>
+          <Text style={{ fontSize: 13, color: color.brand, fontFamily: "InstrumentSans_500Medium" }}>
             {showOptional ? "Hide Options" : "+ Add Note or Group"}
           </Text>
         </Pressable>
@@ -67,7 +66,7 @@ export function SettlementConfirmation({
                   padding: 16,
                   borderRadius: radius.lg,
                   fontSize: 15,
-                  fontFamily: "IBMPlexSans_500Medium",
+                  fontFamily: "InstrumentSans_500Medium",
                   backgroundColor: "transparent",
                 }}
               />
@@ -78,7 +77,7 @@ export function SettlementConfirmation({
                     style={{
                       fontSize: 12,
                       color: color.muted,
-                      fontFamily: "IBMPlexSans_500Medium",
+                      fontFamily: "InstrumentSans_500Medium",
                       marginBottom: 8,
                       marginLeft: 4,
                     }}
@@ -105,7 +104,7 @@ export function SettlementConfirmation({
                         style={{
                           fontSize: 13,
                           color: !selectedGroupId ? color.textInverse : color.text,
-                          fontFamily: "IBMPlexSans_600SemiBold",
+                          fontFamily: "InstrumentSans_600SemiBold",
                         }}
                       >
                         None
@@ -130,7 +129,7 @@ export function SettlementConfirmation({
                             style={{
                               fontSize: 13,
                               color: isSelected ? color.textInverse : color.text,
-                              fontFamily: "IBMPlexSans_600SemiBold",
+                              fontFamily: "InstrumentSans_600SemiBold",
                             }}
                           >
                             {g.name}
@@ -204,7 +203,7 @@ export function SettlementStickySubmit({
             style={{
               fontSize: 13,
               color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
+              fontFamily: "InstrumentSans_500Medium",
               marginBottom: 4,
             }}
           >
@@ -214,7 +213,7 @@ export function SettlementStickySubmit({
             style={{
               fontSize: 15,
               color: color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
             }}
           >
             {leftName} pays {rightName}
@@ -238,13 +237,13 @@ export function SettlementStickySubmit({
         })}
       >
         {isAddingSettlement ? (
-          <Spinner color={color.textInverse} size="sm" />
+          <ActivityIndicator color={color.textInverse} size="small" />
         ) : (
           <Text
             style={{
               fontSize: 16,
               color: color.textInverse,
-              fontFamily: "IBMPlexSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               letterSpacing: 1,
             }}
           >

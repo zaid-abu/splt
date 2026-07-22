@@ -1,12 +1,12 @@
+import { supabase } from "@/services/supabase/client"
+import { notificationsApi } from "./api"
+import type { ReminderInput } from "./api"
+
 jest.mock("@/services/supabase/client", () => ({
   supabase: {
     rpc: jest.fn(),
   },
 }))
-
-import { supabase } from "@/services/supabase/client"
-import { notificationsApi } from "./api"
-import type { ReminderInput } from "./api"
 
 const rpc = supabase.rpc as jest.Mock
 
@@ -30,7 +30,7 @@ describe("notificationsApi.sendReminder", () => {
     expect(rpc).toHaveBeenCalledWith("send_balance_reminder", {
       p_client_operation_id: "op-1",
       p_group_id: "g-1",
-      p_friendship_id: "",
+      p_friendship_id: null,
       p_currency: "USD",
       p_message: "Please settle up",
     })
@@ -50,7 +50,7 @@ describe("notificationsApi.sendReminder", () => {
 
     expect(rpc).toHaveBeenCalledWith("send_balance_reminder", {
       p_client_operation_id: "op-2",
-      p_group_id: "",
+      p_group_id: null,
       p_friendship_id: "f-1",
       p_currency: "EUR",
       p_message: "",

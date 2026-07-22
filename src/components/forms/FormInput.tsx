@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Controller, FieldValues, Path } from "react-hook-form";
-import { TextField, Input } from "heroui-native";
-import { View, Text } from "react-native";
+import {  View, Text , TextInput } from "react-native";
 import type { TextInputProps } from "react-native";
 import { useUI } from "@/components/ui";
 
@@ -43,13 +42,13 @@ export function FormInput<T extends FieldValues>({
       control={control}
       name={name}
       render={({ field: { onChange, value, onBlur }, fieldState: { error } }) => (
-        <TextField isRequired={isRequired} isInvalid={!!error} style={{ marginBottom: 16 }}>
+        <View style={{ marginBottom: 16 }}>
           {label && !hideLabel && (
             <Text
               style={{
                 fontSize: 11,
                 color: color.muted,
-                fontFamily: "IBMPlexSans_600SemiBold",
+                fontFamily: "InstrumentSans_600SemiBold",
                 letterSpacing: 1.4,
                 textTransform: "uppercase",
                 marginBottom: 8,
@@ -77,7 +76,7 @@ export function FormInput<T extends FieldValues>({
               </View>
             )}
 
-            <Input
+            <TextInput
               value={value}
               onChangeText={onChange}
               onFocus={(e) => {
@@ -95,7 +94,7 @@ export function FormInput<T extends FieldValues>({
                 backgroundColor: "transparent",
                 borderWidth: 0,
                 fontSize: 16,
-                fontFamily: "IBMPlexSans_500Medium",
+                fontFamily: "InstrumentSans_500Medium",
                 color: color.text,
                 paddingLeft: leftElement ? 48 : 16,
                 paddingRight: rightElement ? 48 : 16,
@@ -115,7 +114,7 @@ export function FormInput<T extends FieldValues>({
                 marginTop: 6,
                 color: color.muted,
                 fontSize: 13,
-                fontFamily: "IBMPlexSans_400Regular",
+                fontFamily: "InstrumentSans_400Regular",
               }}
             >
               {description}
@@ -127,13 +126,13 @@ export function FormInput<T extends FieldValues>({
                 marginTop: 6,
                 color: TEXT_DANGER,
                 fontSize: 13,
-                fontFamily: "IBMPlexSans_500Medium",
+                fontFamily: "InstrumentSans_500Medium",
               }}
             >
               {error.message}
             </Text>
           )}
-        </TextField>
+        </View>
       )}
     />
   );

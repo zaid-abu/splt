@@ -22,7 +22,7 @@ const currencyMinorScale: Record<string, number> = {
   NZD: 2,
 };
 
-function getScale(currency: string): number {
+export function getScale(currency: string): number {
   return currencyMinorScale[currency] ?? 2;
 }
 

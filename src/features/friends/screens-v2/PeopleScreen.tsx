@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { useCallback } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
-import Animated, { LinearTransition } from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import { useRouter } from "expo-router";
 
 import { useFriendsList, type DisplayItem } from "@/features/friends/hooks/useFriendsList";
@@ -91,7 +91,7 @@ export default function PeopleScreen(): JSX.Element {
       const subtitle = recentExpense ? recentExpense.title : balance === 0 ? "All settled" : "";
 
       return (
-        <Animated.View key={item.id} layout={LinearTransition.springify()}>
+        <Animated.View key={item.id}>
           <MoneyRow
             avatar={<AppUserAvatar user={friend} size="sm" />}
             title={friend.name}

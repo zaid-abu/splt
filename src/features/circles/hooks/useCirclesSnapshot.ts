@@ -50,6 +50,13 @@ export interface CirclesData {
 
 export function useCirclesSnapshot(userId: string, search: string): SnapshotState<CirclesData> {
   const preferredCurrency = useUIStore((s) => s.preferredCurrency)
+  const exchangeRates = useUIStore((s) => s.exchangeRates)
+
+  function toPreferredMinor(amountMinor: number, fromCurrency: string): number {
+    const rateFrom = exchangeRates[fromCurrency] ?? 1
+    const rateTo = exchangeRates[preferredCurrency.code] ?? 1
+    return Math.round(amountMinor * rateTo / rateFrom)
+  }
 
   const groupsQuery = useGroups(userId)
   const friendsQuery = useFriends(userId)
@@ -94,25 +101,31 @@ export function useCirclesSnapshot(userId: string, search: string): SnapshotStat
     }[] = []
 
     for (const exp of expenses) {
-      const groupContext = exp.groupId
-        ? { type: "group" as const, groupId: exp.groupId }
-        : null
-
-      if (groupContext) {
+      if (exp.paidBy === userId) {
         for (const split of exp.splits) {
           if (split.userId === userId) continue
-          if (split.userId === exp.paidBy) continue
+          const ctx = exp.groupId
+            ? { type: "group" as const, groupId: exp.groupId }
+            : { type: "direct" as const, friendshipId: exp.friendshipId ?? "" }
           const amtMinor = split.amountMinor ?? Math.round(split.amount * 100)
           eventRows.push({
-            counterpartyId: exp.paidBy,
-            context: groupContext,
+            counterpartyId: split.userId,
+            context: ctx,
             currency: exp.currency,
             signedAmountMinor: amtMinor,
             date: new Date(exp.date),
           })
+        }
+      } else {
+        for (const split of exp.splits) {
+          if (split.userId !== userId) continue
+          const ctx = exp.groupId
+            ? { type: "group" as const, groupId: exp.groupId }
+            : { type: "direct" as const, friendshipId: exp.friendshipId ?? "" }
+          const amtMinor = split.amountMinor ?? Math.round(split.amount * 100)
           eventRows.push({
-            counterpartyId: split.userId,
-            context: groupContext,
+            counterpartyId: exp.paidBy,
+            context: ctx,
             currency: exp.currency,
             signedAmountMinor: -amtMinor,
             date: new Date(exp.date),
@@ -122,29 +135,33 @@ export function useCirclesSnapshot(userId: string, search: string): SnapshotStat
     }
 
     for (const set of settlements) {
-      const groupContext = set.groupId
+      const ctx = set.groupId
         ? { type: "group" as const, groupId: set.groupId }
-        : null
-      if (!groupContext) continue
+        : { type: "direct" as const, friendshipId: set.friendshipId ?? "" }
       const amtMinor = set.amountMinor ?? Math.round(set.amount * 100)
-      eventRows.push({
-        counterpartyId: set.fromUserId,
-        context: groupContext,
-        currency: set.currency,
-        signedAmountMinor: -amtMinor,
-        date: new Date(set.date),
-      })
-      eventRows.push({
-        counterpartyId: set.toUserId,
-        context: groupContext,
-        currency: set.currency,
-        signedAmountMinor: amtMinor,
-        date: new Date(set.date),
-      })
+
+      if (set.fromUserId === userId) {
+        eventRows.push({
+          counterpartyId: set.toUserId,
+          context: ctx,
+          currency: set.currency,
+          signedAmountMinor: amtMinor,
+          date: new Date(set.date),
+        })
+      } else if (set.toUserId === userId) {
+        eventRows.push({
+          counterpartyId: set.fromUserId,
+          context: ctx,
+          currency: set.currency,
+          signedAmountMinor: -amtMinor,
+          date: new Date(set.date),
+        })
+      }
     }
 
     const openBalances = aggregateOpenBalances(eventRows, userId)
     const orderedBalances = orderBalances(openBalances, preferredCurrency.code)
+      .filter((ob) => ob.signedAmountMinor !== 0)
 
     const balanceByCounterparty = new Map<string, OpenBalance[]>()
     for (const ob of orderedBalances) {
@@ -177,7 +194,31 @@ export function useCirclesSnapshot(userId: string, search: string): SnapshotStat
       const groupBalances = orderedBalances.filter(
         (ob) => ob.context.type === "group" && ob.context.groupId === g.id
       )
-      return { group: g, balance: groupBalances[0] ?? null }
+      if (groupBalances.length === 0) return { group: g, balance: null }
+
+      const allSameCurrency = groupBalances.every((ob) => ob.currency === groupBalances[0].currency)
+      let netSignedMinor = 0
+      let displayCurrency = groupBalances[0].currency
+
+      if (allSameCurrency) {
+        netSignedMinor = groupBalances.reduce((s, ob) => s + ob.signedAmountMinor, 0)
+      } else {
+        displayCurrency = preferredCurrency.code
+        for (const ob of groupBalances) {
+          netSignedMinor += toPreferredMinor(ob.signedAmountMinor, ob.currency)
+        }
+      }
+
+      return {
+        group: g,
+        balance: {
+          counterpartyId: "",
+          context: { type: "group", groupId: g.id },
+          currency: displayCurrency,
+          signedAmountMinor: netSignedMinor,
+          lastActivityAt: groupBalances[0].lastActivityAt,
+        },
+      }
     })
 
     const personSet = new Map<string, User>()
@@ -212,7 +253,31 @@ export function useCirclesSnapshot(userId: string, search: string): SnapshotStat
         const sharedGroupCount = new Set(
           balances.filter((balance) => balance.context.type === "group").map((balance) => balance.context.groupId)
         ).size
-        const topBalance = balances[0] ?? null
+
+        const allSameCurrency = balances.every((ob) => ob.currency === (balances[0]?.currency ?? ""))
+        let netSignedMinor = 0
+        let lastActivityAt: Date | null = null
+        let displayCurrency = balances[0]?.currency ?? preferredCurrency.code
+        for (const ob of balances) {
+          if (allSameCurrency) {
+            netSignedMinor += ob.signedAmountMinor
+          } else {
+            netSignedMinor += toPreferredMinor(ob.signedAmountMinor, ob.currency)
+          }
+          if (!lastActivityAt || ob.lastActivityAt > lastActivityAt) {
+            lastActivityAt = ob.lastActivityAt
+          }
+        }
+        const topBalance: OpenBalance | null = balances.length > 0
+          ? {
+              counterpartyId: u.id,
+              context: balances[0].context,
+              currency: allSameCurrency ? displayCurrency : preferredCurrency.code,
+              signedAmountMinor: netSignedMinor,
+              lastActivityAt: lastActivityAt ?? new Date(),
+            }
+          : null
+
         return {
           user: u,
           friendship,

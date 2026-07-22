@@ -350,9 +350,18 @@ export const AuthService = {
     }
   },
 
-  async updateProfile(userId: string, data: { name?: string; email?: string }): Promise<void> {
-    const update = data.name ? { ...data, initials: initialsFor(data.name) } : data;
-    const { error } = await supabase.from("users").update(update).eq("id", userId);
+  async updateProfile(
+    userId: string,
+    data: { name?: string; email?: string; defaultCurrency?: string }
+  ): Promise<void> {
+    const { error } = await supabase
+      .from("users")
+      .update({
+        ...(data.name ? { name: data.name, initials: initialsFor(data.name) } : {}),
+        ...(data.email ? { email: data.email } : {}),
+        ...(data.defaultCurrency ? { default_currency: data.defaultCurrency } : {}),
+      })
+      .eq("id", userId);
     if (error) throw error;
   },
 

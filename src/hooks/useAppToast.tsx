@@ -1,8 +1,8 @@
-import { useToast as useHeroToast } from "heroui-native";
+import { useToastContext } from "@/providers/ToastProvider";
 import { CustomToast } from "@/components/ui/Toast";
 
 export function useAppToast() {
-  const { toast } = useHeroToast();
+  const { toast } = useToastContext();
 
   const show = (options: string | any) => {
     let config: any;

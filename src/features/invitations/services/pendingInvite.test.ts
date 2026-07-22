@@ -1,15 +1,15 @@
-jest.mock("expo-secure-store", () => ({
-  setItemAsync: jest.fn(),
-  getItemAsync: jest.fn(),
-  deleteItemAsync: jest.fn(),
-}))
-
 import * as SecureStore from "expo-secure-store"
 import {
   savePendingInviteToken,
   consumePendingInviteToken,
   clearPendingInviteToken,
 } from "./pendingInvite"
+
+jest.mock("expo-secure-store", () => ({
+  setItemAsync: jest.fn(),
+  getItemAsync: jest.fn(),
+  deleteItemAsync: jest.fn(),
+}))
 
 const setItemAsync = SecureStore.setItemAsync as jest.Mock
 const getItemAsync = SecureStore.getItemAsync as jest.Mock

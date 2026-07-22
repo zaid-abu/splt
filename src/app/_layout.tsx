@@ -97,13 +97,21 @@ export default function RootLayout(): JSX.Element | null {
 
         <Stack.Screen name="profile/edit" />
         <Stack.Screen name="profile/change-password" />
+        <Stack.Screen name="profile/index" />
+        <Stack.Screen name="profile/security" />
+        <Stack.Screen name="profile/notifications" />
+        <Stack.Screen name="profile/appearance" />
+        <Stack.Screen name="profile/export" />
 
         <Stack.Screen name="recurring/index" />
         <Stack.Screen name="recurring/[id]" />
         <Stack.Screen name="recurring/[id]/edit" />
+        <Stack.Screen name="recurring/[id]/review" />
         <Stack.Screen name="recurring/new" />
 
         <Stack.Screen name="invite/[token]" />
+        <Stack.Screen name="help" />
+        <Stack.Screen name="legal" />
       </Stack>
     </AppProvider>
   );

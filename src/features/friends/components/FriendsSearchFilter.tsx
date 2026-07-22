@@ -1,4 +1,4 @@
-import { View, ScrollView, LayoutAnimation } from "react-native";
+import { View, ScrollView } from "react-native";
 import { SearchField, FilterPill, useUI } from "@/components/ui";
 import type { FriendFilter } from "@/types";
 
@@ -56,7 +56,6 @@ export function FriendsSearchFilter({
             label={`${FILTER_LABELS[value]} ${filterCounts[value]}`}
             isActive={filter === value}
             onPress={() => {
-              LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
               onFilterChange(value);
             }}
           />

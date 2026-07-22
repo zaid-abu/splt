@@ -41,13 +41,13 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       letterSpacing: 1.1,
       textTransform: "uppercase",
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     headerTitle: {
       marginTop: 2,
       fontSize: 18,
       color: LIGHT_COLORS.text,
-      fontFamily: "Sora_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     content: {
       paddingHorizontal: 20,
@@ -74,14 +74,14 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     contextIntroTitle: {
       fontSize: 20,
       color: LIGHT_COLORS.text,
-      fontFamily: "Sora_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     contextIntroText: {
       marginTop: 4,
       fontSize: 14,
       lineHeight: 20,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     segmented: {
       flexDirection: "row",
@@ -105,7 +105,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     segmentText: {
       fontSize: 14,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     segmentTextActive: {
       color: LIGHT_COLORS.textInverse,
@@ -130,7 +130,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     selectedChipText: {
       color: LIGHT_COLORS.text,
       fontSize: 14,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     listCard: {
       overflow: "hidden",
@@ -160,13 +160,13 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     rowTitle: {
       fontSize: 15,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     rowMeta: {
       marginTop: 2,
       fontSize: 13,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     selectionMark: {
       width: 24,
@@ -189,13 +189,13 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     emptyTitle: {
       fontSize: 16,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     emptyText: {
       marginTop: 4,
       fontSize: 14,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     formStack: {
       gap: 20,
@@ -220,19 +220,19 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     contextTypeText: {
       color: LIGHT_COLORS.muted,
       fontSize: 12,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     summaryTitle: {
       marginTop: 3,
       fontSize: 18,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     summaryMeta: {
       marginTop: 2,
       fontSize: 13,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     changeButton: {
       minHeight: 38,
@@ -247,7 +247,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     changeButtonText: {
       fontSize: 13,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     amountCard: {
       padding: 18,
@@ -262,13 +262,13 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       letterSpacing: 1.1,
       textTransform: "uppercase",
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     amountHint: {
       marginTop: 2,
       fontSize: 13,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     amountInputRow: {
       marginTop: 18,
@@ -281,7 +281,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       paddingBottom: 12,
       fontSize: 20,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     amountInput: {
       minWidth: 140,
@@ -291,7 +291,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       fontSize: 54,
       lineHeight: 62,
       textAlign: "center",
-      fontFamily: "Sora_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     titleInput: {
       minHeight: 52,
@@ -304,7 +304,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       color: LIGHT_COLORS.text,
       fontSize: 16,
       textAlign: "center",
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     previewHeader: {
       flexDirection: "row",
@@ -317,13 +317,13 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       letterSpacing: 1.1,
       textTransform: "uppercase",
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     previewAmount: {
       marginTop: 4,
       fontSize: 22,
       color: LIGHT_COLORS.text,
-      fontFamily: "Sora_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     statusPill: {
       minHeight: 32,
@@ -342,7 +342,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     },
     statusPillText: {
       fontSize: 12,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     previewGrid: {
       marginTop: 16,
@@ -362,14 +362,14 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     previewCellLabel: {
       fontSize: 12,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     previewCellValue: {
       marginTop: 4,
       fontSize: 16,
       color: LIGHT_COLORS.text,
       textTransform: "capitalize",
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     section: {
       gap: 10,
@@ -406,18 +406,18 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     currencySymbolText: {
       fontSize: 17,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     currencyName: {
       fontSize: 16,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     currencyMeta: {
       marginTop: 2,
       fontSize: 13,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     currencyChipRow: {
       flexDirection: "row",
@@ -441,7 +441,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     currencyChipText: {
       fontSize: 13,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     currencyChipTextActive: {
       color: LIGHT_COLORS.textInverse,
@@ -474,13 +474,13 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     detailTitle: {
       fontSize: 15,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     detailMeta: {
       marginTop: 2,
       fontSize: 13,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     datePicker: {
       padding: 10,
@@ -512,7 +512,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     categoryChipText: {
       fontSize: 14,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     categoryChipTextActive: {
       color: LIGHT_COLORS.text,
@@ -541,7 +541,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     paidByText: {
       fontSize: 14,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     paidByTextActive: {
       color: LIGHT_COLORS.textInverse,
@@ -581,13 +581,13 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       marginTop: 9,
       fontSize: 14,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     methodMeta: {
       marginTop: 2,
       fontSize: 12,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_500Medium",
+      fontFamily: "InstrumentSans_500Medium",
     },
     remainingPill: {
       minHeight: 28,
@@ -599,7 +599,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     },
     remainingText: {
       fontSize: 12,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     participantRow: {
       minHeight: 70,
@@ -643,7 +643,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     shareText: {
       fontSize: 13,
       color: LIGHT_COLORS.text,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     shareInputWrap: {
       width: 96,
@@ -658,7 +658,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       fontSize: 15,
       textAlign: "right",
       paddingHorizontal: 12,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     percentWrap: {
       width: 94,
@@ -677,12 +677,12 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
       fontSize: 15,
       textAlign: "right",
       paddingHorizontal: 12,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     percentSymbol: {
       fontSize: 14,
       color: LIGHT_COLORS.muted,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     actionBar: {
       position: "absolute",
@@ -712,7 +712,7 @@ export function createNewExpenseStyles(_isDarkMode?: boolean) {
     primaryButtonText: {
       fontSize: 16,
       color: LIGHT_COLORS.textInverse,
-      fontFamily: "IBMPlexSans_600SemiBold",
+      fontFamily: "InstrumentSans_600SemiBold",
     },
     primaryButtonTextDisabled: {
       color: LIGHT_COLORS.muted,

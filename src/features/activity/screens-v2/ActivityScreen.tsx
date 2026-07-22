@@ -16,6 +16,8 @@ import {
 import { useCoralColors } from "@/components/coral/useCoral";
 import type { Activity as ActivityType } from "@/types";
 
+import { useRouter } from "expo-router";
+
 function LoadingState() {
   const coral = useCoralColors();
   return (
@@ -125,7 +127,7 @@ function ActivityBadge({ type }: { type: ActivityType["type"] }) {
   const coral = useCoralColors();
   const config = {
     expense: { icon: Receipt, bg: coral.accentSoft, color: coral.accentInk },
-    settlement: { icon: ArrowLeftRight, bg: coral.positiveSoft, color: "#075d35" },
+    settlement: { icon: ArrowLeftRight, bg: coral.positiveSoft, color: coral.positive },
     member_joined: { icon: UserPlus, bg: coral.avatarSoft, color: coral.avatarInk },
     group_created: { icon: Users, bg: coral.avatarSoft, color: coral.avatarInk },
   }[type];
@@ -153,7 +155,7 @@ function UpcomingBadge({ icon }: { icon: UpcomingRow["icon"] }) {
     calendar: { icon: Calendar, bg: coral.warningSoft, color: coral.warning },
     home: { icon: House, bg: coral.avatarSoft, color: coral.avatarInk },
     bell: { icon: Bell, bg: coral.accentSoft, color: coral.accentInk },
-    receipt: { icon: Receipt, bg: coral.positiveSoft, color: "#075d35" },
+    receipt: { icon: Receipt, bg: coral.positiveSoft, color: coral.positive },
     bolt: { icon: Bolt, bg: coral.warningSoft, color: coral.warning },
   }[icon];
 
@@ -178,7 +180,7 @@ function AmountPill({ value, tone }: { value: string; tone?: "neutral" | "positi
   const coral = useCoralColors();
   const colorMap = {
     neutral: { text: coral.muted, bg: coral.border },
-    positive: { text: "#075d35", bg: coral.positiveSoft },
+    positive: { text: coral.positive, bg: coral.positiveSoft },
     negative: { text: coral.negative, bg: coral.negativeSoft },
     warning: { text: coral.warning, bg: coral.warningSoft },
   };
@@ -226,6 +228,15 @@ function TimelineRowDivider() {
 
 function TimelineRow({ activity }: { activity: ActivityType }) {
   const coral = useCoralColors();
+  const router = useRouter();
+
+  const handlePress = () => {
+    if (activity.type === "expense" && activity.expense?.id) {
+      router.push(`/expense/${activity.expense.id}`);
+    } else if (activity.group?.id) {
+      router.push(`/group/${activity.group.id}`);
+    }
+  };
 
   if (activity.type === "expense" && activity.expense) {
     const expense = activity.expense;
@@ -239,15 +250,17 @@ function TimelineRow({ activity }: { activity: ActivityType }) {
     const lent = expense.amount - (expense.splits?.find((s) => s.userId === activity.userId)?.amount ?? 0);
     return (
       <View>
-        <View
-          style={{
+        <Pressable
+          onPress={handlePress}
+          style={({ pressed }) => ({
             flexDirection: "row",
             alignItems: "center",
             gap: 11,
             minHeight: 64,
             paddingHorizontal: 12,
             paddingVertical: 10,
-          }}
+            opacity: pressed ? 0.65 : 1,
+          })}
         >
           <ActivityBadge type="expense" />
           <View style={{ minWidth: 0, flex: 1 }}>
@@ -275,7 +288,7 @@ function TimelineRow({ activity }: { activity: ActivityType }) {
             </Text>
           </View>
           <AmountPill value={`+$${lent} lent`} tone="positive" />
-        </View>
+        </Pressable>
         <TimelineRowDivider />
       </View>
     );
@@ -292,15 +305,17 @@ function TimelineRow({ activity }: { activity: ActivityType }) {
     const detail = `${time} - ${groupName}${settlement.method ? ` - ${settlement.method}` : ""}`;
     return (
       <View>
-        <View
-          style={{
+        <Pressable
+          onPress={handlePress}
+          style={({ pressed }) => ({
             flexDirection: "row",
             alignItems: "center",
             gap: 11,
             minHeight: 64,
             paddingHorizontal: 12,
             paddingVertical: 10,
-          }}
+            opacity: pressed ? 0.65 : 1,
+          })}
         >
           <ActivityBadge type="settlement" />
           <View style={{ minWidth: 0, flex: 1 }}>
@@ -328,7 +343,7 @@ function TimelineRow({ activity }: { activity: ActivityType }) {
             </Text>
           </View>
           <AmountPill value="Recorded" tone="neutral" />
-        </View>
+        </Pressable>
         <TimelineRowDivider />
       </View>
     );
@@ -344,15 +359,17 @@ function TimelineRow({ activity }: { activity: ActivityType }) {
   const detail = `${time} - ${userContext ? `${userContext} ` : ""}${activity.description}`;
   return (
     <View>
-      <View
-        style={{
+      <Pressable
+        onPress={handlePress}
+        style={({ pressed }) => ({
           flexDirection: "row",
           alignItems: "center",
           gap: 11,
           minHeight: 64,
           paddingHorizontal: 12,
           paddingVertical: 10,
-        }}
+          opacity: pressed ? 0.65 : 1,
+        })}
       >
         <ActivityBadge type={badgeType} />
         <View style={{ minWidth: 0, flex: 1 }}>
@@ -380,7 +397,7 @@ function TimelineRow({ activity }: { activity: ActivityType }) {
           </Text>
         </View>
         <AmountPill value="Group event" tone="neutral" />
-      </View>
+      </Pressable>
       <TimelineRowDivider />
     </View>
   );
@@ -401,8 +418,21 @@ function TimelineSection({ section }: { section: ActivitySection<ActivityType> }
 
 function UpcomingRowItem({ row }: { row: UpcomingRow }) {
   const coral = useCoralColors();
+  const router = useRouter();
+  
   return (
-    <View>
+    <Pressable
+      onPress={() => {
+        if (row.tone === "warning") {
+          router.push(`/recurring/${row.recurringExpenseId}/review`);
+        } else {
+          router.push(`/recurring/${row.recurringExpenseId}`);
+        }
+      }}
+      style={({ pressed }) => ({
+        opacity: pressed ? 0.65 : 1,
+      })}
+    >
       <View
         style={{
           flexDirection: "row",
@@ -441,7 +471,7 @@ function UpcomingRowItem({ row }: { row: UpcomingRow }) {
         {row.value ? <AmountPill value={row.value} tone={row.tone} /> : null}
       </View>
       <TimelineRowDivider />
-    </View>
+    </Pressable>
   );
 }
 
@@ -459,6 +489,7 @@ function UpcomingSection({ section }: { section: ActivitySection<UpcomingRow> })
 }
 
 export default function ActivityScreen(): JSX.Element {
+  const coral = useCoralColors();
   const {
     isError,
     refetch,
@@ -490,8 +521,10 @@ export default function ActivityScreen(): JSX.Element {
   const totalTimeline = groupedActivities.reduce((sum, s) => sum + s.data.length, 0);
   const totalUpcoming = upcomingSections.reduce((sum, s) => sum + s.data.length, 0);
 
+  const headingKicker = selectedTab === "timeline" ? "What changed" : "What happens next";
+
   return (
-    <CoralScreen>
+    <CoralScreen contentContainerStyle={{ paddingBottom: 110 }}>
       <CoralTopBar title="Activity" />
 
       <View style={{ marginTop: 24, marginBottom: 6 }}>
@@ -500,11 +533,11 @@ export default function ActivityScreen(): JSX.Element {
             fontFamily: "InstrumentSans_400Regular",
             fontSize: 12,
             fontWeight: "700",
-            color: "#536272",
+            color: coral.muted,
             marginBottom: 4,
           }}
         >
-          What changed
+          {headingKicker}
         </Text>
         <Text
           style={{
@@ -512,7 +545,7 @@ export default function ActivityScreen(): JSX.Element {
             fontSize: 30,
             letterSpacing: -0.035 * 30,
             lineHeight: 30 * 1.08,
-            color: "#101b29",
+            color: coral.foreground,
           }}
         >
           Everything that moved.
@@ -528,29 +561,33 @@ export default function ActivityScreen(): JSX.Element {
         onSelect={(value) => setSelectedTab(value as "timeline" | "upcoming")}
       />
 
-      <CoralSearchField
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        onClear={() => setSearchQuery("")}
-        placeholder="Search activity"
-        style={{ marginTop: 14, marginBottom: 4 }}
-      />
-
-      {selectedTab === "timeline" ? (
-        totalTimeline === 0 ? (
-          <TimelineEmptyState />
-        ) : (
-          groupedActivities.map((section) => (
-            <TimelineSection key={section.title} section={section} />
-          ))
-        )
-      ) : totalUpcoming === 0 ? (
-        <UpcomingEmptyState />
-      ) : (
-        upcomingSections.map((section) => (
-          <UpcomingSection key={section.title} section={section} />
-        ))
+      {selectedTab === "timeline" && (
+        <CoralSearchField
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onClear={() => setSearchQuery("")}
+          placeholder="Search activity"
+          style={{ marginTop: 14, marginBottom: 4 }}
+        />
       )}
+
+      <View style={{ marginTop: selectedTab === "timeline" ? 0 : 14 }}>
+        {selectedTab === "timeline" ? (
+          totalTimeline === 0 ? (
+            <TimelineEmptyState />
+          ) : (
+            groupedActivities.map((section) => (
+              <TimelineSection key={section.title} section={section} />
+            ))
+          )
+        ) : totalUpcoming === 0 ? (
+          <UpcomingEmptyState />
+        ) : (
+          upcomingSections.map((section) => (
+            <UpcomingSection key={section.title} section={section} />
+          ))
+        )}
+      </View>
     </CoralScreen>
   );
 }

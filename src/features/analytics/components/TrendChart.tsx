@@ -1,8 +1,6 @@
 import type { JSX } from "react";
-import { View, Pressable } from "react-native";
-import { Text } from "react-native";
+import { View, Pressable , Text , useWindowDimensions } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
-import { useWindowDimensions } from "react-native";
 import * as icons from "lucide-react-native";
 import { useUI } from "@/components/ui";
 import { Eyebrow, useCoralColors } from "@/components/coral";

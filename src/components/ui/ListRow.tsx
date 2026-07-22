@@ -1,7 +1,6 @@
 import type { JSX, ReactNode } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
-import { useUI } from "@/components/ui";
+import {  View, Pressable , Text } from "react-native";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 interface ListRowProps {
   leading?: ReactNode;
@@ -37,28 +36,28 @@ export function ListRow({
     >
       {leading && <View style={{ marginRight: 14 }}>{leading}</View>}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Typography
+        <Text
           numberOfLines={1}
           style={{
             fontSize: 16,
             color: color.text,
-            fontFamily: "IBMPlexSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
           }}
         >
           {title}
-        </Typography>
+        </Text>
         {subtitle && (
-          <Typography
+          <Text
             numberOfLines={1}
             style={{
               marginTop: 2,
               fontSize: 13,
               color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
+              fontFamily: "InstrumentSans_500Medium",
             }}
           >
             {subtitle}
-          </Typography>
+          </Text>
         )}
       </View>
       {trailing && <View style={{ marginLeft: 12 }}>{trailing}</View>}

@@ -2,7 +2,7 @@ import type { JSX } from "react";
 import { View, Pressable, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import Animated, { FadeInDown, FadeOutUp } from "react-native-reanimated";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 import { useCoralColors } from "@/components/coral";
 
 export function CustomToast({

@@ -14,6 +14,7 @@ import { expenseHref, settlementHref, coldBackHref } from "@/features/navigation
 import type { MoneyContext } from "@/features/money/types";
 
 import { formatAmount } from "@/components/ui/AmountDisplay";
+import { minorToMajor } from "@/features/money/splits";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import {
   CoralScreen,
@@ -28,9 +29,10 @@ import {
 import { useCoralColors } from "@/components/coral/useCoral";
 import { useUI } from "@/components/ui";
 import { useAppToast } from "@/hooks/useAppToast";
+import { randomUUID } from "@/utils/randomUUID";
 
 function formatSignedAmount(amountMinor: number, currencyCode: string): string {
-  const whole = Math.abs(amountMinor) / 100;
+  const whole = minorToMajor(Math.abs(amountMinor), currencyCode);
   const formatted = formatAmount(whole, currencyCode);
   if (amountMinor > 0) return `+${formatted}`;
   if (amountMinor < 0) return `-${formatted}`;
@@ -194,7 +196,7 @@ export default function FriendDetailScreen(): JSX.Element {
   const handleSendReminder = useCallback(() => {
     if (!selectedRemind) return;
     sendReminderMutation.mutate({
-      clientOperationId: `remind-${Date.now()}`,
+      clientOperationId: randomUUID(),
       groupId:
         selectedRemind.context.type === "group" ? selectedRemind.context.groupId : undefined,
       friendshipId:
@@ -393,7 +395,7 @@ export default function FriendDetailScreen(): JSX.Element {
             variant="secondary"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push(settlementHref({ context: primaryContext }));
+              router.push(`/settle/new?counterpartyId=${person.id}`);
             }}
           />
         </View>

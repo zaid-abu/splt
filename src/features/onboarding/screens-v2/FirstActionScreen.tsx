@@ -13,13 +13,13 @@ import { useAuth } from "@/context/AppContext";
 import { useAppToast } from "@/hooks/useAppToast";
 import { AuthService } from "@/services/api/auth";
 
-const actions: Array<{
+const actions: {
   title: string;
   detail: string;
   destination: "/group/new" | "/friend/new" | "/expense/new" | "/recurring/new";
   icon: ComponentType<LucideProps>;
   tone: "default" | "green" | "coral" | "amber";
-}> = [
+}[] = [
   {
     title: "Create a group",
     detail: "Start a trip, night out, or household",

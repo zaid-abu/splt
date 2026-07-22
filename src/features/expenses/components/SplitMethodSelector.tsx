@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { Pressable, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  Pressable, View , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { useUI } from "@/components/ui";
@@ -38,8 +37,8 @@ export function SplitMethodSelector({
             <View style={[styles.methodIcon, active && styles.methodIconActive]}>
               <Icon size={17} color={active ? color.textInverse : color.text} strokeWidth={1.8} />
             </View>
-            <Typography style={styles.methodTitle}>{method.label}</Typography>
-            <Typography style={styles.methodMeta}>{method.helper}</Typography>
+            <Text style={styles.methodTitle}>{method.label}</Text>
+            <Text style={styles.methodMeta}>{method.helper}</Text>
           </Pressable>
         );
       })}

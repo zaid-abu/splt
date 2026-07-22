@@ -1,6 +1,8 @@
 import { render, fireEvent, screen } from "@testing-library/react-native";
 import type { Mock } from "jest-mock";
 
+import MoneyMapScreen from "./MoneyMapScreen";
+
 const mockPush = jest.fn();
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush }),
@@ -165,8 +167,6 @@ const mockUseHomeSnapshot = jest.fn();
 jest.mock("@/features/dashboard/hooks/useHomeSnapshot", () => ({
   useHomeSnapshot: () => mockUseHomeSnapshot(),
 }));
-
-import MoneyMapScreen from "./MoneyMapScreen";
 
 const baseData = {
   heroBalances: [],

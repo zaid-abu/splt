@@ -1,12 +1,12 @@
+import { supabase } from "@/services/supabase/client"
+import { groupsApi } from "./api"
+import type { CreateGroupInput, UpdateGroupSettingsInput } from "./api"
+
 jest.mock("@/services/supabase/client", () => ({
   supabase: {
     rpc: jest.fn(),
   },
 }))
-
-import { supabase } from "@/services/supabase/client"
-import { groupsApi } from "./api"
-import type { CreateGroupInput, UpdateGroupSettingsInput } from "./api"
 
 const rpc = supabase.rpc as jest.Mock
 

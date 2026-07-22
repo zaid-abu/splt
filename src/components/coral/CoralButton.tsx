@@ -1,9 +1,11 @@
 import { Pressable, ActivityIndicator, Text, Platform } from "react-native";
+import type { ReactNode } from "react";
 
 import { useCoralColors } from "./useCoral";
 
 type CoralButtonProps = {
   label: string;
+  icon?: ReactNode;
   onPress: () => void;
   variant?: "primary" | "secondary" | "danger" | "text";
   disabled?: boolean;
@@ -12,6 +14,7 @@ type CoralButtonProps = {
 
 export function CoralButton({
   label,
+  icon,
   onPress,
   variant = "primary",
   disabled = false,
@@ -20,10 +23,10 @@ export function CoralButton({
   const coral = useCoralColors();
 
   const styles = {
-    primary: { bg: coral.accent, fg: coral.inkOnAccent },
-    secondary: { bg: coral.accentSoft, fg: coral.accentInk },
-    danger: { bg: coral.negativeSoft, fg: coral.negative },
-    text: { bg: "transparent", fg: coral.accent },
+    primary: { bg: coral.accent, fg: coral.inkOnAccent, border: "transparent" },
+    secondary: { bg: coral.surface, fg: coral.foreground, border: coral.border },
+    danger: { bg: coral.negativeSoft, fg: coral.negative, border: "transparent" },
+    text: { bg: "transparent", fg: coral.accent, border: "transparent" },
   }[variant];
 
   const isDisabled = disabled || loading;
@@ -39,6 +42,8 @@ export function CoralButton({
         width: "100%",
         borderRadius: 14,
         backgroundColor: styles.bg,
+        borderWidth: styles.border !== "transparent" ? 1 : 0,
+        borderColor: styles.border,
         paddingHorizontal: variant === "text" ? 4 : 18,
         alignItems: "center",
         justifyContent: "center",
@@ -50,6 +55,7 @@ export function CoralButton({
       {loading && (
         <ActivityIndicator size="small" color={variant === "text" ? coral.accent : styles.fg} />
       )}
+      {!loading && icon && icon}
       <Text
         style={{
           fontFamily: "InstrumentSans_600SemiBold",

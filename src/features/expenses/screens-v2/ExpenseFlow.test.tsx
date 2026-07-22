@@ -1,5 +1,10 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import type { Mock } from "jest-mock"
+import type { Mock , Mock as MockT } from "jest-mock"
+
+import { useExpenseComposer } from "@/features/expenses/hooks/useExpenseComposer"
+import { useExpenseSnapshot } from "@/features/expenses/hooks/useExpenseSnapshot"
+import { useDeleteExpense } from "@/features/expenses/queries/useExpenses"
+import { useExpenseComments } from "@/features/expenses/queries/useComments"
 
 const mockReplace = jest.fn()
 const mockPush = jest.fn()
@@ -27,6 +32,11 @@ jest.mock("@/features/groups/queries/useGroups", () => ({
 
 jest.mock("@/features/friends/queries/useFriends", () => ({
   useFriends: jest.fn(() => ({ data: [] })),
+  useAllFriendships: jest.fn(() => ({ data: [] })),
+}))
+
+jest.mock("@/features/friends/hooks/useFriendsList", () => ({
+  useFriendsList: () => ({ friendRows: [] }),
 }))
 
 jest.mock("@/store/useUIStore", () => ({
@@ -254,13 +264,7 @@ jest.mock("react-native-worklets", () => ({
   isWorkletFunction: () => false,
 }))
 
-jest.mock("heroui-native", () => ({
-  Typography: ({ children }: any) => {
-    const React = require("react")
-    const RN = require("react-native")
-    return React.createElement(RN.Text, null, children)
-  },
-}))
+
 
 jest.mock("@/features/expenses/queries/useExpenses", () => ({
   useCreateExpense: jest.fn(() => ({ mutateAsync: jest.fn() })),
@@ -327,12 +331,6 @@ jest.mock("@/components/ui/AppLoader", () => ({
     return React.createElement(RN.ActivityIndicator, { testID: "app-loader" })
   },
 }))
-
-import { useExpenseComposer } from "@/features/expenses/hooks/useExpenseComposer"
-import type { Mock as MockT } from "jest-mock"
-import { useExpenseSnapshot } from "@/features/expenses/hooks/useExpenseSnapshot"
-import { useDeleteExpense } from "@/features/expenses/queries/useExpenses"
-import { useExpenseComments } from "@/features/expenses/queries/useComments"
 
 const mockComposer = useExpenseComposer as MockT
 const mockSnapshot = useExpenseSnapshot as MockT
@@ -690,7 +688,7 @@ describe("ExpenseDetailScreenV2", () => {
     const DetailScreen = require("./ExpenseDetailScreen").default
     await render(React.createElement(DetailScreen))
 
-    expect(screen.getByText(/50\.00/)).toBeTruthy()
+    expect(screen.getAllByText(/50\.00/).length).toBeGreaterThan(0)
     expect(screen.getByText(/Paid by/)).toBeTruthy()
     expect(screen.getByText(/equally/)).toBeTruthy()
   })
@@ -738,7 +736,7 @@ describe("ExpenseDetailScreenV2", () => {
     const DetailScreen = require("./ExpenseDetailScreen").default
     await render(React.createElement(DetailScreen))
 
-    expect(screen.getByText("Your share")).toBeTruthy()
+    expect(screen.getByText("Your actual share")).toBeTruthy()
     expect(screen.getByText("You lent")).toBeTruthy()
   })
 
@@ -786,7 +784,7 @@ describe("ExpenseDetailScreenV2", () => {
 
     const DetailScreen = require("./ExpenseDetailScreen").default
     await render(React.createElement(DetailScreen))
-    expect(screen.getByText("Settle up")).toBeTruthy()
+    expect(screen.getByText("Settle balance")).toBeTruthy()
   })
 
   it("renders receipt viewer when receiptUrl is available", async () => {
@@ -797,7 +795,7 @@ describe("ExpenseDetailScreenV2", () => {
 
     const DetailScreen = require("./ExpenseDetailScreen").default
     await render(React.createElement(DetailScreen))
-    expect(screen.getByText("View receipt")).toBeTruthy()
+    expect(screen.getByText("Receipt attached")).toBeTruthy()
   })
 
   it("navigates to edit route when edit pressed", async () => {

@@ -1,11 +1,11 @@
+import { supabase } from "@/services/supabase/client"
+import { invitationsApi } from "./api"
+
 jest.mock("@/services/supabase/client", () => ({
   supabase: {
     rpc: jest.fn(),
   },
 }))
-
-import { supabase } from "@/services/supabase/client"
-import { invitationsApi } from "./api"
 
 const rpc = supabase.rpc as jest.Mock
 

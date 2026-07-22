@@ -1,6 +1,5 @@
 import React, { useMemo, useCallback } from "react";
-import { View, Pressable } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, Pressable , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
@@ -14,6 +13,7 @@ import { formatAmount } from "@/components/ui/AmountDisplay";
 import { useUI } from "@/components/ui";
 import { SwipeableRow } from "@/components/layout/SwipeableRow";
 import { useUIStore } from "@/store/useUIStore";
+import { MoneyRow } from "@/components/coral";
 
 interface ActivityItemProps {
   activity: Activity;
@@ -183,99 +183,35 @@ export const ActivityItem = React.memo(function ActivityItem({
 
   return (
     <SwipeableRow onDelete={canDelete ? handleDelete : undefined}>
-      <Pressable
-        onPress={handlePress}
-        accessibilityRole="button"
-        accessibilityLabel={`${activity.description}. ${involvement.text} ${involvement.showAmount ? formatAmount(involvement.amount, activity.currency || preferredCurrency?.code || "USD") : ""}`}
-        style={({ pressed }) => ({
-          flexDirection: "row",
-          alignItems: "center",
-          paddingVertical: 14,
-          paddingHorizontal: 16,
-          borderBottomWidth: isLast ? 0 : 1,
-          borderBottomColor: color.border,
-          backgroundColor: pressed ? color.subtle : "transparent",
-        })}
-      >
-        <View
-          style={{
-            width: 44,
-            height: 44,
-            borderRadius: CARD_RADIUS,
-            backgroundColor: bgColors[involvement.type],
-            alignItems: "center",
-            justifyContent: "center",
-            marginRight: 14,
-            flexShrink: 0,
-          }}
-        >
-          <IconComponent size={22} color={iconColors[involvement.type]} strokeWidth={1.5} />
-        </View>
-
-        <View style={{ flex: 1, marginRight: 10 }}>
-          <Typography
-            numberOfLines={1}
+      <MoneyRow
+        avatar={
+          <View
             style={{
-              fontSize: 15,
-              color: color.text,
-              fontFamily: "IBMPlexSans_600SemiBold",
-              letterSpacing: -0.2,
+              width: 44,
+              height: 44,
+              borderRadius: 14,
+              backgroundColor: bgColors[involvement.type],
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            {activity.description}
-          </Typography>
-          <Typography
-            numberOfLines={1}
-            style={{
-              fontSize: 13,
-              color: color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
-              marginTop: 3,
-            }}
-          >
-            {subtitle}
-          </Typography>
-        </View>
-
-        <View style={{ alignItems: "flex-end", maxWidth: 110 }}>
-          {involvement.showAmount ? (
-            <Typography
-              numberOfLines={1}
-              adjustsFontSizeToFit
-              style={{
-                fontSize: 15,
-                color: textColors[involvement.type],
-                fontFamily: "IBMPlexSans_600SemiBold",
-                letterSpacing: -0.2,
-              }}
-            >
-              {involvement.type === "positive" ? "+" : ""}
-              {formatAmount(
+            <IconComponent size={20} color={iconColors[involvement.type]} strokeWidth={1.5} />
+          </View>
+        }
+        title={activity.description}
+        subtitle={subtitle}
+        amount={
+          involvement.showAmount
+            ? `${involvement.type === "positive" ? "+" : ""}${formatAmount(
                 involvement.amount,
                 activity.currency || preferredCurrency?.code || "USD"
-              )}
-            </Typography>
-          ) : null}
-          <Typography
-            numberOfLines={1}
-            style={{
-              fontSize: 12,
-              color: involvement.showAmount ? textColors[involvement.type] : color.muted,
-              fontFamily: "IBMPlexSans_500Medium",
-              marginTop: 2,
-            }}
-          >
-            {involvement.text}
-          </Typography>
-        </View>
-
-        <icons.ChevronRight
-          size={14}
-          color={color.muted}
-          strokeWidth={1.75}
-          style={{ marginLeft: 8 }}
-        />
-      </Pressable>
+              )}`
+            : involvement.text
+        }
+        amountTone={involvement.type}
+        onPress={handlePress}
+        accessibilityLabel={`${activity.description}. ${involvement.text} ${involvement.showAmount ? formatAmount(involvement.amount, activity.currency || preferredCurrency?.code || "USD") : ""}`}
+      />
     </SwipeableRow>
   );
 });

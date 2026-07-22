@@ -1,6 +1,6 @@
 import { Children, type ReactNode } from "react";
 import { View, Pressable, Text } from "react-native";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 import { useCoralColors } from "@/components/coral";
 
 interface ListSectionProps {

@@ -1,3 +1,6 @@
+import { supabase } from "@/services/supabase/client"
+import { CommentsService } from "./comments"
+
 jest.mock("@/services/supabase/client", () => ({
   supabase: {
     auth: {
@@ -13,9 +16,6 @@ jest.mock("@/services/supabase/client", () => ({
     })),
   },
 }))
-
-import { supabase } from "@/services/supabase/client"
-import { CommentsService } from "./comments"
 
 const getUser = supabase.auth.getUser as jest.Mock
 const from = supabase.from as jest.Mock

@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useUI } from "@/components/ui";
+import { useUI } from "@/components/ui/hooks/useUI";
 
 interface BottomActionBarProps {
   children: React.ReactNode;

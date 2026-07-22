@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { Pressable, View } from "react-native";
-import { Typography } from "heroui-native";
+import {  Pressable, View , Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
@@ -43,16 +42,16 @@ export function ContextSummary({
         <View style={styles.summaryText}>
           <View style={styles.contextTypeRow}>
             <Icon size={14} color={color.muted} strokeWidth={1.8} />
-            <Typography style={styles.contextTypeText}>
+            <Text style={styles.contextTypeText}>
               {selectedGroup ? "Group expense" : "Friend expense"}
-            </Typography>
+            </Text>
           </View>
-          <Typography numberOfLines={1} style={styles.summaryTitle}>
+          <Text numberOfLines={1} style={styles.summaryTitle}>
             {title}
-          </Typography>
-          <Typography style={styles.summaryMeta}>
+          </Text>
+          <Text style={styles.summaryMeta}>
             {participants.length} people · {currency}
-          </Typography>
+          </Text>
         </View>
         {canChange ? (
           <Pressable
@@ -60,7 +59,7 @@ export function ContextSummary({
             onPress={onChange}
             style={({ pressed }) => [styles.changeButton, pressed && styles.pressed]}
           >
-            <Typography style={styles.changeButtonText}>Change</Typography>
+            <Text style={styles.changeButtonText}>Change</Text>
           </Pressable>
         ) : null}
       </View>

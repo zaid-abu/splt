@@ -1,6 +1,5 @@
 import type { JSX } from "react";
-import { View, ScrollView, Pressable, TextInput } from "react-native";
-import { Typography } from "heroui-native";
+import {  View, ScrollView, Pressable, TextInput , Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { useUI } from "@/components/ui";
@@ -116,7 +115,7 @@ export function GroupIdentitySection({
           style={{
             fontSize: 28,
             color: color.text,
-            fontFamily: "Sora_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             borderBottomWidth: 1,
             borderBottomColor: color.border,
             paddingBottom: 14,
@@ -124,16 +123,16 @@ export function GroupIdentitySection({
           }}
         />
         {nameError ? (
-          <Typography
+          <Text
             style={{
               marginBottom: 16,
               color: color.danger,
               fontSize: 13,
-              fontFamily: "IBMPlexSans_500Medium",
+              fontFamily: "InstrumentSans_500Medium",
             }}
           >
             {nameError}
-          </Typography>
+          </Text>
         ) : null}
 
         <TextInput
@@ -145,7 +144,7 @@ export function GroupIdentitySection({
           style={{
             fontSize: 16,
             color: color.text,
-            fontFamily: "IBMPlexSans_400Regular",
+            fontFamily: "InstrumentSans_400Regular",
             borderBottomWidth: 1,
             borderBottomColor: color.border,
             paddingBottom: 14,
