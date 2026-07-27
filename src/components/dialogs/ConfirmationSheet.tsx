@@ -1,6 +1,6 @@
 import type { JSX, ReactNode, RefObject } from "react";
 import { useCallback, useRef } from "react";
-import {  View, Pressable , Text } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useUI } from "@/components/ui";

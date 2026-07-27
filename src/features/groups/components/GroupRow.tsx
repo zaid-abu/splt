@@ -1,5 +1,5 @@
 import React, { type JSX } from "react";
-import {  View, Pressable , Text } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";

@@ -1,163 +1,179 @@
-import { useState, useCallback, useRef } from "react"
-import { View, Text, Pressable, ActivityIndicator, Share } from "react-native"
-import { randomUUID } from "@/utils/randomUUID"
-import { useRouter } from "expo-router"
-import * as Haptics from "expo-haptics"
-import { Mail, Share as ShareIcon, UserPlus, Check, XCircle } from "lucide-react-native"
+import { useState, useCallback, useRef } from "react";
+import { View, Text, Pressable, ActivityIndicator, Share } from "react-native";
+import { randomUUID } from "@/utils/randomUUID";
+import { useRouter } from "expo-router";
+import * as Haptics from "expo-haptics";
+import { Mail, Share as ShareIcon, UserPlus, Check, XCircle } from "lucide-react-native";
 
-import { CoralScreen, CoralTopBar, CoralSearchField, CoralButton, useCoralColors } from "@/components/coral"
-import { AppUserAvatar } from "@/components/ui/MemberAvatar"
-import { useSearchFriends, useTransitionFriendship, useAllFriendships } from "@/features/friends/queries/useFriends"
-import { useAuth } from "@/context/AppContext"
-import { useAppToast } from "@/hooks/useAppToast"
-import { invitationsApi } from "@/features/invitations/services/api"
+import {
+  CoralScreen,
+  CoralTopBar,
+  CoralSearchField,
+  CoralButton,
+  useCoralColors,
+} from "@/components/coral";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import {
+  useSearchFriends,
+  useTransitionFriendship,
+  useAllFriendships,
+} from "@/features/friends/queries/useFriends";
+import { useAuth } from "@/context/AppContext";
+import { useAppToast } from "@/hooks/useAppToast";
+import { invitationsApi } from "@/features/invitations/services/api";
 
-const RATE_LIMIT_MAX = 10
-const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 
 function isWellFormedEmail(value: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
 export default function NewFriendScreen() {
-  const router = useRouter()
-  const coral = useCoralColors()
-  const { currentUser } = useAuth()
-  const { toast } = useAppToast()
-  const { mutateAsync: searchFriends } = useSearchFriends()
-  const { mutateAsync: transitionFriendship } = useTransitionFriendship()
-  const { data: allFriendships = [] } = useAllFriendships(currentUser.id)
+  const router = useRouter();
+  const coral = useCoralColors();
+  const { currentUser } = useAuth();
+  const { toast } = useAppToast();
+  const { mutateAsync: searchFriends } = useSearchFriends();
+  const { mutateAsync: transitionFriendship } = useTransitionFriendship();
+  const { data: allFriendships = [] } = useAllFriendships(currentUser.id);
 
-  const [email, setEmail] = useState("")
+  const [email, setEmail] = useState("");
   const [searchState, setSearchState] = useState<{
-    phase: "idle" | "searching" | "found" | "notFound" | "blocked"
-    userId?: string
-    name?: string
-    initials?: string
-    self?: boolean
-  }>({ phase: "idle" })
-  const [addingUserId, setAddingUserId] = useState<string | null>(null)
-  const [isCreatingInvite, setIsCreatingInvite] = useState(false)
-  const [showRateLimit, setShowRateLimit] = useState(false)
+    phase: "idle" | "searching" | "found" | "notFound" | "blocked";
+    userId?: string;
+    name?: string;
+    initials?: string;
+    self?: boolean;
+  }>({ phase: "idle" });
+  const [addingUserId, setAddingUserId] = useState<string | null>(null);
+  const [isCreatingInvite, setIsCreatingInvite] = useState(false);
+  const [showRateLimit, setShowRateLimit] = useState(false);
 
-  const attemptsRef = useRef<number[]>([])
+  const attemptsRef = useRef<number[]>([]);
 
   const getRecentAttempts = useCallback(() => {
-    const now = Date.now()
-    attemptsRef.current = attemptsRef.current.filter((t) => now - t < RATE_LIMIT_WINDOW_MS)
-    return attemptsRef.current.length
-  }, [])
+    const now = Date.now();
+    attemptsRef.current = attemptsRef.current.filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+    return attemptsRef.current.length;
+  }, []);
 
   const recordAttempt = useCallback(() => {
-    attemptsRef.current.push(Date.now())
-  }, [])
+    attemptsRef.current.push(Date.now());
+  }, []);
 
   const handleSearch = useCallback(async () => {
-    const trimmed = email.trim()
+    const trimmed = email.trim();
     if (!isWellFormedEmail(trimmed)) {
-      toast.show({ label: "Enter a valid email address", placement: "top" })
-      return
+      toast.show({ label: "Enter a valid email address", placement: "top" });
+      return;
     }
 
-    const recent = getRecentAttempts()
+    const recent = getRecentAttempts();
     if (recent >= RATE_LIMIT_MAX) {
-      setShowRateLimit(true)
+      setShowRateLimit(true);
       toast.show({
         label: "Too many attempts",
         description: "Please try again later.",
         variant: "danger",
         placement: "top",
-      })
-      return
+      });
+      return;
     }
 
-    recordAttempt()
-    setSearchState({ phase: "searching" })
+    recordAttempt();
+    setSearchState({ phase: "searching" });
 
     try {
-      const result = await searchFriends(trimmed)
+      const result = await searchFriends(trimmed);
 
       if (result.state === "not_found") {
-        setSearchState({ phase: "notFound" })
-        return
+        setSearchState({ phase: "notFound" });
+        return;
       }
 
       if (result.state === "blocked") {
-        setSearchState({ phase: "blocked" })
-        return
+        setSearchState({ phase: "blocked" });
+        return;
       }
 
       if (result.userId === currentUser.id) {
         setSearchState({
-          phase: "found", userId: result.userId, name: result.name,
-          initials: result.initials, self: true,
-        })
-        return
+          phase: "found",
+          userId: result.userId,
+          name: result.name,
+          initials: result.initials,
+          self: true,
+        });
+        return;
       }
 
       setSearchState({
-        phase: "found", userId: result.userId, name: result.name,
-        initials: result.initials, self: false,
-      })
+        phase: "found",
+        userId: result.userId,
+        name: result.name,
+        initials: result.initials,
+        self: false,
+      });
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Search failed"
-      toast.show({ label: "Error", description: msg, variant: "danger", placement: "top" })
-      setSearchState({ phase: "idle" })
+      const msg = err instanceof Error ? err.message : "Search failed";
+      toast.show({ label: "Error", description: msg, variant: "danger", placement: "top" });
+      setSearchState({ phase: "idle" });
     }
-  }, [email, getRecentAttempts, recordAttempt, searchFriends, currentUser.id, toast])
+  }, [email, getRecentAttempts, recordAttempt, searchFriends, currentUser.id, toast]);
 
   const handleAddFriend = async () => {
-    if (!searchState.userId || searchState.self) return
-    if (addingUserId) return
+    if (!searchState.userId || searchState.self) return;
+    if (addingUserId) return;
 
-    setAddingUserId(searchState.userId)
+    setAddingUserId(searchState.userId);
     try {
-      await transitionFriendship({ counterpartyId: searchState.userId, action: "request" })
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      await transitionFriendship({ counterpartyId: searchState.userId, action: "request" });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       toast.show({
         label: "Friend request sent",
         description: `Request sent to ${searchState.name}.`,
         variant: "success",
         placement: "top",
-      })
+      });
       if (router.canGoBack()) {
-        router.back()
+        router.back();
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to send request"
-      toast.show({ label: "Error", description: msg, variant: "danger", placement: "top" })
+      const msg = err instanceof Error ? err.message : "Failed to send request";
+      toast.show({ label: "Error", description: msg, variant: "danger", placement: "top" });
     } finally {
-      setAddingUserId(null)
+      setAddingUserId(null);
     }
-  }
+  };
 
   const handleShareInvite = async () => {
-    setIsCreatingInvite(true)
+    setIsCreatingInvite(true);
     try {
-      const opId = randomUUID()
-      const link = await invitationsApi.createFriendInvite(opId)
+      const opId = randomUUID();
+      const link = await invitationsApi.createFriendInvite(opId);
       await Share.share({
         message: `Join me on Splt! Use this invite link: ${link.rawToken}`,
         title: "Invite to Splt",
-      })
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      });
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch (err) {
-      const msg = err instanceof Error ? err.message : "Could not create invite"
-      toast.show({ label: "Error", description: msg, variant: "danger", placement: "top" })
+      const msg = err instanceof Error ? err.message : "Could not create invite";
+      toast.show({ label: "Error", description: msg, variant: "danger", placement: "top" });
     } finally {
-      setIsCreatingInvite(false)
+      setIsCreatingInvite(false);
     }
-  }
+  };
 
   const existingFriendship = searchState.userId
     ? allFriendships.find((f) => f.friendUser?.id === searchState.userId)
-    : undefined
+    : undefined;
 
-  const friendshipStatus = existingFriendship?.status
-  const isRequested = friendshipStatus === "pending"
-  const isAccepted = friendshipStatus === "accepted"
-  const isBlockedExisting = friendshipStatus === "blocked"
-  const isAdding = addingUserId !== null
+  const friendshipStatus = existingFriendship?.status;
+  const isRequested = friendshipStatus === "pending";
+  const isAccepted = friendshipStatus === "accepted";
+  const isBlockedExisting = friendshipStatus === "blocked";
+  const isAdding = addingUserId !== null;
 
   return (
     <CoralScreen>
@@ -167,14 +183,14 @@ export default function NewFriendScreen() {
         <CoralSearchField
           value={email}
           onChangeText={(val) => {
-            setEmail(val)
-            setSearchState({ phase: "idle" })
-            setShowRateLimit(false)
+            setEmail(val);
+            setSearchState({ phase: "idle" });
+            setShowRateLimit(false);
           }}
           onClear={() => {
-            setEmail("")
-            setSearchState({ phase: "idle" })
-            setShowRateLimit(false)
+            setEmail("");
+            setSearchState({ phase: "idle" });
+            setShowRateLimit(false);
           }}
           placeholder="Email address"
           autoFocus
@@ -204,7 +220,14 @@ export default function NewFriendScreen() {
             borderColor: coral.negative,
           }}
         >
-          <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 13, color: coral.negative, textAlign: "center" }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_500Medium",
+              fontSize: 13,
+              color: coral.negative,
+              textAlign: "center",
+            }}
+          >
             Too many attempts. Please try again later.
           </Text>
         </View>
@@ -230,22 +253,48 @@ export default function NewFriendScreen() {
             }}
           >
             <XCircle size={36} color={coral.muted} strokeWidth={1.5} />
-            <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 16,
+                color: coral.foreground,
+              }}
+            >
               No user found
             </Text>
-            <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 14, color: coral.muted, textAlign: "center" }}>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 14,
+                color: coral.muted,
+                textAlign: "center",
+              }}
+            >
               No account matches this email. Share an invite link instead.
             </Text>
           </View>
         )}
 
         {searchState.phase === "blocked" && (
-          <View style={{
-            padding: 22, borderRadius: 16, borderWidth: 1, borderColor: coral.border,
-            backgroundColor: coral.surface, alignItems: "center", gap: 8,
-          }}>
+          <View
+            style={{
+              padding: 22,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: coral.border,
+              backgroundColor: coral.surface,
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
             <XCircle size={36} color={coral.negative} strokeWidth={1.5} />
-            <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 16,
+                color: coral.foreground,
+              }}
+            >
               User unavailable
             </Text>
           </View>
@@ -254,15 +303,33 @@ export default function NewFriendScreen() {
         {searchState.self && (
           <View
             style={{
-              padding: 22, borderRadius: 16, borderWidth: 1, borderColor: coral.border,
-              backgroundColor: coral.surface, alignItems: "center", gap: 8,
+              padding: 22,
+              borderRadius: 16,
+              borderWidth: 1,
+              borderColor: coral.border,
+              backgroundColor: coral.surface,
+              alignItems: "center",
+              gap: 8,
             }}
           >
             <Mail size={36} color={coral.muted} strokeWidth={1.5} />
-            <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
-              That's you
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 16,
+                color: coral.foreground,
+              }}
+            >
+              That&apos;s you
             </Text>
-            <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 14, color: coral.muted, textAlign: "center" }}>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_400Regular",
+                fontSize: 14,
+                color: coral.muted,
+                textAlign: "center",
+              }}
+            >
               You entered your own email address.
             </Text>
           </View>
@@ -291,7 +358,11 @@ export default function NewFriendScreen() {
               <View style={{ flex: 1, minWidth: 0 }}>
                 <Text
                   numberOfLines={1}
-                  style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 17, color: coral.foreground }}
+                  style={{
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 17,
+                    color: coral.foreground,
+                  }}
                 >
                   {searchState.name}
                 </Text>
@@ -301,33 +372,62 @@ export default function NewFriendScreen() {
             {isAccepted ? (
               <View
                 style={{
-                  flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 6,
-                  paddingVertical: 14, borderRadius: 14, backgroundColor: coral.positiveSoft,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 6,
+                  paddingVertical: 14,
+                  borderRadius: 14,
+                  backgroundColor: coral.positiveSoft,
                 }}
               >
                 <Check size={18} color={coral.positive} strokeWidth={2.5} />
-                <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 15, color: coral.positive }}>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 15,
+                    color: coral.positive,
+                  }}
+                >
                   Already friends
                 </Text>
               </View>
             ) : isRequested ? (
               <View
                 style={{
-                  paddingVertical: 14, borderRadius: 14, borderWidth: 1, borderColor: coral.border,
+                  paddingVertical: 14,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: coral.border,
                   alignItems: "center",
                 }}
               >
-                <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 15, color: coral.muted }}>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 15,
+                    color: coral.muted,
+                  }}
+                >
                   Request pending
                 </Text>
               </View>
             ) : isBlockedExisting ? (
               <View
                 style={{
-                  paddingVertical: 14, borderRadius: 14, backgroundColor: coral.negativeSoft, alignItems: "center",
+                  paddingVertical: 14,
+                  borderRadius: 14,
+                  backgroundColor: coral.negativeSoft,
+                  alignItems: "center",
                 }}
               >
-                <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 15, color: coral.negative }}>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 15,
+                    color: coral.negative,
+                  }}
+                >
                   Blocked
                 </Text>
               </View>
@@ -352,8 +452,14 @@ export default function NewFriendScreen() {
           gap: 12,
         }}
       >
-        <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
-          Don't see who you're looking for?
+        <Text
+          style={{
+            fontFamily: "InstrumentSans_600SemiBold",
+            fontSize: 16,
+            color: coral.foreground,
+          }}
+        >
+          Don&apos;t see who you&apos;re looking for?
         </Text>
         <CoralButton
           label={isCreatingInvite ? "Creating invite..." : "Share invite link"}
@@ -364,5 +470,5 @@ export default function NewFriendScreen() {
         />
       </View>
     </CoralScreen>
-  )
+  );
 }

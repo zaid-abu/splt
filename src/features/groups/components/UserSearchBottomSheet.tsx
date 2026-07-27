@@ -57,9 +57,9 @@ export function UserSearchBottomSheet({
 
   const isSearchingActive = debouncedQuery.length > 0;
 
-    const filteredFriends = useMemo(() => {
-      return friends.filter((f) => f.id !== currentUser.id);
-    }, [friends, currentUser.id]);
+  const filteredFriends = useMemo(() => {
+    return friends.filter((f) => f.id !== currentUser.id);
+  }, [friends, currentUser.id]);
 
   const filteredSearchResults = useMemo(() => {
     return searchResults.filter((u) => u.id !== currentUser.id);
@@ -189,11 +189,7 @@ export function UserSearchBottomSheet({
           {isSearching ? (
             <ActivityIndicator size="small" color={coral.muted} />
           ) : searchQuery.length > 0 ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setSearchQuery("")}
-              hitSlop={8}
-            >
+            <Pressable accessibilityRole="button" onPress={() => setSearchQuery("")} hitSlop={8}>
               <icons.XCircle size={18} color={coral.muted} strokeWidth={1.5} />
             </Pressable>
           ) : null}
@@ -208,11 +204,23 @@ export function UserSearchBottomSheet({
           {displayData.length === 0 && (
             <View style={{ paddingVertical: 48, alignItems: "center", justifyContent: "center" }}>
               {isSearchingActive && !isSearching ? (
-                <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 15, color: coral.muted }}>
-                  No users matching "{debouncedQuery}"
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 15,
+                    color: coral.muted,
+                  }}
+                >
+                  No users matching &quot;{debouncedQuery}&quot;
                 </Text>
               ) : !isSearchingActive ? (
-                <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 15, color: coral.muted }}>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 15,
+                    color: coral.muted,
+                  }}
+                >
                   No friends yet — search for users to add them to your group.
                 </Text>
               ) : null}

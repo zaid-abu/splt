@@ -200,7 +200,9 @@ export function ContextPicker({
                     setSelectedGroupId("");
                     setSelectedFriendIds((prev) =>
                       singleFriendSelection
-                        ? (prev[0] === friend.id ? [] : [friend.id])
+                        ? prev[0] === friend.id
+                          ? []
+                          : [friend.id]
                         : prev.includes(friend.id)
                           ? prev.filter((id) => id !== friend.id)
                           : [...prev, friend.id]

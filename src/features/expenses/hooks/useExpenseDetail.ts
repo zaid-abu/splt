@@ -30,14 +30,11 @@ export function useExpenseDetail(expenseId: string) {
   const sym = expense ? getCurrencySymbol(expense.currency) : "";
   const isJPY = expense?.currency === "JPY" || expense?.currency === "KRW";
 
-  const formatAmt = useCallback(
-    (n: number) =>
-      `${sym}${n.toLocaleString("en-US", {
-        minimumFractionDigits: isJPY ? 0 : 2,
-        maximumFractionDigits: isJPY ? 0 : 2,
-      })}`,
-    [sym, isJPY]
-  );
+  const formatAmt = (n: number) =>
+    `${sym}${n.toLocaleString("en-US", {
+      minimumFractionDigits: isJPY ? 0 : 2,
+      maximumFractionDigits: isJPY ? 0 : 2,
+    })}`;
 
   const dateStr = expense?.date
     ? expense.date.toLocaleDateString("en-US", {

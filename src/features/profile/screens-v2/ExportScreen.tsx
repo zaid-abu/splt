@@ -16,13 +16,28 @@ export default function ExportScreen(): JSX.Element {
     <CoralScreen scroll={false}>
       <CoralTopBar title="Export data" onBack={() => router.back()} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40, gap: 18 }}>
-        
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40, gap: 18 }}
+      >
         <View style={{ marginTop: 8 }}>
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 16,
+              color: coral.foreground,
+            }}
+          >
             Generate export
           </Text>
-          <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 13, color: coral.muted, marginTop: 2 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 13,
+              color: coral.muted,
+              marginTop: 2,
+            }}
+          >
             Download transaction records and balance ledger history
           </Text>
         </View>
@@ -68,18 +83,14 @@ export default function ExportScreen(): JSX.Element {
               lineHeight: 18,
             }}
           >
-            Exports are compiled securely in the background. A download link will be prepared and active for 48 hours.
+            Exports are compiled securely in the background. A download link will be prepared and
+            active for 48 hours.
           </Text>
         </View>
 
         <View style={{ marginTop: 20 }}>
-          <CoralButton
-            label="Generate export"
-            variant="primary"
-            onPress={() => router.back()}
-          />
+          <CoralButton label="Generate export" variant="primary" onPress={() => router.back()} />
         </View>
-
       </ScrollView>
     </CoralScreen>
   );

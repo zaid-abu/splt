@@ -14,7 +14,14 @@ import { useExpenseSnapshot } from "@/features/expenses/hooks/useExpenseSnapshot
 import { useFriendsList } from "@/features/friends/hooks/useFriendsList";
 import { ExpenseComments } from "@/features/expenses/components/ExpenseComments";
 import { formatAmount, getCurrencySymbol } from "@/components/ui/AmountDisplay";
-import { CoralButton, CoralScreen, CoralTopBar, Eyebrow, MoneyRow, useCoralColors } from "@/components/coral";
+import {
+  CoralButton,
+  CoralScreen,
+  CoralTopBar,
+  Eyebrow,
+  MoneyRow,
+  useCoralColors,
+} from "@/components/coral";
 import { expensesApi } from "@/features/expenses/services/api";
 import { useDeleteExpense } from "@/features/expenses/queries/useExpenses";
 import { useAppToast } from "@/hooks/useAppToast";
@@ -147,7 +154,14 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
 
   if (isInitialLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: coral.bg, alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: coral.bg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <AppLoader />
       </View>
     );
@@ -155,7 +169,15 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
 
   if (isError) {
     return (
-      <View style={{ flex: 1, backgroundColor: coral.bg, alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: coral.bg,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
         <ErrorState onRetry={() => refresh()} />
       </View>
     );
@@ -163,22 +185,55 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
 
   if (isNotFound || !data) {
     return (
-      <View style={{ flex: 1, backgroundColor: coral.bg, alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <Text style={{ fontSize: 24, fontFamily: "InstrumentSans_600SemiBold", color: coral.foreground, marginTop: 16 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: coral.bg,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 24,
+            fontFamily: "InstrumentSans_600SemiBold",
+            color: coral.foreground,
+            marginTop: 16,
+          }}
+        >
           Expense not found
         </Text>
-        <Text style={{ fontSize: 16, fontFamily: "InstrumentSans_400Regular", color: coral.muted, textAlign: "center", marginTop: 8 }}>
+        <Text
+          style={{
+            fontSize: 16,
+            fontFamily: "InstrumentSans_400Regular",
+            color: coral.muted,
+            textAlign: "center",
+            marginTop: 8,
+          }}
+        >
           This expense may have been deleted or is unavailable.
         </Text>
         <Pressable
           accessibilityRole="button"
           onPress={() => router.back()}
           style={({ pressed }) => ({
-            marginTop: 24, paddingHorizontal: 24, paddingVertical: 12,
-            backgroundColor: coral.accent, borderRadius: 14, opacity: pressed ? 0.8 : 1,
+            marginTop: 24,
+            paddingHorizontal: 24,
+            paddingVertical: 12,
+            backgroundColor: coral.accent,
+            borderRadius: 14,
+            opacity: pressed ? 0.8 : 1,
           })}
         >
-          <Text style={{ fontSize: 16, fontFamily: "InstrumentSans_600SemiBold", color: coral.inkOnAccent }}>
+          <Text
+            style={{
+              fontSize: 16,
+              fontFamily: "InstrumentSans_600SemiBold",
+              color: coral.inkOnAccent,
+            }}
+          >
             Go back
           </Text>
         </Pressable>
@@ -197,11 +252,15 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
   const splitMethodLabel = SPLIT_METHOD_LABELS[expense.splitMethod] ?? expense.splitMethod;
 
   const dateStr = expense.date.toLocaleDateString("en-US", {
-    month: "long", day: "numeric", year: "numeric",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
   });
-  const relativeDate = isToday(expense.date) ? "today"
-    : isYesterday(expense.date) ? "yesterday"
-    : dateStr;
+  const relativeDate = isToday(expense.date)
+    ? "today"
+    : isYesterday(expense.date)
+      ? "yesterday"
+      : dateStr;
 
   return (
     <CoralScreen contentContainerStyle={{ paddingBottom: 40 }}>
@@ -224,8 +283,12 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
 
       <Text
         style={{
-          fontFamily: "InstrumentSans_600SemiBold", fontSize: 20, color: coral.foreground,
-          textAlign: "center", marginTop: 8, marginBottom: 4,
+          fontFamily: "InstrumentSans_600SemiBold",
+          fontSize: 20,
+          color: coral.foreground,
+          textAlign: "center",
+          marginTop: 8,
+          marginBottom: 4,
         }}
         numberOfLines={1}
       >
@@ -234,8 +297,12 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
 
       <Text
         style={{
-          fontFamily: "IBMPlexMono_600SemiBold", fontSize: 52, letterSpacing: -0.03 * 52,
-          color: coral.foreground, textAlign: "center", marginTop: 35,
+          fontFamily: "IBMPlexMono_600SemiBold",
+          fontSize: 52,
+          letterSpacing: -0.03 * 52,
+          color: coral.foreground,
+          textAlign: "center",
+          marginTop: 35,
         }}
       >
         {formatAmount(minorToMajor(expense.amountMinor, expense.currency), expense.currency)}
@@ -243,17 +310,28 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
 
       <Text
         style={{
-          fontFamily: "InstrumentSans_400Regular", fontSize: 16, color: coral.muted,
-          textAlign: "center", lineHeight: 24, marginTop: 8, marginBottom: 24,
+          fontFamily: "InstrumentSans_400Regular",
+          fontSize: 16,
+          color: coral.muted,
+          textAlign: "center",
+          lineHeight: 24,
+          marginTop: 8,
+          marginBottom: 24,
         }}
       >
-        {group ? `${group.name} · ` : ""}{relativeDate} · {EXPENSE_CATEGORIES.find((c) => c.key === expense.category)?.label ?? expense.category}
+        {group ? `${group.name} · ` : ""}
+        {relativeDate} ·{" "}
+        {EXPENSE_CATEGORIES.find((c) => c.key === expense.category)?.label ?? expense.category}
       </Text>
 
       <View
         style={{
-          borderRadius: 16, borderWidth: 1, borderColor: coral.border,
-          backgroundColor: coral.surface, padding: 15, marginBottom: 20,
+          borderRadius: 16,
+          borderWidth: 1,
+          borderColor: coral.border,
+          backgroundColor: coral.surface,
+          padding: 15,
+          marginBottom: 20,
         }}
       >
         {[
@@ -263,32 +341,63 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
             value: formatAmount(minorToMajor(myShareMinor, expense.currency), expense.currency),
           },
           ...(youLentMinor > 0
-            ? [{ label: "You lent", value: formatAmount(minorToMajor(youLentMinor, expense.currency), expense.currency), tone: "credit" as const }]
+            ? [
+                {
+                  label: "You lent",
+                  value: formatAmount(
+                    minorToMajor(youLentMinor, expense.currency),
+                    expense.currency
+                  ),
+                  tone: "credit" as const,
+                },
+              ]
             : []),
           ...(youBorrowedMinor > 0
-            ? [{ label: "You borrowed", value: formatAmount(minorToMajor(youBorrowedMinor, expense.currency), expense.currency), tone: "debt" as const }]
+            ? [
+                {
+                  label: "You borrowed",
+                  value: formatAmount(
+                    minorToMajor(youBorrowedMinor, expense.currency),
+                    expense.currency
+                  ),
+                  tone: "debt" as const,
+                },
+              ]
             : []),
-          { label: "Split method", value: `${splitMethodLabel} · ${expense.splits.length} included` },
+          {
+            label: "Split method",
+            value: `${splitMethodLabel} · ${expense.splits.length} included`,
+          },
         ].map((line, i, arr) => (
           <View
             key={line.label}
             style={{
-              flexDirection: "row", justifyContent: "space-between", alignItems: "baseline",
-              gap: 16, minHeight: 40, paddingVertical: 8,
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              gap: 16,
+              minHeight: 40,
+              paddingVertical: 8,
               borderBottomWidth: i < arr.length - 1 ? 1 : 0,
               borderBottomColor: coral.border,
             }}
           >
-            <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 14, color: coral.muted }}>
+            <Text
+              style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 14, color: coral.muted }}
+            >
               {line.label}
             </Text>
             <Text
               style={{
-                fontFamily: "IBMPlexMono_600SemiBold", fontSize: 16,
+                fontFamily: "IBMPlexMono_600SemiBold",
+                fontSize: 16,
                 fontVariant: ["tabular-nums"],
-                color: line.tone === "credit" ? coral.positive
-                  : line.tone === "debt" ? coral.negative
-                  : coral.foreground,
+                color:
+                  line.tone === "credit"
+                    ? coral.positive
+                    : line.tone === "debt"
+                      ? coral.negative
+                      : coral.foreground,
               }}
             >
               {line.value}
@@ -302,8 +411,14 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
       {expense.splits.map((split) => {
         const isMe = split.userId === currentUser.id;
         const isPayer = split.userId === expense.paidBy;
-        const totalStr = formatAmount(minorToMajor(expense.amountMinor, expense.currency), expense.currency);
-        const shareStr = formatAmount(minorToMajor(split.amountMinor, expense.currency), expense.currency);
+        const totalStr = formatAmount(
+          minorToMajor(expense.amountMinor, expense.currency),
+          expense.currency
+        );
+        const shareStr = formatAmount(
+          minorToMajor(split.amountMinor, expense.currency),
+          expense.currency
+        );
 
         let subtitle: string;
         let amount: string;
@@ -351,22 +466,28 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
         )}
       </View>
 
-      {data.receiptUrl ? <MoneyRow
-        avatar={
-          <View
-            style={{
-              width: 42, height: 42, borderRadius: 14,
-              backgroundColor: coral.accentSoft, alignItems: "center", justifyContent: "center",
-            }}
-          >
-            <Text style={{ fontSize: 11, fontWeight: "800", color: coral.accentInk }}>R</Text>
-          </View>
-        }
-        title="Receipt attached"
-        subtitle={`Open receipt image${data.comments.length > 0 ? ` · ${data.comments.length} comment${data.comments.length === 1 ? "" : "s"}` : ""}`}
-        amount={receiptLoading ? "Loading..." : "View"}
-        onPress={receiptLoading ? undefined : handleViewReceipt}
-      /> : null}
+      {data.receiptUrl ? (
+        <MoneyRow
+          avatar={
+            <View
+              style={{
+                width: 42,
+                height: 42,
+                borderRadius: 14,
+                backgroundColor: coral.accentSoft,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Text style={{ fontSize: 11, fontWeight: "800", color: coral.accentInk }}>R</Text>
+            </View>
+          }
+          title="Receipt attached"
+          subtitle={`Open receipt image${data.comments.length > 0 ? ` · ${data.comments.length} comment${data.comments.length === 1 ? "" : "s"}` : ""}`}
+          amount={receiptLoading ? "Loading..." : "View"}
+          onPress={receiptLoading ? undefined : handleViewReceipt}
+        />
+      ) : null}
 
       <View style={{ marginTop: 32, marginBottom: 40 }}>
         <ExpenseComments expenseId={expense.id} currentUserId={currentUser.id} />
@@ -381,10 +502,26 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
         handleIndicatorStyle={{ backgroundColor: coral.border, width: 38, height: 5 }}
       >
         <BottomSheetView style={{ padding: 20, paddingBottom: insets.bottom + 24 }}>
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 22, color: coral.foreground, marginBottom: 8 }}>
-            {data.permissions.deleteNeedsOwnerConfirmation ? "Owner confirmation required" : "Delete Expense?"}
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 22,
+              color: coral.foreground,
+              marginBottom: 8,
+            }}
+          >
+            {data.permissions.deleteNeedsOwnerConfirmation
+              ? "Owner confirmation required"
+              : "Delete Expense?"}
           </Text>
-          <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 16, color: coral.muted, marginBottom: 24 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 16,
+              color: coral.muted,
+              marginBottom: 24,
+            }}
+          >
             {data.permissions.deleteNeedsOwnerConfirmation
               ? `This expense was created by ${expense.createdBy === currentUser.id ? "you" : expense.paidByUser.name}. As a group owner, you can delete it, but this action cannot be undone.`
               : `Are you sure you want to delete "${expense.title}"? This cannot be undone.`}
@@ -396,12 +533,23 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
                 deleteSheetRef.current?.dismiss();
               }}
               style={({ pressed }) => ({
-                flex: 1, height: 48, borderWidth: 1, borderColor: coral.border,
-                borderRadius: 14, alignItems: "center", justifyContent: "center",
+                flex: 1,
+                height: 48,
+                borderWidth: 1,
+                borderColor: coral.border,
+                borderRadius: 14,
+                alignItems: "center",
+                justifyContent: "center",
                 opacity: pressed ? 0.5 : 1,
               })}
             >
-              <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 16,
+                  color: coral.foreground,
+                }}
+              >
                 Cancel
               </Text>
             </Pressable>
@@ -409,12 +557,22 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
               onPress={handleDeleteConfirm}
               disabled={deleteLoading}
               style={({ pressed }) => ({
-                flex: 1, height: 48, backgroundColor: coral.negativeSoft,
-                borderRadius: 14, alignItems: "center", justifyContent: "center",
+                flex: 1,
+                height: 48,
+                backgroundColor: coral.negativeSoft,
+                borderRadius: 14,
+                alignItems: "center",
+                justifyContent: "center",
                 opacity: deleteLoading ? 0.5 : pressed ? 0.8 : 1,
               })}
             >
-              <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.negative }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 16,
+                  color: coral.negative,
+                }}
+              >
                 {deleteLoading ? "Deleting..." : "Delete"}
               </Text>
             </Pressable>
@@ -431,7 +589,14 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
         handleIndicatorStyle={{ backgroundColor: coral.border, width: 38, height: 5 }}
       >
         <BottomSheetView style={{ padding: 20, paddingBottom: insets.bottom + 24 }}>
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 20, color: coral.foreground, marginBottom: 12 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 20,
+              color: coral.foreground,
+              marginBottom: 12,
+            }}
+          >
             Settle with
           </Text>
           {settlementCandidates.map((candidate, idx) => {
@@ -444,18 +609,33 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
                 accessibilityRole="button"
                 onPress={() => handleSettleSelect(candidate.counterpartyId)}
                 style={({ pressed }) => ({
-                  flexDirection: "row", alignItems: "center", paddingVertical: 14, paddingHorizontal: 4,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  paddingVertical: 14,
+                  paddingHorizontal: 4,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
-                <Text style={{ flex: 1, fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
+                <Text
+                  style={{
+                    flex: 1,
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 16,
+                    color: coral.foreground,
+                  }}
+                >
                   {candidate.counterpartyId === currentUser.id ? "You" : "Someone"}
                 </Text>
-                <Text style={{
-                  fontFamily: "IBMPlexMono_600SemiBold", fontSize: 16,
-                  color: isPositive ? coral.positive : coral.negative,
-                }}>
-                  {isPositive ? "" : "-"}{symbol}{major.toFixed(2)}
+                <Text
+                  style={{
+                    fontFamily: "IBMPlexMono_600SemiBold",
+                    fontSize: 16,
+                    color: isPositive ? coral.positive : coral.negative,
+                  }}
+                >
+                  {isPositive ? "" : "-"}
+                  {symbol}
+                  {major.toFixed(2)}
                 </Text>
               </Pressable>
             );
@@ -468,15 +648,19 @@ export default function ExpenseDetailScreenV2(): JSX.Element {
 
 function isToday(date: Date): boolean {
   const now = new Date();
-  return date.getDate() === now.getDate() &&
+  return (
+    date.getDate() === now.getDate() &&
     date.getMonth() === now.getMonth() &&
-    date.getFullYear() === now.getFullYear();
+    date.getFullYear() === now.getFullYear()
+  );
 }
 
 function isYesterday(date: Date): boolean {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  return date.getDate() === yesterday.getDate() &&
+  return (
+    date.getDate() === yesterday.getDate() &&
     date.getMonth() === yesterday.getMonth() &&
-    date.getFullYear() === yesterday.getFullYear();
+    date.getFullYear() === yesterday.getFullYear()
+  );
 }

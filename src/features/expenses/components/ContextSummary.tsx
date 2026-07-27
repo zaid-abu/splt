@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  Pressable, View , Text } from "react-native";
+import { Pressable, View, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { Card } from "@/components/ui/Card";
 import { GroupIconBadge } from "@/components/ui/GroupIconBadge";

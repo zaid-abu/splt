@@ -26,13 +26,12 @@ export default function ScheduleReviewScreen(): JSX.Element {
   return (
     <CoralScreen scroll={false}>
       <CoralTopBar title="Scheduled review" onBack={() => router.back()} />
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
-        
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40 }}
+      >
         <View style={{ marginBottom: 24 }}>
-          <BalanceHero
-            label="Needs review - due Monday"
-            value="$96.40"
-          />
+          <BalanceHero label="Needs review - due Monday" value="$96.40" />
         </View>
 
         <CoralField
@@ -43,35 +42,19 @@ export default function ScheduleReviewScreen(): JSX.Element {
         />
 
         <View style={{ marginTop: 18 }}>
-          <CoralField
-            label="Paid by"
-            value="You"
-            editable={false}
-          />
+          <CoralField label="Paid by" value="You" editable={false} />
         </View>
 
         <View style={{ marginTop: 18 }}>
-          <CoralField
-            label="Split method"
-            value="Equal (4 shares)"
-            editable={false}
-          />
+          <CoralField label="Split method" value="Equal (4 shares)" editable={false} />
         </View>
 
         <View style={{ marginTop: 18 }}>
-          <CoralField
-            label="Category and date"
-            value="Bills · July 20, 2026"
-            editable={false}
-          />
+          <CoralField label="Category and date" value="Bills · July 20, 2026" editable={false} />
         </View>
 
         <View style={{ marginTop: 18 }}>
-          <CoralField
-            label="Next occurrence"
-            value="August 20, 2026"
-            editable={false}
-          />
+          <CoralField label="Next occurrence" value="August 20, 2026" editable={false} />
         </View>
 
         <View
@@ -97,11 +80,7 @@ export default function ScheduleReviewScreen(): JSX.Element {
         </View>
 
         <View style={{ marginTop: 28 }}>
-          <CoralButton
-            label="Post expense - $96.40"
-            variant="primary"
-            onPress={handlePost}
-          />
+          <CoralButton label="Post expense - $96.40" variant="primary" onPress={handlePost} />
         </View>
       </ScrollView>
     </CoralScreen>

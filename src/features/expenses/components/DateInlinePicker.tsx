@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  Pressable, View , Text } from "react-native";
+import { Pressable, View, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import dayjs from "dayjs";
 import DateTimePicker from "react-native-ui-datepicker";

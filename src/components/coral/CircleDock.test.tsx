@@ -5,7 +5,11 @@ import { CircleDock } from "./CircleDock";
 
 jest.mock("react-native-reanimated", () => {
   const { View: RNView } = jest.requireActual("react-native");
-  const Animated = ({ children, style, ...props }: any) => <RNView style={style} {...props}>{children}</RNView>;
+  const Animated = ({ children, style, ...props }: any) => (
+    <RNView style={style} {...props}>
+      {children}
+    </RNView>
+  );
   Animated.View = Animated;
   return {
     __esModule: true,
@@ -22,6 +26,10 @@ jest.mock("expo-haptics", () => ({
   impactAsync: jest.fn(),
   selectionAsync: jest.fn(),
   ImpactFeedbackStyle: { Light: "Light", Medium: "Medium" },
+}));
+
+jest.mock("expo-router", () => ({
+  useSegments: () => ["(home-tab)", "home"],
 }));
 
 jest.mock("@/store/useUIStore", () => ({

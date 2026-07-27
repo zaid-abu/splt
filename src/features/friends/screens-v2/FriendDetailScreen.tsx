@@ -145,8 +145,9 @@ export default function FriendDetailScreen(): JSX.Element {
   const totalOwed = nonZeroCurrencies.length > 0 && nonZeroCurrencies.every(([, a]) => a > 0);
   const totalOwe = nonZeroCurrencies.length > 0 && nonZeroCurrencies.every(([, a]) => a < 0);
 
-  const primaryContext: MoneyContext | undefined =
-    data?.friendship?.id ? { type: "direct", friendshipId: data.friendship.id } : undefined;
+  const primaryContext: MoneyContext | undefined = data?.friendship?.id
+    ? { type: "direct", friendshipId: data.friendship.id }
+    : undefined;
 
   const remindOptions = useMemo(() => {
     const seen = new Set<string>();
@@ -197,8 +198,7 @@ export default function FriendDetailScreen(): JSX.Element {
     if (!selectedRemind) return;
     sendReminderMutation.mutate({
       clientOperationId: randomUUID(),
-      groupId:
-        selectedRemind.context.type === "group" ? selectedRemind.context.groupId : undefined,
+      groupId: selectedRemind.context.type === "group" ? selectedRemind.context.groupId : undefined,
       friendshipId:
         selectedRemind.context.type === "direct" ? selectedRemind.context.friendshipId : undefined,
       currency: selectedRemind.currency,
@@ -276,30 +276,26 @@ export default function FriendDetailScreen(): JSX.Element {
   const handleUnblock = useCallback(() => {
     const p = data?.person;
     if (!p) return;
-    Alert.alert(
-      "Unblock Friend?",
-      `${p.name} will be unblocked and able to contact you again.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Unblock",
-          onPress: () => {
-            transition.mutate(
-              { counterpartyId: id, action: "unblock" },
-              {
-                onSuccess: () => {
-                  toast.show("Friend unblocked");
-                  refresh();
-                },
-                onError: () => {
-                  toast.show("Failed to unblock friend");
-                },
-              }
-            );
-          },
+    Alert.alert("Unblock Friend?", `${p.name} will be unblocked and able to contact you again.`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Unblock",
+        onPress: () => {
+          transition.mutate(
+            { counterpartyId: id, action: "unblock" },
+            {
+              onSuccess: () => {
+                toast.show("Friend unblocked");
+                refresh();
+              },
+              onError: () => {
+                toast.show("Failed to unblock friend");
+              },
+            }
+          );
         },
-      ]
-    );
+      },
+    ]);
   }, [data?.person, id, transition, toast, refresh]);
 
   if (isInitialLoading) {
@@ -344,10 +340,7 @@ export default function FriendDetailScreen(): JSX.Element {
             $0.00
           </MoneyAmount>
         ) : nonZeroCurrencies.length === 1 ? (
-          <MoneyAmount
-            tone={nonZeroCurrencies[0][1] > 0 ? "positive" : "negative"}
-            size="hero"
-          >
+          <MoneyAmount tone={nonZeroCurrencies[0][1] > 0 ? "positive" : "negative"} size="hero">
             {formatSignedAmount(nonZeroCurrencies[0][1], nonZeroCurrencies[0][0])}
           </MoneyAmount>
         ) : (
@@ -426,9 +419,7 @@ export default function FriendDetailScreen(): JSX.Element {
               title={group.name}
               subtitle={`${group.members.length} people`}
               amount={
-                balance
-                  ? formatSignedAmount(balance.signedAmountMinor, balance.currency)
-                  : "$0.00"
+                balance ? formatSignedAmount(balance.signedAmountMinor, balance.currency) : "$0.00"
               }
               amountTone={
                 balance

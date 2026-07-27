@@ -7,7 +7,11 @@ const mockUseLocalSearchParams = jest.fn(() => ({ segment: "groups" }));
 
 jest.mock("react-native-reanimated", () => {
   const { View: RNView } = jest.requireActual("react-native");
-  const Animated = ({ children, style, ...props }: any) => <RNView style={style} {...props}>{children}</RNView>;
+  const Animated = ({ children, style, ...props }: any) => (
+    <RNView style={style} {...props}>
+      {children}
+    </RNView>
+  );
   Animated.View = Animated;
   return {
     __esModule: true,
@@ -35,7 +39,14 @@ jest.mock("lucide-react-native", () => {
   const RN = require("react-native");
   const el = React.createElement;
   const MockIcon = (props: any) => el(RN.View, null);
-  return { UserPlus: MockIcon, Bell: MockIcon, Search: MockIcon, XCircle: MockIcon };
+  return {
+    UserPlus: MockIcon,
+    Bell: MockIcon,
+    Search: MockIcon,
+    XCircle: MockIcon,
+    Plus: MockIcon,
+    UsersRound: MockIcon,
+  };
 });
 
 jest.mock("@/features/circles/hooks/useCirclesSnapshot", () => ({
@@ -103,6 +114,7 @@ jest.mock("@/components/coral", () => {
         { accessibilityRole: "button", onPress },
         React.createElement(RN.Text, null, label)
       ),
+    CoralSheet: ({ children }: any) => React.createElement(RN.View, null, children),
     MoneyRow: ({ title, subtitle, amount, onPress, accessibilityLabel }: any) => {
       const accessibleName =
         accessibilityLabel || [title, subtitle, amount].filter(Boolean).join(", ");

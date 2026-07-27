@@ -86,6 +86,7 @@ jest.mock("lucide-react-native", () => {
 jest.mock("expo-haptics", () => ({
   notificationAsync: jest.fn(),
   impactAsync: jest.fn(),
+  selectionAsync: jest.fn(),
   ImpactFeedbackStyle: { Light: "light" },
   NotificationFeedbackType: { Success: "success" },
 }));
@@ -169,9 +170,10 @@ jest.mock("@/features/dashboard/hooks/useHomeSnapshot", () => ({
 }));
 
 const baseData = {
+  circleBalances: [],
   heroBalances: [],
   attentionRows: [],
-  groupLedger: [],
+  groupLedger: [{ group: mockGroup, netSignedMinor: 0 }],
   nextSchedule: undefined,
   recentMovement: [],
   notifications: [],
@@ -250,14 +252,25 @@ describe("MoneyMapScreen", () => {
   });
 
   it("shows balance hero with net total", async () => {
-    const groupLedger = [{ group: mockGroup, netSignedMinor: 5000 }];
     mockUseHomeSnapshot.mockReturnValue({
       ...baseSnapshot,
-      data: { ...baseData, groupLedger },
+      data: {
+        ...baseData,
+        circleBalances: [
+          {
+            id: "g1",
+            type: "group" as const,
+            name: "Trip",
+            subtitle: "Owed 50.00",
+            netSignedMinor: 5000,
+            group: mockGroup,
+          },
+        ],
+      },
     });
     await renderScreen();
     expect(screen.getByText("Across your circles")).toBeTruthy();
-    expect(screen.getByText("You're owed 50.00 \u00B7 You owe 0.00")).toBeTruthy();
+    expect(screen.getByText("Overall, you are owed money")).toBeTruthy();
   });
 
   it("shows hero breakdown and additional count when multiple balances exist", async () => {
@@ -265,19 +278,30 @@ describe("MoneyMapScreen", () => {
       ...baseSnapshot,
       data: {
         ...baseData,
-        heroBalances: [
-          { counterpartyId: "u1", user: mockUser, signedAmountMinor: 1200, currency: "USD" },
+        circleBalances: [
           {
-            counterpartyId: "u2",
-            user: { ...mockUser, id: "u2", name: "Bob" },
-            signedAmountMinor: -500,
-            currency: "EUR",
+            id: "u1",
+            type: "person" as const,
+            name: "Alice",
+            subtitle: "Owed 12.00",
+            netSignedMinor: 1200,
+            user: mockUser,
           },
           {
-            counterpartyId: "u3",
+            id: "u2",
+            type: "person" as const,
+            name: "Bob",
+            subtitle: "You owe 5.00",
+            netSignedMinor: -500,
+            user: { ...mockUser, id: "u2", name: "Bob" },
+          },
+          {
+            id: "u3",
+            type: "person" as const,
+            name: "Cara",
+            subtitle: "Owed 3.00",
+            netSignedMinor: 300,
             user: { ...mockUser, id: "u3", name: "Cara" },
-            signedAmountMinor: 300,
-            currency: "GBP",
           },
         ],
       },
@@ -286,35 +310,45 @@ describe("MoneyMapScreen", () => {
 
     expect(screen.getByText("Alice")).toBeTruthy();
     expect(screen.getByText("Bob")).toBeTruthy();
-    expect(screen.getByText("+1 more")).toBeTruthy();
+    expect(screen.getByText("Cara")).toBeTruthy();
   });
 
-  it("shows attention rows and routes to friend detail", async () => {
-    const attentionRows = [
+  it("shows a person circle and routes to friend detail", async () => {
+    const circleBalances = [
       {
-        type: "owe" as const,
-        counterpartyId: "u1",
+        id: "u1",
+        type: "person" as const,
+        name: "Alice",
+        subtitle: "You owe 20.00",
+        netSignedMinor: -2000,
         user: mockUser,
-        signedAmountMinor: -2000,
-        currency: "USD",
       },
     ];
     mockUseHomeSnapshot.mockReturnValue({
       ...baseSnapshot,
-      data: { ...baseData, attentionRows },
+      data: { ...baseData, circleBalances },
     });
     await renderScreen();
-    expect(screen.getByText("Needs attention")).toBeTruthy();
+    expect(screen.getByText("Where you stand")).toBeTruthy();
     expect(screen.getByText("Alice")).toBeTruthy();
     fireEvent.press(screen.getByText("Alice"));
     expect(mockPush).toHaveBeenCalledWith("/friend/u1");
   });
 
-  it("shows group ledger and routes to group detail", async () => {
-    const groupLedger = [{ group: mockGroup, netSignedMinor: 3000 }];
+  it("shows a group circle and routes to group detail", async () => {
+    const circleBalances = [
+      {
+        id: "g1",
+        type: "group" as const,
+        name: "Trip",
+        subtitle: "Owed 30.00",
+        netSignedMinor: 3000,
+        group: mockGroup,
+      },
+    ];
     mockUseHomeSnapshot.mockReturnValue({
       ...baseSnapshot,
-      data: { ...baseData, groupLedger },
+      data: { ...baseData, circleBalances },
     });
     await renderScreen();
     expect(screen.getByText("Where you stand")).toBeTruthy();
@@ -335,26 +369,33 @@ describe("MoneyMapScreen", () => {
     expect(mockPush).toHaveBeenCalledWith("/recurring/s1");
   });
 
-  it("shows recent movement and routes expense to expense detail", async () => {
-    const recentMovement = [
+  it("reveals settled circles on demand", async () => {
+    const circleBalances = [
       {
-        id: "exp-e1",
-        type: "expense" as const,
-        description: "Dinner",
-        amount: 5000,
-        currency: "USD",
-        date: new Date(),
-        counterpartyName: "Bob",
+        id: "u1",
+        type: "person" as const,
+        name: "Alice",
+        subtitle: "Owed 20.00",
+        netSignedMinor: 2000,
+        user: mockUser,
+      },
+      {
+        id: "g1",
+        type: "group" as const,
+        name: "Settled trip",
+        subtitle: "Settled",
+        netSignedMinor: 0,
+        group: mockGroup,
       },
     ];
     mockUseHomeSnapshot.mockReturnValue({
       ...baseSnapshot,
-      data: { ...baseData, recentMovement },
+      data: { ...baseData, circleBalances },
     });
     await renderScreen();
-    expect(screen.getByText("Recent movement")).toBeTruthy();
-    fireEvent.press(screen.getByText("Dinner"));
-    expect(mockPush).toHaveBeenCalledWith("/expense/e1");
+    expect(screen.queryByText("Settled trip")).toBeNull();
+    await fireEvent.press(screen.getByTestId("show-settled-circles"));
+    expect(screen.getByText("Settled trip")).toBeTruthy();
   });
 
   it("prefers the next schedule over recent movement when both exist", async () => {
@@ -380,47 +421,43 @@ describe("MoneyMapScreen", () => {
     expect(screen.queryByText("Recent movement")).toBeNull();
   });
 
-  it("routes settlement movement to group detail when group context exists", async () => {
-    const recentMovement = [
+  it("routes a settled group circle to group detail", async () => {
+    const circleBalances = [
       {
-        id: "set-s1",
-        type: "settlement" as const,
-        description: "You paid",
-        amount: 1200,
-        currency: "USD",
-        date: new Date(),
-        counterpartyName: "Trip",
-        groupId: "g1",
+        id: "g1",
+        type: "group" as const,
+        name: "Settled trip",
+        subtitle: "Settled",
+        netSignedMinor: 1000,
+        group: mockGroup,
       },
     ];
     mockUseHomeSnapshot.mockReturnValue({
       ...baseSnapshot,
-      data: { ...baseData, recentMovement },
+      data: { ...baseData, circleBalances },
     });
     await renderScreen();
-    fireEvent.press(screen.getByText("You paid"));
+    fireEvent.press(screen.getByText("Settled trip"));
     expect(mockPush).toHaveBeenCalledWith("/group/g1");
   });
 
-  it("routes settlement movement to friend detail when direct context exists", async () => {
-    const recentMovement = [
+  it("routes a person circle to friend detail", async () => {
+    const circleBalances = [
       {
-        id: "set-s2",
-        type: "settlement" as const,
-        description: "You received",
-        amount: 1200,
-        currency: "USD",
-        date: new Date(),
-        counterpartyName: "Bob",
-        counterpartyId: "u2",
+        id: "u2",
+        type: "person" as const,
+        name: "Bob",
+        subtitle: "Owed 12.00",
+        netSignedMinor: 1200,
+        user: { ...mockUser, id: "u2", name: "Bob" },
       },
     ];
     mockUseHomeSnapshot.mockReturnValue({
       ...baseSnapshot,
-      data: { ...baseData, recentMovement },
+      data: { ...baseData, circleBalances },
     });
     await renderScreen();
-    fireEvent.press(screen.getByText("You received"));
+    fireEvent.press(screen.getByText("Bob"));
     expect(mockPush).toHaveBeenCalledWith("/friend/u2");
   });
 

@@ -1,97 +1,87 @@
-import { useEffect, useMemo, type JSX } from "react"
-import {
-  View,
-  ScrollView,
-  Pressable,
-  TextInput,
-  Text,
-  ActivityIndicator,
-} from "react-native"
-import { useLocalSearchParams, useRouter } from "expo-router"
-import { useSafeAreaInsets } from "react-native-safe-area-context"
-import * as Haptics from "expo-haptics"
-import * as icons from "lucide-react-native"
+import { useEffect, useMemo, type JSX } from "react";
+import { View, ScrollView, Pressable, TextInput, Text, ActivityIndicator } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Haptics from "expo-haptics";
+import * as icons from "lucide-react-native";
 
-import { useUI } from "@/components/ui"
-import { useAuth } from "@/context/AppContext"
-import { useOpenBalances } from "@/features/balances/queries/useBalances"
-import { useFriendsList } from "@/features/friends/hooks/useFriendsList"
-import { useGroupDetails, useGroups } from "@/features/groups/queries/useGroups"
+import { useUI } from "@/components/ui";
+import { useAuth } from "@/context/AppContext";
+import { useOpenBalances } from "@/features/balances/queries/useBalances";
+import { useFriendsList } from "@/features/friends/hooks/useFriendsList";
+import { useGroupDetails, useGroups } from "@/features/groups/queries/useGroups";
 import {
   useSettlementFlow,
   type DeterminedSettlement,
   type SettlementMethod,
-} from "@/features/settlements/hooks/useSettlementFlow"
-import {
-  CoralButton,
-  CoralScreen,
-  CoralTopBar,
-  BalanceHero,
-} from "@/components/coral"
-import type { SettleRouteParams } from "@/types/navigation"
-import type { MoneyContext } from "@/features/money/types"
-import { getCurrencySymbol, formatAmount } from "@/components/ui/AmountDisplay"
-import { minorToMajor } from "@/features/money/splits"
+} from "@/features/settlements/hooks/useSettlementFlow";
+import { CoralButton, CoralScreen, CoralTopBar, BalanceHero } from "@/components/coral";
+import type { SettleRouteParams } from "@/types/navigation";
+import type { MoneyContext } from "@/features/money/types";
+import { getCurrencySymbol, formatAmount } from "@/components/ui/AmountDisplay";
+import { minorToMajor } from "@/features/money/splits";
 
 const METHOD_LABELS: { key: SettlementMethod; label: string }[] = [
   { key: "cash", label: "Cash" },
   { key: "bank_transfer", label: "Bank transfer" },
   { key: "other", label: "Other external payment" },
-]
+];
 
 const AMOUNT_PRESETS = [
   { label: "Full", getValue: (max: number) => max },
   { label: "Half", getValue: (max: number) => Math.floor(max / 2) },
   { label: "Custom", getValue: () => 0 },
-]
+];
 
 function useHydratedSelection(userId?: string): {
-  selection: DeterminedSettlement | null
-  isLoading: boolean
+  selection: DeterminedSettlement | null;
+  isLoading: boolean;
 } {
-  const params = useLocalSearchParams<SettleRouteParams>()
-  const { data: balances, isLoading: balancesLoading } = useOpenBalances(userId)
-  const { friendRows, isLoading: friendsLoading } = useFriendsList()
-  const { data: groups, isLoading: groupsLoading } = useGroups(userId)
+  const params = useLocalSearchParams<SettleRouteParams>();
+  const { data: balances, isLoading: balancesLoading } = useOpenBalances(userId);
+  const { friendRows, isLoading: friendsLoading } = useFriendsList();
+  const { data: groups, isLoading: groupsLoading } = useGroups(userId);
 
   const userNameMap = useMemo(() => {
-    const map = new Map<string, { name: string; avatar?: string }>()
+    const map = new Map<string, { name: string; avatar?: string }>();
     for (const row of friendRows) {
-      map.set(row.friend.id, { name: row.friend.name, avatar: row.friend.avatar })
+      map.set(row.friend.id, { name: row.friend.name, avatar: row.friend.avatar });
     }
     if (groups) {
       for (const group of groups) {
         for (const member of group.members) {
           if (!map.has(member.user.id)) {
-            map.set(member.user.id, { name: member.user.name, avatar: member.user.avatar })
+            map.set(member.user.id, { name: member.user.name, avatar: member.user.avatar });
           }
         }
       }
     }
-    return map
-  }, [friendRows, groups])
+    return map;
+  }, [friendRows, groups]);
 
   return useMemo(() => {
     if (balancesLoading || friendsLoading || groupsLoading || !params.id) {
-      return { selection: null, isLoading: true }
+      return { selection: null, isLoading: true };
     }
 
-    const userDetails = userNameMap.get(params.id)
+    const userDetails = userNameMap.get(params.id);
 
     if (params.contextType && params.currency && params.amountMinor) {
-      const isOwedToYou = params.isOwedToYou === "true"
-      const signedAmountMinor = parseInt(params.amountMinor, 10) || 0
+      const isOwedToYou = params.isOwedToYou === "true";
+      const signedAmountMinor = parseInt(params.amountMinor, 10) || 0;
 
-      const friendshipRow = params.friendshipId ? undefined : friendRows.find((r) => r.friend.id === params.id)
-      const resolvedFriendshipId = params.friendshipId || friendshipRow?.friendship?.id || ""
+      const friendshipRow = params.friendshipId
+        ? undefined
+        : friendRows.find((r) => r.friend.id === params.id);
+      const resolvedFriendshipId = params.friendshipId || friendshipRow?.friendship?.id || "";
       const context: MoneyContext | null =
         params.contextType === "group" && params.groupId
           ? { type: "group", groupId: params.groupId }
           : resolvedFriendshipId
             ? { type: "direct", friendshipId: resolvedFriendshipId }
-            : null
+            : null;
 
-      if (!context) return { selection: null, isLoading: false }
+      if (!context) return { selection: null, isLoading: false };
 
       return {
         selection: {
@@ -104,11 +94,11 @@ function useHydratedSelection(userId?: string): {
           isOwedToYou,
         },
         isLoading: false,
-      }
+      };
     }
 
-    const balance = balances?.find((b) => b.counterpartyId === params.id)
-    if (!balance) return { selection: null, isLoading: false }
+    const balance = balances?.find((b) => b.counterpartyId === params.id);
+    if (!balance) return { selection: null, isLoading: false };
 
     return {
       selection: {
@@ -121,28 +111,28 @@ function useHydratedSelection(userId?: string): {
         isOwedToYou: balance.signedAmountMinor > 0,
       },
       isLoading: false,
-    }
-  }, [balances, balancesLoading, friendRows, friendsLoading, groupsLoading, params, userNameMap])
+    };
+  }, [balances, balancesLoading, friendRows, friendsLoading, groupsLoading, params, userNameMap]);
 }
 
 export default function SettlementScreenV2(): JSX.Element {
-  const router = useRouter()
-  const insets = useSafeAreaInsets()
-  const { color } = useUI()
-  const { currentUser } = useAuth()
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const { color } = useUI();
+  const { currentUser } = useAuth();
 
-  const { selection, isLoading: selectionLoading } = useHydratedSelection(currentUser?.id)
-  const flow = useSettlementFlow(currentUser?.id)
+  const { selection, isLoading: selectionLoading } = useHydratedSelection(currentUser?.id);
+  const flow = useSettlementFlow(currentUser?.id);
 
-  const groupId = selection?.context.type === "group" ? selection.context.groupId : undefined
-  const { data: group } = useGroupDetails(groupId)
-  const groupName = group?.name
+  const groupId = selection?.context.type === "group" ? selection.context.groupId : undefined;
+  const { data: group } = useGroupDetails(groupId);
+  const groupName = group?.name;
 
   useEffect(() => {
     if (selection && flow.state.step === "loading") {
-      flow.startCompose(selection)
+      flow.startCompose(selection);
     }
-  }, [flow, selection])
+  }, [flow, selection]);
 
   if (selectionLoading) {
     return (
@@ -152,7 +142,7 @@ export default function SettlementScreenV2(): JSX.Element {
           <ActivityIndicator color={color.text} />
         </View>
       </CoralScreen>
-    )
+    );
   }
 
   if (!selection) {
@@ -173,7 +163,7 @@ export default function SettlementScreenV2(): JSX.Element {
           <CoralButton label="Go back" variant="primary" onPress={() => router.back()} />
         </View>
       </CoralScreen>
-    )
+    );
   }
 
   return (
@@ -186,10 +176,16 @@ export default function SettlementScreenV2(): JSX.Element {
         <ReviewView flow={flow} color={color} insets={insets} groupName={groupName} />
       )}
       {flow.state.step === "success" && (
-        <SuccessView flow={flow} color={color} insets={insets} router={router} groupName={groupName} />
+        <SuccessView
+          flow={flow}
+          color={color}
+          insets={insets}
+          router={router}
+          groupName={groupName}
+        />
       )}
     </CoralScreen>
-  )
+  );
 }
 
 function ComposeView({
@@ -198,17 +194,17 @@ function ComposeView({
   insets,
   groupName,
 }: {
-  flow: ReturnType<typeof useSettlementFlow>
-  color: any
-  insets: any
-  groupName?: string
+  flow: ReturnType<typeof useSettlementFlow>;
+  color: any;
+  insets: any;
+  groupName?: string;
 }) {
-  if (flow.state.step !== "compose") return null
-  const { selection, amountInput, method, note, composeError } = flow.state
-  const maxMinor = Math.abs(selection.signedAmountMinor)
+  if (flow.state.step !== "compose") return null;
+  const { selection, amountInput, method, note, composeError } = flow.state;
+  const maxMinor = Math.abs(selection.signedAmountMinor);
   const directionWords = selection.isOwedToYou
     ? `${selection.counterpartyName.split(" ")[0]} pays you`
-    : `You pay ${selection.counterpartyName.split(" ")[0]}`
+    : `You pay ${selection.counterpartyName.split(" ")[0]}`;
 
   return (
     <ScrollView
@@ -269,7 +265,7 @@ function ComposeView({
             placeholderTextColor={color.muted}
             style={{
               fontSize: 40,
-          fontFamily: "InstrumentSans_600SemiBold",
+              fontFamily: "InstrumentSans_600SemiBold",
               color: amountInput ? color.text : color.muted,
               letterSpacing: -1,
               textAlign: "center",
@@ -297,9 +293,9 @@ function ComposeView({
               key={preset.label}
               accessibilityRole="button"
               onPress={() => {
-                Haptics.selectionAsync()
-                if (preset.label === "Custom") return
-                flow.setAmountInput(String(preset.getValue(maxMinor)))
+                Haptics.selectionAsync();
+                if (preset.label === "Custom") return;
+                flow.setAmountInput(String(preset.getValue(maxMinor)));
               }}
               style={({ pressed }) => ({
                 paddingHorizontal: 20,
@@ -371,14 +367,14 @@ function ComposeView({
           }}
         >
           {METHOD_LABELS.map((m, idx) => {
-            const isActive = method === m.key
+            const isActive = method === m.key;
             return (
               <Pressable
                 key={m.key}
                 accessibilityRole="button"
                 onPress={() => {
-                  Haptics.selectionAsync()
-                  flow.setMethod(m.key)
+                  Haptics.selectionAsync();
+                  flow.setMethod(m.key);
                 }}
                 style={({ pressed }) => ({
                   flexDirection: "row",
@@ -425,11 +421,9 @@ function ComposeView({
                 >
                   {m.label}
                 </Text>
-                {isActive && (
-                  <icons.Check size={16} color={color.text} strokeWidth={2} />
-                )}
+                {isActive && <icons.Check size={16} color={color.text} strokeWidth={2} />}
               </Pressable>
-            )
+            );
           })}
         </View>
       </View>
@@ -464,8 +458,8 @@ function ComposeView({
         <CoralButton
           label="Review payment"
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-            flow.goToReview()
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            flow.goToReview();
           }}
           disabled={!amountInput || parseInt(amountInput, 10) <= 0}
         />
@@ -482,7 +476,7 @@ function ComposeView({
         </Text>
       </View>
     </ScrollView>
-  )
+  );
 }
 
 function ReviewView({
@@ -491,17 +485,17 @@ function ReviewView({
   insets,
   groupName,
 }: {
-  flow: ReturnType<typeof useSettlementFlow>
-  color: any
-  insets: any
-  groupName?: string
+  flow: ReturnType<typeof useSettlementFlow>;
+  color: any;
+  insets: any;
+  groupName?: string;
 }) {
-  if (flow.state.step !== "review") return null
-  const { selection, amountMinor, method, note, resultingMinor } = flow.state
-  const amountWhole = minorToMajor(amountMinor, selection.currency)
-  const resultingWhole = minorToMajor(resultingMinor, selection.currency)
-  const methodLabel = METHOD_LABELS.find((m) => m.key === method)?.label || method
-  const isPositiveResult = resultingWhole >= 0
+  if (flow.state.step !== "review") return null;
+  const { selection, amountMinor, method, note, resultingMinor } = flow.state;
+  const amountWhole = minorToMajor(amountMinor, selection.currency);
+  const resultingWhole = minorToMajor(resultingMinor, selection.currency);
+  const methodLabel = METHOD_LABELS.find((m) => m.key === method)?.label || method;
+  const isPositiveResult = resultingWhole >= 0;
 
   return (
     <ScrollView
@@ -520,8 +514,7 @@ function ReviewView({
             lineHeight: 20,
           }}
         >
-          Splt records this payment but does not move money. Both people will see
-          the record.
+          Splt records this payment but does not move money. Both people will see the record.
         </Text>
 
         <BalanceHero
@@ -542,11 +535,17 @@ function ReviewView({
             overflow: "hidden",
           }}
         >
-          <ReviewRow label="From" value={selection.isOwedToYou ? selection.counterpartyName : "You"} color={color} />
-          <ReviewRow label="To" value={selection.isOwedToYou ? "You" : selection.counterpartyName} color={color} />
-          {groupName ? (
-            <ReviewRow label="Group" value={groupName} color={color} />
-          ) : null}
+          <ReviewRow
+            label="From"
+            value={selection.isOwedToYou ? selection.counterpartyName : "You"}
+            color={color}
+          />
+          <ReviewRow
+            label="To"
+            value={selection.isOwedToYou ? "You" : selection.counterpartyName}
+            color={color}
+          />
+          {groupName ? <ReviewRow label="Group" value={groupName} color={color} /> : null}
           <ReviewRow label="Method" value={methodLabel} color={color} />
           {note ? <ReviewRow label="Note" value={note} color={color} /> : null}
           <ReviewRow
@@ -570,18 +569,14 @@ function ReviewView({
         <CoralButton
           label="Record settlement"
           onPress={() => {
-            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-            flow.submit()
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+            flow.submit();
           }}
         />
-        <CoralButton
-          label="Change details"
-          variant="text"
-          onPress={() => flow.goBackToCompose()}
-        />
+        <CoralButton label="Change details" variant="text" onPress={() => flow.goBackToCompose()} />
       </View>
     </ScrollView>
-  )
+  );
 }
 
 function SuccessView({
@@ -591,25 +586,25 @@ function SuccessView({
   router,
   groupName,
 }: {
-  flow: ReturnType<typeof useSettlementFlow>
-  color: any
-  insets: any
-  router: any
-  groupName?: string
+  flow: ReturnType<typeof useSettlementFlow>;
+  color: any;
+  insets: any;
+  router: any;
+  groupName?: string;
 }) {
-  if (flow.state.step !== "success") return null
-  const { settlement, resultingMinor, selection } = flow.state
-  const amountWhole = minorToMajor(settlement.amountMinor, selection.currency)
-  const resultingWhole = minorToMajor(resultingMinor, selection.currency)
+  if (flow.state.step !== "success") return null;
+  const { settlement, resultingMinor, selection } = flow.state;
+  const amountWhole = minorToMajor(settlement.amountMinor, selection.currency);
+  const resultingWhole = minorToMajor(resultingMinor, selection.currency);
   const methodLabel =
-    METHOD_LABELS.find((m) => m.key === settlement.method)?.label || settlement.method
-  const isPositiveResult = resultingWhole >= 0
+    METHOD_LABELS.find((m) => m.key === settlement.method)?.label || settlement.method;
+  const isPositiveResult = resultingWhole >= 0;
 
   const directionText = selection.isOwedToYou
     ? `${selection.counterpartyName.split(" ")[0]} paid you`
-    : `You paid ${selection.counterpartyName.split(" ")[0]}`
+    : `You paid ${selection.counterpartyName.split(" ")[0]}`;
 
-  const introText = `${directionText} ${formatAmount(amountWhole, selection.currency)} in ${methodLabel.toLowerCase()}.${groupName ? ` Your ${groupName} balance is now settled.` : ""}`
+  const introText = `${directionText} ${formatAmount(amountWhole, selection.currency)} in ${methodLabel.toLowerCase()}.${groupName ? ` Your ${groupName} balance is now settled.` : ""}`;
 
   return (
     <ScrollView
@@ -637,7 +632,7 @@ function SuccessView({
       <View style={{ alignItems: "center", gap: 8 }}>
         <Text
           style={{
-          fontFamily: "InstrumentSans_600SemiBold",
+            fontFamily: "InstrumentSans_600SemiBold",
             fontSize: 24,
             color: color.text,
             textAlign: "center",
@@ -673,11 +668,7 @@ function SuccessView({
           value={`${formatAmount(amountWhole, settlement.currency)} ${settlement.currency}`}
           color={color}
         />
-        <ReviewRow
-          label="Direction"
-          value={directionText}
-          color={color}
-        />
+        <ReviewRow label="Direction" value={directionText} color={color} />
         <ReviewRow
           label="Method"
           value={`${methodLabel}${settlement.method === "cash" ? " - external" : ""}`}
@@ -695,24 +686,24 @@ function SuccessView({
         <CoralButton
           label="View relationship"
           variant="primary"
-          onPress={() => router.replace({ pathname: "/friend/[id]", params: { id: selection.counterpartyId } })}
+          onPress={() =>
+            router.replace({ pathname: "/friend/[id]", params: { id: selection.counterpartyId } })
+          }
         />
         {groupName ? (
           <CoralButton
             label={`Back to ${groupName}`}
             variant="secondary"
-            onPress={() => router.replace({ pathname: "/group/[id]", params: { id: selection.context.groupId } })}
+            onPress={() =>
+              router.replace({ pathname: "/group/[id]", params: { id: selection.context.groupId } })
+            }
           />
         ) : (
-          <CoralButton
-            label="Done"
-            variant="secondary"
-            onPress={() => router.back()}
-          />
+          <CoralButton label="Done" variant="secondary" onPress={() => router.back()} />
         )}
       </View>
     </ScrollView>
-  )
+  );
 }
 
 function ReviewRow({
@@ -721,10 +712,10 @@ function ReviewRow({
   color,
   valueTone,
 }: {
-  label: string
-  value: string
-  color: any
-  valueTone?: "credit" | "debt" | undefined
+  label: string;
+  value: string;
+  color: any;
+  valueTone?: "credit" | "debt" | undefined;
 }) {
   return (
     <View
@@ -757,5 +748,5 @@ function ReviewRow({
         {value}
       </Text>
     </View>
-  )
+  );
 }

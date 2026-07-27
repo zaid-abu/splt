@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  View, Pressable, ScrollView , Text } from "react-native";
+import { View, Pressable, ScrollView, Text } from "react-native";
 import Animated, { FadeInDown, FadeIn } from "react-native-reanimated";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
@@ -69,9 +69,7 @@ export function SettlementParties({
           <View
             style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}
           >
-            <Animated.View
-              style={{ alignItems: "center", width: 80 }}
-            >
+            <Animated.View style={{ alignItems: "center", width: 80 }}>
               <AppUserAvatar user={leftUser} size="lg" />
               <Text
                 style={{
@@ -119,9 +117,7 @@ export function SettlementParties({
               </Pressable>
             </View>
 
-            <Animated.View
-              style={{ alignItems: "center", width: 80 }}
-            >
+            <Animated.View style={{ alignItems: "center", width: 80 }}>
               {isGroupRoute && debtOptions.length > 1 ? (
                 <Pressable
                   onPress={() => {

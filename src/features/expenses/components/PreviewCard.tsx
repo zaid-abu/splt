@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  View , Text } from "react-native";
+import { View, Text } from "react-native";
 import { Card } from "@/components/ui/Card";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { useUI } from "@/components/ui";
@@ -45,9 +45,7 @@ export function PreviewCard({
         <View
           style={[styles.statusPill, balanced ? styles.statusPillSuccess : styles.statusPillDanger]}
         >
-          <Text
-            style={[styles.statusPillText, { color: balanced ? color.success : color.danger }]}
-          >
+          <Text style={[styles.statusPillText, { color: balanced ? color.success : color.danger }]}>
             {status}
           </Text>
         </View>

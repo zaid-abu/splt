@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  View, Pressable, Text , Switch } from "react-native";
+import { View, Pressable, Text, Switch } from "react-native";
 import { CurrencySelector } from "@/components/forms/CurrencySelector";
 import { useUI } from "@/components/ui";
 import { Eyebrow, useCoralColors } from "@/components/coral";

@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  View, Pressable, TextInput, ScrollView, Text , ActivityIndicator } from "react-native";
+import { View, Pressable, TextInput, ScrollView, Text, ActivityIndicator } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui";
@@ -33,7 +33,9 @@ export function SettlementConfirmation({
     <>
       <View style={{ paddingHorizontal: 24, marginBottom: 16, alignItems: "center" }}>
         <Pressable onPress={onToggleOptional} style={{ padding: 8 }}>
-          <Text style={{ fontSize: 13, color: color.brand, fontFamily: "InstrumentSans_500Medium" }}>
+          <Text
+            style={{ fontSize: 13, color: color.brand, fontFamily: "InstrumentSans_500Medium" }}
+          >
             {showOptional ? "Hide Options" : "+ Add Note or Group"}
           </Text>
         </Pressable>

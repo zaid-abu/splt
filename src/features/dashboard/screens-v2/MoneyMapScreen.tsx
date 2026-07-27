@@ -368,11 +368,7 @@ export default function MoneyMapScreen(): JSX.Element | null {
         ) : (
           <>
             {/* Hero */}
-            <BalanceHero
-              label="Across your circles"
-              value={heroValue}
-              note={heroNote}
-            />
+            <BalanceHero label="Across your circles" value={heroValue} note={heroNote} />
 
             {/* Where you stand section */}
             {visibleCircles.length > 0 && (
@@ -386,9 +382,7 @@ export default function MoneyMapScreen(): JSX.Element | null {
                     const major = minorToMajor(Math.abs(row.netSignedMinor), preferredCurrency);
                     const absVal = formatAmount(major, preferredCurrency);
                     const isOwed = row.netSignedMinor >= 0;
-                    const subtitle = isOwed
-                      ? `Owed ${absVal}`
-                      : `You owe ${absVal}`;
+                    const subtitle = isOwed ? `Owed ${absVal}` : `You owe ${absVal}`;
 
                     return (
                       <Fragment key={`${row.type}-${row.id}`}>
@@ -406,6 +400,8 @@ export default function MoneyMapScreen(): JSX.Element | null {
                 </SectionCard>
                 {settledCircles.length > 0 && !showSettled && (
                   <Pressable
+                    accessibilityRole="button"
+                    testID="show-settled-circles"
                     onPress={() => {
                       Haptics.selectionAsync();
                       setShowSettled(true);
@@ -430,6 +426,8 @@ export default function MoneyMapScreen(): JSX.Element | null {
                 )}
                 {showSettled && settledCircles.length > 0 && (
                   <Pressable
+                    accessibilityRole="button"
+                    testID="hide-settled-circles"
                     onPress={() => {
                       Haptics.selectionAsync();
                       setShowSettled(false);

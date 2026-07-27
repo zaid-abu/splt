@@ -2,7 +2,14 @@ import Animated, { FadeInDown } from "react-native-reanimated";
 import * as Haptics from "expo-haptics";
 import type { JSX, ReactNode } from "react";
 import { ThemedStatusBar } from "@/components/ui/ThemedStatusBar";
-import {  KeyboardAvoidingView, Platform, ScrollView, View, ActivityIndicator , Text } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  View,
+  ActivityIndicator,
+  Text,
+} from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as icons from "lucide-react-native";

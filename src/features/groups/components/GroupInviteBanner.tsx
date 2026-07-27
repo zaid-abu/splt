@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  View, Pressable , Text } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui";

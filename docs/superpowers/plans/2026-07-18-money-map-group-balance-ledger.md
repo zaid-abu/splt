@@ -31,11 +31,13 @@
 ### Task 1: Prepare Group Balance Preview Data
 
 **Files:**
+
 - Modify: `src/features/dashboard/hooks/useDashboard.ts:18-54`
 - Modify: `src/features/dashboard/hooks/useDashboard.ts:153-193`
 - Modify: `src/features/dashboard/hooks/useDashboard.ts:285-321`
 
 **Interfaces:**
+
 - Consumes: `balancesUtil.getUserBalances(currentUserId, groupId, groups, expenses, settlements, preferredCurrency, convertCurrency)`.
 - Produces: `DashboardGroupBalancePreview` and `DashboardData.groupBalancePreview`.
 
@@ -87,10 +89,7 @@ const groupNetBalances = useMemo(() => {
 
       const balance = balancesMap.get(member.userId) ?? 0;
       if (Math.abs(balance) <= 0.005) continue;
-      if (
-        keyPersonBalance === undefined ||
-        Math.abs(balance) > Math.abs(keyPersonBalance)
-      ) {
+      if (keyPersonBalance === undefined || Math.abs(balance) > Math.abs(keyPersonBalance)) {
         keyPerson = member.user;
         keyPersonBalance = balance;
       }
@@ -154,12 +153,14 @@ Expected: exit code `0` with no TypeScript diagnostics.
 ### Task 2: Build And Integrate The Warm Ledger
 
 **Files:**
+
 - Modify: `src/features/dashboard/hooks/useDashboard.ts:222-224`
 - Create: `src/features/dashboard/components/GroupBalanceLedger.tsx`
 - Modify: `src/features/dashboard/screens-v2/MoneyMapScreen.tsx:6-21`
 - Modify: `src/features/dashboard/screens-v2/MoneyMapScreen.tsx:219-247`
 
 **Interfaces:**
+
 - Consumes: `DashboardGroupBalancePreview[]`, preferred currency code, `handleGroupPress(groupId)`, and `handleViewAllGroups()`.
 - Produces: `GroupBalanceLedger` with props `{ items, currencyCode, onGroupPress, onViewAll }`.
 
@@ -197,10 +198,7 @@ type GroupBalanceLedgerProps = {
   onViewAll: () => void;
 };
 
-function getSupportingCopy(
-  item: DashboardGroupBalancePreview,
-  currencyCode: string
-): string {
+function getSupportingCopy(item: DashboardGroupBalancePreview, currencyCode: string): string {
   const { keyPerson, keyPersonBalance, netBalance } = item;
 
   if (Math.abs(netBalance) <= SETTLED_THRESHOLD) return "No open balances";
@@ -212,10 +210,7 @@ function getSupportingCopy(
     : `You owe ${keyPerson.name} ${amount}`;
 }
 
-function getAccessibilityLabel(
-  item: DashboardGroupBalancePreview,
-  currencyCode: string
-): string {
+function getAccessibilityLabel(item: DashboardGroupBalancePreview, currencyCode: string): string {
   if (Math.abs(item.netBalance) <= SETTLED_THRESHOLD) {
     return `${item.group.name}, settled`;
   }

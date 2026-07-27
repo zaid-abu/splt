@@ -111,11 +111,11 @@ export default function GroupSettingsScreen() {
   const hasBlockers = blockingBalances.length > 0;
 
   function blockerSummary(): string {
-    if (!hasBlockers) return ""
+    if (!hasBlockers) return "";
     const lines = blockingBalances.map(
       (b) => `${b.userName}: ${b.amount > 0 ? "+" : ""}${b.amount.toFixed(2)}`
-    )
-    return `\n\nOutstanding balances in ${group?.currency ?? ""}:\n${lines.join("\n")}`
+    );
+    return `\n\nOutstanding balances in ${group?.currency ?? ""}:\n${lines.join("\n")}`;
   }
 
   return (
@@ -278,7 +278,9 @@ export default function GroupSettingsScreen() {
 
       <CoralField
         label="Members"
-        value={group.members.map((m) => (m.userId === currentUser.id ? "You" : m.user.name)).join(", ")}
+        value={group.members
+          .map((m) => (m.userId === currentUser.id ? "You" : m.user.name))
+          .join(", ")}
         editable={false}
       />
       <Text

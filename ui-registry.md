@@ -5,20 +5,20 @@
 Files: `src/components/coral/*`, `src/features/*/screens-v2/*`
 Last updated: 2026-07-20
 
-| Property | Value / Variable | Description |
-| --- | --- | --- |
-| Canvas Background | `var(--canvas)` (`#EFF6FD` / `#091018`) | Primary application screen background |
-| Surface Card | `var(--surface)` (`#F9FCFF` / `#111923`) | Opaque cards, list containers, detail cards |
-| Navigation Chrome | `coral.surface` (`#F9FCFF` / `#111923`) | Shared opaque surface for headers and the floating dock |
-| Control Surface | `var(--control)` (`#FFFFFF` / `#1D2B3A`) | Buttons, text fields, search bars |
-| Navy Surface | `var(--navy)` (`#122237` / `#07111C`) | Hero summary containers, toasts, badges |
-| Primary Accent | `var(--coral)` (`#F0584B` / `#FF7062`) | Primary CTA buttons, central Circle Dock add button |
-| Text Primary | `var(--ink)` (`#101B29` / `#EAEFF4`) | Headings, row titles, main text (`Instrument Sans`) |
-| Text Muted | `var(--muted)` (`#536272` / `#98A7B4`) | Subtitles, kicker labels, secondary metadata |
-| Numeric Text | `var(--font-numeric)` | `IBM Plex Mono` for tabular amounts and balance summaries |
-| Border | `var(--border)` (`#C9D6E2` / `#2A3440`) | `1px` subtle borders on cards and controls |
-| Radius | Cards `16px`, Controls `14px`, Sheet `24px`, Dock `20px` | Standard border radius rules |
-| Floating Dock | `CircleDock` component | Borderless floating tab bar using the opaque Navigation Chrome surface, with active indicator dot and a raised, unclipped coral center action |
+| Property          | Value / Variable                                         | Description                                                                                                                                   |
+| ----------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Canvas Background | `var(--canvas)` (`#EFF6FD` / `#091018`)                  | Primary application screen background                                                                                                         |
+| Surface Card      | `var(--surface)` (`#F9FCFF` / `#111923`)                 | Opaque cards, list containers, detail cards                                                                                                   |
+| Navigation Chrome | `coral.surface` (`#F9FCFF` / `#111923`)                  | Shared opaque surface for headers and the floating dock                                                                                       |
+| Control Surface   | `var(--control)` (`#FFFFFF` / `#1D2B3A`)                 | Buttons, text fields, search bars                                                                                                             |
+| Navy Surface      | `var(--navy)` (`#122237` / `#07111C`)                    | Hero summary containers, toasts, badges                                                                                                       |
+| Primary Accent    | `var(--coral)` (`#F0584B` / `#FF7062`)                   | Primary CTA buttons, central Circle Dock add button                                                                                           |
+| Text Primary      | `var(--ink)` (`#101B29` / `#EAEFF4`)                     | Headings, row titles, main text (`Instrument Sans`)                                                                                           |
+| Text Muted        | `var(--muted)` (`#536272` / `#98A7B4`)                   | Subtitles, kicker labels, secondary metadata                                                                                                  |
+| Numeric Text      | `var(--font-numeric)`                                    | `IBM Plex Mono` for tabular amounts and balance summaries                                                                                     |
+| Border            | `var(--border)` (`#C9D6E2` / `#2A3440`)                  | `1px` subtle borders on cards and controls                                                                                                    |
+| Radius            | Cards `16px`, Controls `14px`, Sheet `24px`, Dock `20px` | Standard border radius rules                                                                                                                  |
+| Floating Dock     | `CircleDock` component                                   | Borderless floating tab bar using the opaque Navigation Chrome surface, with active indicator dot and a raised, unclipped coral center action |
 
 ### Component Inventory
 

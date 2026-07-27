@@ -25,9 +25,11 @@
 ### Task 1: Fix theme.ts token values
 
 **Files:**
+
 - Modify: `src/components/coral/theme.ts`
 
 **Interfaces:**
+
 - Produces: Updated `CORAL_COLORS` constant with prototype-matching hex values for both `light` and `dark` keys. All consumers use `useCoralColors()` which reads this — no API changes.
 
 - [ ] **Step 1: Update light palette tokens in theme.ts**
@@ -83,6 +85,7 @@ export const CORAL_COLORS = {
 ```
 
 Changes from current:
+
 - `muted`: `#4D5966` → `#536272`
 - `accentInk`: `#5C0E10` → `#9A342D`
 - `positive`: `#008045` → `#006D3A`
@@ -111,9 +114,11 @@ git commit -m "fix: align Coral theme tokens with prototype CSS values"
 ### Task 2: Fix CoralTopBar — remove useUI, use coral colors
 
 **Files:**
+
 - Modify: `src/components/coral/CoralTopBar.tsx`
 
 **Interfaces:**
+
 - Consumes: Updated `CORAL_COLORS` from Task 1 (via `useCoralColors()`)
 - Produces: Top bar renders with `coral.border` for bottom border, `coral.foreground` for back button. No `useUI` dependency.
 
@@ -249,9 +254,11 @@ git commit -m "fix: CoralTopBar uses coral colors instead of old useUI"
 ### Task 3: Fix CoralField — remove useUI, use coral colors
 
 **Files:**
+
 - Modify: `src/components/coral/CoralField.tsx`
 
 **Interfaces:**
+
 - Consumes: Updated `CORAL_COLORS` from Task 1
 - Produces: TextInput renders with `coral.*` colors. All `color.*` references replaced with `coral.[muted|border|surface|foreground]`.
 
@@ -341,9 +348,11 @@ git commit -m "fix: CoralField uses coral colors instead of old useUI"
 ### Task 4: Fix CoralSearchField — remove useUI, use coral colors
 
 **Files:**
+
 - Modify: `src/components/coral/CoralSearchField.tsx`
 
 **Interfaces:**
+
 - Consumes: Updated `CORAL_COLORS` from Task 1
 - Produces: Search input renders with `coral.*` colors.
 
@@ -438,9 +447,11 @@ git commit -m "fix: CoralSearchField uses coral colors instead of old useUI"
 ### Task 5: Fix CoralSelect — remove useUI, use coral colors
 
 **Files:**
+
 - Modify: `src/components/coral/CoralSelect.tsx`
 
 **Interfaces:**
+
 - Consumes: Updated `CORAL_COLORS` from Task 1, `CoralSheet` component
 - Produces: Select renders with `coral.*` colors. All `color.*` references replaced.
 
@@ -592,10 +603,12 @@ git commit -m "fix: CoralSelect uses coral colors instead of old useUI"
 ### Task 6: Fix CoralSegment + CoralChip — remove useUI, use coral colors
 
 **Files:**
+
 - Modify: `src/components/coral/CoralSegment.tsx`
 - Modify: `src/components/coral/CoralChip.tsx`
 
 **Interfaces:**
+
 - Consumes: Updated `CORAL_COLORS` from Task 1
 - Produces: Both components render with `coral.*` colors. No `useUI` dependency.
 
@@ -739,11 +752,13 @@ git commit -m "fix: CoralSegment and CoralChip use coral colors instead of old u
 ### Task 7: Fix MoneyAmount, MoneyRow, StatPair — remove useUI
 
 **Files:**
+
 - Modify: `src/components/coral/MoneyAmount.tsx`
 - Modify: `src/components/coral/MoneyRow.tsx`
 - Modify: `src/components/coral/StatPair.tsx`
 
 **Interfaces:**
+
 - Consumes: Updated `CORAL_COLORS` from Task 1
 - Produces: Financial display components render with `coral.*` colors. `color.text` → `coral.foreground`.
 
@@ -911,7 +926,7 @@ export function MoneyRow({
 }
 ```
 
-- [ ] **Step 3: Fix StatPair.tsx — replace color.* with coral.***
+- [ ] _*Step 3: Fix StatPair.tsx — replace color.* with coral._**
 
 ```typescript
 // src/components/coral/StatPair.tsx
@@ -1004,10 +1019,12 @@ git commit -m "fix: MoneyAmount, MoneyRow, StatPair use coral colors instead of 
 ### Task 8: Fix GroupTile + EmptyState — remove useUI
 
 **Files:**
+
 - Modify: `src/components/coral/GroupTile.tsx`
 - Modify: `src/components/coral/EmptyState.tsx`
 
 **Interfaces:**
+
 - Consumes: Updated `CORAL_COLORS` from Task 1
 - Produces: Both components render with `coral.*` colors.
 
@@ -1201,9 +1218,11 @@ git commit -m "fix: GroupTile and EmptyState use coral colors instead of old use
 ### Task 9: Fix CoralButton — remove unused useUI import
 
 **Files:**
+
 - Modify: `src/components/coral/CoralButton.tsx`
 
 **Interfaces:**
+
 - Consumes: Updated `CORAL_COLORS` from Task 1
 - Produces: No behavioral change. Dead code removed.
 
@@ -1299,9 +1318,11 @@ git commit -m "fix: remove unused useUI import from CoralButton"
 ### Task 10: Fix CircleDock shadow color
 
 **Files:**
+
 - Modify: `src/components/coral/CircleDock.tsx`
 
 **Interfaces:**
+
 - Consumes: `useCoralColors()`, `useUIStore`
 - Produces: Dock shadow matches prototype `rgba(18, 34, 55, 0.16)` instead of `rgba(0, 0, 0, 0.14)`
 
@@ -1310,6 +1331,7 @@ git commit -m "fix: remove unused useUI import from CoralButton"
 In CircleDock.tsx, change the shadow values on the dock container View:
 
 Replace:
+
 ```typescript
 shadowColor: "#000000",
 shadowOffset: { width: 0, height: 6 },
@@ -1318,6 +1340,7 @@ shadowRadius: 14,
 ```
 
 With:
+
 ```typescript
 shadowColor: "#122237",
 shadowOffset: { width: 0, height: 6 },
@@ -1326,6 +1349,7 @@ shadowRadius: 14,
 ```
 
 Also update the Add button shadow from `#000000` to `coral.accent` (already correct, verify):
+
 ```typescript
 shadowColor: coral.accent,
 shadowOffset: { width: 0, height: 6 },
@@ -1353,12 +1377,15 @@ git commit -m "fix: CircleDock shadow matches prototype spec (#122237, 0.16 opac
 ### Task 11: Remove duplicative fontWeight from Coral components
 
 **Files:**
+
 - Modify: 7 Coral components with both `fontFamily: "InstrumentSans_600SemiBold"` and `fontWeight: "600"`
 
 **Interfaces:**
+
 - Produces: Cleaner styles. No visual change — `InstrumentSans_600SemiBold` already implies weight 600.
 
 Components to fix (remove `fontWeight: "600"` or `fontWeight: "400"` where fontFamily already encodes weight):
+
 - `CoralTopBar.tsx`: title Text has both
 - `CoralButton.tsx`: label Text has both
 - `LargeTitle.tsx`: Text has both
@@ -1392,9 +1419,11 @@ git commit -m "fix: remove redundant fontWeight when fontFamily encodes weight"
 ### Task 12: Verify no old warm-ledger colors leak
 
 **Files:**
+
 - Search across all files
 
 **Interfaces:**
+
 - Consumes: All Coral component changes from Tasks 2-11
 
 - [ ] **Step 1: Search for remaining useUI imports in Coral components**
@@ -1437,12 +1466,14 @@ Pass 2 compares every screen against its HTML prototype counterpart and fixes la
 ### Task 13: Home screen (MoneyMapScreen)
 
 **Files:**
+
 - Read: `design/circle-dock-redesign/screens/home.html`
 - Modify: `src/features/dashboard/screens-v2/MoneyMapScreen.tsx`
 
 **Verification**: Compare against `screens/home.html` — check balance hero position/size/colors, quick action layout, group/person ledger section headers and row layout, upcoming section, empty state for new users, bottom spacing for dock clearance.
 
 Execute by:
+
 1. Reading the prototype HTML home screen
 2. Reading the current `MoneyMapScreen.tsx`
 3. Comparing the two for discrepancies
@@ -1452,12 +1483,14 @@ Execute by:
 ### Task 14: Circles screen
 
 **Files:**
+
 - Read: `design/circle-dock-redesign/screens/circles-groups.html`, `screens/circles-people.html`
 - Modify: `src/features/circles/screens/CirclesScreen.tsx`
 
 ### Task 15: Group and People screens
 
 **Files:**
+
 - Read: `design/circle-dock-redesign/screens/group-overview.html`, `screens/group-expenses.html`, `screens/group-settings.html`, `screens/group-create.html`, `screens/person-detail.html`
 - Modify: `src/features/groups/screens-v2/GroupDetailScreen.tsx`, `GroupSettingsScreen.tsx`, `NewGroupScreen.tsx`
 - Modify: `src/features/friends/screens-v2/FriendDetailScreen.tsx`
@@ -1465,36 +1498,42 @@ Execute by:
 ### Task 16: Add Expense flow
 
 **Files:**
+
 - Read: `design/circle-dock-redesign/screens/expense-compose.html`, `screens/expense-split.html`, `screens/expense-success.html`
 - Modify: `src/features/expenses/screens-v2/NewExpenseScreen.tsx`
 
 ### Task 17: Expense Detail screen
 
 **Files:**
+
 - Read: `design/circle-dock-redesign/screens/expense-detail.html`
 - Modify: `src/features/expenses/screens-v2/ExpenseDetailScreen.tsx`
 
 ### Task 18: Settlement screens
 
 **Files:**
+
 - Read: `design/circle-dock-redesign/screens/settlement-compose.html`, `screens/settlement-review.html`, `screens/settlement-success.html`
 - Modify: `src/features/settlements/screens-v2/SettlementScreen.tsx`, `NewSettlementScreen.tsx`
 
 ### Task 19: Activity screen
 
 **Files:**
+
 - Read: `design/circle-dock-redesign/screens/activity-timeline.html`
 - Modify: `src/features/activity/screens-v2/ActivityScreen.tsx`
 
 ### Task 20: More screen + secondary
 
 **Files:**
+
 - Read: `design/circle-dock-redesign/screens/more.html`
 - Modify: `src/features/profile/screens-v2/MoreScreen.tsx`, `AnalyticsScreen.tsx`, `CurrenciesScreen.tsx`, `NotificationsScreen.tsx`
 
 ### Task 21: Auth screens
 
 **Files:**
+
 - Read: `design/circle-dock-redesign/screens/welcome.html`, `screens/login.html`, `screens/register.html`, `screens/forgot-password.html`, `screens/verify-email.html`
 - Modify: `src/features/auth/screens-v2/WelcomeScreen.tsx`, `LoginScreen.tsx`, `RegisterScreen.tsx`, `ForgotPasswordScreen.tsx`, `VerifyEmailScreen.tsx`
 

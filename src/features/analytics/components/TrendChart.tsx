@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { View, Pressable , Text , useWindowDimensions } from "react-native";
+import { View, Pressable, Text, useWindowDimensions } from "react-native";
 import { LineChart } from "react-native-gifted-charts";
 import * as icons from "lucide-react-native";
 import { useUI } from "@/components/ui";

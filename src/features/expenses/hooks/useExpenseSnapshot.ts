@@ -1,96 +1,92 @@
-import { useCallback, useMemo } from "react"
-import { useAuth } from "@/context/AppContext"
-import { useExpenseDetails } from "@/features/expenses/queries/useExpenses"
-import { useExpenseComments } from "@/features/expenses/queries/useComments"
-import { useOpenBalances } from "@/features/balances/queries/useBalances"
-import { useGroups } from "@/features/groups/queries/useGroups"
-import { getExpensePermissions } from "@/features/permissions/contracts"
-import type { Expense, ExpenseComment } from "@/types"
-import type { OpenBalance } from "@/features/money/types"
-import type { ExpensePermissions } from "@/features/permissions/contracts"
+import { useCallback, useMemo } from "react";
+import { useAuth } from "@/context/AppContext";
+import { useExpenseDetails } from "@/features/expenses/queries/useExpenses";
+import { useExpenseComments } from "@/features/expenses/queries/useComments";
+import { useOpenBalances } from "@/features/balances/queries/useBalances";
+import { useGroups } from "@/features/groups/queries/useGroups";
+import { getExpensePermissions } from "@/features/permissions/contracts";
+import type { Expense, ExpenseComment } from "@/types";
+import type { OpenBalance } from "@/features/money/types";
+import type { ExpensePermissions } from "@/features/permissions/contracts";
 
 export interface SnapshotState<T> {
-  data: T | undefined
-  isInitialLoading: boolean
-  isRefreshing: boolean
-  isStaleOffline: boolean
-  isError: boolean
-  error: Error | null
-  isNotFound: boolean
-  isRestricted: boolean
-  refresh(): Promise<void>
+  data: T | undefined;
+  isInitialLoading: boolean;
+  isRefreshing: boolean;
+  isStaleOffline: boolean;
+  isError: boolean;
+  error: Error | null;
+  isNotFound: boolean;
+  isRestricted: boolean;
+  refresh(): Promise<void>;
 }
 
 export interface ExpenseSnapshotData {
-  expense: Expense
-  permissions: ExpensePermissions
-  receiptUrl?: string
-  comments: ExpenseComment[]
-  settlementCandidates: OpenBalance[]
+  expense: Expense;
+  permissions: ExpensePermissions;
+  receiptUrl?: string;
+  comments: ExpenseComment[];
+  settlementCandidates: OpenBalance[];
 }
 
-export function useExpenseSnapshot(
-  expenseId: string
-): SnapshotState<ExpenseSnapshotData> {
-  const { currentUser } = useAuth()
+export function useExpenseSnapshot(expenseId: string): SnapshotState<ExpenseSnapshotData> {
+  const { currentUser } = useAuth();
 
-  const expenseQuery = useExpenseDetails(expenseId)
-  const commentsQuery = useExpenseComments(expenseId)
-  const openBalancesQuery = useOpenBalances(currentUser.id)
-  const { data: groups = [] } = useGroups(currentUser.id)
+  const expenseQuery = useExpenseDetails(expenseId);
+  const commentsQuery = useExpenseComments(expenseId);
+  const openBalancesQuery = useOpenBalances(currentUser.id);
+  const { data: groups = [] } = useGroups(currentUser.id);
 
-  const queries = [expenseQuery, commentsQuery, openBalancesQuery] as const
+  const queries = [expenseQuery, commentsQuery, openBalancesQuery] as const;
 
-  const isLoadingAny = queries.some((q) => q.isLoading)
-  const isErrorAny = queries.some((q) => q.isError)
-  const firstError = queries.find((q) => q.error)?.error ?? null
-  const allHaveData = queries.every((q) => !!q.data || q.isFetched)
-  const anyData = queries.some((q) => !!q.data)
+  const isLoadingAny = queries.some((q) => q.isLoading);
+  const isErrorAny = queries.some((q) => q.isError);
+  const firstError = queries.find((q) => q.error)?.error ?? null;
+  const allHaveData = queries.every((q) => !!q.data || q.isFetched);
+  const anyData = queries.some((q) => !!q.data);
 
-  const isInitialLoading = isLoadingAny && !anyData
-  const isRefreshing = isLoadingAny && anyData
-  const isStaleOffline = isErrorAny && anyData && allHaveData
+  const isInitialLoading = isLoadingAny && !anyData;
+  const isRefreshing = isLoadingAny && anyData;
+  const isStaleOffline = isErrorAny && anyData && allHaveData;
 
   const data = useMemo<ExpenseSnapshotData | undefined>(() => {
-    if (!allHaveData) return undefined
+    if (!allHaveData) return undefined;
 
-    const expense = expenseQuery.data
-    if (!expense) return undefined
+    const expense = expenseQuery.data;
+    if (!expense) return undefined;
 
-    const comments = commentsQuery.data ?? []
-    const openBalances = openBalancesQuery.data ?? []
+    const comments = commentsQuery.data ?? [];
+    const openBalances = openBalancesQuery.data ?? [];
 
     const groupCreatedBy = expense.groupId
       ? groups.find((g) => g.id === expense.groupId)?.createdBy
-      : undefined
+      : undefined;
 
     const permissions = getExpensePermissions({
       currentUserId: currentUser.id,
       createdBy: expense.createdBy,
       groupCreatedBy,
-    })
+    });
 
-    const receiptUrl = expense.receiptUrl ?? expense.legacyReceiptUrl ?? undefined
+    const receiptUrl = expense.receiptUrl ?? expense.legacyReceiptUrl ?? undefined;
 
     const settlementCandidates = openBalances.filter((ob) => {
-      if (ob.counterpartyId === currentUser.id) return false
+      if (ob.counterpartyId === currentUser.id) return false;
 
       const inGroup =
-        expense.groupId &&
-        ob.context.type === "group" &&
-        ob.context.groupId === expense.groupId
+        expense.groupId && ob.context.type === "group" && ob.context.groupId === expense.groupId;
 
       const inDirect =
         !expense.groupId &&
         ob.context.type === "direct" &&
         expense.splits.some((s) => {
-          const isCounterparty = s.userId === ob.counterpartyId
-          const isPayer = expense.paidBy === ob.counterpartyId
-          return isCounterparty || isPayer
-        })
+          const isCounterparty = s.userId === ob.counterpartyId;
+          const isPayer = expense.paidBy === ob.counterpartyId;
+          return isCounterparty || isPayer;
+        });
 
-      return inGroup || inDirect
-    })
+      return inGroup || inDirect;
+    });
 
     return {
       expense,
@@ -98,30 +94,19 @@ export function useExpenseSnapshot(
       receiptUrl,
       comments,
       settlementCandidates,
-    }
-  }, [
-    expenseQuery.data,
-    commentsQuery.data,
-    openBalancesQuery.data,
-    currentUser.id,
-  ])
+    };
+  }, [expenseQuery.data, commentsQuery.data, openBalancesQuery.data, currentUser.id]);
 
-  const isNotFound = !isLoadingAny && data === undefined && !!(expenseQuery.isFetched)
-  const isExpenseError = expenseQuery.isError
-  const isRestricted = data !== undefined && !data.permissions.canEdit
+  const isNotFound = !isLoadingAny && data === undefined && !!expenseQuery.isFetched;
+  const isExpenseError = expenseQuery.isError;
+  const isRestricted = data !== undefined && !data.permissions.canEdit;
 
   const refreshImpl = useCallback(async () => {
-    const refetches = [
-      expenseQuery.refetch,
-      commentsQuery.refetch,
-      openBalancesQuery.refetch,
-    ].map((fn) => fn())
-    await Promise.all(refetches)
-  }, [
-    expenseQuery.refetch,
-    commentsQuery.refetch,
-    openBalancesQuery.refetch,
-  ])
+    const refetches = [expenseQuery.refetch, commentsQuery.refetch, openBalancesQuery.refetch].map(
+      (fn) => fn()
+    );
+    await Promise.all(refetches);
+  }, [expenseQuery.refetch, commentsQuery.refetch, openBalancesQuery.refetch]);
 
   return {
     data,
@@ -133,5 +118,5 @@ export function useExpenseSnapshot(
     isNotFound,
     isRestricted,
     refresh: refreshImpl,
-  }
+  };
 }

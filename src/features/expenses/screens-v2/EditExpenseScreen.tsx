@@ -122,8 +122,14 @@ export default function EditExpenseScreen(): JSX.Element {
     if (composer.paidBy !== e.paidBy) return true;
     if (composer.currency !== e.currency) return true;
     if (composer.splitMethod !== e.splitMethod) return true;
-    const originalUserIds = e.splits.map((s) => s.userId).sort().join(",");
-    const currentUserIds = composer.participants.map((p) => p.userId).sort().join(",");
+    const originalUserIds = e.splits
+      .map((s) => s.userId)
+      .sort()
+      .join(",");
+    const currentUserIds = composer.participants
+      .map((p) => p.userId)
+      .sort()
+      .join(",");
     if (originalUserIds !== currentUserIds) return true;
     return false;
   }, [data, composer, calculateResult]);
@@ -220,7 +226,21 @@ export default function EditExpenseScreen(): JSX.Element {
     } finally {
       setIsSubmitting(false);
     }
-  }, [data, hasChanges, consequenceReview, showConsequenceReview, calculateResult, composer, updateExpense, id, submitStart, submitSuccess, submitError, toast, router]);
+  }, [
+    data,
+    hasChanges,
+    consequenceReview,
+    showConsequenceReview,
+    calculateResult,
+    composer,
+    updateExpense,
+    id,
+    submitStart,
+    submitSuccess,
+    submitError,
+    toast,
+    router,
+  ]);
 
   const handleSourceChange = useCallback(
     (userId: string, value: string) => {
@@ -256,7 +276,14 @@ export default function EditExpenseScreen(): JSX.Element {
 
   if (isInitialLoading) {
     return (
-      <View style={{ flex: 1, backgroundColor: coral.bg, alignItems: "center", justifyContent: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: coral.bg,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <AppLoader />
       </View>
     );
@@ -264,7 +291,15 @@ export default function EditExpenseScreen(): JSX.Element {
 
   if (isError) {
     return (
-      <View style={{ flex: 1, backgroundColor: coral.bg, alignItems: "center", justifyContent: "center", padding: 24 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: coral.bg,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
         <ErrorState onRetry={() => refresh()} />
       </View>
     );
@@ -272,8 +307,22 @@ export default function EditExpenseScreen(): JSX.Element {
 
   if (!data) {
     return (
-      <View style={{ flex: 1, backgroundColor: coral.bg, alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <Text style={{ fontSize: 18, fontFamily: "InstrumentSans_600SemiBold", color: coral.foreground }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: coral.bg,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 18,
+            fontFamily: "InstrumentSans_600SemiBold",
+            color: coral.foreground,
+          }}
+        >
           Expense not found
         </Text>
       </View>
@@ -282,24 +331,37 @@ export default function EditExpenseScreen(): JSX.Element {
 
   if (!data.permissions.canEdit) {
     return (
-      <View style={{ flex: 1, backgroundColor: coral.bg, alignItems: "center", justifyContent: "center", padding: 24 }}>
-        <Text style={{ fontSize: 18, fontFamily: "InstrumentSans_600SemiBold", color: coral.foreground }}>
-          You can't edit this expense
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: coral.bg,
+          alignItems: "center",
+          justifyContent: "center",
+          padding: 24,
+        }}
+      >
+        <Text
+          style={{
+            fontSize: 18,
+            fontFamily: "InstrumentSans_600SemiBold",
+            color: coral.foreground,
+          }}
+        >
+          You can&apos;t edit this expense
         </Text>
       </View>
     );
   }
 
   const dateString = composer.date.toLocaleDateString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
   });
 
   return (
     <CoralScreen scroll={false}>
-      <CoralTopBar
-        title="Edit expense"
-        onBack={() => router.back()}
-      />
+      <CoralTopBar title="Edit expense" onBack={() => router.back()} />
 
       {showConsequenceReview && consequenceReview && consequenceReview.length > 0 ? (
         <ScrollView
@@ -309,24 +371,49 @@ export default function EditExpenseScreen(): JSX.Element {
           <View style={{ paddingTop: 24, gap: 16 }}>
             <View style={{ alignItems: "center", gap: 8 }}>
               <icons.RefreshCw size={40} color={coral.warning} />
-              <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 20, color: coral.foreground, textAlign: "center" }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 20,
+                  color: coral.foreground,
+                  textAlign: "center",
+                }}
+              >
                 Review changes
               </Text>
-              <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 14, color: coral.muted, textAlign: "center" }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_400Regular",
+                  fontSize: 14,
+                  color: coral.muted,
+                  textAlign: "center",
+                }}
+              >
                 The following will be updated:
               </Text>
             </View>
 
             <View
               style={{
-                borderRadius: 16, borderWidth: 1, borderColor: coral.border,
-                backgroundColor: coral.surface, padding: 16, gap: 10,
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: coral.border,
+                backgroundColor: coral.surface,
+                padding: 16,
+                gap: 10,
               }}
             >
               {consequenceReview.map((change, idx) => (
                 <View key={idx} style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
                   <icons.ArrowRight size={16} color={coral.warning} />
-                  <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 15, color: coral.foreground, flex: 1 }}>
+                  <Text
+                    style={{
+                      fontFamily: "InstrumentSans_400Regular",
+                      fontSize: 15,
+                      color: coral.foreground,
+                      flex: 1,
+                    }}
+                  >
                     {change}
                   </Text>
                 </View>
@@ -335,11 +422,7 @@ export default function EditExpenseScreen(): JSX.Element {
 
             <View style={{ flexDirection: "row", gap: 12, marginTop: 8 }}>
               <View style={{ flex: 1 }}>
-                <CoralButton
-                  label="Cancel"
-                  onPress={() => router.back()}
-                  variant="secondary"
-                />
+                <CoralButton label="Cancel" onPress={() => router.back()} variant="secondary" />
               </View>
               <View style={{ flex: 1 }}>
                 <CoralButton
@@ -360,7 +443,14 @@ export default function EditExpenseScreen(): JSX.Element {
         >
           <View style={{ gap: 16, paddingTop: 22 }}>
             <View style={{ gap: 7 }}>
-              <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 13, letterSpacing: 0.02 * 13, color: coral.muted }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_500Medium",
+                  fontSize: 13,
+                  letterSpacing: 0.02 * 13,
+                  color: coral.muted,
+                }}
+              >
                 What was it?
               </Text>
               <TextInput
@@ -369,16 +459,28 @@ export default function EditExpenseScreen(): JSX.Element {
                 value={composer.description}
                 onChangeText={setDescription}
                 style={{
-                  borderWidth: 1, borderColor: coral.border, paddingHorizontal: 15,
-                  minHeight: 54, borderRadius: 14, fontSize: 16,
-                  fontFamily: "InstrumentSans_400Regular", color: coral.foreground,
+                  borderWidth: 1,
+                  borderColor: coral.border,
+                  paddingHorizontal: 15,
+                  minHeight: 54,
+                  borderRadius: 14,
+                  fontSize: 16,
+                  fontFamily: "InstrumentSans_400Regular",
+                  color: coral.foreground,
                   backgroundColor: coral.surface,
                 }}
               />
             </View>
 
             <View style={{ gap: 7 }}>
-              <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 13, letterSpacing: 0.02 * 13, color: coral.muted }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_500Medium",
+                  fontSize: 13,
+                  letterSpacing: 0.02 * 13,
+                  color: coral.muted,
+                }}
+              >
                 Amount
               </Text>
               <View style={{ flexDirection: "row", gap: 8 }}>
@@ -397,10 +499,17 @@ export default function EditExpenseScreen(): JSX.Element {
                   onChangeText={setAmount}
                   keyboardType="decimal-pad"
                   style={{
-                    flex: 1, borderWidth: 1, borderColor: coral.border, paddingHorizontal: 15,
-                    minHeight: 54, borderRadius: 14, fontSize: 20,
-                    fontFamily: "IBMPlexMono_600SemiBold", color: coral.foreground,
-                    backgroundColor: coral.surface, textAlign: "right",
+                    flex: 1,
+                    borderWidth: 1,
+                    borderColor: coral.border,
+                    paddingHorizontal: 15,
+                    minHeight: 54,
+                    borderRadius: 14,
+                    fontSize: 20,
+                    fontFamily: "IBMPlexMono_600SemiBold",
+                    color: coral.foreground,
+                    backgroundColor: coral.surface,
+                    textAlign: "right",
                   }}
                 />
               </View>
@@ -415,43 +524,82 @@ export default function EditExpenseScreen(): JSX.Element {
             />
 
             <View style={{ gap: 7 }}>
-              <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 13, letterSpacing: 0.02 * 13, color: coral.muted }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_500Medium",
+                  fontSize: 13,
+                  letterSpacing: 0.02 * 13,
+                  color: coral.muted,
+                }}
+              >
                 Paid by
               </Text>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => setShowPayerSheet(true)}
                 style={({ pressed }) => ({
-                  flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-                  paddingHorizontal: 15, minHeight: 54, borderRadius: 14, borderWidth: 1,
-                  borderColor: coral.border, backgroundColor: coral.surface,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 15,
+                  minHeight: 54,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: coral.border,
+                  backgroundColor: coral.surface,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
-                <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 16, color: coral.foreground }}>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 16,
+                    color: coral.foreground,
+                  }}
+                >
                   {composer.paidBy === currentUser.id
                     ? "You"
-                    : composer.participants.find((p) => p.userId === composer.paidBy)?.name || "Select payer"}
+                    : composer.participants.find((p) => p.userId === composer.paidBy)?.name ||
+                      "Select payer"}
                 </Text>
                 <icons.ChevronDown size={16} color={coral.muted} />
               </Pressable>
             </View>
 
             <View style={{ gap: 7 }}>
-              <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 13, letterSpacing: 0.02 * 13, color: coral.muted }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_500Medium",
+                  fontSize: 13,
+                  letterSpacing: 0.02 * 13,
+                  color: coral.muted,
+                }}
+              >
                 Date
               </Text>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => setShowDateSheet(true)}
                 style={({ pressed }) => ({
-                  flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-                  paddingHorizontal: 15, minHeight: 54, borderRadius: 14, borderWidth: 1,
-                  borderColor: coral.border, backgroundColor: coral.surface,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 15,
+                  minHeight: 54,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: coral.border,
+                  backgroundColor: coral.surface,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
-                <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 16, color: coral.foreground }}>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 16,
+                    color: coral.foreground,
+                  }}
+                >
                   {dateString}
                 </Text>
                 <icons.ChevronDown size={16} color={coral.muted} />
@@ -459,21 +607,41 @@ export default function EditExpenseScreen(): JSX.Element {
             </View>
 
             <View style={{ gap: 7 }}>
-              <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 13, letterSpacing: 0.02 * 13, color: coral.muted }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_500Medium",
+                  fontSize: 13,
+                  letterSpacing: 0.02 * 13,
+                  color: coral.muted,
+                }}
+              >
                 Category
               </Text>
               <Pressable
                 accessibilityRole="button"
                 onPress={() => setShowCategorySheet(true)}
                 style={({ pressed }) => ({
-                  flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-                  paddingHorizontal: 15, minHeight: 54, borderRadius: 14, borderWidth: 1,
-                  borderColor: coral.border, backgroundColor: coral.surface,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 15,
+                  minHeight: 54,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: coral.border,
+                  backgroundColor: coral.surface,
                   opacity: pressed ? 0.7 : 1,
                 })}
               >
-                <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 16, color: coral.foreground }}>
-                  {EXPENSE_CATEGORIES.find((c) => c.key === composer.category)?.label || composer.category}
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 16,
+                    color: coral.foreground,
+                  }}
+                >
+                  {EXPENSE_CATEGORIES.find((c) => c.key === composer.category)?.label ||
+                    composer.category}
                 </Text>
                 <icons.ChevronDown size={16} color={coral.muted} />
               </Pressable>
@@ -494,7 +662,14 @@ export default function EditExpenseScreen(): JSX.Element {
 
       <CoralSheet visible={showPayerSheet} onClose={() => setShowPayerSheet(false)}>
         <View style={{ paddingHorizontal: 20, paddingVertical: 8, gap: 4 }}>
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 17, color: coral.foreground, marginBottom: 12 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 17,
+              color: coral.foreground,
+              marginBottom: 12,
+            }}
+          >
             Paid by
           </Text>
           {composer.participants.map((p) => {
@@ -510,15 +685,30 @@ export default function EditExpenseScreen(): JSX.Element {
                   Haptics.selectionAsync();
                 }}
                 style={({ pressed }) => ({
-                  flexDirection: "row", alignItems: "center", gap: 12,
-                  paddingVertical: 14, paddingHorizontal: 4, opacity: pressed ? 0.7 : 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  paddingVertical: 14,
+                  paddingHorizontal: 4,
+                  opacity: pressed ? 0.7 : 1,
                 })}
               >
                 <AppUserAvatar
-                  user={{ id: p.userId, name: p.name, initials: p.name?.charAt(0).toUpperCase() ?? "?" }}
+                  user={{
+                    id: p.userId,
+                    name: p.name,
+                    initials: p.name?.charAt(0).toUpperCase() ?? "?",
+                  }}
                   size="md"
                 />
-                <Text style={{ flex: 1, fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
+                <Text
+                  style={{
+                    flex: 1,
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 16,
+                    color: coral.foreground,
+                  }}
+                >
                   {isMe ? "You" : p.name}
                 </Text>
                 {isSelected && <icons.Check size={20} color={coral.accent} strokeWidth={2.5} />}
@@ -530,10 +720,24 @@ export default function EditExpenseScreen(): JSX.Element {
 
       <CoralSheet visible={showDateSheet} onClose={() => setShowDateSheet(false)}>
         <View style={{ paddingHorizontal: 20, paddingVertical: 8 }}>
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 17, color: coral.foreground, marginBottom: 12 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 17,
+              color: coral.foreground,
+              marginBottom: 12,
+            }}
+          >
             Date
           </Text>
-          <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 15, color: coral.muted, marginBottom: 16 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 15,
+              color: coral.muted,
+              marginBottom: 16,
+            }}
+          >
             {dateString}
           </Text>
           <Pressable
@@ -544,7 +748,9 @@ export default function EditExpenseScreen(): JSX.Element {
               Haptics.selectionAsync();
             }}
           >
-            <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 15, color: coral.accent }}>
+            <Text
+              style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 15, color: coral.accent }}
+            >
               Set to today
             </Text>
           </Pressable>
@@ -553,7 +759,14 @@ export default function EditExpenseScreen(): JSX.Element {
 
       <CoralSheet visible={showCategorySheet} onClose={() => setShowCategorySheet(false)}>
         <View style={{ paddingHorizontal: 20, paddingVertical: 8, gap: 4 }}>
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 17, color: coral.foreground, marginBottom: 12 }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 17,
+              color: coral.foreground,
+              marginBottom: 12,
+            }}
+          >
             Category
           </Text>
           {EXPENSE_CATEGORIES.map((cat) => {
@@ -568,11 +781,21 @@ export default function EditExpenseScreen(): JSX.Element {
                   Haptics.selectionAsync();
                 }}
                 style={({ pressed }) => ({
-                  flexDirection: "row", alignItems: "center", justifyContent: "space-between",
-                  paddingVertical: 14, paddingHorizontal: 4, opacity: pressed ? 0.7 : 1,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingVertical: 14,
+                  paddingHorizontal: 4,
+                  opacity: pressed ? 0.7 : 1,
                 })}
               >
-                <Text style={{ fontFamily: "InstrumentSans_500Medium", fontSize: 16, color: coral.foreground }}>
+                <Text
+                  style={{
+                    fontFamily: "InstrumentSans_500Medium",
+                    fontSize: 16,
+                    color: coral.foreground,
+                  }}
+                >
                   {cat.label}
                 </Text>
                 {isSelected && <icons.Check size={20} color={coral.accent} strokeWidth={2.5} />}
@@ -584,4 +807,3 @@ export default function EditExpenseScreen(): JSX.Element {
     </CoralScreen>
   );
 }
-

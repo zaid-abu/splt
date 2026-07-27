@@ -109,7 +109,11 @@ export function useActivity() {
         if (bi !== -1) return 1;
         return 0;
       })
-      .map(([title, data]) => ({ title, meta: `${data.length} ${data.length === 1 ? "event" : "events"}`, data }));
+      .map(([title, data]) => ({
+        title,
+        meta: `${data.length} ${data.length === 1 ? "event" : "events"}`,
+        data,
+      }));
   }, [filteredActivities]);
 
   const upcomingSections = useMemo(() => {
@@ -212,8 +216,15 @@ function mapRecurringToRow(r: RecurringExpense, kind: "needs-review" | "schedule
 
 function inferIcon(r: RecurringExpense): UpcomingRow["icon"] {
   const title = r.title.toLowerCase();
-  if (title.includes("rent") || title.includes("mortgage") || title.includes("lease")) return "home";
+  if (title.includes("rent") || title.includes("mortgage") || title.includes("lease"))
+    return "home";
   if (title.includes("remind") || title.includes("reminder")) return "bell";
-  if (title.includes("electric") || title.includes("power") || title.includes("bill") || title.includes("utility")) return "bolt";
+  if (
+    title.includes("electric") ||
+    title.includes("power") ||
+    title.includes("bill") ||
+    title.includes("utility")
+  )
+    return "bolt";
   return "calendar";
 }

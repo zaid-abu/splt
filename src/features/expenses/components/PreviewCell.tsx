@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  View , Text } from "react-native";
+import { View, Text } from "react-native";
 import { styles } from "@/features/expenses/utils/styles";
 
 export function PreviewCell({ label, value }: { label: string; value: string }): JSX.Element {

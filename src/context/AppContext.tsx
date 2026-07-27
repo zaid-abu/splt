@@ -119,7 +119,9 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
   }, [applySession]);
 
   useEffect(() => {
-    void refreshAuth();
+    const refreshTimer = setTimeout(() => {
+      void refreshAuth();
+    }, 0);
 
     const { data } = supabase.auth.onAuthStateChange((event, nextSession) => {
       setTimeout(() => {
@@ -142,7 +144,10 @@ export function AuthProvider({ children }: { children: ReactNode }): React.JSX.E
       }, 0);
     });
 
-    return () => data.subscription.unsubscribe();
+    return () => {
+      clearTimeout(refreshTimer);
+      data.subscription.unsubscribe();
+    };
   }, [applySession, queryClient, refreshAuth]);
 
   const replaceCurrentUser = useCallback(

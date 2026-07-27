@@ -1,6 +1,6 @@
 import { useCoralColors } from "@/components/coral";
 import React, { useRef, useCallback } from "react";
-import {  View, StyleSheet, Animated, Pressable , Text } from "react-native";
+import { View, StyleSheet, Animated, Pressable, Text } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";
 import { useSafeAreaInsets } from "react-native-safe-area-context";

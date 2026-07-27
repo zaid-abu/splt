@@ -55,7 +55,7 @@ export function AuthLifecycleGuard({ children }: { children: ReactNode }) {
       if (token) {
         router.replace(`/invite/${token}` as Href);
       }
-    })
+    });
   }, [authPhase.status, routeKind, rootState?.key, segments, router]);
 
   if (routeKind === "authCallback") return children;

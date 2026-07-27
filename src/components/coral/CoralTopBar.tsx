@@ -81,9 +81,5 @@ export function CoralTopBar({ title = "", onBack, leftElement, rightElement }: C
     </>
   );
 
-  return (
-    <View style={[sharedStyle, { backgroundColor: coral.surface }]}>
-      {inner}
-    </View>
-  );
+  return <View style={[sharedStyle, { backgroundColor: coral.surface }]}>{inner}</View>;
 }

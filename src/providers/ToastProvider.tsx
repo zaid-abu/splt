@@ -45,7 +45,7 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
     (options: ToastOptions | string) => {
       const id = randomUUID();
       const config = typeof options === "string" ? { label: options } : options;
-      
+
       setToasts((prev) => [...prev, { id, options: config }]);
 
       const duration = config.duration ?? 4000;
@@ -74,7 +74,14 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
           zIndex: 9999,
         }}
       >
-        <View style={{ flex: 1, pointerEvents: "box-none", justifyContent: "flex-start", paddingTop: 50 }}>
+        <View
+          style={{
+            flex: 1,
+            pointerEvents: "box-none",
+            justifyContent: "flex-start",
+            paddingTop: 50,
+          }}
+        >
           {toasts
             .filter((t) => t.options.placement !== "bottom")
             .map((t) => (
@@ -83,7 +90,14 @@ export function ToastProvider({ children }: { children: ReactNode }): JSX.Elemen
               </React.Fragment>
             ))}
         </View>
-        <View style={{ flex: 1, pointerEvents: "box-none", justifyContent: "flex-end", paddingBottom: 50 }}>
+        <View
+          style={{
+            flex: 1,
+            pointerEvents: "box-none",
+            justifyContent: "flex-end",
+            paddingBottom: 50,
+          }}
+        >
           {toasts
             .filter((t) => t.options.placement === "bottom")
             .map((t) => (

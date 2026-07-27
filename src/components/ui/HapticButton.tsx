@@ -1,5 +1,5 @@
 import type { JSX, ReactNode } from "react";
-import {  Pressable, ActivityIndicator , Text } from "react-native";
+import { Pressable, ActivityIndicator, Text } from "react-native";
 import type { ViewStyle } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useUI } from "@/components/ui/hooks/useUI";

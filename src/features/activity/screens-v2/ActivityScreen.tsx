@@ -1,6 +1,16 @@
 import type { JSX } from "react";
 import { View, Text, ScrollView, Pressable } from "react-native";
-import { Receipt, ArrowLeftRight, UserPlus, Users, Calendar, House, Bell, Bolt, Search } from "lucide-react-native";
+import {
+  Receipt,
+  ArrowLeftRight,
+  UserPlus,
+  Users,
+  Calendar,
+  House,
+  Bell,
+  Bolt,
+  Search,
+} from "lucide-react-native";
 
 import { useActivity } from "@/features/activity/hooks/useActivity";
 import type { ActivitySection, UpcomingRow } from "@/features/activity/hooks/useActivity";
@@ -33,7 +43,9 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
   const coral = useCoralColors();
   return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 16 }}>
-      <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 18, color: coral.foreground }}>
+      <Text
+        style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 18, color: coral.foreground }}
+      >
         Something went wrong
       </Text>
       <Pressable
@@ -42,7 +54,9 @@ function ErrorState({ onRetry }: { onRetry: () => void }) {
         onPress={onRetry}
         style={({ pressed }) => ({ opacity: pressed ? 0.65 : 1 })}
       >
-        <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 15, color: coral.accent }}>
+        <Text
+          style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 15, color: coral.accent }}
+        >
           Tap to retry
         </Text>
       </Pressable>
@@ -176,7 +190,13 @@ function UpcomingBadge({ icon }: { icon: UpcomingRow["icon"] }) {
   );
 }
 
-function AmountPill({ value, tone }: { value: string; tone?: "neutral" | "positive" | "negative" | "warning" }) {
+function AmountPill({
+  value,
+  tone,
+}: {
+  value: string;
+  tone?: "neutral" | "positive" | "negative" | "warning";
+}) {
   const coral = useCoralColors();
   const colorMap = {
     neutral: { text: coral.muted, bg: coral.border },
@@ -247,7 +267,8 @@ function TimelineRow({ activity }: { activity: ActivityType }) {
     });
     const groupName = activity.group?.name ?? "";
     const detail = `${time} - You paid $${expense.amount}${groupName ? ` - ${groupName}` : ""}`;
-    const lent = expense.amount - (expense.splits?.find((s) => s.userId === activity.userId)?.amount ?? 0);
+    const lent =
+      expense.amount - (expense.splits?.find((s) => s.userId === activity.userId)?.amount ?? 0);
     return (
       <View>
         <Pressable
@@ -419,7 +440,7 @@ function TimelineSection({ section }: { section: ActivitySection<ActivityType> }
 function UpcomingRowItem({ row }: { row: UpcomingRow }) {
   const coral = useCoralColors();
   const router = useRouter();
-  
+
   return (
     <Pressable
       onPress={() => {

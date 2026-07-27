@@ -1,6 +1,6 @@
 import type { JSX } from "react";
 import { forwardRef, useCallback } from "react";
-import {  View, Pressable , Text } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { BottomSheetModal, BottomSheetBackdrop, BottomSheetView } from "@gorhom/bottom-sheet";

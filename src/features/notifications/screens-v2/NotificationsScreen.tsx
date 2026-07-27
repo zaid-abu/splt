@@ -474,7 +474,7 @@ export default function NotificationsV2Screen(): JSX.Element {
                 </View>
               </>
             )}
-            
+
             <View style={{ marginTop: 20, marginBottom: 20 }}>
               <CoralButton
                 label="Notification settings"

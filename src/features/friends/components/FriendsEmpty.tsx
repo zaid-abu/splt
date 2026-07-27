@@ -1,4 +1,4 @@
-import {  View, Pressable , Text } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import { useRouter } from "expo-router";
 import * as icons from "lucide-react-native";
 import { EmptyState, useUI } from "@/components/ui";

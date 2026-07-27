@@ -1,8 +1,8 @@
-import { supabase } from "@/services/supabase/client"
-import { settlementsApi } from "./api"
-import type { SettlementMutationInput } from "@/features/money/types"
+import { supabase } from "@/services/supabase/client";
+import { settlementsApi } from "./api";
+import type { SettlementMutationInput } from "@/features/money/types";
 
-const mockReturns = jest.fn().mockResolvedValue({ data: null, error: null })
+const mockReturns = jest.fn().mockResolvedValue({ data: null, error: null });
 
 jest.mock("@/services/supabase/client", () => ({
   supabase: {
@@ -15,9 +15,9 @@ jest.mock("@/services/supabase/client", () => ({
       returns: mockReturns,
     })),
   },
-}))
+}));
 
-const rpc = supabase.rpc as jest.Mock
+const rpc = supabase.rpc as jest.Mock;
 
 function makeSettlementRow(overrides: Record<string, unknown> = {}) {
   return {
@@ -35,20 +35,20 @@ function makeSettlementRow(overrides: Record<string, unknown> = {}) {
     client_operation_id: "op-1",
     created_at: "2024-01-15T00:00:00.000Z",
     ...overrides,
-  }
+  };
 }
 
 beforeEach(() => {
-  jest.clearAllMocks()
-})
+  jest.clearAllMocks();
+});
 
 describe("settlementsApi.createSettlement", () => {
   it("calls create_settlement_v2 RPC with group context", async () => {
-    rpc.mockResolvedValueOnce({ data: "s-1", error: null })
+    rpc.mockResolvedValueOnce({ data: "s-1", error: null });
     mockReturns.mockResolvedValueOnce({
       data: makeSettlementRow(),
       error: null,
-    })
+    });
 
     const input: SettlementMutationInput = {
       clientOperationId: "op-1",
@@ -57,9 +57,9 @@ describe("settlementsApi.createSettlement", () => {
       amountMinor: 1000,
       currency: "USD",
       method: "cash",
-    }
+    };
 
-    const result = await settlementsApi.createSettlement(input)
+    const result = await settlementsApi.createSettlement(input);
 
     expect(rpc).toHaveBeenCalledWith("create_settlement_v2", {
       p_client_operation_id: "op-1",
@@ -70,16 +70,16 @@ describe("settlementsApi.createSettlement", () => {
       p_currency: "USD",
       p_method: "cash",
       p_note: "",
-    })
-    expect(result).toMatchObject({ id: "s-1", groupId: "g-1" })
-  })
+    });
+    expect(result).toMatchObject({ id: "s-1", groupId: "g-1" });
+  });
 
   it("calls create_settlement_v2 RPC with direct/friendship context", async () => {
-    rpc.mockResolvedValueOnce({ data: "s-2", error: null })
+    rpc.mockResolvedValueOnce({ data: "s-2", error: null });
     mockReturns.mockResolvedValueOnce({
       data: makeSettlementRow({ id: "s-2", group_id: null, friendship_id: "f-1" }),
       error: null,
-    })
+    });
 
     const input: SettlementMutationInput = {
       clientOperationId: "op-2",
@@ -89,9 +89,9 @@ describe("settlementsApi.createSettlement", () => {
       currency: "USD",
       method: "bank_transfer",
       note: "Thanks!",
-    }
+    };
 
-    await settlementsApi.createSettlement(input)
+    await settlementsApi.createSettlement(input);
 
     expect(rpc).toHaveBeenCalledWith("create_settlement_v2", {
       p_client_operation_id: "op-2",
@@ -102,11 +102,11 @@ describe("settlementsApi.createSettlement", () => {
       p_currency: "USD",
       p_method: "bank_transfer",
       p_note: "Thanks!",
-    })
-  })
+    });
+  });
 
   it("throws when RPC errors", async () => {
-    rpc.mockResolvedValueOnce({ data: null, error: new Error("RPC failed") })
+    rpc.mockResolvedValueOnce({ data: null, error: new Error("RPC failed") });
 
     const input: SettlementMutationInput = {
       clientOperationId: "op-3",
@@ -115,8 +115,8 @@ describe("settlementsApi.createSettlement", () => {
       amountMinor: 1000,
       currency: "USD",
       method: "cash",
-    }
+    };
 
-    await expect(settlementsApi.createSettlement(input)).rejects.toThrow("RPC failed")
-  })
-})
+    await expect(settlementsApi.createSettlement(input)).rejects.toThrow("RPC failed");
+  });
+});

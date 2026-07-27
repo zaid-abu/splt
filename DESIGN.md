@@ -62,15 +62,19 @@ components:
 # Design System: Splt (Coral Ledger)
 
 ## 1. Overview
+
 Splt uses the **Coral Ledger** design system, an inspectable, modern financial layout built for clarity and light interaction. It centers around:
+
 - **Circle Dock Navigation**: Floating glassmorphic dock with active route indicators and a prominent central coral add action (`+`).
 - **Clear Financial Language**: Distinct visual treatments for "You lent", "You borrowed", "Owes you", "You owe", "Review", and "Total".
 - **Coral Visual Palette**: Mineral canvas tones (`#EFF6FD`), crisp surface cards (`#F9FCFF`), high-contrast ink (`#101B29`), vibrant coral accents (`#F0584B`), and clear semantic colors (Emerald green, Crimson red, Amber yellow).
 
 ## 2. Typography
+
 - **UI Text**: `Instrument Sans` (`400Regular`, `500Medium`, `600SemiBold`).
 - **Numeric & Financial Data**: `IBM Plex Mono` (`500Medium`, `600SemiBold`).
 
 ## 3. Platform Adaptations
+
 - **iOS**: Soft circular controls, 44pt touch targets, subtle backdrop blur.
 - **Android**: Material-aligned 48dp touch targets, opaque chrome, rounded rectangles.

@@ -1,44 +1,54 @@
-import { useReducer, useCallback, useEffect, useRef } from "react"
-import type { MoneyContext, MoneySplitMethod, SplitSource, SplitSourceValue } from "@/features/money/types"
-import { calculateSplits, parseMinorInput, validateSplitSources } from "@/features/money/splits"
-import type { ExpenseCategory } from "@/types"
+import { useReducer, useCallback, useEffect, useRef } from "react";
+import type {
+  MoneyContext,
+  MoneySplitMethod,
+  SplitSource,
+  SplitSourceValue,
+} from "@/features/money/types";
+import { calculateSplits, parseMinorInput, validateSplitSources } from "@/features/money/splits";
+import type { ExpenseCategory } from "@/types";
 
 export interface ComposerParticipant {
-  userId: string
-  name: string
-  avatar?: string
+  userId: string;
+  name: string;
+  avatar?: string;
 }
 
 export interface ReceiptDraft {
-  key: string
-  mimeType: string
-  sizeBytes: number
+  key: string;
+  mimeType: string;
+  sizeBytes: number;
 }
 
 export interface ComposerError {
-  message: string
-  code?: string
+  message: string;
+  code?: string;
 }
 
 export interface ExpenseComposerState {
-  context?: MoneyContext
-  amountInput: string
-  currency: string
-  description: string
-  paidBy: string
-  participants: ComposerParticipant[]
-  splitMethod: MoneySplitMethod
-  splitSources: Record<string, SplitSourceValue>
-  date: Date
-  category: ExpenseCategory
-  notes: string
-  receipt?: ReceiptDraft
-  status: "editing" | "submitting" | "success"
-  error?: ComposerError
+  context?: MoneyContext;
+  amountInput: string;
+  currency: string;
+  description: string;
+  paidBy: string;
+  participants: ComposerParticipant[];
+  splitMethod: MoneySplitMethod;
+  splitSources: Record<string, SplitSourceValue>;
+  date: Date;
+  category: ExpenseCategory;
+  notes: string;
+  receipt?: ReceiptDraft;
+  status: "editing" | "submitting" | "success";
+  error?: ComposerError;
 }
 
 export type ExpenseComposerAction =
-  | { type: "SET_CONTEXT"; context: MoneyContext; participants: ComposerParticipant[]; currency: string }
+  | {
+      type: "SET_CONTEXT";
+      context: MoneyContext;
+      participants: ComposerParticipant[];
+      currency: string;
+    }
   | { type: "SET_AMOUNT"; amountInput: string }
   | { type: "SET_DESCRIPTION"; description: string }
   | { type: "SET_PAID_BY"; paidBy: string }
@@ -54,9 +64,12 @@ export type ExpenseComposerAction =
   | { type: "SUBMIT_SUCCESS" }
   | { type: "SUBMIT_ERROR"; error: ComposerError }
   | {
-      type: "INIT_EDIT"
-      state: Partial<ExpenseComposerState> & { context: MoneyContext; participants: ComposerParticipant[] }
-    }
+      type: "INIT_EDIT";
+      state: Partial<ExpenseComposerState> & {
+        context: MoneyContext;
+        participants: ComposerParticipant[];
+      };
+    };
 
 function defaultSplitSources(
   participants: ComposerParticipant[],
@@ -64,37 +77,37 @@ function defaultSplitSources(
   amountInput: string,
   currency: string
 ): Record<string, SplitSourceValue> {
-  const sources: Record<string, SplitSourceValue> = {}
+  const sources: Record<string, SplitSourceValue> = {};
 
   for (const p of participants) {
     if (method === "percentage") {
-      sources[p.userId] = { percentageUnits: 0 }
+      sources[p.userId] = { percentageUnits: 0 };
     } else if (method === "shares") {
-      sources[p.userId] = { shareUnits: 1000000 }
+      sources[p.userId] = { shareUnits: 1000000 };
     } else if (method === "custom") {
-      sources[p.userId] = { amountMinor: 0 }
+      sources[p.userId] = { amountMinor: 0 };
     } else {
-      sources[p.userId] = {}
+      sources[p.userId] = {};
     }
   }
 
   if (method === "equal" && participants.length > 0 && amountInput) {
     try {
-      const totalMinor = parseMinorInput(amountInput, currency)
+      const totalMinor = parseMinorInput(amountInput, currency);
       const splits = calculateSplits(
         totalMinor,
         "equal",
         participants.map((p, i) => ({ userId: p.userId, position: i }))
-      )
+      );
       for (const s of splits) {
-        sources[s.userId] = { amountMinor: s.amountMinor }
+        sources[s.userId] = { amountMinor: s.amountMinor };
       }
     } catch {
       // invalid input
     }
   }
 
-  return sources
+  return sources;
 }
 
 function createInitialState(): ExpenseComposerState {
@@ -110,7 +123,7 @@ function createInitialState(): ExpenseComposerState {
     category: "other",
     notes: "",
     status: "editing",
-  }
+  };
 }
 
 export function expenseComposerReducer(
@@ -124,29 +137,28 @@ export function expenseComposerReducer(
         state.splitMethod,
         state.amountInput,
         action.currency
-      )
+      );
       return {
         ...state,
         context: action.context,
         participants: action.participants,
         currency: action.currency,
         paidBy:
-          state.paidBy ||
-          (action.participants.length > 0 ? action.participants[0].userId : ""),
+          state.paidBy || (action.participants.length > 0 ? action.participants[0].userId : ""),
         splitSources: sources,
         status: "editing",
         error: undefined,
-      }
+      };
     }
 
     case "SET_AMOUNT":
-      return { ...state, amountInput: action.amountInput, error: undefined }
+      return { ...state, amountInput: action.amountInput, error: undefined };
 
     case "SET_DESCRIPTION":
-      return { ...state, description: action.description }
+      return { ...state, description: action.description };
 
     case "SET_PAID_BY":
-      return { ...state, paidBy: action.paidBy }
+      return { ...state, paidBy: action.paidBy };
 
     case "SET_SPLIT_METHOD": {
       const sources = defaultSplitSources(
@@ -154,13 +166,13 @@ export function expenseComposerReducer(
         action.splitMethod,
         state.amountInput,
         state.currency
-      )
+      );
       return {
         ...state,
         splitMethod: action.splitMethod,
         splitSources: sources,
         error: undefined,
-      }
+      };
     }
 
     case "SET_SOURCE":
@@ -171,19 +183,19 @@ export function expenseComposerReducer(
           [action.userId]: action.source,
         },
         error: undefined,
-      }
+      };
 
     case "SET_DATE":
-      return { ...state, date: action.date }
+      return { ...state, date: action.date };
 
     case "SET_CATEGORY":
-      return { ...state, category: action.category }
+      return { ...state, category: action.category };
 
     case "SET_NOTES":
-      return { ...state, notes: action.notes }
+      return { ...state, notes: action.notes };
 
     case "SET_RECEIPT":
-      return { ...state, receipt: action.receipt }
+      return { ...state, receipt: action.receipt };
 
     case "RESET_SPLIT": {
       const sources = defaultSplitSources(
@@ -191,8 +203,8 @@ export function expenseComposerReducer(
         state.splitMethod,
         state.amountInput,
         state.currency
-      )
-      return { ...state, splitSources: sources, error: undefined }
+      );
+      return { ...state, splitSources: sources, error: undefined };
     }
 
     case "CONFIRM_CURRENCY": {
@@ -201,23 +213,23 @@ export function expenseComposerReducer(
         state.splitMethod,
         state.amountInput,
         action.currency
-      )
+      );
       return {
         ...state,
         currency: action.currency,
         splitSources: sources,
         error: undefined,
-      }
+      };
     }
 
     case "SUBMIT_START":
-      return { ...state, status: "submitting", error: undefined }
+      return { ...state, status: "submitting", error: undefined };
 
     case "SUBMIT_SUCCESS":
-      return { ...state, status: "success" }
+      return { ...state, status: "success" };
 
     case "SUBMIT_ERROR":
-      return { ...state, status: "editing", error: action.error }
+      return { ...state, status: "editing", error: action.error };
 
     case "INIT_EDIT": {
       return {
@@ -232,164 +244,170 @@ export function expenseComposerReducer(
             action.state.currency ?? state.currency
           ),
         status: "editing",
-      }
+      };
     }
 
     default:
-      return state
+      return state;
   }
 }
 
 export function useExpenseComposer(options?: {
-  initialContext?: MoneyContext
-  initialParticipants?: ComposerParticipant[]
-  initialCurrency?: string
-  initialDescription?: string
-  initialAmount?: string
-  initialPaidBy?: string
-  initialSplitMethod?: MoneySplitMethod
-  initialDate?: Date
-  initialCategory?: ExpenseCategory
-  initialNotes?: string
+  initialContext?: MoneyContext;
+  initialParticipants?: ComposerParticipant[];
+  initialCurrency?: string;
+  initialDescription?: string;
+  initialAmount?: string;
+  initialPaidBy?: string;
+  initialSplitMethod?: MoneySplitMethod;
+  initialDate?: Date;
+  initialCategory?: ExpenseCategory;
+  initialNotes?: string;
 }) {
-  const [state, dispatch] = useReducer(expenseComposerReducer, null, createInitialState)
-  const initRef = useRef(false)
+  const [state, dispatch] = useReducer(expenseComposerReducer, null, createInitialState);
+  const initRef = useRef(false);
 
   useEffect(() => {
-    if (initRef.current) return
-    if (!options?.initialContext || !options?.initialParticipants?.length) return
+    if (initRef.current) return;
+    if (!options?.initialContext || !options?.initialParticipants?.length) return;
 
-    initRef.current = true
+    initRef.current = true;
     dispatch({
       type: "SET_CONTEXT",
       context: options.initialContext,
       participants: options.initialParticipants,
       currency: options.initialCurrency || "USD",
-    })
+    });
 
     if (options.initialDescription) {
-      dispatch({ type: "SET_DESCRIPTION", description: options.initialDescription })
+      dispatch({ type: "SET_DESCRIPTION", description: options.initialDescription });
     }
     if (options.initialAmount) {
-      dispatch({ type: "SET_AMOUNT", amountInput: options.initialAmount })
+      dispatch({ type: "SET_AMOUNT", amountInput: options.initialAmount });
     }
     if (options.initialPaidBy) {
-      dispatch({ type: "SET_PAID_BY", paidBy: options.initialPaidBy })
+      dispatch({ type: "SET_PAID_BY", paidBy: options.initialPaidBy });
     }
     if (options.initialSplitMethod) {
-      dispatch({ type: "SET_SPLIT_METHOD", splitMethod: options.initialSplitMethod })
+      dispatch({ type: "SET_SPLIT_METHOD", splitMethod: options.initialSplitMethod });
     }
     if (options.initialDate) {
-      dispatch({ type: "SET_DATE", date: options.initialDate })
+      dispatch({ type: "SET_DATE", date: options.initialDate });
     }
     if (options.initialCategory) {
-      dispatch({ type: "SET_CATEGORY", category: options.initialCategory })
+      dispatch({ type: "SET_CATEGORY", category: options.initialCategory });
     }
     if (options.initialNotes !== undefined) {
-      dispatch({ type: "SET_NOTES", notes: options.initialNotes })
+      dispatch({ type: "SET_NOTES", notes: options.initialNotes });
     }
-  }, [options])
+  }, [options]);
 
   const setContext = useCallback(
     (context: MoneyContext, participants: ComposerParticipant[], currency: string) => {
-      dispatch({ type: "SET_CONTEXT", context, participants, currency })
+      dispatch({ type: "SET_CONTEXT", context, participants, currency });
     },
     []
-  )
+  );
 
   const setAmount = useCallback((amountInput: string) => {
-    dispatch({ type: "SET_AMOUNT", amountInput })
-  }, [])
+    dispatch({ type: "SET_AMOUNT", amountInput });
+  }, []);
 
   const setDescription = useCallback((description: string) => {
-    dispatch({ type: "SET_DESCRIPTION", description })
-  }, [])
+    dispatch({ type: "SET_DESCRIPTION", description });
+  }, []);
 
   const setPaidBy = useCallback((paidBy: string) => {
-    dispatch({ type: "SET_PAID_BY", paidBy })
-  }, [])
+    dispatch({ type: "SET_PAID_BY", paidBy });
+  }, []);
 
   const setSplitMethod = useCallback((splitMethod: MoneySplitMethod) => {
-    dispatch({ type: "SET_SPLIT_METHOD", splitMethod })
-  }, [])
+    dispatch({ type: "SET_SPLIT_METHOD", splitMethod });
+  }, []);
 
   const setSource = useCallback((userId: string, source: SplitSourceValue) => {
-    dispatch({ type: "SET_SOURCE", userId, source })
-  }, [])
+    dispatch({ type: "SET_SOURCE", userId, source });
+  }, []);
 
   const setDate = useCallback((date: Date) => {
-    dispatch({ type: "SET_DATE", date })
-  }, [])
+    dispatch({ type: "SET_DATE", date });
+  }, []);
 
   const setCategory = useCallback((category: ExpenseCategory) => {
-    dispatch({ type: "SET_CATEGORY", category })
-  }, [])
+    dispatch({ type: "SET_CATEGORY", category });
+  }, []);
 
   const setNotes = useCallback((notes: string) => {
-    dispatch({ type: "SET_NOTES", notes })
-  }, [])
+    dispatch({ type: "SET_NOTES", notes });
+  }, []);
 
   const setReceipt = useCallback((receipt?: ReceiptDraft) => {
-    dispatch({ type: "SET_RECEIPT", receipt })
-  }, [])
+    dispatch({ type: "SET_RECEIPT", receipt });
+  }, []);
 
   const resetSplit = useCallback(() => {
-    dispatch({ type: "RESET_SPLIT" })
-  }, [])
+    dispatch({ type: "RESET_SPLIT" });
+  }, []);
 
   const confirmCurrency = useCallback((currency: string) => {
-    dispatch({ type: "CONFIRM_CURRENCY", currency })
-  }, [])
+    dispatch({ type: "CONFIRM_CURRENCY", currency });
+  }, []);
 
   const submitStart = useCallback(() => {
-    dispatch({ type: "SUBMIT_START" })
-  }, [])
+    dispatch({ type: "SUBMIT_START" });
+  }, []);
 
   const submitSuccess = useCallback(() => {
-    dispatch({ type: "SUBMIT_SUCCESS" })
-  }, [])
+    dispatch({ type: "SUBMIT_SUCCESS" });
+  }, []);
 
   const submitError = useCallback((error: ComposerError) => {
-    dispatch({ type: "SUBMIT_ERROR", error })
-  }, [])
+    dispatch({ type: "SUBMIT_ERROR", error });
+  }, []);
 
   const initEdit = useCallback(
     (
       editState: Partial<ExpenseComposerState> & {
-        context: MoneyContext
-        participants: ComposerParticipant[]
+        context: MoneyContext;
+        participants: ComposerParticipant[];
       }
     ) => {
-      dispatch({ type: "INIT_EDIT", state: editState })
+      dispatch({ type: "INIT_EDIT", state: editState });
     },
     []
-  )
+  );
 
   const calculateResult = useCallback(() => {
-    if (!state.amountInput || state.participants.length === 0) return null
+    if (!state.amountInput || state.participants.length === 0) return null;
 
     try {
-      const totalMinor = parseMinorInput(state.amountInput, state.currency)
+      const totalMinor = parseMinorInput(state.amountInput, state.currency);
 
       const sources = state.participants.map((p, i) => {
-        const source: SplitSourceValue = state.splitSources[p.userId] || {}
+        const source: SplitSourceValue = state.splitSources[p.userId] || {};
         return {
           userId: p.userId,
           position: i,
           amountMinor: source.amountMinor,
           percentageUnits: source.percentageUnits,
           shareUnits: source.shareUnits,
-        }
-      })
+        };
+      });
 
-      validateSplitSources(totalMinor, state.splitMethod, sources)
-      const splits = calculateSplits(totalMinor, state.splitMethod, sources)
+      validateSplitSources(totalMinor, state.splitMethod, sources);
+      const splits = calculateSplits(totalMinor, state.splitMethod, sources);
 
-      return { totalMinor, splits }
+      return { totalMinor, splits };
     } catch {
-      return null
+      return null;
     }
-  }, [state.amountInput, state.currency, state.participants, state.splitMethod, state.splitSources])
+  }, [
+    state.amountInput,
+    state.currency,
+    state.participants,
+    state.splitMethod,
+    state.splitSources,
+  ]);
 
   return {
     state,
@@ -411,5 +429,5 @@ export function useExpenseComposer(options?: {
     submitError,
     initEdit,
     calculateResult,
-  }
+  };
 }

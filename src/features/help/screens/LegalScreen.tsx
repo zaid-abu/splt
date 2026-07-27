@@ -14,23 +14,54 @@ export default function LegalScreen(): JSX.Element {
     <CoralScreen scroll={false}>
       <CoralTopBar title="Terms & privacy" onBack={() => router.back()} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40, gap: 20 }}>
-        
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40, gap: 20 }}
+      >
         <View style={{ gap: 8, marginTop: 8 }}>
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 16,
+              color: coral.foreground,
+            }}
+          >
             Terms of Service
           </Text>
-          <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 13, color: coral.muted, lineHeight: 18 }}>
-            By using Splt, you agree to track expenses honestly and settle obligations directly with counterparties. Splt does not hold funds, offer credit, or process banking transactions.
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 13,
+              color: coral.muted,
+              lineHeight: 18,
+            }}
+          >
+            By using Splt, you agree to track expenses honestly and settle obligations directly with
+            counterparties. Splt does not hold funds, offer credit, or process banking transactions.
           </Text>
         </View>
 
         <View style={{ gap: 8 }}>
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_600SemiBold",
+              fontSize: 16,
+              color: coral.foreground,
+            }}
+          >
             Privacy Policy
           </Text>
-          <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 13, color: coral.muted, lineHeight: 18 }}>
-            We sync shared expenses, email identifiers, and transaction metadata to coordinate circle balances. Your financial logs are shared only with the explicit participants of your groups.
+          <Text
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 13,
+              color: coral.muted,
+              lineHeight: 18,
+            }}
+          >
+            We sync shared expenses, email identifiers, and transaction metadata to coordinate
+            circle balances. Your financial logs are shared only with the explicit participants of
+            your groups.
           </Text>
         </View>
 
@@ -55,7 +86,6 @@ export default function LegalScreen(): JSX.Element {
             Splt records shared expenses; it is not a bank.
           </Text>
         </View>
-
       </ScrollView>
     </CoralScreen>
   );

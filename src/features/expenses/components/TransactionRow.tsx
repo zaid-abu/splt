@@ -1,5 +1,5 @@
 import React, { type JSX } from "react";
-import {  View, Pressable , Text } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { formatAmount } from "@/components/ui/AmountDisplay";
@@ -84,9 +84,7 @@ export const TransactionRow = React.memo(function TransactionRow({
               justifyContent: "center",
             }}
           >
-            <Text
-              style={{ fontSize: 10, color: color.text, textAlign: "center", lineHeight: 14 }}
-            >
+            <Text style={{ fontSize: 10, color: color.text, textAlign: "center", lineHeight: 14 }}>
               {paidByUser.name.charAt(0).toUpperCase()}
             </Text>
           </View>

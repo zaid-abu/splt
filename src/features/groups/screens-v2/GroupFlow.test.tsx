@@ -1,13 +1,15 @@
-import { act, fireEvent, render, screen } from "@testing-library/react-native"
-import type { Mock } from "jest-mock"
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import type { Mock } from "jest-mock";
 
 jest.mock("react-native-reanimated", () => {
-  const { View: RNView } = jest.requireActual("react-native")
+  const { View: RNView } = jest.requireActual("react-native");
 
   const Animated = ({ children, style, ...props }: any) => (
-    <RNView style={style} {...props}>{children}</RNView>
-  )
-  Animated.View = Animated
+    <RNView style={style} {...props}>
+      {children}
+    </RNView>
+  );
+  Animated.View = Animated;
 
   return {
     __esModule: true,
@@ -18,70 +20,76 @@ jest.mock("react-native-reanimated", () => {
     withTiming: (v: any) => v,
     FadeIn: { duration: () => ({}) },
     FadeOut: { duration: () => ({}) },
-  }
-})
+  };
+});
 
-import NewGroupScreen from "./NewGroupScreen"
-import { useCreateGroup } from "@/features/groups/queries/useGroups"
-import { randomUUID } from "@/utils/randomUUID"
+import NewGroupScreen from "./NewGroupScreen";
+import { useCreateGroup } from "@/features/groups/queries/useGroups";
+import { randomUUID } from "@/utils/randomUUID";
 
-import GroupDetailScreen from "./GroupDetailScreen"
-import { useGroupSnapshot } from "@/features/groups/hooks/useGroupSnapshot"
-import type { GroupSnapshotData, SnapshotState } from "@/features/groups/hooks/useGroupSnapshot"
-import type { OpenBalance } from "@/features/money/types"
-import type { Expense, User, Group } from "@/types"
+import GroupDetailScreen from "./GroupDetailScreen";
+import { useGroupSnapshot } from "@/features/groups/hooks/useGroupSnapshot";
+import type { GroupSnapshotData, SnapshotState } from "@/features/groups/hooks/useGroupSnapshot";
+import type { OpenBalance } from "@/features/money/types";
+import type { Expense, User, Group } from "@/types";
 
 // ── Settings screen (Task 15) ──────────────────────────────────────────────
 
-import GroupSettingsScreen from "./GroupSettingsScreen"
-import { useGroupSettings } from "@/features/groups/hooks/useGroupSettings"
+import GroupSettingsScreen from "./GroupSettingsScreen";
+import { useGroupSettings } from "@/features/groups/hooks/useGroupSettings";
 
-const mockReplace = jest.fn()
-const mockPush = jest.fn()
-const mockBack = jest.fn()
-const mockSetParams = jest.fn()
-const mockCanGoBack = jest.fn(() => false)
-const mockUseLocalSearchParams = jest.fn(() => ({}))
+const mockReplace = jest.fn();
+const mockPush = jest.fn();
+const mockBack = jest.fn();
+const mockSetParams = jest.fn();
+const mockCanGoBack = jest.fn(() => false);
+const mockUseLocalSearchParams = jest.fn(() => ({}));
 
 jest.mock("expo-router", () => ({
-  useRouter: () => ({ replace: mockReplace, push: mockPush, back: mockBack, setParams: mockSetParams, canGoBack: mockCanGoBack }),
+  useRouter: () => ({
+    replace: mockReplace,
+    push: mockPush,
+    back: mockBack,
+    setParams: mockSetParams,
+    canGoBack: mockCanGoBack,
+  }),
   useLocalSearchParams: () => mockUseLocalSearchParams(),
-}))
+}));
 
 jest.mock("@/context/AppContext", () => ({
   useAuth: () => ({ currentUser: { id: "me" } }),
-}))
+}));
 
 jest.mock("@/features/groups/queries/useGroups", () => ({
   useCreateGroup: jest.fn(),
-}))
+}));
 
 jest.mock("@/features/friends/queries/useFriends", () => ({
   useFriends: jest.fn(() => ({ data: [] })),
-}))
+}));
 
 jest.mock("@/store/useUIStore", () => ({
   useUIStore: (selector: any) => {
-    const store = { isDarkMode: false, preferredCurrency: { code: "USD" } }
-    return selector(store)
+    const store = { isDarkMode: false, preferredCurrency: { code: "USD" } };
+    return selector(store);
   },
-}))
+}));
 
 jest.mock("@/hooks/useAppToast", () => ({
   useAppToast: () => ({ toast: { show: jest.fn() } }),
-}))
+}));
 
 jest.mock("react-native-safe-area-context", () => ({
   useSafeAreaInsets: () => ({ top: 0, right: 0, bottom: 0, left: 0 }),
   SafeAreaProvider: ({ children }: any) => children,
-}))
+}));
 
 jest.mock("lucide-react-native", () => {
-  const React = require("react")
-  const RN = require("react-native")
-  const MockIcon = (props: any) => React.createElement(RN.View, null)
-  return new Proxy({}, { get: () => MockIcon })
-})
+  const React = require("react");
+  const RN = require("react-native");
+  const MockIcon = (props: any) => React.createElement(RN.View, null);
+  return new Proxy({}, { get: () => MockIcon });
+});
 
 jest.mock("@/components/coral/useCoral", () => ({
   useCoralColors: () => ({
@@ -104,15 +112,16 @@ jest.mock("@/components/coral/useCoral", () => ({
     positiveSoft: "#d0f2dc",
     negativeSoft: "#ffe1e1",
   }),
-}))
+}));
 
 jest.mock("@/components/coral/CoralScreen", () => ({
-  CoralScreen: ({ children }: any) => require("react").createElement(require("react-native").View, { style: { flex: 1 } }, children),
-}))
+  CoralScreen: ({ children }: any) =>
+    require("react").createElement(require("react-native").View, { style: { flex: 1 } }, children),
+}));
 
 jest.mock("@/components/coral/CoralTopBar", () => ({
   CoralTopBar: () => null,
-}))
+}));
 
 jest.mock("@/components/coral/CoralField", () => ({
   CoralField: require("react").forwardRef(({ value, onChangeText }: any, _ref: any) =>
@@ -122,41 +131,50 @@ jest.mock("@/components/coral/CoralField", () => ({
       accessibilityLabel: "Group name",
     })
   ),
-}))
+}));
 
 jest.mock("@/components/coral/CoralButton", () => ({
   CoralButton: ({ label, onPress, disabled, loading }: any) =>
     require("react").createElement(
       require("react-native").Pressable,
-      { accessibilityRole: "button", accessibilityLabel: label, onPress, disabled: disabled || loading },
+      {
+        accessibilityRole: "button",
+        accessibilityLabel: label,
+        onPress,
+        disabled: disabled || loading,
+      },
       require("react").createElement(require("react-native").Text, null, label)
     ),
-}))
+}));
 
 jest.mock("@/components/coral/CoralSelect", () => ({
   CoralSelect: () => require("react").createElement(require("react-native").View, null),
-}))
+}));
 
 jest.mock("@/components/coral/Eyebrow", () => ({
-  Eyebrow: ({ children }: any) => require("react").createElement(require("react-native").Text, null, children),
-}))
+  Eyebrow: ({ children }: any) =>
+    require("react").createElement(require("react-native").Text, null, children),
+}));
 
 jest.mock("@/components/coral/MoneyRow", () => ({
   MoneyRow: ({ title, subtitle, amount, onPress, accessibilityLabel }: any) => {
-    const accessibleName = accessibilityLabel || [title, subtitle, amount].filter(Boolean).join(", ")
+    const accessibleName =
+      accessibilityLabel || [title, subtitle, amount].filter(Boolean).join(", ");
     return require("react").createElement(
       require("react-native").Pressable,
       { accessibilityRole: "button", accessibilityLabel: accessibleName, onPress },
       require("react").createElement(require("react-native").Text, null, title),
-      subtitle ? require("react").createElement(require("react-native").Text, null, subtitle) : null,
+      subtitle
+        ? require("react").createElement(require("react-native").Text, null, subtitle)
+        : null,
       amount ? require("react").createElement(require("react-native").Text, null, amount) : null
-    )
+    );
   },
-}))
+}));
 
 jest.mock("@/components/coral/CoralSnackbar", () => ({
   CoralSnackbar: () => null,
-}))
+}));
 
 jest.mock("@/components/ui", () => ({
   useUI: () => ({
@@ -182,33 +200,34 @@ jest.mock("@/components/ui", () => ({
   RADIUS: {},
   SPACE: {},
   SHADOW: {},
-}))
+}));
 
 jest.mock("expo-blur", () => ({
   BlurTargetView: ({ children }: any) => children,
   BlurView: ({ children }: any) => children,
-}))
+}));
 
 jest.mock("expo-status-bar", () => ({
   StatusBar: () => null,
-}))
+}));
 
 jest.mock("@/components/ui/MemberAvatar", () => ({
   AppUserAvatar: () => null,
   AvatarStack: () => null,
-}))
+}));
 
 jest.mock("@/components/ui/GroupIconBadge", () => ({
   GroupIconBadge: () => null,
-}))
+}));
 
 jest.mock("@/components/ui/AmountDisplay", () => ({
   formatAmount: jest.fn((amount: number) => `${Math.abs(amount).toFixed(2)}`),
-}))
+}));
 
 jest.mock("@/components/coral/LargeTitle", () => ({
-  LargeTitle: ({ children }: any) => require("react").createElement(require("react-native").Text, null, children),
-}))
+  LargeTitle: ({ children }: any) =>
+    require("react").createElement(require("react-native").Text, null, children),
+}));
 
 jest.mock("@/components/coral/CoralSegment", () => ({
   CoralSegment: ({ options, selected, onSelect }: any) =>
@@ -228,224 +247,231 @@ jest.mock("@/components/coral/CoralSegment", () => ({
         )
       )
     ),
-}))
+}));
 
 jest.mock("@/components/coral/StatPair", () => ({
   StatPair: ({ left, right }: any) =>
-    require("react").createElement(require("react-native").Text, null, `${left.value} ${right.value}`),
-}))
+    require("react").createElement(
+      require("react-native").Text,
+      null,
+      `${left.value} ${right.value}`
+    ),
+}));
 
 jest.mock("@gorhom/bottom-sheet", () => ({
   BottomSheetModal: () => null,
   BottomSheetBackdrop: () => null,
   BottomSheetTextInput: () => null,
-}))
+}));
 
 jest.mock("@/features/groups/components/UserSearchBottomSheet", () => {
-  const React = require("react")
-  const RN = require("react-native")
-  const { forwardRef } = React
+  const React = require("react");
+  const RN = require("react-native");
+  const { forwardRef } = React;
 
   const users: Record<string, { id: string; name: string; email: string }> = {
     u1: { id: "u1", name: "Alice", email: "alice@test.com" },
     u2: { id: "u2", name: "Bob", email: "bob@test.com" },
     u3: { id: "u3", name: "Charlie", email: "charlie@test.com" },
-  }
+  };
 
-  const UserSearchBottomSheet = forwardRef(
-    ({ onSelect, excludeUserIds = [] }: any, _ref: any) => {
-      const onSelectUser = (userId: string) => {
-        const user = users[userId]
-        if (user && !excludeUserIds.includes(userId)) {
-          onSelect(user)
-        }
+  const UserSearchBottomSheet = forwardRef(({ onSelect, excludeUserIds = [] }: any, _ref: any) => {
+    const onSelectUser = (userId: string) => {
+      const user = users[userId];
+      if (user && !excludeUserIds.includes(userId)) {
+        onSelect(user);
       }
-      return React.createElement(
-        RN.View,
-        { accessibilityLabel: "user-search-sheet" },
-        Object.entries(users)
-          .filter(([id]) => !excludeUserIds.includes(id))
-          .map(([id, user]) =>
-            React.createElement(
-              RN.Pressable,
-              {
-                key: id,
-                accessibilityRole: "button",
-                accessibilityLabel: `select-user-${id}`,
-                onPress: () => onSelectUser(id),
-              },
-              React.createElement(RN.Text, null, user.name)
-            )
+    };
+    return React.createElement(
+      RN.View,
+      { accessibilityLabel: "user-search-sheet" },
+      Object.entries(users)
+        .filter(([id]) => !excludeUserIds.includes(id))
+        .map(([id, user]) =>
+          React.createElement(
+            RN.Pressable,
+            {
+              key: id,
+              accessibilityRole: "button",
+              accessibilityLabel: `select-user-${id}`,
+              onPress: () => onSelectUser(id),
+            },
+            React.createElement(RN.Text, null, user.name)
           )
-      )
-    },
-  )
-  UserSearchBottomSheet.displayName = "UserSearchBottomSheet"
-  return { UserSearchBottomSheet }
-})
+        )
+    );
+  });
+  UserSearchBottomSheet.displayName = "UserSearchBottomSheet";
+  return { UserSearchBottomSheet };
+});
 
 jest.mock("@/components/dialogs/ConfirmationSheet", () => {
-  const React = require("react")
-  const RN = require("react-native")
+  const React = require("react");
+  const RN = require("react-native");
   return {
     ConfirmationSheet: ({ title, description, confirmLabel, onConfirm }: any) =>
       React.createElement(
-        RN.View, null,
+        RN.View,
+        null,
         React.createElement(RN.Text, null, title),
         React.createElement(RN.Text, null, description),
         React.createElement(
           RN.Pressable,
-          { accessibilityRole: "button", accessibilityLabel: "confirm-" + (confirmLabel || "Delete"), onPress: onConfirm },
+          {
+            accessibilityRole: "button",
+            accessibilityLabel: "confirm-" + (confirmLabel || "Delete"),
+            onPress: onConfirm,
+          },
           React.createElement(RN.Text, null, confirmLabel || "Delete")
         )
       ),
-  }
-})
+  };
+});
 
 jest.mock("@/features/groups/hooks/useGroupSettings", () => ({
   useGroupSettings: jest.fn(),
-}))
+}));
 
 jest.mock("@/utils/randomUUID", () => ({
   randomUUID: jest.fn(),
-}))
+}));
 
-const mockMutateAsync = jest.fn()
-const mockUuid1 = "00000000-0000-0000-0000-000000000001"
+const mockMutateAsync = jest.fn();
+const mockUuid1 = "00000000-0000-0000-0000-000000000001";
 
 beforeEach(() => {
-  jest.clearAllMocks()
-  mockUseLocalSearchParams.mockReturnValue({})
-  ;(useCreateGroup as Mock).mockReturnValue({
+  jest.clearAllMocks();
+  mockUseLocalSearchParams.mockReturnValue({});
+  (useCreateGroup as Mock).mockReturnValue({
     mutateAsync: mockMutateAsync,
     isPending: false,
-  })
-  ;(randomUUID as Mock).mockReturnValue(mockUuid1)
-})
+  });
+  (randomUUID as Mock).mockReturnValue(mockUuid1);
+});
 
 describe("creates group atomically", () => {
   it("selects users with no pre-submit side effects", async () => {
-    await render(<NewGroupScreen />)
+    await render(<NewGroupScreen />);
 
-    expect(mockMutateAsync).not.toHaveBeenCalled()
-
-    await act(async () => {
-      fireEvent.press(screen.getByLabelText("select-user-u1"))
-    })
-    expect(mockMutateAsync).not.toHaveBeenCalled()
-    expect(screen.getByLabelText(/Alice/)).toBeTruthy()
+    expect(mockMutateAsync).not.toHaveBeenCalled();
 
     await act(async () => {
-      fireEvent.press(screen.getByLabelText("select-user-u2"))
-    })
-    expect(mockMutateAsync).not.toHaveBeenCalled()
-    expect(screen.getByLabelText(/Bob/)).toBeTruthy()
-  })
+      fireEvent.press(screen.getByLabelText("select-user-u1"));
+    });
+    expect(mockMutateAsync).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/Alice/)).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("select-user-u2"));
+    });
+    expect(mockMutateAsync).not.toHaveBeenCalled();
+    expect(screen.getByLabelText(/Bob/)).toBeTruthy();
+  });
 
   it("calls create_group_v2 once with stable operationId on double press", async () => {
-    const resolvedGroup = { id: "g-1", name: "Trip" }
-    mockMutateAsync.mockResolvedValue(resolvedGroup)
+    const resolvedGroup = { id: "g-1", name: "Trip" };
+    mockMutateAsync.mockResolvedValue(resolvedGroup);
 
-    await render(<NewGroupScreen />)
-
-    await act(async () => {
-      fireEvent.changeText(screen.getByLabelText("Group name"), "Trip")
-    })
-    await act(async () => {
-      fireEvent.press(screen.getByLabelText("select-user-u1"))
-    })
-    await act(async () => {
-      fireEvent.press(screen.getByLabelText("select-user-u2"))
-    })
+    await render(<NewGroupScreen />);
 
     await act(async () => {
-      fireEvent.press(screen.getByLabelText("Create group"))
-    })
+      fireEvent.changeText(screen.getByLabelText("Group name"), "Trip");
+    });
     await act(async () => {
-      fireEvent.press(screen.getByLabelText("Create group"))
-    })
+      fireEvent.press(screen.getByLabelText("select-user-u1"));
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("select-user-u2"));
+    });
 
-    expect(mockMutateAsync).toHaveBeenCalled()
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("Create group"));
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("Create group"));
+    });
+
+    expect(mockMutateAsync).toHaveBeenCalled();
     expect(mockMutateAsync.mock.calls[0][0]).toMatchObject({
       clientOperationId: mockUuid1,
       name: "Trip",
       icon: "Home",
       currency: "USD",
       inviteeIds: ["u1", "u2"],
-    })
-  })
+    });
+  });
 
   it("retains field values after rejection", async () => {
-    mockMutateAsync.mockRejectedValueOnce(new Error("RPC failed"))
+    mockMutateAsync.mockRejectedValueOnce(new Error("RPC failed"));
 
-    await render(<NewGroupScreen />)
-
-    await act(async () => {
-      fireEvent.changeText(screen.getByLabelText("Group name"), "Camping")
-    })
-    await act(async () => {
-      fireEvent.press(screen.getByLabelText("select-user-u1"))
-    })
+    await render(<NewGroupScreen />);
 
     await act(async () => {
-      fireEvent.press(screen.getByLabelText("Create group"))
-    })
+      fireEvent.changeText(screen.getByLabelText("Group name"), "Camping");
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("select-user-u1"));
+    });
 
-    expect(screen.getByDisplayValue("Camping")).toBeTruthy()
-    expect(screen.getByLabelText(/Alice/)).toBeTruthy()
-    expect(mockReplace).not.toHaveBeenCalled()
-  })
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("Create group"));
+    });
+
+    expect(screen.getByDisplayValue("Camping")).toBeTruthy();
+    expect(screen.getByLabelText(/Alice/)).toBeTruthy();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
 
   it("navigates to group detail on success", async () => {
-    const resolvedGroup = { id: "g-42", name: "Trip" }
-    mockMutateAsync.mockResolvedValue(resolvedGroup)
+    const resolvedGroup = { id: "g-42", name: "Trip" };
+    mockMutateAsync.mockResolvedValue(resolvedGroup);
 
-    await render(<NewGroupScreen />)
-
-    await act(async () => {
-      fireEvent.changeText(screen.getByLabelText("Group name"), "Trip")
-    })
-    await act(async () => {
-      fireEvent.press(screen.getByLabelText("select-user-u1"))
-    })
+    await render(<NewGroupScreen />);
 
     await act(async () => {
-      fireEvent.press(screen.getByLabelText("Create group"))
-    })
+      fireEvent.changeText(screen.getByLabelText("Group name"), "Trip");
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("select-user-u1"));
+    });
 
-    expect(mockReplace).toHaveBeenCalledWith("/group/g-42")
-  })
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("Create group"));
+    });
+
+    expect(mockReplace).toHaveBeenCalledWith("/group/g-42");
+  });
 
   it("navigates to expense/new when resume=expense", async () => {
-    mockUseLocalSearchParams.mockReturnValue({ resume: "expense" })
-    const resolvedGroup = { id: "g-7", name: "Trip" }
-    mockMutateAsync.mockResolvedValue(resolvedGroup)
+    mockUseLocalSearchParams.mockReturnValue({ resume: "expense" });
+    const resolvedGroup = { id: "g-7", name: "Trip" };
+    mockMutateAsync.mockResolvedValue(resolvedGroup);
 
-    await render(<NewGroupScreen />)
-
-    await act(async () => {
-      fireEvent.changeText(screen.getByLabelText("Group name"), "Trip")
-    })
-    await act(async () => {
-      fireEvent.press(screen.getByLabelText("select-user-u1"))
-    })
+    await render(<NewGroupScreen />);
 
     await act(async () => {
-      fireEvent.press(screen.getByLabelText("Create group"))
-    })
+      fireEvent.changeText(screen.getByLabelText("Group name"), "Trip");
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("select-user-u1"));
+    });
+
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("Create group"));
+    });
 
     expect(mockReplace).toHaveBeenCalledWith({
       pathname: "/expense/new",
       params: { groupId: "g-7" },
-    })
-  })
-})
+    });
+  });
+});
 
 // ── Detail screen (Task 14) ────────────────────────────────────────────────
 
 jest.mock("@/features/groups/hooks/useGroupSnapshot", () => ({
   useGroupSnapshot: jest.fn(),
-}))
+}));
 
 const mockUser: User = {
   id: "u1",
@@ -454,7 +480,7 @@ const mockUser: User = {
   initials: "A",
   defaultCurrency: "USD",
   setupState: "complete",
-}
+};
 
 const mockUser2: User = {
   id: "u2",
@@ -463,7 +489,7 @@ const mockUser2: User = {
   initials: "B",
   defaultCurrency: "USD",
   setupState: "complete",
-}
+};
 
 const mockGroup: Group = {
   id: "g-1",
@@ -478,7 +504,7 @@ const mockGroup: Group = {
   createdAt: new Date(),
   createdBy: "me",
   totalExpenses: 0,
-}
+};
 
 const mockExpense: Expense = {
   id: "e1",
@@ -492,19 +518,38 @@ const mockExpense: Expense = {
   paidByUser: { ...mockUser, id: "me", name: "You" },
   createdBy: "me",
   splits: [
-    { userId: "me", user: { ...mockUser, id: "me", name: "You" }, amount: 20, amountMinor: 2000, position: 0, paid: true },
+    {
+      userId: "me",
+      user: { ...mockUser, id: "me", name: "You" },
+      amount: 20,
+      amountMinor: 2000,
+      position: 0,
+      paid: true,
+    },
     { userId: "u1", user: mockUser, amount: 20, amountMinor: 2000, position: 1, paid: true },
     { userId: "u2", user: mockUser2, amount: 20, amountMinor: 2000, position: 2, paid: true },
   ],
   splitMethod: "equal",
   date: new Date(),
   createdAt: new Date(),
-}
+};
 
 const mockBalances: OpenBalance[] = [
-  { counterpartyId: "u1", context: { type: "group", groupId: "g-1" }, currency: "USD", signedAmountMinor: 2000, lastActivityAt: new Date() },
-  { counterpartyId: "u2", context: { type: "group", groupId: "g-1" }, currency: "USD", signedAmountMinor: -1000, lastActivityAt: new Date() },
-]
+  {
+    counterpartyId: "u1",
+    context: { type: "group", groupId: "g-1" },
+    currency: "USD",
+    signedAmountMinor: 2000,
+    lastActivityAt: new Date(),
+  },
+  {
+    counterpartyId: "u2",
+    context: { type: "group", groupId: "g-1" },
+    currency: "USD",
+    signedAmountMinor: -1000,
+    lastActivityAt: new Date(),
+  },
+];
 
 function makeSnapshot(
   overrides: Partial<SnapshotState<GroupSnapshotData>> = {}
@@ -529,87 +574,91 @@ function makeSnapshot(
     isRestricted: false,
     refresh: jest.fn().mockResolvedValue(undefined),
     ...overrides,
-  } as unknown as SnapshotState<GroupSnapshotData>
+  } as unknown as SnapshotState<GroupSnapshotData>;
 }
 
 describe("detail screen with snapshot views", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    mockUseLocalSearchParams.mockReturnValue({ id: "g-1" })
-  })
+    jest.clearAllMocks();
+    mockUseLocalSearchParams.mockReturnValue({ id: "g-1" });
+  });
 
   it("renders loading state when initialLoading", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot({ isInitialLoading: true, data: undefined }))
-    await render(<GroupDetailScreen />)
-    expect(screen.queryByText("Trip")).toBeNull()
-    expect(screen.queryByText("Balances")).toBeNull()
-  })
+    (useGroupSnapshot as Mock).mockReturnValue(
+      makeSnapshot({ isInitialLoading: true, data: undefined })
+    );
+    await render(<GroupDetailScreen />);
+    expect(screen.queryByText("Trip")).toBeNull();
+    expect(screen.queryByText("Balances")).toBeNull();
+  });
 
   it("renders not-found state", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot({ isNotFound: true, data: undefined }))
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText("Group not found")).toBeTruthy()
-  })
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot({ isNotFound: true, data: undefined }));
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText("Group not found")).toBeTruthy();
+  });
 
   it("renders error state with retry", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot({ isError: true, data: undefined, error: new Error("fail") }))
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText("Something went wrong")).toBeTruthy()
-    fireEvent.press(screen.getByText("Tap to retry"))
-  })
+    (useGroupSnapshot as Mock).mockReturnValue(
+      makeSnapshot({ isError: true, data: undefined, error: new Error("fail") })
+    );
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText("Something went wrong")).toBeTruthy();
+    fireEvent.press(screen.getByText("Tap to retry"));
+  });
 
   it("defaults to overview when view param is unknown", async () => {
-    mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "unknown" })
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText("People")).toBeTruthy()
-  })
+    mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "unknown" });
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot());
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText("People")).toBeTruthy();
+  });
 
   it("selecting Expenses calls router.setParams", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
-    await render(<GroupDetailScreen />)
-    fireEvent.press(screen.getByRole("button", { name: "Expenses" }))
-    expect(mockSetParams).toHaveBeenCalledWith({ view: "expenses" })
-  })
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot());
+    await render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByRole("button", { name: "Expenses" }));
+    expect(mockSetParams).toHaveBeenCalledWith({ view: "expenses" });
+  });
 
   it("shows open balance rows for members with non-zero balance", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText("Alice")).toBeTruthy()
-    expect(screen.getByText("Alice owes 20.00")).toBeTruthy()
-  })
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot());
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText("Alice")).toBeTruthy();
+    expect(screen.getByText("Alice owes 20.00")).toBeTruthy();
+  });
 
   it("pairwise person row navigates to /friend/[id]", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
-    await render(<GroupDetailScreen />)
-    fireEvent.press(screen.getByText("Alice"))
-    expect(mockPush).toHaveBeenCalledWith("/friend/u1")
-  })
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot());
+    await render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText("Alice"));
+    expect(mockPush).toHaveBeenCalledWith("/friend/u1");
+  });
 
   it("renders expense rows in overview", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText("Dinner")).toBeTruthy()
-  })
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot());
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText("Dinner")).toBeTruthy();
+  });
 
   it("expenses view shows each expense's net impact on your balance", async () => {
-    mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "expenses" })
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText("Dinner")).toBeTruthy()
-    expect(screen.getByText("+40.00")).toBeTruthy()
-  })
+    mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "expenses" });
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot());
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText("Dinner")).toBeTruthy();
+    expect(screen.getByText("+40.00")).toBeTruthy();
+  });
 
   it("schedule view shows empty state when no recurring expenses", async () => {
-    mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "schedule" })
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText("No recurring expenses")).toBeTruthy()
-  })
+    mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "schedule" });
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot());
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText("No recurring expenses")).toBeTruthy();
+  });
 
-  it("schedule view renders recurring rows", async () => {
-    mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "schedule" })
-    ;(useGroupSnapshot as Mock).mockReturnValue(
+  it("schedule view hides unsupported review rows", async () => {
+    mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "schedule" });
+    (useGroupSnapshot as Mock).mockReturnValue(
       makeSnapshot({
         data: {
           group: mockGroup,
@@ -618,14 +667,16 @@ describe("detail screen with snapshot views", () => {
           members: mockGroup.members,
           expenses: [mockExpense],
           scheduleSections: {
-            needsReview: [{
-              id: "s1",
-              recurringId: "r1",
-              groupId: "g-1",
-              state: "needs-review" as const,
-              scheduledDate: "2025-01-15",
-              href: { pathname: "/recurring/[id]", params: { id: "r1" } },
-            }],
+            needsReview: [
+              {
+                id: "s1",
+                recurringId: "r1",
+                groupId: "g-1",
+                state: "needs-review" as const,
+                scheduledDate: "2025-01-15",
+                href: { pathname: "/recurring/[id]", params: { id: "r1" } },
+              },
+            ],
             active: [],
             paused: [],
           },
@@ -633,17 +684,29 @@ describe("detail screen with snapshot views", () => {
           recentActivity: [],
         },
       })
-    )
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText("Needs Review")).toBeTruthy()
-  })
+    );
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText("No recurring expenses")).toBeTruthy();
+  });
 
   it("multi-currency group hides combined StatPair", async () => {
     const multiCurrencyBalances: OpenBalance[] = [
-      { counterpartyId: "u1", context: { type: "group", groupId: "g-1" }, currency: "USD", signedAmountMinor: 2000, lastActivityAt: new Date() },
-      { counterpartyId: "u2", context: { type: "group", groupId: "g-1" }, currency: "EUR", signedAmountMinor: 1500, lastActivityAt: new Date() },
-    ]
-    ;(useGroupSnapshot as Mock).mockReturnValue(
+      {
+        counterpartyId: "u1",
+        context: { type: "group", groupId: "g-1" },
+        currency: "USD",
+        signedAmountMinor: 2000,
+        lastActivityAt: new Date(),
+      },
+      {
+        counterpartyId: "u2",
+        context: { type: "group", groupId: "g-1" },
+        currency: "EUR",
+        signedAmountMinor: 1500,
+        lastActivityAt: new Date(),
+      },
+    ];
+    (useGroupSnapshot as Mock).mockReturnValue(
       makeSnapshot({
         data: {
           group: mockGroup,
@@ -656,31 +719,31 @@ describe("detail screen with snapshot views", () => {
           recentActivity: [],
         },
       })
-    )
-    await render(<GroupDetailScreen />)
-    expect(screen.queryByText("You're owed")).toBeNull()
-    expect(screen.queryByText("You owe")).toBeNull()
-  })
+    );
+    await render(<GroupDetailScreen />);
+    expect(screen.queryByText("You're owed")).toBeNull();
+    expect(screen.queryByText("You owe")).toBeNull();
+  });
 
   it("add expense button navigates with group ID", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot())
-    await render(<GroupDetailScreen />)
-    fireEvent.press(screen.getByText("Add"))
-    expect(mockPush).toHaveBeenCalledWith("/expense/new?groupId=g-1")
-  })
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot());
+    await render(<GroupDetailScreen />);
+    fireEvent.press(screen.getByText("Add"));
+    expect(mockPush).toHaveBeenCalledWith("/expense/new?groupId=g-1");
+  });
 
   it("shows stale offline banner when isStaleOffline", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot({ isStaleOffline: true }))
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText(/Offline/)).toBeTruthy()
-  })
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot({ isStaleOffline: true }));
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText(/Offline/)).toBeTruthy();
+  });
 
   it("shows restricted banner when isRestricted", async () => {
-    ;(useGroupSnapshot as Mock).mockReturnValue(makeSnapshot({ isRestricted: true }))
-    await render(<GroupDetailScreen />)
-    expect(screen.getByText(/View-only/)).toBeTruthy()
-  })
-})
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot({ isRestricted: true }));
+    await render(<GroupDetailScreen />);
+    expect(screen.getByText(/View-only/)).toBeTruthy();
+  });
+});
 
 function makeSettings(overrides: Record<string, any> = {}) {
   const base = {
@@ -693,7 +756,12 @@ function makeSettings(overrides: Record<string, any> = {}) {
       defaultSplitMethod: "equal" as const,
       description: "Summer trip",
       members: [
-        { userId: "me", user: { id: "me", name: "You", email: "you@test.com" }, balance: 0, newExpenseAlerts: true },
+        {
+          userId: "me",
+          user: { id: "me", name: "You", email: "you@test.com" },
+          balance: 0,
+          newExpenseAlerts: true,
+        },
         { userId: "u1", user: { id: "u1", name: "Alice", email: "alice@test.com" }, balance: 0 },
       ],
       createdBy: "me",
@@ -746,34 +814,34 @@ function makeSettings(overrides: Record<string, any> = {}) {
     handleDeleteGroup: jest.fn(),
     handleLeaveGroup: jest.fn(),
     handleBack: jest.fn(),
-  }
-  return { ...base, ...overrides }
+  };
+  return { ...base, ...overrides };
 }
 
 describe("settings screen", () => {
   beforeEach(() => {
-    jest.clearAllMocks()
-    mockUseLocalSearchParams.mockReturnValue({ id: "g-1" })
-  })
+    jest.clearAllMocks();
+    mockUseLocalSearchParams.mockReturnValue({ id: "g-1" });
+  });
 
   it("initializes fields after group hydrates", async () => {
-    ;(useGroupSettings as Mock).mockReturnValue(makeSettings())
-    await render(<GroupSettingsScreen />)
-    expect(screen.getByText("Identity")).toBeTruthy()
-    expect(screen.getByText("Finance")).toBeTruthy()
-    expect(screen.getByText("Save Changes")).toBeTruthy()
-  })
+    (useGroupSettings as Mock).mockReturnValue(makeSettings());
+    await render(<GroupSettingsScreen />);
+    expect(screen.getByText("Identity")).toBeTruthy();
+    expect(screen.getByText("Finance")).toBeTruthy();
+    expect(screen.getByText("Save Changes")).toBeTruthy();
+  });
 
   it("shows creator-only identity and archive controls", async () => {
-    ;(useGroupSettings as Mock).mockReturnValue(makeSettings())
-    await render(<GroupSettingsScreen />)
-    expect(screen.getByText("Identity")).toBeTruthy()
-    expect(screen.getByText('Delete "Trip"')).toBeTruthy()
-    expect(screen.queryByText("Leave group")).toBeNull()
-  })
+    (useGroupSettings as Mock).mockReturnValue(makeSettings());
+    await render(<GroupSettingsScreen />);
+    expect(screen.getByText("Identity")).toBeTruthy();
+    expect(screen.getByText('Delete "Trip"')).toBeTruthy();
+    expect(screen.queryByText("Leave group")).toBeNull();
+  });
 
   it("hides identity controls and shows leave for non-creator member", async () => {
-    ;(useGroupSettings as Mock).mockReturnValue(
+    (useGroupSettings as Mock).mockReturnValue(
       makeSettings({
         permissions: {
           canEdit: false,
@@ -783,17 +851,17 @@ describe("settings screen", () => {
           canAddMember: false,
         },
       })
-    )
-    await render(<GroupSettingsScreen />)
-    expect(screen.queryByText("Identity")).toBeNull()
-    expect(screen.queryByText("Save Changes")).toBeNull()
-    expect(screen.queryByText('Delete "Trip"')).toBeNull()
-    expect(screen.getByText("Leave group")).toBeTruthy()
-    expect(screen.getByText("New expense alerts")).toBeTruthy()
-  })
+    );
+    await render(<GroupSettingsScreen />);
+    expect(screen.queryByText("Identity")).toBeNull();
+    expect(screen.queryByText("Save Changes")).toBeNull();
+    expect(screen.queryByText('Delete "Trip"')).toBeNull();
+    expect(screen.getByText("Leave group")).toBeTruthy();
+    expect(screen.getByText("New expense alerts")).toBeTruthy();
+  });
 
   it("blocks leave for creator", async () => {
-    ;(useGroupSettings as Mock).mockReturnValue(
+    (useGroupSettings as Mock).mockReturnValue(
       makeSettings({
         permissions: {
           canEdit: true,
@@ -803,46 +871,46 @@ describe("settings screen", () => {
           canAddMember: true,
         },
       })
-    )
-    await render(<GroupSettingsScreen />)
-    expect(screen.getByText('Delete "Trip"')).toBeTruthy()
-    expect(screen.queryByText("Leave group")).toBeNull()
-  })
+    );
+    await render(<GroupSettingsScreen />);
+    expect(screen.getByText('Delete "Trip"')).toBeTruthy();
+    expect(screen.queryByText("Leave group")).toBeNull();
+  });
 
   it("save stays on same group", async () => {
-    const saveFn = jest.fn()
-    ;(useGroupSettings as Mock).mockReturnValue(makeSettings({ handleSave: saveFn }))
-    await render(<GroupSettingsScreen />)
+    const saveFn = jest.fn();
+    (useGroupSettings as Mock).mockReturnValue(makeSettings({ handleSave: saveFn }));
+    await render(<GroupSettingsScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText("Save Changes"))
-    })
-    expect(saveFn).toHaveBeenCalled()
-    expect(mockReplace).not.toHaveBeenCalled()
-  })
+      fireEvent.press(screen.getByText("Save Changes"));
+    });
+    expect(saveFn).toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
 
   it("archive navigates to circles groups segment", async () => {
     const archiveFn = jest.fn(() => {
-      mockReplace("/circles?segment=groups")
-      return Promise.resolve()
-    })
-    ;(useGroupSettings as Mock).mockReturnValue(makeSettings({ handleDeleteGroup: archiveFn }))
-    await render(<GroupSettingsScreen />)
+      mockReplace("/circles?segment=groups");
+      return Promise.resolve();
+    });
+    (useGroupSettings as Mock).mockReturnValue(makeSettings({ handleDeleteGroup: archiveFn }));
+    await render(<GroupSettingsScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText('Delete "Trip"'))
-    })
+      fireEvent.press(screen.getByText('Delete "Trip"'));
+    });
     await act(async () => {
-      fireEvent.press(screen.getByLabelText("confirm-Delete"))
-    })
-    expect(archiveFn).toHaveBeenCalled()
-    expect(mockReplace).toHaveBeenCalledWith("/circles?segment=groups")
-  })
+      fireEvent.press(screen.getByLabelText("confirm-Delete"));
+    });
+    expect(archiveFn).toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith("/circles?segment=groups");
+  });
 
   it("leave navigates to circles groups segment", async () => {
     const leaveFn = jest.fn(() => {
-      mockReplace("/circles?segment=groups")
-      return Promise.resolve()
-    })
-    ;(useGroupSettings as Mock).mockReturnValue(
+      mockReplace("/circles?segment=groups");
+      return Promise.resolve();
+    });
+    (useGroupSettings as Mock).mockReturnValue(
       makeSettings({
         permissions: {
           canEdit: false,
@@ -853,29 +921,29 @@ describe("settings screen", () => {
         },
         handleLeaveGroup: leaveFn,
       })
-    )
-    await render(<GroupSettingsScreen />)
+    );
+    await render(<GroupSettingsScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText("Leave group"))
-    })
+      fireEvent.press(screen.getByText("Leave group"));
+    });
     await act(async () => {
-      fireEvent.press(screen.getByLabelText("confirm-Leave"))
-    })
-    expect(leaveFn).toHaveBeenCalled()
-    expect(mockReplace).toHaveBeenCalledWith("/circles?segment=groups")
-  })
+      fireEvent.press(screen.getByLabelText("confirm-Leave"));
+    });
+    expect(leaveFn).toHaveBeenCalled();
+    expect(mockReplace).toHaveBeenCalledWith("/circles?segment=groups");
+  });
 
   it("displays blocking balances in confirmation", async () => {
     const blocking = [
       { userId: "me", userName: "You", amount: 50 },
       { userId: "u1", userName: "Alice", amount: -50 },
-    ]
-    ;(useGroupSettings as Mock).mockReturnValue(makeSettings({ blockingBalances: blocking }))
-    await render(<GroupSettingsScreen />)
+    ];
+    (useGroupSettings as Mock).mockReturnValue(makeSettings({ blockingBalances: blocking }));
+    await render(<GroupSettingsScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByText('Delete "Trip"'))
-    })
-    expect(screen.getAllByText(/outstanding balances/i).length).toBeGreaterThanOrEqual(1)
-    expect(screen.getAllByText(/You: \+50\.00/).length).toBeGreaterThanOrEqual(1)
-  })
-})
+      fireEvent.press(screen.getByText('Delete "Trip"'));
+    });
+    expect(screen.getAllByText(/outstanding balances/i).length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/You: \+50\.00/).length).toBeGreaterThanOrEqual(1);
+  });
+});

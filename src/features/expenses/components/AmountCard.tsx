@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  TextInput, View , Text } from "react-native";
+import { TextInput, View, Text } from "react-native";
 import { CategoryIconBadge } from "@/components/ui/CategoryIconBadge";
 import { Card } from "@/components/ui/Card";
 import { useUI } from "@/components/ui";

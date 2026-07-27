@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  Pressable, TextInput, View , Text } from "react-native";
+import { Pressable, TextInput, View, Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import * as icons from "lucide-react-native";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
@@ -112,16 +112,12 @@ export function ParticipantsEditor({
                 <Text numberOfLines={1} style={styles.rowTitle}>
                   {participant.id === currentUserId ? "You" : participant.name}
                 </Text>
-                <Text style={styles.rowMeta}>
-                  {isIncluded ? "Included" : "Excluded"}
-                </Text>
+                <Text style={styles.rowMeta}>{isIncluded ? "Included" : "Excluded"}</Text>
               </View>
 
               {splitMethod === "equal" && isIncluded && parsedAmount > 0 ? (
                 <View style={styles.sharePill}>
-                  <Text style={styles.shareText}>
-                    {formatAmount(equalShare, expenseCurrency)}
-                  </Text>
+                  <Text style={styles.shareText}>{formatAmount(equalShare, expenseCurrency)}</Text>
                 </View>
               ) : null}
 

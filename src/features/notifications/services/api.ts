@@ -1,11 +1,11 @@
-import { supabase } from "@/services/supabase/client"
+import { supabase } from "@/services/supabase/client";
 
 export interface ReminderInput {
-  clientOperationId: string
-  groupId?: string
-  friendshipId?: string
-  currency: string
-  message?: string
+  clientOperationId: string;
+  groupId?: string;
+  friendshipId?: string;
+  currency: string;
+  message?: string;
 }
 
 export const notificationsApi = {
@@ -16,9 +16,9 @@ export const notificationsApi = {
       p_friendship_id: (input.friendshipId ?? null) as any,
       p_currency: input.currency,
       p_message: input.message ?? "",
-    })
+    });
 
-    if (error) throw error
-    return data as string
+    if (error) throw error;
+    return data as string;
   },
-}
+};

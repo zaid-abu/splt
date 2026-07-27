@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import {  View , Text } from "react-native";
+import { View, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import { useUI } from "@/components/ui/hooks/useUI";
 import { IconButton } from "@/components/ui/IconButton";

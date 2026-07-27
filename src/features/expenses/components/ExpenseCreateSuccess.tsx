@@ -1,31 +1,31 @@
-import { useEffect, useRef, useState, useCallback } from "react"
-import type { JSX } from "react"
-import { Pressable, View, Text } from "react-native"
-import { useCoralColors } from "@/components/coral/useCoral"
-import { CoralButton } from "@/components/coral/CoralButton"
-import { formatAmount } from "@/components/ui/AmountDisplay"
-import { minorToMajor } from "@/features/money/splits"
-import { expensesApi } from "@/features/expenses/services/api"
+import { useEffect, useRef, useState, useCallback } from "react";
+import type { JSX } from "react";
+import { Pressable, View, Text } from "react-native";
+import { useCoralColors } from "@/components/coral/useCoral";
+import { CoralButton } from "@/components/coral/CoralButton";
+import { formatAmount } from "@/components/ui/AmountDisplay";
+import { minorToMajor } from "@/features/money/splits";
+import { expensesApi } from "@/features/expenses/services/api";
 
 interface SplitInfo {
-  userId: string
-  amountMinor: number
+  userId: string;
+  amountMinor: number;
 }
 
 interface ExpenseCreateSuccessProps {
-  totalMinor: number
-  currency: string
-  paidByUserId: string
-  paidByUserName: string
-  currentUserId: string
-  splits: SplitInfo[]
-  expenseId: string
-  groupId?: string
-  groupName?: string
-  onReturn: () => void
-  onViewExpense: () => void
-  onBackToGroup: () => void
-  onUndoSuccess: () => void
+  totalMinor: number;
+  currency: string;
+  paidByUserId: string;
+  paidByUserName: string;
+  currentUserId: string;
+  splits: SplitInfo[];
+  expenseId: string;
+  groupId?: string;
+  groupName?: string;
+  onReturn: () => void;
+  onViewExpense: () => void;
+  onBackToGroup: () => void;
+  onUndoSuccess: () => void;
 }
 
 export function ExpenseCreateSuccess({
@@ -41,57 +41,57 @@ export function ExpenseCreateSuccess({
   onBackToGroup,
   onUndoSuccess,
 }: ExpenseCreateSuccessProps): JSX.Element {
-  const coral = useCoralColors()
-  const [undoFailed, setUndoFailed] = useState(false)
-  const [isUndoing, setIsUndoing] = useState(false)
-  const [countdown, setCountdown] = useState(8)
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const coral = useCoralColors();
+  const [undoFailed, setUndoFailed] = useState(false);
+  const [isUndoing, setIsUndoing] = useState(false);
+  const [countdown, setCountdown] = useState(8);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const isPayer = paidByUserId === currentUserId
-  const userSplit = splits.find((s) => s.userId === currentUserId)
-  const yourShareMinor = userSplit?.amountMinor ?? 0
+  const isPayer = paidByUserId === currentUserId;
+  const userSplit = splits.find((s) => s.userId === currentUserId);
+  const yourShareMinor = userSplit?.amountMinor ?? 0;
 
-  const youLentMinor = isPayer ? totalMinor - yourShareMinor : 0
-  const youBorrowedMinor = !isPayer ? yourShareMinor : 0
+  const youLentMinor = isPayer ? totalMinor - yourShareMinor : 0;
+  const youBorrowedMinor = !isPayer ? yourShareMinor : 0;
 
   useEffect(() => {
     timerRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          if (timerRef.current) clearInterval(timerRef.current)
-          return 0
+          if (timerRef.current) clearInterval(timerRef.current);
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
 
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, []);
 
   const handleUndo = useCallback(async () => {
-    setIsUndoing(true)
-    setUndoFailed(false)
+    setIsUndoing(true);
+    setUndoFailed(false);
     try {
-      await expensesApi.deleteExpense(expenseId)
-      if (timerRef.current) clearInterval(timerRef.current)
-      onUndoSuccess()
+      await expensesApi.deleteExpense(expenseId);
+      if (timerRef.current) clearInterval(timerRef.current);
+      onUndoSuccess();
     } catch {
-      setUndoFailed(true)
-      setIsUndoing(false)
+      setUndoFailed(true);
+      setIsUndoing(false);
     }
-  }, [expenseId, onUndoSuccess])
+  }, [expenseId, onUndoSuccess]);
 
   const handleReturn = useCallback(() => {
-    if (timerRef.current) clearInterval(timerRef.current)
-    onReturn()
-  }, [onReturn])
+    if (timerRef.current) clearInterval(timerRef.current);
+    onReturn();
+  }, [onReturn]);
 
-  const totalFormatted = formatAmount(minorToMajor(totalMinor, currency), currency)
-  const yourShareFormatted = formatAmount(minorToMajor(yourShareMinor, currency), currency)
-  const lentFormatted = formatAmount(minorToMajor(youLentMinor, currency), currency)
-  const borrowedFormatted = formatAmount(minorToMajor(youBorrowedMinor, currency), currency)
+  const totalFormatted = formatAmount(minorToMajor(totalMinor, currency), currency);
+  const yourShareFormatted = formatAmount(minorToMajor(yourShareMinor, currency), currency);
+  const lentFormatted = formatAmount(minorToMajor(youLentMinor, currency), currency);
+  const borrowedFormatted = formatAmount(minorToMajor(youBorrowedMinor, currency), currency);
 
   return (
     <View style={{ flex: 1, paddingTop: 24 }}>
@@ -137,7 +137,16 @@ export function ExpenseCreateSuccess({
           gap: 0,
         }}
       >
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: coral.border }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            paddingVertical: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: coral.border,
+          }}
+        >
           <Text
             style={{
               fontFamily: "InstrumentSans_500Medium",
@@ -158,7 +167,16 @@ export function ExpenseCreateSuccess({
           </Text>
         </View>
 
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: coral.border }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            paddingVertical: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: coral.border,
+          }}
+        >
           <Text
             style={{
               fontFamily: "InstrumentSans_500Medium",
@@ -179,7 +197,16 @@ export function ExpenseCreateSuccess({
           </Text>
         </View>
 
-        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: coral.border }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "baseline",
+            paddingVertical: 12,
+            borderBottomWidth: 1,
+            borderBottomColor: coral.border,
+          }}
+        >
           <Text
             style={{
               fontFamily: "InstrumentSans_500Medium",
@@ -201,7 +228,14 @@ export function ExpenseCreateSuccess({
         </View>
 
         {youLentMinor > 0 && (
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", paddingVertical: 12 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              paddingVertical: 12,
+            }}
+          >
             <Text
               style={{
                 fontFamily: "InstrumentSans_500Medium",
@@ -224,7 +258,14 @@ export function ExpenseCreateSuccess({
         )}
 
         {youBorrowedMinor > 0 && (
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", paddingVertical: 12 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "baseline",
+              paddingVertical: 12,
+            }}
+          >
             <Text
               style={{
                 fontFamily: "InstrumentSans_500Medium",
@@ -271,17 +312,9 @@ export function ExpenseCreateSuccess({
           </View>
         )}
 
-        <CoralButton
-          label="View expense"
-          onPress={onViewExpense}
-          variant="secondary"
-        />
+        <CoralButton label="View expense" onPress={onViewExpense} variant="secondary" />
 
-        <CoralButton
-          label="Back to group"
-          onPress={onBackToGroup}
-          variant="primary"
-        />
+        <CoralButton label="Back to group" onPress={onBackToGroup} variant="primary" />
 
         {countdown > 0 && (
           <View style={{ flexDirection: "row", justifyContent: "center" }}>
@@ -348,5 +381,5 @@ export function ExpenseCreateSuccess({
         )}
       </View>
     </View>
-  )
+  );
 }

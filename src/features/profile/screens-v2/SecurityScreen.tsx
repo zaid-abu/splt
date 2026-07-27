@@ -9,6 +9,7 @@ import { CoralField } from "@/components/coral/CoralField";
 import { CoralButton } from "@/components/coral/CoralButton";
 import { useCoralColors } from "@/components/coral/useCoral";
 import { useProfile } from "@/features/profile/hooks/useProfile";
+import { CAPABILITIES } from "@/config/capabilities";
 
 export default function SecurityScreen(): JSX.Element {
   const router = useRouter();
@@ -24,8 +25,10 @@ export default function SecurityScreen(): JSX.Element {
     <CoralScreen scroll={false}>
       <CoralTopBar title="Profile and security" onBack={() => router.back()} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40, gap: 18 }}>
-        
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40, gap: 18 }}
+      >
         <View style={{ marginTop: 8 }}>
           <CoralField
             label="Password"
@@ -47,33 +50,86 @@ export default function SecurityScreen(): JSX.Element {
           </Text>
         </View>
 
-        <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", minHeight: 52 }}>
-          <View style={{ flex: 1 }}>
-            <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 16, color: coral.foreground }}>
-              Face ID
-            </Text>
-            <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 13, color: coral.muted, marginTop: 2 }}>
-              Biometric login check
-            </Text>
+        {CAPABILITIES.biometricLogin && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              minHeight: 52,
+            }}
+          >
+            <View style={{ flex: 1 }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 16,
+                  color: coral.foreground,
+                }}
+              >
+                Face ID
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_400Regular",
+                  fontSize: 13,
+                  color: coral.muted,
+                  marginTop: 2,
+                }}
+              >
+                Biometric login check
+              </Text>
+            </View>
+            <Switch value={true} onValueChange={() => {}} trackColor={{ true: coral.accent }} />
           </View>
-          <Switch value={true} onValueChange={() => {}} trackColor={{ true: coral.accent }} />
-        </View>
+        )}
 
-        <View style={{ height: 1, backgroundColor: coral.border, opacity: 0.5 }} />
+        {CAPABILITIES.biometricLogin && (
+          <View style={{ height: 1, backgroundColor: coral.border, opacity: 0.5 }} />
+        )}
 
-        <View style={{ gap: 8 }}>
-          <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 15, color: coral.foreground }}>
-            Active sessions
-          </Text>
-          <View style={{ backgroundColor: coral.surface, borderWidth: 1, borderColor: coral.border, borderRadius: 16, padding: 14 }}>
-            <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 14, color: coral.foreground }}>
-              Current session
+        {CAPABILITIES.biometricLogin && (
+          <View style={{ gap: 8 }}>
+            <Text
+              style={{
+                fontFamily: "InstrumentSans_600SemiBold",
+                fontSize: 15,
+                color: coral.foreground,
+              }}
+            >
+              Active sessions
             </Text>
-            <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 12, color: coral.muted, marginTop: 4 }}>
-              Mac OS · San Francisco, CA
-            </Text>
+            <View
+              style={{
+                backgroundColor: coral.surface,
+                borderWidth: 1,
+                borderColor: coral.border,
+                borderRadius: 16,
+                padding: 14,
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 14,
+                  color: coral.foreground,
+                }}
+              >
+                Current session
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_400Regular",
+                  fontSize: 12,
+                  color: coral.muted,
+                  marginTop: 4,
+                }}
+              >
+                Mac OS · San Francisco, CA
+              </Text>
+            </View>
           </View>
-        </View>
+        )}
 
         <View
           style={{
@@ -92,7 +148,8 @@ export default function SecurityScreen(): JSX.Element {
               lineHeight: 18,
             }}
           >
-            Account deletion immediately revokes access, hides your profile, and cancels pending actions. Past expense records belong to the mutual circles.
+            Account deletion immediately revokes access, hides your profile, and cancels pending
+            actions. Past expense records belong to the mutual circles.
           </Text>
         </View>
 
@@ -102,13 +159,10 @@ export default function SecurityScreen(): JSX.Element {
             variant="secondary"
             onPress={() => signOut()}
           />
-          <CoralButton
-            label="Delete account"
-            variant="danger"
-            onPress={() => {}}
-          />
+          {CAPABILITIES.accountDeletion && (
+            <CoralButton label="Delete account" variant="danger" onPress={() => {}} />
+          )}
         </View>
-
       </ScrollView>
     </CoralScreen>
   );

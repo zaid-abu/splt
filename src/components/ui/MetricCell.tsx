@@ -1,4 +1,4 @@
-import {  View , Text } from "react-native";
+import { View, Text } from "react-native";
 import { useUI } from "@/components/ui/hooks/useUI";
 
 interface MetricCellProps {

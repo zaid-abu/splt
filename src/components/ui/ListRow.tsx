@@ -1,5 +1,5 @@
 import type { JSX, ReactNode } from "react";
-import {  View, Pressable , Text } from "react-native";
+import { View, Pressable, Text } from "react-native";
 import { useUI } from "@/components/ui/hooks/useUI";
 
 interface ListRowProps {

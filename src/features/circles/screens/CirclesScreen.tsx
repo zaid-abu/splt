@@ -26,7 +26,11 @@ import {
   type PersonSection,
   type RequestItem,
 } from "@/features/circles/hooks/useCirclesSnapshot";
-import { parseCircleSegment, GLOBAL_ACTIONS, type CircleSegment } from "@/features/navigation/shell";
+import {
+  parseCircleSegment,
+  GLOBAL_ACTIONS,
+  type CircleSegment,
+} from "@/features/navigation/shell";
 import { useTransitionFriendship } from "@/features/friends/queries/useFriends";
 import { formatActivityDate } from "@/utils/date";
 
@@ -85,9 +89,18 @@ function groupAmount(section: GroupSection): {
 }
 
 function personSubtitle(section: PersonSection): string {
-  const { user, classification, topBalance, sharedGroupCount, topBalanceContextLabel, lastActivityAt } = section;
+  const {
+    user,
+    classification,
+    topBalance,
+    sharedGroupCount,
+    topBalanceContextLabel,
+    lastActivityAt,
+  } = section;
   if (classification === "mixed") return "Mixed balance";
-  const activityLabel = lastActivityAt ? ` - active ${formatActivityDate(lastActivityAt).toLowerCase()}` : "";
+  const activityLabel = lastActivityAt
+    ? ` - active ${formatActivityDate(lastActivityAt).toLowerCase()}`
+    : "";
   if ((classification === "owes-you" || classification === "you-owe") && topBalance) {
     const absMajor = minorToMajor(Math.abs(topBalance.signedAmountMinor), topBalance.currency);
     const formatted = formatAmount(absMajor, topBalance.currency);
@@ -107,7 +120,8 @@ function personSubtitle(section: PersonSection): string {
       ? `You owe from ${topBalanceContextLabel}${activityLabel}`
       : `You owe ${firstName} ${formatted}${activityLabel}`;
   }
-  if (sharedGroupCount > 1) return `${pluralize(sharedGroupCount, "shared group", "shared groups")} - settled`;
+  if (sharedGroupCount > 1)
+    return `${pluralize(sharedGroupCount, "shared group", "shared groups")} - settled`;
   return `Settled${activityLabel}`;
 }
 
@@ -265,13 +279,13 @@ export default function CirclesScreen(): JSX.Element {
       ) : !hasData && !hasSearch ? (
         <CenteredState>
           <Text
-              style={{
-                fontFamily: "InstrumentSans_400Regular",
-                fontSize: 15,
-                color: coral.muted,
-              }}
-            >
-              {segment === "groups" ? "No groups yet." : "No people yet."}
+            style={{
+              fontFamily: "InstrumentSans_400Regular",
+              fontSize: 15,
+              color: coral.muted,
+            }}
+          >
+            {segment === "groups" ? "No groups yet." : "No people yet."}
           </Text>
         </CenteredState>
       ) : segment === "groups" ? (
@@ -313,10 +327,7 @@ export default function CirclesScreen(): JSX.Element {
 
           {allGroupSections && allGroupSections.length > 0 && (
             <>
-              <SectionHeading
-                title="All groups"
-                meta={`${allGroupSections.length} groups`}
-              />
+              <SectionHeading title="All groups" meta={`${allGroupSections.length} groups`} />
               <ContentList>
                 {allGroupSections.map((section) => {
                   const { text: amountText, tone } = groupAmount(section);
@@ -341,13 +352,13 @@ export default function CirclesScreen(): JSX.Element {
           {hasSearch && !needsAttentionGroupSections?.length && !allGroupSections?.length && (
             <CenteredState>
               <Text
-              style={{
-                fontFamily: "InstrumentSans_400Regular",
-                fontSize: 15,
-                color: coral.muted,
-              }}
-            >
-              No groups match your search.
+                style={{
+                  fontFamily: "InstrumentSans_400Regular",
+                  fontSize: 15,
+                  color: coral.muted,
+                }}
+              >
+                No groups match your search.
               </Text>
             </CenteredState>
           )}
@@ -399,13 +410,13 @@ export default function CirclesScreen(): JSX.Element {
             (!snapshot.data?.personSections || snapshot.data.personSections.length === 0) && (
               <CenteredState>
                 <Text
-              style={{
-                fontFamily: "InstrumentSans_400Regular",
-                fontSize: 15,
-                color: coral.muted,
-              }}
-            >
-              No people match your search.
+                  style={{
+                    fontFamily: "InstrumentSans_400Regular",
+                    fontSize: 15,
+                    color: coral.muted,
+                  }}
+                >
+                  No people match your search.
                 </Text>
               </CenteredState>
             )}
@@ -436,45 +447,47 @@ export default function CirclesScreen(): JSX.Element {
           >
             Create a new group or add a person.
           </Text>
-          {GLOBAL_ACTIONS.filter((a) => a.id === "create-group" || a.id === "add-person").map((action) => {
-            const Icon = action.id === "create-group" ? UsersRound : UserPlus;
-            return (
-              <Pressable
-                key={action.id}
-                accessibilityRole="button"
-                accessibilityLabel={action.label}
-                onPress={() => {
-                  setAddSheetVisible(false);
-                  router.push(action.href as any);
-                }}
-                style={({ pressed }) => ({
-                  minHeight: 56,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 13,
-                  paddingHorizontal: 14,
-                  marginBottom: 8,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: coral.border,
-                  backgroundColor: coral.surface,
-                  opacity: pressed ? 0.68 : 1,
-                })}
-              >
-                <Icon size={22} color={coral.foreground} strokeWidth={1.9} />
-                <Text
-                  style={{
-                    flex: 1,
-                    fontFamily: "InstrumentSans_600SemiBold",
-                    fontSize: 16,
-                    color: coral.foreground,
+          {GLOBAL_ACTIONS.filter((a) => a.id === "create-group" || a.id === "add-person").map(
+            (action) => {
+              const Icon = action.id === "create-group" ? UsersRound : UserPlus;
+              return (
+                <Pressable
+                  key={action.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={action.label}
+                  onPress={() => {
+                    setAddSheetVisible(false);
+                    router.push(action.href as any);
                   }}
+                  style={({ pressed }) => ({
+                    minHeight: 56,
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 13,
+                    paddingHorizontal: 14,
+                    marginBottom: 8,
+                    borderRadius: 14,
+                    borderWidth: 1,
+                    borderColor: coral.border,
+                    backgroundColor: coral.surface,
+                    opacity: pressed ? 0.68 : 1,
+                  })}
                 >
-                  {action.label}
-                </Text>
-              </Pressable>
-            );
-          })}
+                  <Icon size={22} color={coral.foreground} strokeWidth={1.9} />
+                  <Text
+                    style={{
+                      flex: 1,
+                      fontFamily: "InstrumentSans_600SemiBold",
+                      fontSize: 16,
+                      color: coral.foreground,
+                    }}
+                  >
+                    {action.label}
+                  </Text>
+                </Pressable>
+              );
+            }
+          )}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Close"
@@ -643,7 +656,13 @@ function RequestsSection({
                 opacity: pressed ? 0.78 : 1,
               })}
             >
-              <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 13, color: coral.inkOnAccent }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 13,
+                  color: coral.inkOnAccent,
+                }}
+              >
                 Accept
               </Text>
             </Pressable>
@@ -660,7 +679,13 @@ function RequestsSection({
                 opacity: pressed ? 0.78 : 1,
               })}
             >
-              <Text style={{ fontFamily: "InstrumentSans_600SemiBold", fontSize: 13, color: coral.foreground }}>
+              <Text
+                style={{
+                  fontFamily: "InstrumentSans_600SemiBold",
+                  fontSize: 13,
+                  color: coral.foreground,
+                }}
+              >
                 Decline
               </Text>
             </Pressable>

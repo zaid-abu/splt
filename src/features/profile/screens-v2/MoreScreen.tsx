@@ -2,18 +2,22 @@ import type { JSX } from "react";
 import { Pressable, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import * as Haptics from "expo-haptics";
-import { Bell, ChevronRight, BarChart2, Coins, Download, Sun, CircleHelp } from "lucide-react-native";
-
 import {
-  CoralButton,
-  CoralScreen,
-  CoralSegment,
-  CoralTopBar,
-} from "@/components/coral";
+  Bell,
+  ChevronRight,
+  BarChart2,
+  Coins,
+  Download,
+  Sun,
+  CircleHelp,
+} from "lucide-react-native";
+
+import { CoralButton, CoralScreen, CoralSegment, CoralTopBar } from "@/components/coral";
 import { useCoralColors } from "@/components/coral/useCoral";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { useProfile } from "@/features/profile/hooks/useProfile";
 import { useNotifications } from "@/features/notifications/queries/useNotifications";
+import { CAPABILITIES } from "@/config/capabilities";
 import { SHELL_HREFS } from "@/features/navigation/shell";
 import { useUIStore, type ThemePreference } from "@/store/useUIStore";
 
@@ -183,7 +187,7 @@ export default function MoreScreen(): JSX.Element {
   const { data: notifications = [] } = useNotifications(currentUser?.id);
 
   const pendingCount = notifications.filter(
-    (n) => n.kind === "friend_request" || n.kind === "group_invite",
+    (n) => n.kind === "friend_request" || n.kind === "group_invite"
   ).length;
 
   return (
@@ -221,11 +225,7 @@ export default function MoreScreen(): JSX.Element {
         <CardRow
           title={currentUser.name || "Profile"}
           subtitle="Profile and security"
-          left={
-            currentUser.id ? (
-              <AppUserAvatar user={currentUser} size="sm" />
-            ) : undefined
-          }
+          left={currentUser.id ? <AppUserAvatar user={currentUser} size="sm" /> : undefined}
           onPress={() => router.push("/profile")}
         />
         <CardRow
@@ -270,17 +270,19 @@ export default function MoreScreen(): JSX.Element {
           }
           onPress={() => router.push(SHELL_HREFS.currencies)}
         />
-        <CardRow
-          title="Export data"
-          subtitle="Download transaction history"
-          left={
-            <IconBox>
-              <Download size={20} color={coral.avatarInk} strokeWidth={1.5} />
-            </IconBox>
-          }
-          isLast
-          onPress={() => router.push("/profile/export")}
-        />
+        {CAPABILITIES.dataExport && (
+          <CardRow
+            title="Export data"
+            subtitle="Download transaction history"
+            left={
+              <IconBox>
+                <Download size={20} color={coral.avatarInk} strokeWidth={1.5} />
+              </IconBox>
+            }
+            isLast
+            onPress={() => router.push("/profile/export")}
+          />
+        )}
       </CardContainer>
 
       <SectionHeading title="Preferences and support" />

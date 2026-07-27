@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  Pressable, ScrollView, View , Text } from "react-native";
+import { Pressable, ScrollView, View, Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { CURRENCIES } from "@/types";
 import { QUICK_CURRENCIES } from "@/features/expenses/constants";
@@ -54,9 +54,7 @@ export function CurrencyInlineSelector({
                   pressed && styles.pressed,
                 ]}
               >
-                <Text
-                  style={[styles.currencyChipText, active && styles.currencyChipTextActive]}
-                >
+                <Text style={[styles.currencyChipText, active && styles.currencyChipTextActive]}>
                   {currency.code}
                 </Text>
               </Pressable>

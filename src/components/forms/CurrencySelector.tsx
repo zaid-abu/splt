@@ -1,5 +1,5 @@
 import React, { memo, useCallback, useMemo, useRef, useState } from "react";
-import {   Keyboard, StyleSheet, View , Pressable , Text } from "react-native";
+import { Keyboard, StyleSheet, View, Pressable, Text } from "react-native";
 import {
   BottomSheetBackdrop,
   BottomSheetFlatList,
@@ -553,11 +553,7 @@ export function CurrencySelector({
               style={styles.searchInput}
             />
             {search.length > 0 ? (
-              <Pressable
-                accessibilityRole="button"
-                hitSlop={8}
-                onPress={() => setSearch("")}
-              >
+              <Pressable accessibilityRole="button" hitSlop={8} onPress={() => setSearch("")}>
                 <icons.XCircle size={18} color={color.muted} strokeWidth={1.75} />
               </Pressable>
             ) : null}
@@ -573,9 +569,7 @@ export function CurrencySelector({
             ListEmptyComponent={
               <View style={styles.emptyCard}>
                 <Text style={styles.emptyTitle}>No currencies found</Text>
-                <Text style={styles.emptyText}>
-                  Try a different code, name, or symbol.
-                </Text>
+                <Text style={styles.emptyText}>Try a different code, name, or symbol.</Text>
               </View>
             }
           />

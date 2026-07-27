@@ -54,7 +54,15 @@ function getTone(user: UserAvatarShape, balance?: number): AvatarTone {
   return AVATAR_PALETTE[getPaletteIndex(user.id)];
 }
 
-function Initials({ initials, fontSize, color }: { initials: string; fontSize: number; color: string }) {
+function Initials({
+  initials,
+  fontSize,
+  color,
+}: {
+  initials: string;
+  fontSize: number;
+  color: string;
+}) {
   const display = initials.length <= 2 ? initials : initials.slice(0, 2);
   return (
     <Text
@@ -109,7 +117,13 @@ export function AppUserAvatar({ user, size = "md", balance }: AppUserAvatarProps
   );
 }
 
-export function AvatarStack({ users, max = 4 }: { users: UserAvatarShape[]; max?: number }): JSX.Element {
+export function AvatarStack({
+  users,
+  max = 4,
+}: {
+  users: UserAvatarShape[];
+  max?: number;
+}): JSX.Element {
   const visible = users.slice(0, max);
   const overflow = users.length - max;
   const dims = getSize("sm");

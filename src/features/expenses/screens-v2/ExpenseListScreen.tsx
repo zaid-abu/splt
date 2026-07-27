@@ -14,11 +14,13 @@ export default function ExpenseListScreen(): JSX.Element {
   const { category = "Expenses" } = useLocalSearchParams<{ category: string }>();
 
   return (
-      <CoralScreen scroll={false}>
+    <CoralScreen scroll={false}>
       <CoralTopBar title="Filtered expenses" onBack={() => router.back()} />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40, gap: 20 }}>
-        
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 40, gap: 20 }}
+      >
         <CoralSegment
           options={[
             { label: "Your share", value: "share" },
@@ -28,17 +30,15 @@ export default function ExpenseListScreen(): JSX.Element {
           onSelect={() => {}}
         />
 
-        <BalanceHero
-          label={category}
-          value="$0.00"
-        />
+        <BalanceHero label={category} value="$0.00" />
 
         <View style={{ alignItems: "center", paddingVertical: 40 }}>
-          <Text style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 15, color: coral.muted }}>
+          <Text
+            style={{ fontFamily: "InstrumentSans_400Regular", fontSize: 15, color: coral.muted }}
+          >
             No expenses found for this category.
           </Text>
         </View>
-
       </ScrollView>
     </CoralScreen>
   );

@@ -97,8 +97,12 @@ export function ExpenseComments({
         <Eyebrow style={{ marginTop: 0 }}>Comments</Eyebrow>
         <View
           style={{
-            backgroundColor: coral.surface, borderRadius: 16, borderWidth: 1,
-            borderColor: coral.border, paddingVertical: 24, alignItems: "center",
+            backgroundColor: coral.surface,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: coral.border,
+            paddingVertical: 24,
+            alignItems: "center",
           }}
         >
           <ActivityIndicator size="small" color={coral.muted} />
@@ -113,8 +117,12 @@ export function ExpenseComments({
         <Eyebrow style={{ marginTop: 0 }}>Comments</Eyebrow>
         <View
           style={{
-            backgroundColor: coral.surface, borderRadius: 16, borderWidth: 1,
-            borderColor: coral.border, paddingVertical: 24, alignItems: "center",
+            backgroundColor: coral.surface,
+            borderRadius: 16,
+            borderWidth: 1,
+            borderColor: coral.border,
+            paddingVertical: 24,
+            alignItems: "center",
           }}
         >
           <ErrorState onRetry={() => refetch()} />
@@ -183,9 +191,7 @@ export function ExpenseComments({
                         <icons.Trash2 size={14} color={coral.negative} strokeWidth={1.5} />
                       </Pressable>
                     )}
-                    {isDeleting && (
-                      <ActivityIndicator size="small" color={coral.muted} />
-                    )}
+                    {isDeleting && <ActivityIndicator size="small" color={coral.muted} />}
                   </View>
                 }
               />

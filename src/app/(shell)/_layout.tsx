@@ -21,7 +21,12 @@ export default function ShellLayout(): JSX.Element {
           tabBarHideOnKeyboard: true,
           animation: "shift",
           sceneStyle: { backgroundColor: "transparent" },
-          tabBarStyle: { position: "absolute", backgroundColor: "transparent", elevation: 0, borderTopWidth: 0 },
+          tabBarStyle: {
+            position: "absolute",
+            backgroundColor: "transparent",
+            elevation: 0,
+            borderTopWidth: 0,
+          },
         }}
       >
         {SHELL_TABS.map((tab) => (

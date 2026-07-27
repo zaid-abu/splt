@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Controller, FieldValues, Path } from "react-hook-form";
-import {  View, Text , TextInput } from "react-native";
+import { View, Text, TextInput } from "react-native";
 import type { TextInputProps } from "react-native";
 import { useUI } from "@/components/ui";
 

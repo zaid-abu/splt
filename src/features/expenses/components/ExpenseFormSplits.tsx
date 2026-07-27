@@ -1,5 +1,5 @@
 import React from "react";
-import {  View, ScrollView, Pressable , Text } from "react-native";
+import { View, ScrollView, Pressable, Text } from "react-native";
 import * as icons from "lucide-react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";

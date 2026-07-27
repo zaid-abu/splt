@@ -6,7 +6,7 @@
  * @see https://heroui.com/docs/native/components/text.mdx
  */
 import type { JSX } from "react";
-import {  View , Text } from "react-native";
+import { View, Text } from "react-native";
 
 import type { Currency } from "@/types";
 import { CURRENCIES } from "@/types";

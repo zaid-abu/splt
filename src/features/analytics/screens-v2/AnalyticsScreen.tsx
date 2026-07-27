@@ -244,7 +244,7 @@ export default function AnalyticsScreen() {
               color: coral.muted,
             }}
           >
-            Couldn't load analytics
+            Couldn&apos;t load analytics
           </Text>
         </View>
       )}

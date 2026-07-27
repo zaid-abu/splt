@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  Pressable, ScrollView, View , Text } from "react-native";
+import { Pressable, ScrollView, View, Text } from "react-native";
 import * as Haptics from "expo-haptics";
 import { AppUserAvatar } from "@/components/ui/MemberAvatar";
 import { styles } from "@/features/expenses/utils/styles";

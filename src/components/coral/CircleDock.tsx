@@ -104,7 +104,11 @@ function TabButton({
       })}
     >
       <Animated.View style={iconStyle}>
-        <Icon size={22} color={focused ? c.foreground : c.muted} strokeWidth={focused ? 2.2 : 1.7} />
+        <Icon
+          size={22}
+          color={focused ? c.foreground : c.muted}
+          strokeWidth={focused ? 2.2 : 1.7}
+        />
       </Animated.View>
       <Text
         numberOfLines={1}

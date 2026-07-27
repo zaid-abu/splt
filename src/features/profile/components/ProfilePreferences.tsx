@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import {  View , Switch } from "react-native";
+import { View, Switch } from "react-native";
 import { Moon, DollarSign } from "lucide-react-native";
 import { useUI } from "@/components/ui";
 import { MoneyRow, Eyebrow, useCoralColors } from "@/components/coral";

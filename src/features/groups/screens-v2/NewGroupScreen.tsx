@@ -1,29 +1,29 @@
-import { useState, useRef } from "react"
-import { View, Pressable, Text, Keyboard } from "react-native"
-import { randomUUID } from "@/utils/randomUUID"
-import * as Haptics from "expo-haptics"
-import * as icons from "lucide-react-native"
-import { useRouter, useLocalSearchParams } from "expo-router"
+import { useState, useRef } from "react";
+import { View, Pressable, Text, Keyboard } from "react-native";
+import { randomUUID } from "@/utils/randomUUID";
+import * as Haptics from "expo-haptics";
+import * as icons from "lucide-react-native";
+import { useRouter, useLocalSearchParams } from "expo-router";
 
-import { CoralScreen } from "@/components/coral/CoralScreen"
-import { CoralTopBar } from "@/components/coral/CoralTopBar"
-import { CoralField } from "@/components/coral/CoralField"
-import { CoralButton } from "@/components/coral/CoralButton"
-import { CoralSelect, type SelectOption } from "@/components/coral/CoralSelect"
-import { useCoralColors } from "@/components/coral/useCoral"
-import { useCreateGroup } from "@/features/groups/queries/useGroups"
-import { useFriends } from "@/features/friends/queries/useFriends"
-import { useAuth } from "@/context/AppContext"
-import { useUIStore } from "@/store/useUIStore"
-import { useAppToast } from "@/hooks/useAppToast"
-import { AppUserAvatar } from "@/components/ui/MemberAvatar"
-import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet"
-import { GROUP_ICONS } from "@/constants/icons"
-import type { User } from "@/types"
-import { CURRENCIES } from "@/types"
+import { CoralScreen } from "@/components/coral/CoralScreen";
+import { CoralTopBar } from "@/components/coral/CoralTopBar";
+import { CoralField } from "@/components/coral/CoralField";
+import { CoralButton } from "@/components/coral/CoralButton";
+import { CoralSelect, type SelectOption } from "@/components/coral/CoralSelect";
+import { useCoralColors } from "@/components/coral/useCoral";
+import { useCreateGroup } from "@/features/groups/queries/useGroups";
+import { useFriends } from "@/features/friends/queries/useFriends";
+import { useAuth } from "@/context/AppContext";
+import { useUIStore } from "@/store/useUIStore";
+import { useAppToast } from "@/hooks/useAppToast";
+import { AppUserAvatar } from "@/components/ui/MemberAvatar";
+import { UserSearchBottomSheet } from "@/features/groups/components/UserSearchBottomSheet";
+import { GROUP_ICONS } from "@/constants/icons";
+import type { User } from "@/types";
+import { CURRENCIES } from "@/types";
 
 function SectionLabel({ text }: { text: string }) {
-  const coral = useCoralColors()
+  const coral = useCoralColors();
   return (
     <Text
       style={{
@@ -37,43 +37,43 @@ function SectionLabel({ text }: { text: string }) {
     >
       {text}
     </Text>
-  )
+  );
 }
 
 export default function NewGroupScreen() {
-  const router = useRouter()
-  const { resume } = useLocalSearchParams<{ resume?: string }>()
-  const coral = useCoralColors()
-  const { currentUser } = useAuth()
-  const { mutateAsync: createGroup, isPending } = useCreateGroup()
-  const { data: friends = [] } = useFriends(currentUser.id)
-  const { toast } = useAppToast()
-  const preferredCurrency = useUIStore((s) => s.preferredCurrency)
+  const router = useRouter();
+  const { resume } = useLocalSearchParams<{ resume?: string }>();
+  const coral = useCoralColors();
+  const { currentUser } = useAuth();
+  const { mutateAsync: createGroup, isPending } = useCreateGroup();
+  const { data: friends = [] } = useFriends(currentUser.id);
+  const { toast } = useAppToast();
+  const preferredCurrency = useUIStore((s) => s.preferredCurrency);
 
-  const [searchSheetVisible, setSearchSheetVisible] = useState(false)
-  const [name, setName] = useState("")
-  const [nameError, setNameError] = useState("")
-  const [icon, setIcon] = useState("Home")
-  const [currencyCode, setCurrencyCode] = useState(preferredCurrency.code ?? "USD")
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([])
+  const [searchSheetVisible, setSearchSheetVisible] = useState(false);
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState("");
+  const [icon, setIcon] = useState("Home");
+  const [currencyCode, setCurrencyCode] = useState(preferredCurrency.code ?? "USD");
+  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
 
-  const operationId = useRef(randomUUID())
+  const operationId = useRef(randomUUID());
 
   const handleAddUser = (user: User) => {
     if (!selectedUsers.find((u) => u.id === user.id)) {
-      setSelectedUsers((prev) => [...prev, user])
+      setSelectedUsers((prev) => [...prev, user]);
     }
-  }
+  };
 
   const handleRemoveUser = (userId: string) => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-    setSelectedUsers(selectedUsers.filter((u) => u.id !== userId))
-  }
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setSelectedUsers(selectedUsers.filter((u) => u.id !== userId));
+  };
 
   const handleCreate = async () => {
     if (!name.trim()) {
-      setNameError("Group name is required")
-      return
+      setNameError("Group name is required");
+      return;
     }
 
     try {
@@ -83,15 +83,15 @@ export default function NewGroupScreen() {
         icon,
         currency: currencyCode,
         inviteeIds: selectedUsers.map((u) => u.id),
-      })
+      });
 
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-      operationId.current = randomUUID()
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      operationId.current = randomUUID();
 
       if (resume === "expense") {
-        router.replace({ pathname: "/expense/new", params: { groupId: group.id } })
+        router.replace({ pathname: "/expense/new", params: { groupId: group.id } });
       } else {
-        router.replace(`/group/${group.id}`)
+        router.replace(`/group/${group.id}`);
       }
     } catch {
       toast.show({
@@ -99,14 +99,14 @@ export default function NewGroupScreen() {
         description: "Failed to create group. Please try again.",
         variant: "danger",
         placement: "top",
-      })
+      });
     }
-  }
+  };
 
   const currencyOptions: SelectOption[] = CURRENCIES.map((c) => ({
     label: `${c.symbol} ${c.code}`,
     value: c.code,
-  }))
+  }));
 
   return (
     <CoralScreen>
@@ -117,8 +117,8 @@ export default function NewGroupScreen() {
         placeholder="e.g. Weekend trip"
         value={name}
         onChangeText={(v) => {
-          setNameError("")
-          setName(v)
+          setNameError("");
+          setName(v);
         }}
         error={nameError}
         autoCapitalize="words"
@@ -135,14 +135,14 @@ export default function NewGroupScreen() {
       <SectionLabel text="Icon" />
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
         {GROUP_ICONS.map((i) => {
-          const Ico = (icons as any)[i] || icons.HelpCircle
-          const isSelected = icon === i
+          const Ico = (icons as any)[i] || icons.HelpCircle;
+          const isSelected = icon === i;
           return (
             <Pressable
               key={i}
               onPress={() => {
-                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
-                setIcon(i)
+                Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                setIcon(i);
               }}
               style={({ pressed }) => ({
                 width: 48,
@@ -162,7 +162,7 @@ export default function NewGroupScreen() {
                 strokeWidth={isSelected ? 2.2 : 1.5}
               />
             </Pressable>
-          )
+          );
         })}
       </View>
 
@@ -271,8 +271,8 @@ export default function NewGroupScreen() {
         ))}
         <Pressable
           onPress={() => {
-            Keyboard.dismiss()
-            setSearchSheetVisible(true)
+            Keyboard.dismiss();
+            setSearchSheetVisible(true);
           }}
           style={({ pressed }) => ({
             flexDirection: "row",
@@ -338,5 +338,5 @@ export default function NewGroupScreen() {
         title="Add to Group"
       />
     </CoralScreen>
-  )
+  );
 }

@@ -238,9 +238,7 @@ export function useHomeSnapshot(userId: string): SnapshotState<HomeSnapshotData>
 
       // Only include direct/friendship balances — group balances
       // are already captured in groupLedger
-      const directBalances = userOpenBalances.filter(
-        (ob) => ob.context.type === "direct"
-      );
+      const directBalances = userOpenBalances.filter((ob) => ob.context.type === "direct");
       if (directBalances.length === 0) continue;
 
       const targetScale = getScale(preferredCurrency.code);
