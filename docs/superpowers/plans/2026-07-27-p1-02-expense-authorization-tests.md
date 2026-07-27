@@ -35,11 +35,11 @@
 
 - [ ] **Step 1: Add the transaction and exact assertion plan**
 
-Create the file with this opening. The final assertion count is 12.
+Create the file with this opening. The fixture task has one smoke assertion; Task 2 changes the plan to 12 assertions when it adds the adversarial cases.
 
 ```sql
 begin;
-select plan(12);
+select plan(1);
 
 insert into auth.users (id, email)
 values
@@ -85,6 +85,10 @@ values
    '10000000-0000-0000-0000-000000000001');
 
 select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
+
+select ok(true, 'authorization fixture loaded');
+select * from finish();
+rollback;
 ```
 
 - [ ] **Step 2: Verify the fixture parses against the current database**
@@ -120,7 +124,7 @@ git commit -m "test(ledger): add P1 expense authorization fixtures"
 
 - [ ] **Step 1: Add the anonymous actor rejection**
 
-Append this assertion after the fixture setup. `reset` removes the JWT claim for the transaction-local setting.
+First change `select plan(1);` to `select plan(12);` and remove the fixture smoke assertion. Then append these assertions after the fixture setup. `reset` removes the JWT claim for the transaction-local setting.
 
 ```sql
 reset request.jwt.claim.sub;
