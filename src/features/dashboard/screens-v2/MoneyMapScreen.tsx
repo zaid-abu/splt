@@ -7,6 +7,7 @@ import { useRouter } from "expo-router";
 
 import { useAuth } from "@/context/AppContext";
 import { useHomeSnapshot } from "@/features/dashboard/hooks/useHomeSnapshot";
+import { SHELL_HREFS } from "@/features/navigation/shell";
 import { formatAmount } from "@/components/ui/AmountDisplay";
 import { minorToMajor } from "@/features/money/splits";
 import { useUIStore } from "@/store/useUIStore";
@@ -219,7 +220,7 @@ export default function MoneyMapScreen(): JSX.Element | null {
             accessibilityLabel="Open settings"
             onPress={() => {
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-              router.push("/more");
+              router.push(SHELL_HREFS.more);
             }}
             style={{
               width: 48,
@@ -242,7 +243,7 @@ export default function MoneyMapScreen(): JSX.Element | null {
               accessibilityLabel="Open notifications"
               onPress={() => {
                 Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-                router.push("/notifications");
+                router.push(SHELL_HREFS.notifications);
               }}
               style={{
                 width: 48,

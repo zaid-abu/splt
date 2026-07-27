@@ -154,6 +154,8 @@ export function mapSettlement(row: SettlementRow): Settlement {
     method: row.method,
     date: new Date(row.date),
     note: row.note ?? undefined,
+    clientOperationId: row.client_operation_id ?? undefined,
+    createdAt: row.created_at ? new Date(row.created_at) : undefined,
   };
 }
 

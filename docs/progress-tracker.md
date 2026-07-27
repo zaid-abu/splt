@@ -1,5 +1,11 @@
 # Development Progress Tracker
 
+> **Historical tracker — not the current remediation status.** This file records earlier
+> feature-presence milestones and contains platform/version and completion claims that
+> have not been reconciled with the 2026-07-27 audit. All new implementation work,
+> dependencies, verification evidence, blockers, and AI handoffs must be tracked in the
+> [Splt AI Execution Tracker](./audit-2026-07-27/09-execution-tracker.md).
+
 ## Legend
 
 - ✅ Done

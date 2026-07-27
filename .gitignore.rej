@@ -1,0 +1,12 @@
+@@ -43,5 +43,11 @@
+ # Generated native folders
+ /ios
+ /android
+ 
+ *.superpowers/
++# Playwright
++/playwright/.auth/
++/playwright-report/
++/test-results/
++/blob-report/
++/playwright/.cache/

@@ -6,5 +6,5 @@ module.exports = {
   moduleNameMapper: {
     "^@/(.*)$": "<rootDir>/src/$1",
   },
-  testPathIgnorePatterns: ["/node_modules/", "/.expo/", "/android/", "/ios/"],
+  testPathIgnorePatterns: ["/node_modules/", "/.expo/", "/android/", "/ios/", "/e2e/"],
 };

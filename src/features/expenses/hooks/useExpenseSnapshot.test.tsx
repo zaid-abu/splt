@@ -20,6 +20,10 @@ jest.mock("@/features/expenses/queries/useComments", () => ({
   useExpenseComments: jest.fn(),
 }))
 
+jest.mock("@/features/groups/queries/useGroups", () => ({
+  useGroups: jest.fn(() => ({ data: [] })),
+}))
+
 jest.mock("@/features/balances/queries/useBalances", () => ({
   useOpenBalances: jest.fn(),
 }))

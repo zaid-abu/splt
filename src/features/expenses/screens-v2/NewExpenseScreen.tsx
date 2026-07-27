@@ -41,6 +41,7 @@ import { ContextPicker } from "@/features/expenses/components/ContextPicker"
 import { parseMinorInput, minorToMajor } from "@/features/money/splits"
 import { formatAmount, getCurrencySymbol } from "@/components/ui/AmountDisplay"
 import type { MoneyContext, ReceiptMimeType } from "@/features/money/types"
+import { SHELL_HREFS } from "@/features/navigation/shell"
 import { expensesApi } from "@/features/expenses/services/api"
 import { ExpenseCreateSuccess } from "@/features/expenses/components/ExpenseCreateSuccess"
 
@@ -514,7 +515,7 @@ export default function NewExpenseScreenV2(): JSX.Element {
     if (router.canGoBack()) {
       router.back()
     } else {
-      router.replace("/home")
+      router.replace(SHELL_HREFS.home)
     }
   }, [router])
 

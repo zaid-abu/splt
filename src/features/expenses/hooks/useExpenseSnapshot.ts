@@ -3,6 +3,7 @@ import { useAuth } from "@/context/AppContext"
 import { useExpenseDetails } from "@/features/expenses/queries/useExpenses"
 import { useExpenseComments } from "@/features/expenses/queries/useComments"
 import { useOpenBalances } from "@/features/balances/queries/useBalances"
+import { useGroups } from "@/features/groups/queries/useGroups"
 import { getExpensePermissions } from "@/features/permissions/contracts"
 import type { Expense, ExpenseComment } from "@/types"
 import type { OpenBalance } from "@/features/money/types"
@@ -36,6 +37,7 @@ export function useExpenseSnapshot(
   const expenseQuery = useExpenseDetails(expenseId)
   const commentsQuery = useExpenseComments(expenseId)
   const openBalancesQuery = useOpenBalances(currentUser.id)
+  const { data: groups = [] } = useGroups(currentUser.id)
 
   const queries = [expenseQuery, commentsQuery, openBalancesQuery] as const
 
@@ -58,10 +60,14 @@ export function useExpenseSnapshot(
     const comments = commentsQuery.data ?? []
     const openBalances = openBalancesQuery.data ?? []
 
+    const groupCreatedBy = expense.groupId
+      ? groups.find((g) => g.id === expense.groupId)?.createdBy
+      : undefined
+
     const permissions = getExpensePermissions({
       currentUserId: currentUser.id,
       createdBy: expense.createdBy,
-      groupCreatedBy: expense.groupId ? undefined : undefined,
+      groupCreatedBy,
     })
 
     const receiptUrl = expense.receiptUrl ?? expense.legacyReceiptUrl ?? undefined
@@ -79,7 +85,7 @@ export function useExpenseSnapshot(
         ob.context.type === "direct" &&
         expense.splits.some((s) => {
           const isCounterparty = s.userId === ob.counterpartyId
-          const isPayer = expense?.paidBy === ob.counterpartyId
+          const isPayer = expense.paidBy === ob.counterpartyId
           return isCounterparty || isPayer
         })
 

@@ -8,6 +8,7 @@ import * as Haptics from "expo-haptics"
 
 import { useAuth } from "@/context/AppContext"
 import { useGroupSnapshot } from "@/features/groups/hooks/useGroupSnapshot"
+import { SHELL_HREFS } from "@/features/navigation/shell"
 import { parseGroupView } from "@/features/navigation/phase2Routes"
 import { formatAmount } from "@/components/ui/AmountDisplay"
 import { minorToMajor } from "@/features/money/splits"
@@ -181,7 +182,7 @@ export default function GroupDetailScreen(): JSX.Element {
     if (router.canGoBack()) {
       router.back()
     } else {
-      router.replace("/home")
+      router.replace(SHELL_HREFS.home)
     }
   }
 

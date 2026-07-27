@@ -5,6 +5,22 @@ const mockPush = jest.fn();
 const mockSetParams = jest.fn();
 const mockUseLocalSearchParams = jest.fn(() => ({ segment: "groups" }));
 
+jest.mock("react-native-reanimated", () => {
+  const { View: RNView } = jest.requireActual("react-native");
+  const Animated = ({ children, style, ...props }: any) => <RNView style={style} {...props}>{children}</RNView>;
+  Animated.View = Animated;
+  return {
+    __esModule: true,
+    default: Animated,
+    useSharedValue: (v: any) => ({ value: v }),
+    useAnimatedStyle: (cb: any) => cb?.() ?? {},
+    withSpring: (v: any) => v,
+    withTiming: (v: any) => v,
+    FadeIn: { duration: () => ({}) },
+    FadeOut: { duration: () => ({}) },
+  };
+});
+
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => mockUseLocalSearchParams(),
   useRouter: () => ({ push: mockPush, setParams: mockSetParams }),

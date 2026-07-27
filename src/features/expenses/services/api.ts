@@ -26,10 +26,22 @@ function toSplitsJson(splits: ExpenseMutationInput["splits"]) {
   }));
 }
 
+class RpcError extends Error {
+  code: string;
+  currentMinor?: number;
+
+  constructor(code: string, message: string, currentMinor?: number) {
+    super(message);
+    this.name = "RpcError";
+    this.code = code;
+    this.currentMinor = currentMinor;
+  }
+}
+
 function extractRpcError(error: unknown): never {
-  if (error instanceof Error && /^BALANCE_CHANGED:(\d+)$/.test(error.message)) {
-    const match = error.message.match(/^BALANCE_CHANGED:(\d+)$/)!;
-    throw { code: "balance-changed", currentMinor: parseInt(match[1], 10) };
+  if (error instanceof Error && /^BALANCE_CHANGED:(-?\d+)$/.test(error.message)) {
+    const match = error.message.match(/^BALANCE_CHANGED:(-?\d+)$/)!;
+    throw new RpcError("balance-changed", error.message, parseInt(match[1], 10));
   }
   throw error;
 }
@@ -37,6 +49,9 @@ function extractRpcError(error: unknown): never {
 function getGroupAndFriendship(context: ExpenseMutationInput["context"]) {
   if (context.type === "group") {
     return { groupId: context.groupId, friendshipId: null };
+  }
+  if (!context.friendshipId) {
+    throw new Error("Direct expense requires a valid friendshipId");
   }
   return { groupId: null, friendshipId: context.friendshipId };
 }

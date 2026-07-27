@@ -1,0 +1,11 @@
+@@ -37,4 +37,10 @@
+ /android
+ 
+ *.superpowers/
++# Playwright
++/playwright/.auth/
++/playwright-report/
++/test-results/
++/blob-report/
++/playwright/.cache/
+ 

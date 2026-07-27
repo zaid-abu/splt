@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import type { JSX, ReactNode } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { Appearance } from "react-native";
+import { Appearance, Platform } from "react-native";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClientProvider } from "@tanstack/react-query";
 
@@ -22,7 +22,9 @@ export function AppProvider({ children }: AppProviderProps): JSX.Element {
   const fetchExchangeRates = useUIStore((s) => s.fetchExchangeRates);
 
   useEffect(() => {
-    Appearance.setColorScheme(isDarkMode ? "dark" : "light");
+    if (Platform.OS !== "web") {
+      Appearance.setColorScheme(isDarkMode ? "dark" : "light");
+    }
   }, [isDarkMode]);
 
   useEffect(() => {

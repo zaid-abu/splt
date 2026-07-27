@@ -224,7 +224,7 @@ describe("expensesApi.createExpense", () => {
       ],
     }
 
-    await expect(expensesApi.createExpense(input)).rejects.toEqual({
+    await expect(expensesApi.createExpense(input)).rejects.toMatchObject({
       code: "balance-changed",
       currentMinor: 500,
     })

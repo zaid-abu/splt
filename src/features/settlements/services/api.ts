@@ -9,6 +9,9 @@ function getGroupAndFriendship(context: SettlementMutationInput["context"]) {
   if (context.type === "group") {
     return { groupId: context.groupId, friendshipId: null };
   }
+  if (!context.friendshipId) {
+    throw new Error("Settlement requires a valid friendshipId for direct context");
+  }
   return { groupId: null, friendshipId: context.friendshipId };
 }
 

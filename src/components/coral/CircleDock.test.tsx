@@ -3,6 +3,21 @@ import type { BottomTabBarProps } from "expo-router/js-tabs";
 
 import { CircleDock } from "./CircleDock";
 
+jest.mock("react-native-reanimated", () => {
+  const { View: RNView } = jest.requireActual("react-native");
+  const Animated = ({ children, style, ...props }: any) => <RNView style={style} {...props}>{children}</RNView>;
+  Animated.View = Animated;
+  return {
+    __esModule: true,
+    default: Animated,
+    useSharedValue: (v: any) => ({ value: v }),
+    useAnimatedStyle: (cb: any) => cb?.() ?? {},
+    withSpring: (v: any) => v,
+    withTiming: (v: any) => v,
+    FadeIn: { duration: () => ({}) },
+  };
+});
+
 jest.mock("expo-haptics", () => ({
   impactAsync: jest.fn(),
   selectionAsync: jest.fn(),

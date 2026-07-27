@@ -152,6 +152,8 @@ export interface Settlement {
   method: "cash" | "bank_transfer" | "other";
   date: Date;
   note?: string;
+  clientOperationId?: string;
+  createdAt?: Date;
 }
 
 export type ActivityType = "expense" | "settlement" | "member_joined" | "group_created";

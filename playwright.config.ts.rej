@@ -1,0 +1,15 @@
+@@ -86,4 +86,12 @@
+             use: desktop,
+           },
+           {
+-            name: "authenticated-mobile",
+\ No newline at end of line
++            name: "authenticated-mobile",
++            testMatch: /authenticated-shell\.spec\.ts/,
++            dependencies: ["auth-setup"],
++            use: { ...mobile, storageState: authStatePath },
++          },
++        ]
++      : []),
++  ],
++});
