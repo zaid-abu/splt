@@ -103,7 +103,8 @@ Expected: the test file is discovered and executes assertions; authorization ass
 Run:
 
 ```bash
-
+git add supabase/tests/p1_expense_authorization.test.sql
+git commit -m "test(ledger): add P1 expense authorization fixtures"
 ```
 
 ### Task 2: Add the failing authorization cases
@@ -325,7 +326,8 @@ Expected: the test file runs to completion but reports failures for missing auth
 Run:
 
 ```bash
-
+git add supabase/tests/p1_expense_authorization.test.sql
+git commit -m "test(ledger): add failing expense authorization cases"
 ```
 
 ### Task 3: Record P1-02 evidence and hand off to implementation
@@ -362,7 +364,8 @@ Expected: formatting and whitespace checks pass; only intended P1-02 files are c
 Run:
 
 ```bash
-
+git add docs/audit-2026-07-27/09-execution-tracker.md
+git commit -m "docs(ledger): record P1-02 authorization test baseline"
 ```
 
 ## Execution Notes
