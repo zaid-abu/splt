@@ -656,6 +656,16 @@ describe("detail screen with snapshot views", () => {
     expect(screen.getByText("No recurring expenses")).toBeTruthy();
   });
 
+  it("schedule view starts a recurring expense in the current group", async () => {
+    mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "schedule" });
+    (useGroupSnapshot as Mock).mockReturnValue(makeSnapshot());
+    await render(<GroupDetailScreen />);
+
+    await fireEvent.press(screen.getByText("Schedule expense"));
+
+    expect(mockPush).toHaveBeenCalledWith("/expense/new?groupId=g-1&recurring=true");
+  });
+
   it("schedule view hides unsupported review rows", async () => {
     mockUseLocalSearchParams.mockReturnValue({ id: "g-1", view: "schedule" });
     (useGroupSnapshot as Mock).mockReturnValue(

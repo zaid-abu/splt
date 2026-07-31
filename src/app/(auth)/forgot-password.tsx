@@ -1,3 +1,3 @@
-import ForgotPasswordScreen from "@/features/auth/screens-v2/ForgotPasswordScreen";
+import { ForgotPasswordScreen } from "@/features/auth";
 
 export default ForgotPasswordScreen;

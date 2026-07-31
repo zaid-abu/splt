@@ -1,6 +1,3 @@
-import type { JSX } from "react";
-import NotificationSettingsScreen from "@/features/profile/screens-v2/NotificationSettingsScreen";
+import { NotificationSettingsScreen } from "@/features/profile";
 
-export default function NotificationSettingsRoute(): JSX.Element {
-  return <NotificationSettingsScreen />;
-}
+export default NotificationSettingsScreen;

@@ -89,14 +89,19 @@ export function settlementFlowReducer(
       }
       if (parsedMinor <= 0) return state;
       const maxMinor = Math.abs(state.selection.signedAmountMinor);
-      const clamped = Math.min(parsedMinor, maxMinor);
+      if (parsedMinor > maxMinor) {
+        return {
+          ...state,
+          composeError: "Amount cannot exceed the open balance.",
+        };
+      }
       const resulting = state.selection.isOwedToYou
-        ? state.selection.signedAmountMinor - clamped
-        : state.selection.signedAmountMinor + clamped;
+        ? state.selection.signedAmountMinor - parsedMinor
+        : state.selection.signedAmountMinor + parsedMinor;
       return {
         step: "review",
         selection: state.selection,
-        amountMinor: clamped,
+        amountMinor: parsedMinor,
         method: state.method,
         note: state.note,
         resultingMinor: resulting,

@@ -1,2 +1,2 @@
-import ChangePasswordScreen from "@/features/profile/screens-v2/ChangePasswordScreen";
+import { ChangePasswordScreen } from "@/features/profile";
 export default ChangePasswordScreen;

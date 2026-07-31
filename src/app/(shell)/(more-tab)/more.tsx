@@ -1,3 +1,3 @@
-import MoreScreen from "@/features/profile/screens-v2/MoreScreen";
+import { MoreScreen } from "@/features/profile";
 
 export default MoreScreen;

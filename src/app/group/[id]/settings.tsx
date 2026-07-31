@@ -1,2 +1,2 @@
-import GroupSettingsScreen from "@/features/groups/screens-v2/GroupSettingsScreen";
+import { GroupSettingsScreen } from "@/features/groups";
 export default GroupSettingsScreen;

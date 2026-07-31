@@ -1,3 +1,3 @@
-import CurrenciesScreen from "@/features/currencies/screens-v2/CurrenciesScreen";
+import { CurrenciesScreen } from "@/features/currencies";
 
 export default CurrenciesScreen;

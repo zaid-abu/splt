@@ -1,5 +1,5 @@
 begin;
-select plan(35);
+select plan(45);
 
 -- ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -69,6 +69,46 @@ select ok(
   'equal split creates entries for all group members'
 );
 
+select throws_ok(
+  $$select public.create_expense_v2(
+    'e0000000-0000-0000-0000-000000000001',
+    '50000000-0000-0000-0000-000000000001', null,
+    'Dinner', 9999, 'USD', 'food',
+    '10000000-0000-0000-0000-000000000001',
+    'equal', now(), null, null, '[]'::jsonb
+  )$$,
+  'P0001', 'operation_conflict',
+  'expense operation id cannot be reused with different financial input'
+);
+
+select throws_ok(
+  $$select public.create_expense_v2(
+    'e0000000-0000-0000-0000-000000000001',
+    '50000000-0000-0000-0000-000000000001', null,
+    'Dinner', 3000, 'USD', 'food',
+    '10000000-0000-0000-0000-000000000001',
+    'equal', now(), 'Changed note', null, '[]'::jsonb
+  )$$,
+  'P0001', 'operation_conflict',
+  'expense operation id cannot be reused with different metadata'
+);
+
+select set_config('request.jwt.claim.sub', '20000000-0000-0000-0000-000000000002', true);
+
+select throws_ok(
+  $$select public.create_expense_v2(
+    'e0000000-0000-0000-0000-000000000001',
+    '50000000-0000-0000-0000-000000000001', null,
+    'Dinner', 3000, 'USD', 'food',
+    '10000000-0000-0000-0000-000000000001',
+    'equal', now(), null, null, '[]'::jsonb
+  )$$,
+  'P0001', 'operation_conflict',
+  'expense operation id cannot be replayed by another actor'
+);
+
+select set_config('request.jwt.claim.sub', '10000000-0000-0000-0000-000000000001', true);
+
 
 -- ── 3. create_expense_v2: Custom amounts split ─────────────────────────────
 
@@ -82,6 +122,19 @@ select lives_ok(
     '[{"userId":"10000000-0000-0000-0000-000000000001","amountMinor":1000,"position":0},{"userId":"20000000-0000-0000-0000-000000000002","amountMinor":2000,"position":1}]'::jsonb
   )$$,
   'custom amounts split succeeds'
+);
+
+select throws_ok(
+  $$select public.create_expense_v2(
+    'e0000000-0000-0000-0000-000000000002',
+    '50000000-0000-0000-0000-000000000001', null,
+    'Custom Split', 3000, 'USD', 'food',
+    '10000000-0000-0000-0000-000000000001',
+    'custom', now(), null, null,
+    '[{"userId":"10000000-0000-0000-0000-000000000001","amountMinor":2000,"position":0},{"userId":"20000000-0000-0000-0000-000000000002","amountMinor":1000,"position":1}]'::jsonb
+  )$$,
+  'P0001', 'operation_conflict',
+  'expense operation id cannot be reused with a different split payload'
 );
 
 select throws_ok(
@@ -113,6 +166,19 @@ select lives_ok(
   'percentage split succeeds'
 );
 
+select ok(
+  exists (
+    select 1 from public.expense_splits
+    where expense_id = (
+      select id from public.expenses
+      where client_operation_id = 'e0000000-0000-0000-0000-000000000004'
+    )
+      and user_id = '10000000-0000-0000-0000-000000000001'
+      and percentage_units = 250000
+  ),
+  'percentage split preserves exact source units'
+);
+
 select throws_ok(
   $$select public.create_expense_v2(
     'e0000000-0000-0000-0000-000000000005',
@@ -140,6 +206,19 @@ select lives_ok(
     '[{"userId":"10000000-0000-0000-0000-000000000001","shareUnits":1000000,"amountMinor":3000,"position":0},{"userId":"20000000-0000-0000-0000-000000000002","shareUnits":1000000,"amountMinor":3000,"position":1}]'::jsonb
   )$$,
   'shares split succeeds'
+);
+
+select ok(
+  exists (
+    select 1 from public.expense_splits
+    where expense_id = (
+      select id from public.expenses
+      where client_operation_id = 'e0000000-0000-0000-0000-000000000006'
+    )
+      and user_id = '10000000-0000-0000-0000-000000000001'
+      and share_units = 1000000
+  ),
+  'shares split preserves exact source units'
 );
 
 
@@ -271,6 +350,43 @@ select ok(
   ),
   'settlement created from bob to alice'
 );
+
+select throws_ok(
+  $$select public.create_settlement_v2(
+    's0000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000001',
+    '50000000-0000-0000-0000-000000000001', null,
+    1000, 'USD', 'cash', 'Settling up'
+  )$$,
+  'P0001', 'operation_conflict',
+  'settlement operation id cannot be reused with different financial input'
+);
+
+select throws_ok(
+  $$select public.create_settlement_v2(
+    's0000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000001',
+    '50000000-0000-0000-0000-000000000001', null,
+    2000, 'USD', 'cash', 'Changed note'
+  )$$,
+  'P0001', 'operation_conflict',
+  'settlement operation id cannot be reused with different metadata'
+);
+
+select set_config('request.jwt.claim.sub', '30000000-0000-0000-0000-000000000003', true);
+
+select throws_ok(
+  $$select public.create_settlement_v2(
+    's0000000-0000-0000-0000-000000000001',
+    '10000000-0000-0000-0000-000000000001',
+    '50000000-0000-0000-0000-000000000001', null,
+    2000, 'USD', 'cash', 'Settling up'
+  )$$,
+  'P0001', 'operation_conflict',
+  'settlement operation id cannot be replayed by another actor'
+);
+
+select set_config('request.jwt.claim.sub', '20000000-0000-0000-0000-000000000002', true);
 
 
 -- ── 11. create_settlement_v2: stale settlement rejected ────────────────────

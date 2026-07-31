@@ -1,2 +1,2 @@
-import InviteRedemptionScreen from "@/features/friends/screens-v2/InviteRedemptionScreen";
+import { InviteRedemptionScreen } from "@/features/invitations";
 export default InviteRedemptionScreen;

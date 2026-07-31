@@ -1,6 +1,3 @@
-import type { JSX } from "react";
-import AppearanceScreen from "@/features/profile/screens-v2/AppearanceScreen";
+import { AppearanceScreen } from "@/features/profile";
 
-export default function AppearanceRoute(): JSX.Element {
-  return <AppearanceScreen />;
-}
+export default AppearanceScreen;

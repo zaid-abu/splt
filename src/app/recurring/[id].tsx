@@ -1,2 +1,2 @@
-import RecurringDetailScreen from "@/features/recurring/screens/RecurringDetailScreen";
+import { RecurringDetailScreen } from "@/features/recurring";
 export default RecurringDetailScreen;

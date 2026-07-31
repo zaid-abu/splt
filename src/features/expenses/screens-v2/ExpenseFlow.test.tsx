@@ -540,6 +540,48 @@ describe("NewExpenseScreenV2 with useExpenseComposer", () => {
     await render(React.createElement(NewExpenseScreen));
   });
 
+  it("keeps split and metadata controls behind More options by default", async () => {
+    mockUseLocalSearchParams.mockReturnValue({ groupId: "g1" });
+    const useGroups = require("@/features/groups/queries/useGroups");
+    useGroups.useGroups.mockReturnValue({
+      data: [
+        {
+          id: "g1",
+          name: "Test Group",
+          currency: "USD",
+          members: [
+            { userId: "me", user: { id: "me", name: "You" } },
+            { userId: "a", user: { id: "a", name: "Alice" } },
+          ],
+        },
+      ],
+    });
+    mockComposer.mockReturnValue(
+      makeComposerMock({
+        state: {
+          ...makeComposerMock().state,
+          context: { type: "group", groupId: "g1" },
+          participants: [
+            { userId: "me", name: "You" },
+            { userId: "a", name: "Alice" },
+          ],
+        },
+      })
+    );
+
+    const NewExpenseScreen = require("./NewExpenseScreen").default;
+    await render(React.createElement(NewExpenseScreen));
+
+    expect(screen.queryByTestId("coral-segment")).toBeNull();
+
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText("Show advanced expense options"));
+    });
+
+    expect(screen.getByTestId("coral-segment")).toBeTruthy();
+    expect(screen.getByLabelText("Hide advanced expense options")).toBeTruthy();
+  });
+
   it("dispatches SET_SPLIT_METHOD when segment changes", async () => {
     const mockSetSplitMethod = jest.fn();
     mockUseLocalSearchParams.mockReturnValue({});

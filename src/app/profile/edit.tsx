@@ -1,2 +1,2 @@
-import EditProfileScreen from "@/features/profile/screens-v2/EditProfileScreen";
+import { EditProfileScreen } from "@/features/profile";
 export default EditProfileScreen;

@@ -240,7 +240,7 @@ describe("MoneyMapScreen", () => {
     });
     await renderScreen();
     expect(screen.getByText("Something went wrong")).toBeTruthy();
-    fireEvent.press(screen.getByText("Tap to retry"));
+    await fireEvent.press(screen.getByText("Tap to retry"));
     expect(baseSnapshot.refresh).toHaveBeenCalled();
   });
 
@@ -331,7 +331,7 @@ describe("MoneyMapScreen", () => {
     await renderScreen();
     expect(screen.getByText("Where you stand")).toBeTruthy();
     expect(screen.getByText("Alice")).toBeTruthy();
-    fireEvent.press(screen.getByText("Alice"));
+    await fireEvent.press(screen.getByText("Alice"));
     expect(mockPush).toHaveBeenCalledWith("/friend/u1");
   });
 
@@ -353,7 +353,7 @@ describe("MoneyMapScreen", () => {
     await renderScreen();
     expect(screen.getByText("Where you stand")).toBeTruthy();
     expect(screen.getByText("Trip")).toBeTruthy();
-    fireEvent.press(screen.getByText("Trip"));
+    await fireEvent.press(screen.getByText("Trip"));
     expect(mockPush).toHaveBeenCalledWith("/group/g1");
   });
 
@@ -365,7 +365,7 @@ describe("MoneyMapScreen", () => {
     });
     await renderScreen();
     expect(screen.getByText("Upcoming")).toBeTruthy();
-    fireEvent.press(screen.getByText("Rent"));
+    await fireEvent.press(screen.getByText("Rent"));
     expect(mockPush).toHaveBeenCalledWith("/recurring/s1");
   });
 
@@ -437,7 +437,7 @@ describe("MoneyMapScreen", () => {
       data: { ...baseData, circleBalances },
     });
     await renderScreen();
-    fireEvent.press(screen.getByText("Settled trip"));
+    await fireEvent.press(screen.getByText("Settled trip"));
     expect(mockPush).toHaveBeenCalledWith("/group/g1");
   });
 
@@ -457,7 +457,7 @@ describe("MoneyMapScreen", () => {
       data: { ...baseData, circleBalances },
     });
     await renderScreen();
-    fireEvent.press(screen.getByText("Bob"));
+    await fireEvent.press(screen.getByText("Bob"));
     expect(mockPush).toHaveBeenCalledWith("/friend/u2");
   });
 
@@ -481,11 +481,11 @@ describe("MoneyMapScreen", () => {
     expect(screen.getByText("Create Group")).toBeTruthy();
     expect(screen.getByText("Add Person")).toBeTruthy();
     expect(screen.getByText("Add Expense")).toBeTruthy();
-    fireEvent.press(screen.getByText("Create Group"));
+    await fireEvent.press(screen.getByText("Create Group"));
     expect(mockPush).toHaveBeenCalledWith("/group/new");
-    fireEvent.press(screen.getByText("Add Person"));
+    await fireEvent.press(screen.getByText("Add Person"));
     expect(mockPush).toHaveBeenCalledWith("/friend/new");
-    fireEvent.press(screen.getByText("Add Expense"));
+    await fireEvent.press(screen.getByText("Add Expense"));
     expect(mockPush).toHaveBeenCalledWith("/expense/new");
   });
 });

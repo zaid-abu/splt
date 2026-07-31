@@ -10,7 +10,6 @@ export type { SelectOption } from "./CoralSelect";
 export { CoralSheet } from "./CoralSheet";
 export { ContextBar } from "./ContextBar";
 export { CircleDock } from "./CircleDock";
-export { GlobalActionSheet } from "./GlobalActionSheet";
 export { BalanceHero } from "./BalanceHero";
 export { MoneyRow } from "./MoneyRow";
 export { GroupTile } from "./GroupTile";

@@ -20,6 +20,13 @@ import type { SettleRouteParams } from "@/types/navigation";
 import type { MoneyContext } from "@/features/money/types";
 import { getCurrencySymbol, formatAmount } from "@/components/ui/AmountDisplay";
 import { minorToMajor } from "@/features/money/splits";
+import { getMaximumSupportedMinorAmount, normalizeCurrencyCode } from "@/features/money/currency";
+import {
+  isPositiveSettlementInput,
+  isSettlementInputWithinBalance,
+  SETTLEMENT_AMOUNT_PRESETS,
+  settlementPresetInput,
+} from "@/features/settlements/utils/amounts";
 
 const METHOD_LABELS: { key: SettlementMethod; label: string }[] = [
   { key: "cash", label: "Cash" },
@@ -27,11 +34,9 @@ const METHOD_LABELS: { key: SettlementMethod; label: string }[] = [
   { key: "other", label: "Other external payment" },
 ];
 
-const AMOUNT_PRESETS = [
-  { label: "Full", getValue: (max: number) => max },
-  { label: "Half", getValue: (max: number) => Math.floor(max / 2) },
-  { label: "Custom", getValue: () => 0 },
-];
+function scalarRouteParam(value: unknown): string | undefined {
+  return typeof value === "string" && value.length > 0 ? value : undefined;
+}
 
 function useHydratedSelection(userId?: string): {
   selection: DeterminedSettlement | null;
@@ -60,36 +65,68 @@ function useHydratedSelection(userId?: string): {
   }, [friendRows, groups]);
 
   return useMemo(() => {
-    if (balancesLoading || friendsLoading || groupsLoading || !params.id) {
+    const id = scalarRouteParam(params.id);
+    const contextType = scalarRouteParam(params.contextType);
+    const currencyParam = scalarRouteParam(params.currency);
+    const amountMinorParam = scalarRouteParam(params.amountMinor);
+    const groupId = scalarRouteParam(params.groupId);
+    const friendshipId = scalarRouteParam(params.friendshipId);
+    const hasHydratedRouteParam =
+      params.contextType !== undefined ||
+      params.currency !== undefined ||
+      params.amountMinor !== undefined ||
+      params.groupId !== undefined ||
+      params.friendshipId !== undefined;
+
+    if (balancesLoading || friendsLoading || groupsLoading || !id) {
       return { selection: null, isLoading: true };
     }
 
-    const userDetails = userNameMap.get(params.id);
+    const userDetails = userNameMap.get(id);
 
-    if (params.contextType && params.currency && params.amountMinor) {
+    if (hasHydratedRouteParam) {
+      if (!contextType || !currencyParam || !amountMinorParam) {
+        return { selection: null, isLoading: false };
+      }
+      if (contextType !== "group" && contextType !== "direct") {
+        return { selection: null, isLoading: false };
+      }
+      let currency: string;
+      let signedAmountMinor: number;
+      try {
+        currency = normalizeCurrencyCode(currencyParam);
+        if (!/^[1-9]\d*$/.test(amountMinorParam)) throw new Error("Invalid settlement amount");
+        const amount = BigInt(amountMinorParam);
+        if (amount > BigInt(getMaximumSupportedMinorAmount(currency))) {
+          throw new Error("Settlement amount out of range");
+        }
+        signedAmountMinor = Number(amount);
+      } catch {
+        return { selection: null, isLoading: false };
+      }
       const isOwedToYou = params.isOwedToYou === "true";
-      const signedAmountMinor = parseInt(params.amountMinor, 10) || 0;
 
-      const friendshipRow = params.friendshipId
-        ? undefined
-        : friendRows.find((r) => r.friend.id === params.id);
-      const resolvedFriendshipId = params.friendshipId || friendshipRow?.friendship?.id || "";
-      const context: MoneyContext | null =
-        params.contextType === "group" && params.groupId
-          ? { type: "group", groupId: params.groupId }
-          : resolvedFriendshipId
-            ? { type: "direct", friendshipId: resolvedFriendshipId }
-            : null;
-
-      if (!context) return { selection: null, isLoading: false };
+      let context: MoneyContext;
+      if (contextType === "group") {
+        if (!groupId || friendshipId) return { selection: null, isLoading: false };
+        context = { type: "group", groupId };
+      } else {
+        if (groupId) return { selection: null, isLoading: false };
+        const friendshipRow = friendRows.find(
+          (row) => row.friend.id === id && row.friendship?.status === "accepted"
+        );
+        const resolvedFriendshipId = friendshipId || friendshipRow?.friendship?.id;
+        if (!resolvedFriendshipId) return { selection: null, isLoading: false };
+        context = { type: "direct", friendshipId: resolvedFriendshipId };
+      }
 
       return {
         selection: {
-          counterpartyId: params.id,
-          counterpartyName: userDetails?.name || params.id,
+          counterpartyId: id,
+          counterpartyName: userDetails?.name || id,
           counterpartyAvatar: userDetails?.avatar,
           context,
-          currency: params.currency,
+          currency,
           signedAmountMinor: isOwedToYou ? signedAmountMinor : -signedAmountMinor,
           isOwedToYou,
         },
@@ -97,13 +134,13 @@ function useHydratedSelection(userId?: string): {
       };
     }
 
-    const balance = balances?.find((b) => b.counterpartyId === params.id);
+    const balance = balances?.find((b) => b.counterpartyId === id);
     if (!balance) return { selection: null, isLoading: false };
 
     return {
       selection: {
-        counterpartyId: params.id,
-        counterpartyName: userDetails?.name || params.id,
+        counterpartyId: id,
+        counterpartyName: userDetails?.name || id,
         counterpartyAvatar: userDetails?.avatar,
         context: balance.context,
         currency: balance.currency,
@@ -202,6 +239,12 @@ function ComposeView({
   if (flow.state.step !== "compose") return null;
   const { selection, amountInput, method, note, composeError } = flow.state;
   const maxMinor = Math.abs(selection.signedAmountMinor);
+  const amountIsPositive = isPositiveSettlementInput(amountInput, selection.currency);
+  const amountIsWithinBalance = isSettlementInputWithinBalance(
+    amountInput,
+    selection.currency,
+    maxMinor
+  );
   const directionWords = selection.isOwedToYou
     ? `${selection.counterpartyName.split(" ")[0]} pays you`
     : `You pay ${selection.counterpartyName.split(" ")[0]}`;
@@ -284,18 +327,34 @@ function ComposeView({
             textAlign: "center",
           }}
         >
-          Full open balance{groupName ? ` across ${groupName}` : ""}
+          Open balance:{" "}
+          {formatAmount(minorToMajor(maxMinor, selection.currency), selection.currency)}
+          {groupName ? ` across ${groupName}` : ""}. Enter a different amount above if needed.
         </Text>
+        {amountIsPositive && !amountIsWithinBalance ? (
+          <Text
+            accessibilityRole="alert"
+            style={{
+              fontFamily: "InstrumentSans_500Medium",
+              fontSize: 12,
+              color: color.negative,
+              textAlign: "center",
+            }}
+          >
+            Amount cannot exceed the open balance.
+          </Text>
+        ) : null}
 
         <View style={{ flexDirection: "row", gap: 8, marginTop: 8 }}>
-          {AMOUNT_PRESETS.map((preset) => (
+          {SETTLEMENT_AMOUNT_PRESETS.map((preset) => (
             <Pressable
               key={preset.label}
               accessibilityRole="button"
               onPress={() => {
                 Haptics.selectionAsync();
-                if (preset.label === "Custom") return;
-                flow.setAmountInput(String(preset.getValue(maxMinor)));
+                flow.setAmountInput(
+                  settlementPresetInput(maxMinor, selection.currency, preset.key)
+                );
               }}
               style={({ pressed }) => ({
                 paddingHorizontal: 20,
@@ -461,7 +520,7 @@ function ComposeView({
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
             flow.goToReview();
           }}
-          disabled={!amountInput || parseInt(amountInput, 10) <= 0}
+          disabled={!amountIsPositive || !amountIsWithinBalance}
         />
         <Text
           style={{

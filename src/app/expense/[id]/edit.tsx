@@ -1,2 +1,2 @@
-import EditExpenseScreen from "@/features/expenses/screens-v2/EditExpenseScreen";
+import { EditExpenseScreen } from "@/features/expenses";
 export default EditExpenseScreen;

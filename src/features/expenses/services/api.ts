@@ -193,9 +193,14 @@ export const expensesApi = {
 
     const { error: uploadError } = await supabase.storage
       .from("expense-receipts")
-      .upload(key, blob, { contentType: mimeType, upsert: true });
+      .upload(key, blob, { contentType: mimeType, upsert: false });
 
     if (uploadError) {
+      try {
+        await (supabase.rpc as any)("discard_staged_receipt_v2", { p_object_key: key });
+      } catch {
+        // Best effort: the cleanup worker will remove the registered row/object.
+      }
       await supabase.storage
         .from("expense-receipts")
         .remove([key])
@@ -207,8 +212,22 @@ export const expensesApi = {
   },
 
   async removeStagedReceipt(key: string): Promise<void> {
+    const { data, error: lookupError } = await supabase
+      .from("receipt_uploads")
+      .select("status")
+      .eq("object_key", key)
+      .maybeSingle();
+    if (lookupError) throw lookupError;
+
+    const { error: discardError } = await (supabase.rpc as any)("discard_staged_receipt_v2", {
+      p_object_key: key,
+    });
+    if (discardError) throw discardError;
+
+    if (data?.status !== "staged") return;
+
     const { error } = await supabase.storage.from("expense-receipts").remove([key]);
-    if (error) throw error;
+    if (error && !/not found|already.*exist|no such/i.test(error.message)) throw error;
   },
 
   async createReceiptSignedUrl(_expenseId: string, key: string): Promise<string> {

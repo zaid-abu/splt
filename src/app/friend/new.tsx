@@ -1,2 +1,2 @@
-import NewFriendScreen from "@/features/friends/screens-v2/NewFriendScreen";
+import { NewFriendScreen } from "@/features/friends";
 export default NewFriendScreen;

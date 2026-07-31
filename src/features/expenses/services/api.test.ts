@@ -18,6 +18,7 @@ jest.mock("@/services/supabase/client", () => ({
     from: jest.fn(() => ({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn(),
       order: jest.fn().mockReturnThis(),
       single: jest.fn(),
       returns: jest.fn().mockReturnThis(),
@@ -343,7 +344,7 @@ describe("expensesApi.uploadStagedReceipt", () => {
     expect(getUser).toHaveBeenCalled();
     expect(uploadMock).toHaveBeenCalledWith("staging/u1/op-1/receipt", validBlob, {
       contentType: "image/jpeg",
-      upsert: true,
+      upsert: false,
     });
     expect(key).toBe("staging/u1/op-1/receipt");
   });
@@ -420,6 +421,12 @@ describe("expensesApi.uploadStagedReceipt", () => {
 
 describe("expensesApi.removeStagedReceipt", () => {
   it("calls storage.remove with correct key", async () => {
+    rpc.mockResolvedValueOnce({ data: "receipt-id", error: null });
+    from.mockReturnValue({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      maybeSingle: jest.fn().mockResolvedValue({ data: { status: "staged" }, error: null }),
+    });
     const removeMock = jest.fn().mockResolvedValue({ error: null });
     storageFrom.mockReturnValue({
       upload: jest.fn(),
@@ -431,6 +438,9 @@ describe("expensesApi.removeStagedReceipt", () => {
 
     expect(storageFrom).toHaveBeenCalledWith("expense-receipts");
     expect(removeMock).toHaveBeenCalledWith(["staging/u1/op-1/receipt"]);
+    expect(rpc).toHaveBeenCalledWith("discard_staged_receipt_v2", {
+      p_object_key: "staging/u1/op-1/receipt",
+    });
   });
 });
 

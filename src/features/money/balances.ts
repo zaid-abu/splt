@@ -8,13 +8,19 @@ export interface BalanceEvent {
   date: Date;
 }
 
-export type SettlementScope = "group" | "friendship" | "global";
+export type SettlementScope =
+  | { type: "group"; groupId: string }
+  | { type: "friendship"; friendshipId: string }
+  | { type: "global" };
+
+export type SettlementDirection = "owes_me" | "i_owe";
 
 export interface SettlementSelection {
   counterpartyId: string;
   context: MoneyContext;
   currency: string;
   amountMinor: number;
+  direction: SettlementDirection;
 }
 
 export function normalizeSignedMinor(value: number): number {
@@ -98,31 +104,39 @@ export function orderBalances(
 
 export function selectSettlementTarget(
   rows: readonly OpenBalance[],
-  _scope: SettlementScope
+  scope: SettlementScope
 ): SettlementSelection | null {
-  if (rows.length === 0) return null;
+  const eligible = rows.filter((row) => {
+    if (row.signedAmountMinor === 0) return false;
+    if (scope.type === "global") return true;
+    return scope.type === "group"
+      ? row.context.type === "group" && row.context.groupId === scope.groupId
+      : row.context.type === "direct" && row.context.friendshipId === scope.friendshipId;
+  });
+  if (eligible.length === 0) return null;
 
-  const positive = rows.filter((r) => r.signedAmountMinor > 0);
-  if (positive.length > 0) {
-    const sorted = [...positive].sort((a, b) => b.signedAmountMinor - a.signedAmountMinor);
-    return {
-      counterpartyId: sorted[0].counterpartyId,
-      context: sorted[0].context,
-      currency: sorted[0].currency,
-      amountMinor: sorted[0].signedAmountMinor,
-    };
-  }
+  const selected = [...eligible].sort((a, b) => {
+    const magnitude = Math.abs(b.signedAmountMinor) - Math.abs(a.signedAmountMinor);
+    if (magnitude !== 0) return magnitude;
+    const counterparty = a.counterpartyId.localeCompare(b.counterpartyId);
+    if (counterparty !== 0) return counterparty;
+    const contextA =
+      a.context.type === "group"
+        ? `group:${a.context.groupId}`
+        : `direct:${a.context.friendshipId}`;
+    const contextB =
+      b.context.type === "group"
+        ? `group:${b.context.groupId}`
+        : `direct:${b.context.friendshipId}`;
+    const context = contextA.localeCompare(contextB);
+    return context !== 0 ? context : a.currency.localeCompare(b.currency);
+  })[0];
 
-  const negative = rows.filter((r) => r.signedAmountMinor < 0);
-  if (negative.length > 0) {
-    const sorted = [...negative].sort((a, b) => b.signedAmountMinor - a.signedAmountMinor);
-    return {
-      counterpartyId: sorted[0].counterpartyId,
-      context: sorted[0].context,
-      currency: sorted[0].currency,
-      amountMinor: sorted[0].signedAmountMinor,
-    };
-  }
-
-  return null;
+  return {
+    counterpartyId: selected.counterpartyId,
+    context: selected.context,
+    currency: selected.currency,
+    amountMinor: Math.abs(selected.signedAmountMinor),
+    direction: selected.signedAmountMinor > 0 ? "owes_me" : "i_owe",
+  };
 }

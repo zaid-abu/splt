@@ -156,12 +156,13 @@ describe("settlementFlowReducer", () => {
       expect(next.resultingMinor).toBe(900);
     });
 
-    it("clamps amount to maximum", () => {
+    it("rejects an amount above the open balance", () => {
       const next = settlementFlowReducer(composeState({ amountInput: "99" }), {
         type: "GO_TO_REVIEW",
       });
-      if (next.step !== "review") return;
-      expect(next.amountMinor).toBe(1500);
+      expect(next.step).toBe("compose");
+      if (next.step !== "compose") return;
+      expect(next.composeError).toBe("Amount cannot exceed the open balance.");
     });
 
     it("does not transition when amount is zero", () => {
@@ -169,6 +170,15 @@ describe("settlementFlowReducer", () => {
         type: "GO_TO_REVIEW",
       });
       expect(next.step).toBe("compose");
+    });
+
+    it("accepts a positive decimal amount", () => {
+      const next = settlementFlowReducer(composeState({ amountInput: "0.50" }), {
+        type: "GO_TO_REVIEW",
+      });
+      expect(next.step).toBe("review");
+      if (next.step !== "review") return;
+      expect(next.amountMinor).toBe(50);
     });
 
     it("does not transition with empty amount", () => {

@@ -26,17 +26,18 @@ import {
   type PersonSection,
   type RequestItem,
 } from "@/features/circles/hooks/useCirclesSnapshot";
-import {
-  parseCircleSegment,
-  GLOBAL_ACTIONS,
-  type CircleSegment,
-} from "@/features/navigation/shell";
+import { parseCircleSegment, type CircleSegment } from "@/features/navigation/shell";
 import { useTransitionFriendship } from "@/features/friends/queries/useFriends";
 import { formatActivityDate } from "@/utils/date";
 
 const SEGMENTS = [
   { label: "Groups", value: "groups" },
   { label: "People", value: "people" },
+] as const;
+
+const CIRCLE_CREATE_ACTIONS = [
+  { id: "create-group", label: "Create group", href: "/group/new" },
+  { id: "add-person", label: "Add person", href: "/friend/new" },
 ] as const;
 
 const ZERO_DECIMAL_CURRENCIES = new Set(["JPY", "KRW", "VND", "IDR"]);
@@ -447,47 +448,45 @@ export default function CirclesScreen(): JSX.Element {
           >
             Create a new group or add a person.
           </Text>
-          {GLOBAL_ACTIONS.filter((a) => a.id === "create-group" || a.id === "add-person").map(
-            (action) => {
-              const Icon = action.id === "create-group" ? UsersRound : UserPlus;
-              return (
-                <Pressable
-                  key={action.id}
-                  accessibilityRole="button"
-                  accessibilityLabel={action.label}
-                  onPress={() => {
-                    setAddSheetVisible(false);
-                    router.push(action.href as any);
+          {CIRCLE_CREATE_ACTIONS.map((action) => {
+            const Icon = action.id === "create-group" ? UsersRound : UserPlus;
+            return (
+              <Pressable
+                key={action.id}
+                accessibilityRole="button"
+                accessibilityLabel={action.label}
+                onPress={() => {
+                  setAddSheetVisible(false);
+                  router.push(action.href);
+                }}
+                style={({ pressed }) => ({
+                  minHeight: 56,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 13,
+                  paddingHorizontal: 14,
+                  marginBottom: 8,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: coral.border,
+                  backgroundColor: coral.surface,
+                  opacity: pressed ? 0.68 : 1,
+                })}
+              >
+                <Icon size={22} color={coral.foreground} strokeWidth={1.9} />
+                <Text
+                  style={{
+                    flex: 1,
+                    fontFamily: "InstrumentSans_600SemiBold",
+                    fontSize: 16,
+                    color: coral.foreground,
                   }}
-                  style={({ pressed }) => ({
-                    minHeight: 56,
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 13,
-                    paddingHorizontal: 14,
-                    marginBottom: 8,
-                    borderRadius: 14,
-                    borderWidth: 1,
-                    borderColor: coral.border,
-                    backgroundColor: coral.surface,
-                    opacity: pressed ? 0.68 : 1,
-                  })}
                 >
-                  <Icon size={22} color={coral.foreground} strokeWidth={1.9} />
-                  <Text
-                    style={{
-                      flex: 1,
-                      fontFamily: "InstrumentSans_600SemiBold",
-                      fontSize: 16,
-                      color: coral.foreground,
-                    }}
-                  >
-                    {action.label}
-                  </Text>
-                </Pressable>
-              );
-            }
-          )}
+                  {action.label}
+                </Text>
+              </Pressable>
+            );
+          })}
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Close"

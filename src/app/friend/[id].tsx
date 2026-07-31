@@ -1,2 +1,2 @@
-import FriendDetailScreen from "@/features/friends/screens-v2/FriendDetailScreen";
+import { FriendDetailScreen } from "@/features/friends";
 export default FriendDetailScreen;

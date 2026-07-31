@@ -1,1 +1,3 @@
-export { default } from "@/features/auth/screens-v2/ResetPasswordScreen";
+import { ResetPasswordScreen } from "@/features/auth";
+
+export default ResetPasswordScreen;

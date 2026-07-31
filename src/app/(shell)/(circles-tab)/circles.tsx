@@ -1,3 +1,3 @@
-import CirclesScreen from "@/features/circles/screens/CirclesScreen";
+import { CirclesScreen } from "@/features/circles";
 
 export default CirclesScreen;

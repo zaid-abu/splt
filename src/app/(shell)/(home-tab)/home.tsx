@@ -1,3 +1,3 @@
-import MoneyMapScreen from "@/features/dashboard/screens-v2/MoneyMapScreen";
+import { MoneyMapScreen } from "@/features/dashboard";
 
 export default MoneyMapScreen;

@@ -1,1 +1,1 @@
-export { default } from "@/features/onboarding/screens-v2/FirstActionScreen";
+export { FirstActionScreen as default } from "@/features/auth";

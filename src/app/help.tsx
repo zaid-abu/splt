@@ -1,6 +1,3 @@
-import type { JSX } from "react";
-import HelpScreen from "@/features/help/screens/HelpScreen";
+import { HelpScreen } from "@/features/help";
 
-export default function HelpRoute(): JSX.Element {
-  return <HelpScreen />;
-}
+export default HelpScreen;

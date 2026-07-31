@@ -43,6 +43,9 @@ export function useCreateRecurringExpense() {
       recurringApi.createRecurringExpense(input, createdBy),
     onSuccess: (newRecurring, { createdBy }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurring.list(createdBy) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.recurring.groupList(newRecurring.groupId),
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.recurring.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
       queryClient.invalidateQueries({ queryKey: queryKeys.groups });
@@ -61,6 +64,8 @@ export function useUpdateRecurringExpense() {
       recurringApi.updateRecurringExpense(id, input),
     onSuccess: (updated, { id }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurring.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurring.occurrences(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurring.groupList(updated.groupId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.recurring.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
       queryClient.invalidateQueries({ queryKey: queryKeys.groups });
@@ -79,6 +84,7 @@ export function useSetRecurringStatus() {
       recurringApi.setRecurringStatus(id, status),
     onSuccess: (_, { id }) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.recurring.detail(id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurring.occurrences(id) });
       queryClient.invalidateQueries({ queryKey: queryKeys.recurring.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
       queryClient.invalidateQueries({ queryKey: queryKeys.groups });
@@ -127,6 +133,7 @@ export function useReviewOccurrence() {
       queryClient.invalidateQueries({
         queryKey: queryKeys.recurring.detail(recurringExpenseId),
       });
+      queryClient.invalidateQueries({ queryKey: queryKeys.recurring.all });
       queryClient.invalidateQueries({ queryKey: queryKeys.expenses });
       queryClient.invalidateQueries({ queryKey: queryKeys.groups });
       queryClient.invalidateQueries({ queryKey: ["activities"] });

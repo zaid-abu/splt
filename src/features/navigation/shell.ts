@@ -4,9 +4,6 @@ export type CircleSegment = "groups" | "people";
 export type ShellTabKey = "home" | "circles" | "activity" | "more";
 export type ShellTabRouteName = "(home-tab)" | "(circles-tab)" | "(activity-tab)" | "(more-tab)";
 export type LegacyShellRoute = "groups" | "people" | "settings";
-export type GlobalActionId =
-  "add-expense" | "settle-up" | "create-group" | "add-person" | "schedule-expense";
-
 export const SHELL_HREFS = {
   home: "/home",
   circles: "/circles",
@@ -47,18 +44,6 @@ export const LEGACY_REDIRECT_HREFS: Record<LegacyShellRoute, Href> = {
   people: SHELL_HREFS.circlesPeople,
   settings: SHELL_HREFS.more,
 };
-
-export const GLOBAL_ACTIONS: readonly {
-  id: GlobalActionId;
-  label: string;
-  href: Href;
-}[] = [
-  { id: "add-expense", label: "Add expense", href: "/expense/new" },
-  { id: "settle-up", label: "Settle up", href: SHELL_HREFS.settleNew },
-  { id: "create-group", label: "Create group", href: "/group/new" },
-  { id: "add-person", label: "Add person", href: "/friend/new" },
-  { id: "schedule-expense", label: "Schedule expense", href: "/recurring/new" },
-];
 
 export function parseCircleSegment(value: string | string[] | undefined): CircleSegment {
   const candidate = Array.isArray(value) ? value[0] : value;

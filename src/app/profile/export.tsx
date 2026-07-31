@@ -1,6 +1,3 @@
-import type { JSX } from "react";
-import ExportScreen from "@/features/profile/screens-v2/ExportScreen";
+import { ExportScreen } from "@/features/profile";
 
-export default function ExportRoute(): JSX.Element {
-  return <ExportScreen />;
-}
+export default ExportScreen;

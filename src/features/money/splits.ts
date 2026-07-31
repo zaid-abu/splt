@@ -1,70 +1,39 @@
 import type { ExpenseSplitInput, MoneySplitMethod, SplitSource } from "./types";
+import { getScale } from "./currency";
+import { minorToMajor, parseMinorInput } from "./amount";
 
-const currencyMinorScale: Record<string, number> = {
-  USD: 2,
-  EUR: 2,
-  GBP: 2,
-  JPY: 0,
-  INR: 2,
-  CAD: 2,
-  AUD: 2,
-  CHF: 2,
-  CNY: 2,
-  MXN: 2,
-  BRL: 2,
-  AED: 2,
-  SAR: 2,
-  SGD: 2,
-  HKD: 2,
-  KRW: 0,
-  SEK: 2,
-  NOK: 2,
-  NZD: 2,
-};
+export { getScale, minorToMajor, parseMinorInput };
 
-export function getScale(currency: string): number {
-  return currencyMinorScale[currency] ?? 2;
-}
-
-export function parseMinorInput(value: string, currency: string): number {
-  const scale = getScale(currency);
-
-  const isNegative = value.startsWith("-");
-  const absValue = isNegative ? value.slice(1) : value;
-
-  const parts = absValue.split(".");
-  if (parts.length > 2) {
-    throw new Error("Invalid format");
-  }
-
-  if (parts.length === 2 && parts[1].length > scale) {
-    throw new Error(`At most ${scale} decimal places`);
-  }
-
-  const intPart = parts[0];
-  const fracPart = parts.length === 2 ? parts[1].padEnd(scale, "0") : "".padEnd(scale, "0");
-  const combinedStr = intPart + fracPart;
-  const result = Number(combinedStr);
-
-  if (!Number.isSafeInteger(result)) {
-    throw new Error("Amount out of range");
-  }
-
-  return isNegative ? -result : result;
-}
-
-export function minorToMajor(amountMinor: number, currency: string): number {
-  const scale = getScale(currency);
-  return amountMinor / Math.pow(10, scale);
-}
+const MAX_MINOR = 999_999_999_999;
 
 export function validateSplitSources(
   totalMinor: number,
   method: MoneySplitMethod,
   participants: readonly SplitSource[]
 ): void {
+  if (!Number.isSafeInteger(totalMinor) || totalMinor < 0 || totalMinor > MAX_MINOR) {
+    throw new Error("Total amount out of range");
+  }
   if (participants.length === 0) {
     throw new Error("At least one participant is required");
+  }
+
+  const ids = new Set<string>();
+  const positions = new Set<number>();
+  for (const participant of participants) {
+    if (!participant.userId || ids.has(participant.userId))
+      throw new Error("User IDs must be unique");
+    ids.add(participant.userId);
+    if (!Number.isSafeInteger(participant.position) || participant.position < 0) {
+      throw new Error("Positions must be contiguous integers starting at zero");
+    }
+    positions.add(participant.position);
+  }
+  if (
+    positions.size !== participants.length ||
+    [...positions].sort((a, b) => a - b).some((p, i) => p !== i)
+  ) {
+    throw new Error("Positions must be contiguous integers starting at zero");
   }
 
   switch (method) {
@@ -72,31 +41,43 @@ export function validateSplitSources(
       break;
 
     case "custom": {
-      const total = participants.reduce((sum, p) => sum + (p.amountMinor ?? 0), 0);
-      if (total !== totalMinor) {
+      const amounts = participants.map((p) => p.amountMinor);
+      if (
+        amounts.some(
+          (amount) => !Number.isSafeInteger(amount) || amount! < 0 || amount! > MAX_MINOR
+        )
+      ) {
+        throw new Error("Custom amounts must be bounded nonnegative integers");
+      }
+      const total = amounts.reduce((sum, amount) => sum + BigInt(amount!), 0n);
+      if (total !== BigInt(totalMinor)) {
         throw new Error(`Amounts must total ${totalMinor}`);
       }
       break;
     }
 
     case "percentage": {
-      const total = participants.reduce((sum, p) => sum + (p.percentageUnits ?? 0), 0);
+      const units = participants.map((p) => p.percentageUnits);
+      if (units.some((unit) => !Number.isSafeInteger(unit) || unit! <= 0 || unit! > 1_000_000)) {
+        throw new Error("Percentage must be positive");
+      }
+      const total = units.reduce<number>((sum, unit) => sum + (unit ?? 0), 0);
       if (total !== 1_000_000) {
         throw new Error("Percentages must total 1,000,000");
-      }
-      for (const p of participants) {
-        if ((p.percentageUnits ?? 0) <= 0) {
-          throw new Error("Percentage must be positive");
-        }
       }
       break;
     }
 
     case "shares": {
+      let total = 0n;
       for (const p of participants) {
-        if ((p.shareUnits ?? 0) <= 0) {
+        if (!Number.isSafeInteger(p.shareUnits) || p.shareUnits! <= 0) {
           throw new Error("Share must be positive");
         }
+        total += BigInt(p.shareUnits!);
+      }
+      if (total > BigInt(MAX_MINOR)) {
+        throw new Error("Share total out of range");
       }
       break;
     }
@@ -108,52 +89,56 @@ export function calculateSplits(
   method: MoneySplitMethod,
   participants: readonly SplitSource[]
 ): ExpenseSplitInput[] {
+  validateSplitSources(totalMinor, method, participants);
   const n = participants.length;
-  if (n === 0) return [];
 
   const amounts = new Array<number>(n);
 
   switch (method) {
     case "equal": {
-      const base = Math.floor(totalMinor / n);
+      const base = BigInt(totalMinor) / BigInt(n);
       for (let i = 0; i < n; i++) {
-        amounts[i] = base;
+        amounts[i] = Number(base);
       }
       break;
     }
 
     case "percentage": {
       for (let i = 0; i < n; i++) {
-        amounts[i] = Math.floor((totalMinor * (participants[i].percentageUnits ?? 0)) / 1_000_000);
+        amounts[i] = Number(
+          (BigInt(totalMinor) * BigInt(participants[i].percentageUnits!)) / 1_000_000n
+        );
       }
       break;
     }
 
     case "shares": {
-      const totalShares = participants.reduce((sum, p) => sum + (p.shareUnits ?? 0), 0);
+      const totalShares = participants.reduce((sum, p) => sum + BigInt(p.shareUnits!), 0n);
       for (let i = 0; i < n; i++) {
-        amounts[i] = Math.floor((totalMinor * (participants[i].shareUnits ?? 0)) / totalShares);
+        amounts[i] = Number(
+          (BigInt(totalMinor) * BigInt(participants[i].shareUnits!)) / totalShares
+        );
       }
       break;
     }
 
     case "custom": {
       for (let i = 0; i < n; i++) {
-        amounts[i] = participants[i].amountMinor ?? 0;
+        amounts[i] = participants[i].amountMinor!;
       }
       break;
     }
   }
 
-  const totalAllocated = amounts.reduce((s, v) => s + v, 0);
-  const remainder = totalMinor - totalAllocated;
+  const totalAllocated = amounts.reduce((s, v) => s + BigInt(v), 0n);
+  const remainder = BigInt(totalMinor) - totalAllocated;
 
   const sorted = participants
     .map((p, i) => ({ index: i, position: p.position, userId: p.userId }))
     .sort((a, b) => a.position - b.position || a.userId.localeCompare(b.userId));
 
-  for (let i = 0; i < remainder; i++) {
-    amounts[sorted[i].index]++;
+  for (let i = 0n; i < remainder; i++) {
+    amounts[sorted[Number(i) % n].index]++;
   }
 
   return participants.map((p, i) => ({

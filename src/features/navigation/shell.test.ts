@@ -1,5 +1,4 @@
 import {
-  GLOBAL_ACTIONS,
   LEGACY_REDIRECT_HREFS,
   SHELL_HREFS,
   SHELL_TABS,
@@ -46,16 +45,6 @@ describe("Circle Dock navigation contract", () => {
     expect(legacyRedirectHref("settings")).toBe("/more");
   });
 
-  it("defines five working global actions", () => {
-    expect(GLOBAL_ACTIONS).toEqual([
-      { id: "add-expense", label: "Add expense", href: "/expense/new" },
-      { id: "settle-up", label: "Settle up", href: "/settle/new" },
-      { id: "create-group", label: "Create group", href: "/group/new" },
-      { id: "add-person", label: "Add person", href: "/friend/new" },
-      { id: "schedule-expense", label: "Schedule expense", href: "/recurring/new" },
-    ]);
-  });
-
   it("falls back to the selector instead of creating settle/undefined", () => {
     expect(settlementHref()).toBe("/settle/new");
     expect(settlementHref(null)).toBe("/settle/new");
@@ -82,20 +71,6 @@ describe("Circle Dock navigation contract", () => {
   it("ensures no Screen suffix leaks to user-facing labels", () => {
     for (const tab of SHELL_TABS) {
       expect(tab.label).not.toMatch(/Screen/i);
-    }
-    for (const action of GLOBAL_ACTIONS) {
-      expect(action.label).not.toMatch(/Screen/i);
-    }
-  });
-
-  it("ensures every GLOBAL_ACTION href is a reachable path", () => {
-    for (const action of GLOBAL_ACTIONS) {
-      const href = action.href;
-      if (typeof href === "string") {
-        expect(href).toMatch(/^\//);
-      } else {
-        expect(href).toHaveProperty("pathname");
-      }
     }
   });
 

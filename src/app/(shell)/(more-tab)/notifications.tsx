@@ -1,3 +1,3 @@
-import NotificationsV2Screen from "@/features/notifications/screens-v2/NotificationsScreen";
+import { NotificationsScreen } from "@/features/notifications";
 
-export default NotificationsV2Screen;
+export default NotificationsScreen;

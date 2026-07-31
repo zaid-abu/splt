@@ -1,2 +1,2 @@
-import NewExpenseScreen from "@/features/expenses/screens-v2/NewExpenseScreen";
+import { NewExpenseScreen } from "@/features/expenses";
 export default NewExpenseScreen;

@@ -1,7 +1,7 @@
 import { render, act, fireEvent } from "@testing-library/react-native";
 
 import NewFriendScreen from "./NewFriendScreen";
-import InviteRedemptionScreen from "./InviteRedemptionScreen";
+import InviteRedemptionScreen from "@/features/invitations/screens/InviteRedemptionScreen";
 import { invitationsApi } from "@/features/invitations/services/api";
 import { clearPendingInviteToken } from "@/features/invitations/services/pendingInvite";
 

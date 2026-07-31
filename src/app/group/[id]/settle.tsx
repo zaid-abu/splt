@@ -1,2 +1,2 @@
-import SettlementScreen from "@/features/settlements/screens-v2/SettlementScreen";
+import { SettlementScreen } from "@/features/settlements";
 export default SettlementScreen;

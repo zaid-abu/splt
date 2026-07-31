@@ -1,3 +1,3 @@
-import AnalyticsScreen from "@/features/analytics/screens-v2/AnalyticsScreen";
+import { AnalyticsScreen } from "@/features/analytics";
 
 export default AnalyticsScreen;

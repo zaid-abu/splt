@@ -1,6 +1,3 @@
-import type { JSX } from "react";
-import SecurityScreen from "@/features/profile/screens-v2/SecurityScreen";
+import { SecurityScreen } from "@/features/profile";
 
-export default function SecurityRoute(): JSX.Element {
-  return <SecurityScreen />;
-}
+export default SecurityScreen;

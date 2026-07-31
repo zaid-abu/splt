@@ -120,3 +120,29 @@ describe("settlementsApi.createSettlement", () => {
     await expect(settlementsApi.createSettlement(input)).rejects.toThrow("RPC failed");
   });
 });
+
+describe("settlementsApi.deleteSettlement", () => {
+  it("calls delete_settlement_v2 RPC with the settlement id", async () => {
+    rpc.mockResolvedValueOnce({ data: null, error: null });
+
+    await settlementsApi.deleteSettlement("s-1");
+
+    expect(rpc).toHaveBeenCalledWith("delete_settlement_v2", {
+      p_settlement_id: "s-1",
+    });
+  });
+
+  it("throws when the delete RPC errors", async () => {
+    rpc.mockResolvedValueOnce({ data: null, error: new Error("Delete failed") });
+
+    await expect(settlementsApi.deleteSettlement("s-1")).rejects.toThrow("Delete failed");
+  });
+
+  it("does not use a direct settlements table delete", async () => {
+    rpc.mockResolvedValueOnce({ data: null, error: null });
+
+    await settlementsApi.deleteSettlement("s-1");
+
+    expect(supabase.from).not.toHaveBeenCalled();
+  });
+});

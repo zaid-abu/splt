@@ -1,2 +1,2 @@
-import GroupDetailScreen from "@/features/groups/screens-v2/GroupDetailScreen";
+import { GroupDetailScreen } from "@/features/groups";
 export default GroupDetailScreen;

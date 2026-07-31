@@ -1,0 +1,9 @@
+export { default as AppearanceScreen } from "./screens-v2/AppearanceScreen";
+export { default as ChangePasswordScreen } from "./screens-v2/ChangePasswordScreen";
+export { default as EditProfileScreen } from "./screens-v2/EditProfileScreen";
+export { default as ExportScreen } from "./screens-v2/ExportScreen";
+export { default as MoreScreen } from "./screens-v2/MoreScreen";
+export { default as NotificationSettingsScreen } from "./screens-v2/NotificationSettingsScreen";
+export { default as ProfileScreen } from "./screens-v2/ProfileScreen";
+export { default as ProfileSetupScreen } from "./screens-v2/ProfileSetupScreen";
+export { default as SecurityScreen } from "./screens-v2/SecurityScreen";

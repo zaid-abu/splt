@@ -1,2 +1,2 @@
-import NewRecurringScreen from "@/features/recurring/screens/NewRecurringScreen";
+import { NewRecurringScreen } from "@/features/recurring";
 export default NewRecurringScreen;

@@ -1,2 +1,2 @@
-import ExpenseDetailScreen from "@/features/expenses/screens-v2/ExpenseDetailScreen";
+import { ExpenseDetailScreen } from "@/features/expenses";
 export default ExpenseDetailScreen;

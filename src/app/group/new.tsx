@@ -1,2 +1,2 @@
-import NewGroupScreen from "@/features/groups/screens-v2/NewGroupScreen";
+import { NewGroupScreen } from "@/features/groups";
 export default NewGroupScreen;

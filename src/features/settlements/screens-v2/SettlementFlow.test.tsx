@@ -3,6 +3,8 @@ import { render } from "@testing-library/react-native";
 
 import { useSettlementFlow } from "@/features/settlements/hooks/useSettlementFlow";
 
+let mockRouteParams: Record<string, string> = { id: "u2" };
+
 jest.mock("@/services/supabase/client", () => ({
   supabase: { rpc: jest.fn(), from: jest.fn() },
 }));
@@ -60,7 +62,7 @@ jest.mock("@/features/settlements/hooks/useSettlementFlow", () => ({
 
 jest.mock("expo-router", () => ({
   useRouter: () => ({ back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
-  useLocalSearchParams: () => ({ id: "u2" }),
+  useLocalSearchParams: () => mockRouteParams,
 }));
 
 jest.mock("@/context/AppContext", () => ({
@@ -177,10 +179,16 @@ jest.mock("@/features/friends/hooks/useFriendsList", () => ({
   }),
 }));
 
+jest.mock("@/features/groups/queries/useGroups", () => ({
+  useGroups: () => ({ data: [], isLoading: false }),
+  useGroupDetails: () => ({ data: undefined, isLoading: false }),
+}));
+
 const mockUseSettlementFlow = useSettlementFlow as jest.Mock;
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockRouteParams = { id: "u2" };
 });
 
 describe("SettlementScreen compose state", () => {
@@ -287,5 +295,33 @@ describe("SettlementScreen success state", () => {
     const Screen = require("./SettlementScreen").default;
     const rendered = render(<Screen />);
     expect(rendered).toBeDefined();
+  });
+});
+
+describe("SettlementScreen route hydration", () => {
+  it.each([
+    { currency: "XXX", amountMinor: "100" },
+    { currency: "USD", amountMinor: "100.5" },
+    { currency: "USD", amountMinor: "1000000000000" },
+    { contextType: "unknown", currency: "USD", amountMinor: "100", groupId: "g-1" },
+    {
+      contextType: "group",
+      currency: "USD",
+      amountMinor: "100",
+      groupId: "g-1",
+      friendshipId: "f-1",
+    },
+    { contextType: "direct", currency: "USD", amountMinor: "100", groupId: "g-1" },
+    { contextType: "group", currency: "USD", amountMinor: "100" },
+  ])("rejects invalid route params", async (route) => {
+    mockRouteParams = {
+      id: "u2",
+      ...route,
+      isOwedToYou: "true",
+    };
+    mockUseSettlementFlow.mockReturnValue({ state: { step: "loading" } });
+    const Screen = require("./SettlementScreen").default;
+    const rendered = await render(<Screen />);
+    expect(rendered.getByText("All settled up!")).toBeTruthy();
   });
 });

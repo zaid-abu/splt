@@ -1,6 +1,6 @@
 import { supabase } from "@/services/supabase/client";
 import type { Settlement } from "@/types";
-import { mapSettlement, toSettlementInsert, type SettlementRow } from "@/services/api/mappers";
+import { mapSettlement, type SettlementRow } from "@/services/api/mappers";
 import type { SettlementMutationInput } from "@/features/money/types";
 
 const settlementSelect = "*, fromUser:users!from_user_id(*), toUser:users!to_user_id(*)";
@@ -70,20 +70,10 @@ export const settlementsApi = {
     return mapSettlement(data);
   },
 
-  async addSettlement(settlementData: Partial<Settlement>): Promise<Settlement> {
-    const { data, error } = await supabase
-      .from("settlements")
-      .insert(toSettlementInsert(settlementData))
-      .select(settlementSelect)
-      .single()
-      .returns<SettlementRow>();
-
-    if (error) throw error;
-    return mapSettlement(data);
-  },
-
   async deleteSettlement(settlementId: string): Promise<void> {
-    const { error } = await supabase.from("settlements").delete().eq("id", settlementId);
+    const { error } = await supabase.rpc("delete_settlement_v2" as any, {
+      p_settlement_id: settlementId,
+    });
     if (error) throw error;
   },
 };

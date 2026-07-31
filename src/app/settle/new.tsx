@@ -1,3 +1,3 @@
-import NewSettlementScreen from "@/features/settlements/screens-v2/NewSettlementScreen";
+import { NewSettlementScreen } from "@/features/settlements";
 
 export default NewSettlementScreen;

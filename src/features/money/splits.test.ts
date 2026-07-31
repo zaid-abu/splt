@@ -1,4 +1,5 @@
 import type { SplitSource } from "./types";
+import { getMaximumSupportedMinorAmount } from "./currency";
 import { calculateSplits, minorToMajor, parseMinorInput, validateSplitSources } from "./splits";
 
 function participants(...ids: string[]): SplitSource[] {
@@ -54,6 +55,31 @@ describe("parseMinorInput", () => {
 
   it("rejects unsafe integer", () => {
     expect(() => parseMinorInput("90071992547409922", "USD")).toThrow("Amount out of range");
+  });
+
+  it("rejects unknown currencies and incomplete decimals", () => {
+    expect(() => parseMinorInput("1", "XXX")).toThrow("Unknown currency");
+    expect(() => parseMinorInput("", "USD")).toThrow("Invalid format");
+    expect(() => parseMinorInput("1.", "USD")).toThrow("Invalid format");
+  });
+
+  it("trims input and normalizes negative zero", () => {
+    expect(parseMinorInput("  -0.00  ", "USD")).toBe(0);
+  });
+
+  it("accepts the supported USD and JPY ceilings and rejects one above", () => {
+    expect(parseMinorInput("9999999999.99", "USD")).toBe(999999999999);
+    expect(() => parseMinorInput("10000000000.00", "USD")).toThrow("Amount out of range");
+    expect(parseMinorInput("9999999999", "JPY")).toBe(9999999999);
+    expect(() => parseMinorInput("10000000000", "JPY")).toThrow("Amount out of range");
+    expect(minorToMajor(getMaximumSupportedMinorAmount("USD"), "USD")).toBe(9999999999.99);
+    expect(() => minorToMajor(getMaximumSupportedMinorAmount("USD") + 1, "USD")).toThrow(
+      "Amount out of range"
+    );
+    expect(minorToMajor(getMaximumSupportedMinorAmount("JPY"), "JPY")).toBe(9999999999);
+    expect(() => minorToMajor(getMaximumSupportedMinorAmount("JPY") + 1, "JPY")).toThrow(
+      "Amount out of range"
+    );
   });
 });
 
@@ -159,6 +185,28 @@ describe("validateSplitSources", () => {
 // ─── calculateSplits ────────────────────────────────────────────────────────
 
 describe("calculateSplits", () => {
+  it("conserves a maximum-size percentage allocation with safe integers", () => {
+    const total = 999_999_999_999;
+    const result = calculateSplits(total, "percentage", [
+      source("a", 0, { percentageUnits: 333333 }),
+      source("b", 1, { percentageUnits: 333333 }),
+      source("c", 2, { percentageUnits: 333334 }),
+    ]);
+    expect(result.reduce((sum, splitResult) => sum + splitResult.amountMinor, 0)).toBe(total);
+    expect(result.every((splitResult) => Number.isSafeInteger(splitResult.amountMinor))).toBe(true);
+  });
+
+  it("conserves a maximum-size shares allocation with safe integers", () => {
+    const total = 999_999_999_999;
+    const result = calculateSplits(total, "shares", [
+      source("a", 0, { shareUnits: 333333333333 }),
+      source("b", 1, { shareUnits: 333333333333 }),
+      source("c", 2, { shareUnits: 333333333333 }),
+    ]);
+    expect(result.reduce((sum, splitResult) => sum + splitResult.amountMinor, 0)).toBe(total);
+    expect(result.every((splitResult) => Number.isSafeInteger(splitResult.amountMinor))).toBe(true);
+  });
+
   describe("equal", () => {
     it("splits equally with remainder to lowest position", () => {
       expect(calculateSplits(100, "equal", participants("a", "b", "c"))).toEqual([
@@ -175,8 +223,10 @@ describe("calculateSplits", () => {
       ]);
     });
 
-    it("returns empty array for no participants", () => {
-      expect(calculateSplits(100, "equal", [])).toEqual([]);
+    it("throws for no participants", () => {
+      expect(() => calculateSplits(100, "equal", [])).toThrow(
+        "At least one participant is required"
+      );
     });
 
     it("handles zero total", () => {
@@ -187,12 +237,10 @@ describe("calculateSplits", () => {
     });
 
     it("distributes remainder by position then userId", () => {
-      const result = calculateSplits(10, "equal", [source("z", 0), source("a", 0), source("m", 1)]);
+      const result = calculateSplits(10, "equal", [source("z", 0), source("a", 1), source("m", 2)]);
       // floors: 3, 3, 3; remainder: 1
-      // sorted by position: (z,0,a,0) at pos 0, then (m,1) at pos 1
-      // within pos 0: "a" < "z" alphabetically
-      // order: a(pos=0,userId="a"), z(pos=0,userId="z"), m(pos=1,userId="m")
-      expect(result).toEqual([split("z", 3, 0), split("a", 4, 0), split("m", 3, 1)]);
+      // sorted by contiguous position: z, a, m; z gets the remainder
+      expect(result).toEqual([split("z", 4, 0), split("a", 3, 1), split("m", 3, 2)]);
     });
 
     it("handles single participant", () => {
@@ -258,10 +306,9 @@ describe("calculateSplits", () => {
 
   describe("remainder distribution edge cases", () => {
     it("ties broken by position ascending then userId ascending", () => {
-      const result = calculateSplits(7, "equal", [source("b", 2), source("a", 1), source("c", 1)]);
-      // floors: 2, 2, 2; remainder: 1
-      // sorted: (a,1,"a"), (c,1,"c"), (b,2,"b")
-      expect(result).toEqual([split("b", 2, 2), split("a", 3, 1), split("c", 2, 1)]);
+      const result = calculateSplits(7, "equal", [source("b", 0), source("a", 1), source("c", 2)]);
+      // floors: 2, 2, 2; remainder: 1 goes to position zero
+      expect(result).toEqual([split("b", 3, 0), split("a", 2, 1), split("c", 2, 2)]);
     });
   });
 });

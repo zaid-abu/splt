@@ -606,6 +606,9 @@ export default function GroupDetailScreen(): JSX.Element {
               )}
             </>
           )}
+          <View style={{ marginTop: 20 }}>
+            <CoralButton label="Schedule expense" variant="primary" onPress={handleSchedulePress} />
+          </View>
         </>
       )}
     </CoralScreen>

@@ -280,33 +280,34 @@ describe("selectSettlementTarget", () => {
       ob({ counterpartyId: "u1", signedAmountMinor: 500 }),
       ob({ counterpartyId: "u2", signedAmountMinor: 1200 }),
     ];
-    const result = selectSettlementTarget(rows, "global");
+    const result = selectSettlementTarget(rows, { type: "global" });
     expect(result).not.toBeNull();
     expect(result!.counterpartyId).toBe("u2");
     expect(result!.amountMinor).toBe(1200);
+    expect(result!.direction).toBe("owes_me");
   });
 
-  it("selects smallest negative (closest to zero) when no positive balances", () => {
+  it("selects largest negative magnitude when no positive balances", () => {
     const rows = [
       ob({ counterpartyId: "u1", signedAmountMinor: -500 }),
       ob({ counterpartyId: "u2", signedAmountMinor: -200 }),
     ];
-    const result = selectSettlementTarget(rows, "global");
+    const result = selectSettlementTarget(rows, { type: "global" });
     expect(result).not.toBeNull();
-    expect(result!.counterpartyId).toBe("u2");
-    expect(result!.amountMinor).toBe(-200);
+    expect(result!.counterpartyId).toBe("u1");
+    expect(result!.amountMinor).toBe(500);
+    expect(result!.direction).toBe("i_owe");
   });
 
   it("returns null when all zero", () => {
-    const result = selectSettlementTarget(
-      [ob({ counterpartyId: "u1", signedAmountMinor: 0 })],
-      "global"
-    );
+    const result = selectSettlementTarget([ob({ counterpartyId: "u1", signedAmountMinor: 0 })], {
+      type: "global",
+    });
     expect(result).toBeNull();
   });
 
   it("returns null for empty rows", () => {
-    expect(selectSettlementTarget([], "global")).toBeNull();
+    expect(selectSettlementTarget([], { type: "global" })).toBeNull();
   });
 
   it("works with group scope", () => {
@@ -314,7 +315,7 @@ describe("selectSettlementTarget", () => {
       ob({ counterpartyId: "u1", signedAmountMinor: 300 }),
       ob({ counterpartyId: "u2", signedAmountMinor: 500 }),
     ];
-    const result = selectSettlementTarget(rows, "group");
+    const result = selectSettlementTarget(rows, { type: "group", groupId: "g1" });
     expect(result).not.toBeNull();
     expect(result!.counterpartyId).toBe("u2");
   });
@@ -327,10 +328,40 @@ describe("selectSettlementTarget", () => {
         signedAmountMinor: 700,
       }),
     ];
-    const result = selectSettlementTarget(rows, "friendship");
+    const result = selectSettlementTarget(rows, { type: "friendship", friendshipId: "f1" });
     expect(result).not.toBeNull();
     expect(result!.counterpartyId).toBe("u1");
     expect(result!.amountMinor).toBe(700);
+  });
+
+  it("excludes rows outside an exact group or friendship scope", () => {
+    const rows = [
+      ob({ counterpartyId: "group", context: groupCtx("g1"), signedAmountMinor: 900 }),
+      ob({ counterpartyId: "other-group", context: groupCtx("g2"), signedAmountMinor: 1200 }),
+      ob({ counterpartyId: "friend", context: directCtx("f1"), signedAmountMinor: 1100 }),
+    ];
+    expect(selectSettlementTarget(rows, { type: "group", groupId: "g1" })?.counterpartyId).toBe(
+      "group"
+    );
+    expect(
+      selectSettlementTarget(rows, { type: "friendship", friendshipId: "f1" })?.counterpartyId
+    ).toBe("friend");
+  });
+
+  it("uses deterministic counterparty, context, and currency tie ordering", () => {
+    const rows = [
+      ob({ counterpartyId: "b", context: groupCtx("g1"), currency: "USD", signedAmountMinor: 500 }),
+      ob({
+        counterpartyId: "a",
+        context: groupCtx("g1"),
+        currency: "USD",
+        signedAmountMinor: -500,
+      }),
+    ];
+    const result = selectSettlementTarget(rows, { type: "global" });
+    expect(result?.counterpartyId).toBe("a");
+    expect(result?.amountMinor).toBe(500);
+    expect(result?.direction).toBe("i_owe");
   });
 
   it("settlement selector ambiguity: multiple positives picks largest", () => {
@@ -339,7 +370,7 @@ describe("selectSettlementTarget", () => {
       ob({ counterpartyId: "b", signedAmountMinor: 250 }),
       ob({ counterpartyId: "c", signedAmountMinor: 100 }),
     ];
-    const result = selectSettlementTarget(rows, "global");
+    const result = selectSettlementTarget(rows, { type: "global" });
     expect(result!.counterpartyId).toBe("b");
     expect(result!.amountMinor).toBe(250);
   });

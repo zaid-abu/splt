@@ -1,6 +1,3 @@
-import type { JSX } from "react";
-import ProfileScreen from "@/features/profile/screens-v2/ProfileScreen";
+import { ProfileScreen } from "@/features/profile";
 
-export default function ProfileRoute(): JSX.Element {
-  return <ProfileScreen />;
-}
+export default ProfileScreen;

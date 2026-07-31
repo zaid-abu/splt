@@ -1,6 +1,3 @@
-import type { JSX } from "react";
-import ScheduleReviewScreen from "@/features/recurring/screens/ScheduleReviewScreen";
+import { ScheduleReviewScreen } from "@/features/recurring";
 
-export default function ScheduleReviewRoute(): JSX.Element {
-  return <ScheduleReviewScreen />;
-}
+export default ScheduleReviewScreen;
